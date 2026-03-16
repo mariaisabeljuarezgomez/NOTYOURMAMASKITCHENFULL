@@ -304,6 +304,10 @@ let docV2 = {{
     settings:{{ legacyBgVisible:true, layoutLocked:true, backgroundLayerLocked:true }}, 
     editorState:{{ zoom:1 }} 
 }};
+const BASE_W = 908.4429931640625;
+const BASE_H = 1336.02001953125;
+const PAD = 100;
+
 let layoutLocked = true, selectedId = null, zoomScale = 1;
 let historyStack = [];
 
@@ -473,7 +477,7 @@ function attach(el) {{
             let nx = (me.clientX - rect.left)/zoomScale - ox;
             let ny = (me.clientY - rect.top)/zoomScale - oy;
             
-            const cx = {width}/2 - el.offsetWidth/2, cy = {height}/2 - el.offsetHeight/2;
+            const cx = BASE_W/2 - el.offsetWidth/2, cy = BASE_H/2 - el.offsetHeight/2;
             if(Math.abs(nx-cx)<15) {{ nx=cx; gcx.style.display='block'; }} else gcx.style.display='none';
             if(Math.abs(ny-cy)<15) {{ ny=cy; gcy.style.display='block'; }} else gcy.style.display='none';
 
@@ -632,7 +636,7 @@ function duplicateEl() {{
 
 function bringToFront() {{ if(!selectedId) return; pushState(); let maxZ = Math.max(...docV2.elements.map(e => e.zIndex || 10)); let item=docV2.elements.find(e=>e.id===selectedId); if(item) item.zIndex = maxZ + 1; render(); }}
 function sendToBack() {{ if(!selectedId) return; pushState(); let minZ = Math.min(...docV2.elements.map(e => e.zIndex || 10)); let item=docV2.elements.find(e=>e.id===selectedId); if(item) item.zIndex = minZ - 1; render(); }}
-function centerElement(dir) {{ if(!selectedId) return; pushState(); let item = docV2.elements.find(e=>e.id===selectedId); let el = document.getElementById(selectedId); if(!item || !el) return; if(dir==='h') item.x = ({width}/2) - (el.offsetWidth/2); if(dir==='v') item.y = ({height}/2) - (el.offsetHeight/2); render(); sync(); }}
+function centerElement(dir) {{ if(!selectedId) return; pushState(); let item = docV2.elements.find(e=>e.id===selectedId); let el = document.getElementById(selectedId); if(!item || !el) return; if(dir==='h') item.x = (BASE_W/2) - (el.offsetWidth/2); if(dir==='v') item.y = (BASE_H/2) - (el.offsetHeight/2); render(); sync(); }}
 function deleteEl() {{ if(!selectedId) return; pushState(); docV2.elements = docV2.elements.filter(e => e.id !== selectedId); selectedId = null; render(); deselect(); }}
 
 function addText() {{ pushState(); let id='txt_'+Date.now(); docV2.elements.push({{id, type:'text', text:'New Text', x:600, y:400, zIndex:51, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{{fontFamily:'century-gothic-bold', fontSize:40, color:'#000', lineHeight:1.1, letterSpacing:0}} }}); render(); selectById(id); }}
@@ -656,9 +660,16 @@ document.addEventListener('touchstart', (e) => {{
 function applyZoom(f) {{
     zoomScale = Math.max(0.3, Math.min(4, zoomScale * f));
     const scalerWrapper = document.getElementById('scaler-wrapper');
+    const centeringWrapper = document.getElementById('centering-wrapper');
+    
     if(scalerWrapper) {{
         scalerWrapper.style.transform = `scale(${{zoomScale}})`;
         scalerWrapper.style.transformOrigin = 'top center';
+    }}
+    
+    if(centeringWrapper) {{
+        centeringWrapper.style.width = (BASE_W * zoomScale) + (PAD * 2) + 'px';
+        centeringWrapper.style.height = (BASE_H * zoomScale) + (PAD * 2) + 'px';
     }}
 }}
 
@@ -687,7 +698,7 @@ async function load() {{
 }}
 
 async function exportPng() {{
-    const S = 4.1687, canvas = document.createElement('canvas'); canvas.width = {width}*S; canvas.height = {height}*S; const ctx = canvas.getContext('2d');
+    const S = 4.1687, canvas = document.createElement('canvas'); canvas.width = BASE_W*S; canvas.height = BASE_H*S; const ctx = canvas.getContext('2d');
     if(docV2.settings.legacyBgVisible) {{
         const img = new Image(); img.src = "{bg_master}"; await new Promise(r => img.onload = r);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
