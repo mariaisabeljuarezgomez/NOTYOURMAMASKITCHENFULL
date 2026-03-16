@@ -204,6 +204,14 @@ body {{ margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-
     animation: tooltipFade 0.2s ease-out;
 }}
 @keyframes tooltipFade {{ from {{ opacity: 0; transform: translateY(5px); }} to {{ opacity: 1; transform: translateY(0); }} }}
+
+/* Branded Modal Style */
+.modal-overlay {{ position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); display:none; align-items:center; justify-content:center; z-index:5000; animation: fadeIn 0.3s; }}
+.modal-content {{ background:var(--surface); border:2px solid var(--primary); padding:30px; border-radius:15px; max-width:400px; text-align:center; box-shadow:0 15px 50px rgba(0,0,0,0.8); }}
+.modal-title {{ color:var(--accent); font-weight:700; font-size:18px; margin-bottom:15px; }}
+.modal-body {{ font-size:14px; margin-bottom:25px; line-height:1.5; color:#eee; }}
+.modal-actions {{ display:flex; gap:15px; justify-content:center; }}
+@keyframes fadeIn {{ from {{ opacity:0; }} to {{ opacity:1; }} }}
 </style>
 </head>
 <body>
@@ -212,8 +220,8 @@ body {{ margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-
 <div id="top-header">
     <div id="header-title">MENU EDITOR PRO V2</div>
     <div class="header-actions">
-        <button id="btn-undo" class="btn-ui" onclick="undo()" title="Undo Last Change" data-help="Reverses your last action (move, edit, delete, etc.)">↺ UNDO</button>
-        <button id="btn-lock-global" class="btn-ui primary" onclick="toggleGlobalLock()" data-help="When locked, elements cannot be moved or edited — click to unlock for editing">🔒 LAYOUT LOCKED</button>
+        <button id="btn-undo" class="btn-ui" onclick="undo()" title="Undo Last Change" data-help="Reverses your last action (move, edit, delete, etc.)">↺ Undo Last Change</button>
+        <button id="btn-lock-global" class="btn-ui primary" onclick="toggleGlobalLock()" data-help="When locked, elements cannot be moved or edited — click to unlock for editing">🔒 Layout Locked</button>
         <button id="btn-reload" class="btn-ui" onclick="location.reload()" data-help="Reloads the page to reset the session if needed.">↺ RELOAD</button>
     </div>
 </div>
@@ -247,16 +255,28 @@ html_footer = f"""</div></div></main>
 <div id="bottom-drawer" class="closed">
     <div class="asset-tray">{asset_gallery_html}</div>
     <div class="btn-row">
-        <button id="btn-save" class="btn-ui primary" onclick="save()" data-help="Saves your current layout to the server AND to browser memory as a backup">💾 Save Project</button>
-        <button id="btn-load" class="btn-ui" onclick="load()" data-help="Loads your last saved project from the server or browser backup">📂 Load Draft</button>
+        <button id="btn-save" class="btn-ui primary" onclick="save()" data-help="Saves your current layout to the server AND to browser memory as a backup">💾 Save Session</button>
+        <button id="btn-load" class="btn-ui" onclick="load()" data-help="Loads your last saved project from the server or browser backup">📂 Load Session</button>
         <button id="btn-add-text" class="btn-ui" onclick="addText()" data-help="Creates a new editable text box in the center of the menu — double-click to type">＋ Add Text</button>
         <button id="btn-add-rect" class="btn-ui" onclick="addRect()" data-help="Adds a colored rectangle shape — useful for backgrounds, banners, or price tags">⬜ Add Rect</button>
         <button id="btn-upload-img" class="btn-ui" onclick="document.getElementById('in-img').click()" data-help="Upload a photo or logo from your device to place on the menu">🖼️ Upload Img</button>
         <button id="btn-toggle-bg" class="btn-ui" onclick="toggleBg()" data-help="Show or hide the original scanned menu background image">👁️ Toggle Original BG</button>
-        <button id="btn-png" class="btn-ui accent" onclick="exportPng()" data-help="Renders the entire menu as a high-resolution PNG file ready to print or share">⬇️ Final PNG Export</button>
+        <button id="btn-png" class="btn-ui accent" onclick="exportPng()" data-help="Renders the entire menu as a high-resolution PNG file ready to print or share">⬇️ Export Pro PNG</button>
+        <button id="btn-reset" class="btn-ui" style="background:#444" onclick="showResetModal()" data-help="Wipes all edits and restores the original template">🔄 Reset to Original</button>
     </div>
     <div id="layers-panel"></div>
     <input type="file" id="in-img" style="display:none" accept="image/*" onchange="importImg(this)">
+</div>
+
+<div id="reset-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-title">⚠️ Reset to Original</div>
+        <div class="modal-body">This will permanently erase all your edits and restore the original template. This CANNOT be undone by the Undo button. Are you sure?</div>
+        <div class="modal-actions">
+            <button class="btn-ui" onclick="hideResetModal()">Cancel</button>
+            <button class="btn-ui primary" onclick="resetToOriginal()">Yes, Reset</button>
+        </div>
+    </div>
 </div>
 
 <div id="selection-bar">
@@ -608,9 +628,9 @@ function updateStyle(k, v) {{ if(!selectedId) return; pushState(); let item = do
 function toggleGlobalLock() {{
     layoutLocked = !layoutLocked;
     const btn = document.getElementById('btn-lock-global');
-    btn.innerText = layoutLocked ? '🔒 LAYOUT LOCKED' : '🔓 LAYOUT UNLOCKED';
+    btn.innerText = layoutLocked ? '🔒 Layout Locked' : '🔓 Layout Unlocked';
     btn.classList.toggle('lock-unlocked', !layoutLocked);
-    showToast(layoutLocked ? 'Layout Protected' : 'Edit Mode Active');
+    showToast(layoutLocked ? 'Layout Locked' : 'Edit Mode ON');
     
     syncZoomControlsVisibility();
 
@@ -643,8 +663,22 @@ function duplicateEl() {{
     clone.zIndex = Math.max(...docV2.elements.map(e => e.zIndex || 10)) + 1;
     docV2.elements.push(clone);
     render();
-    setTimeout(() => selectById(clone.id), 50);
+    setTimeout(() => selectById(clone.id), 100);
     showToast('Layer Cloned');
+}}
+
+function showResetModal() {{ document.getElementById('reset-modal').style.display='flex'; }}
+function hideResetModal() {{ document.getElementById('reset-modal').style.display='none'; }}
+async function resetToOriginal() {{
+    hideResetModal();
+    try {{
+        const r = await fetch('/api/menu/reset', {{method:'POST'}});
+        if(r.ok) {{
+            location.reload();
+        }}
+    }} catch(e) {{
+        location.reload();
+    }}
 }}
 
 function bringToFront() {{ if(!selectedId) return; pushState(); let maxZ = Math.max(...docV2.elements.map(e => e.zIndex || 10)); let item=docV2.elements.find(e=>e.id===selectedId); if(item) item.zIndex = maxZ + 1; render(); }}
@@ -652,7 +686,19 @@ function sendToBack() {{ if(!selectedId) return; pushState(); let minZ = Math.mi
 function centerElement(dir) {{ if(!selectedId) return; pushState(); let item = docV2.elements.find(e=>e.id===selectedId); let el = document.getElementById(selectedId); if(!item || !el) return; if(dir==='h') item.x = (BASE_W/2) - (el.offsetWidth/2); if(dir==='v') item.y = (BASE_H/2) - (el.offsetHeight/2); render(); sync(); }}
 function deleteEl() {{ if(!selectedId) return; pushState(); docV2.elements = docV2.elements.filter(e => e.id !== selectedId); selectedId = null; render(); deselect(); }}
 
-function addText() {{ pushState(); let id='txt_'+Date.now(); docV2.elements.push({{id, type:'text', text:'New Text', x:600, y:400, zIndex:51, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{{fontFamily:'century-gothic-bold', fontSize:40, color:'#000', lineHeight:1.1, letterSpacing:0}} }}); render(); selectById(id); }}
+function addText() {{ 
+    pushState(); 
+    let id='txt_'+Date.now(); 
+    const vpRect = viewport.getBoundingClientRect();
+    const scalerRect = scaler.getBoundingClientRect();
+    const cx = (vpRect.left + vpRect.width/2 - scalerRect.left) / zoomScale;
+    const cy = (vpRect.top + vpRect.height/2 - scalerRect.top) / zoomScale;
+    const x = Math.max(50, Math.min(BASE_W - 200, cx));
+    const y = Math.max(50, Math.min(BASE_H - 100, cy));
+    docV2.elements.push({{id, type:'text', text:'New Text', x, y, zIndex:51, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{{fontFamily:'century-gothic-bold', fontSize:40, color:'#000', lineHeight:1.1, letterSpacing:0}} }}); 
+    render(); 
+    selectById(id); 
+}}
 function addRect() {{ pushState(); let id='rect_'+Date.now(); docV2.elements.push({{id, type:'shape', x:600, y:400, width:300, height:200, zIndex:5, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{{fill:'#f1c40f'}} }}); render(); selectById(id); }}
 function importImg(input) {{ let f = input.files[0]; if(!f) return; let r = new FileReader(); r.onload=(e)=>{{ addFromTray(e.target.result); }}; r.readAsDataURL(f); }}
 function addFromTray(src) {{ let id='img_'+Date.now(); docV2.elements.push({{id, type:'image', src, x:500, y:500, width:400, height:400, zIndex:20, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content' }}); render(); selectById(id); }}
@@ -797,6 +843,7 @@ function onTextBlur(e) {{
         if(historyStack.length > 30) historyStack.shift();
         const item = docV2.elements.find(i => i.id === e.target.id);
         if(item) item.text = e.target.innerText;
+        sync();
     }}
 }}
 
