@@ -402,10 +402,10 @@ function render() {{
         
         if(d.type==='text') {{ 
             el.innerText = d.text; 
-            el.contentEditable = (!layoutLocked && !d.locked && d.visible); 
+            el.contentEditable = (!d.locked && d.visible); 
             el.onfocus = onTextFocus;
             el.onblur = onTextBlur;
-            el.ondblclick = (e) => {{ if(!layoutLocked && !d.locked) el.focus(); e.stopPropagation(); }};
+            el.ondblclick = (e) => {{ if(!d.locked) el.focus(); e.stopPropagation(); }};
         }}
         if(d.type==='image') el.src = d.src;
         
