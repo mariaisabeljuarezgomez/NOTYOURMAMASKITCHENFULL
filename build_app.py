@@ -389,7 +389,15 @@ function selectById(id) {{
 
 function updateSelectionBar() {{
     console.log("UpdateSelectionBar. ID:", selectedId);
-    const item = docV2.elements.find(e => e.id === selectedId);
+    if(!selectedId) return;
+    
+    // Robust find: handles both literal ID and numeric/txt_/text_ prefix mismatches
+    const item = docV2.elements.find(e => {{
+        const normE = String(e.id).replace(/^(txt_|text_)/, '');
+        const normS = String(selectedId).replace(/^(txt_|text_)/, '');
+        return e.id == selectedId || normE == normS;
+    }});
+
     if(!item) {{ 
         console.warn("Item not found for selection:", selectedId);
         deselect(); 
@@ -574,7 +582,12 @@ function onTextBlur(e) {{
     if(textEditingOriginal !== e.target.innerText) {{
         // Push the original state BEFORE syncing the new text
         const snapshot = JSON.stringify(docV2.elements);
-        const item = docV2.elements.find(el => el.id === e.target.id);
+        // Robust find for history matching
+        const item = docV2.elements.find(el => {{
+            const normE = String(el.id).replace(/^(txt_|text_)/, '');
+            const normS = String(e.target.id).replace(/^(txt_|text_)/, '');
+            return el.id == e.target.id || normE == normS;
+        }});
         if(item) item.text = textEditingOriginal; // temporarily restore
         historyStack.push(snapshot);
         if(historyStack.length > 30) historyStack.shift();
