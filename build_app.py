@@ -1,8 +1,6 @@
 import json
 import os
 import glob
-import base64
-
 # Ensure we are in the script's directory
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -15,15 +13,16 @@ font_files = glob.glob("*.ttf") + glob.glob("*.otf")
 fonts = {os.path.splitext(f)[0]: f for f in font_files}
 font_options = "".join([f"<option value=\"{n}\">{n.replace('-', ' ').title()}</option>\n" for n in sorted(fonts.keys())])
 
-# Assets: Project Images (Asset1-14)
+# Assets: Project Images (Referenced by file path for performance)
 asset_html = []
 image_files = sorted(glob.glob("Images/*.png") + glob.glob("Images/*.jpg"))
 for fpath in image_files:
     fname = os.path.basename(fpath)
-    with open(fpath, "rb") as f:
-        b64 = base64.b64encode(f.read()).decode('utf-8')
-        data_uri = f"data:image/{'png' if fname.endswith('.png') else 'jpeg'};base64,{b64}"
-        asset_html.append(f'<img src="{data_uri}" class="tray-item" onclick="addFromTray(this.src)" title="{fname}">')
+    asset_html.append(
+        f'<img src="Images/{fname}" class="tray-item" '
+        f'onclick="addFromTray(this.src)" title="{fname}" '
+        f'loading="lazy" width="80" height="80">'
+    )
 
 asset_gallery_html = "".join(asset_html)
 
