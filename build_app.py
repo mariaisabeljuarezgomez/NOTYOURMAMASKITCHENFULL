@@ -450,7 +450,7 @@ function updateSelectionBar() {{
         document.getElementById('sel-l-height').value = item.style.lineHeight || 1.1;
         document.getElementById('sel-l-spacing').value = item.style.letterSpacing || 0;
         // Default text elements to DESIGN tab if unlocked
-        if(!layoutLocked && !item.locked) setBarTab('design');
+        if(item.type === 'text') setBarTab('design');
     }}
     renderLayerList();
 }}
