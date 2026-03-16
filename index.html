@@ -23,11 +23,18 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 #editor-viewport { position:absolute; top:60px; left:0; right:0; bottom:0; overflow:auto; background:#111; display:flex; align-items:flex-start; justify-content:center; }
 #centering-wrapper { 
     padding: 100px; 
-    min-width: 100%; 
     display: flex; 
     justify-content: center; 
+    width: auto;
 }
-#scaler-wrapper { position:relative; background:#fff; box-shadow:0 10px 50px rgba(0,0,0,0.8); transform-origin: top center; transition: transform 0.1s; }
+#scaler-wrapper { 
+    position:relative; 
+    background:#fff; 
+    box-shadow:0 10px 50px rgba(0,0,0,0.8); 
+    width: 908px !important; 
+    height: 1336px !important; 
+    transform: none !important; 
+}
 #menu-container { position:absolute; top:0; left:0; width:100%; height:100%; overflow:hidden; cursor: default; }
 #menu-bg { width:100%; height:100%; display:block; pointer-events:none; transition: opacity 0.3s; }
 .legacy-bg-hidden { opacity: 0; }
@@ -514,12 +521,8 @@ function importImg(input) { let f = input.files[0]; if(!f) return; let r = new F
 function addFromTray(src) { let id='img_'+Date.now(); docV2.elements.push({id, type:'image', src, x:500, y:500, width:400, height:400, zIndex:20, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content' }); render(); selectById(id); }
 
 function applyZoom(f) {
-    zoomScale = Math.max(0.1, Math.min(5, zoomScale * f));
-    scaler.style.transform = `scale(${zoomScale})`;
-    scaler.style.transformOrigin = 'top center';
-    const centering = document.getElementById('centering-wrapper');
-    const pad = 20;
-    centering.style.height = Math.round(1336.02001953125 * zoomScale + pad * 2) + 'px';
+    // Scaling disabled for mobile UX stability (requested 908px full size)
+    console.log("Zoom disabled: Using full-size scrollable canvas.");
 }
 
 async function save() { sync(); localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2)); await fetch('/api/menu', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(docV2)}); showToast('Project Saved Locally'); }
@@ -598,35 +601,7 @@ window.onload = () => {
 };
 
 function fitCanvasToScreen() {
-    const wrapper = document.getElementById('scaler-wrapper');
-    const centering = document.getElementById('centering-wrapper');
-    const pad = 20;
-    const available = window.innerWidth - pad * 2;
-    const canvasW = 908.4429931640625;
-    const canvasH = 1336.02001953125;
-    if (available < canvasW) {
-        const s = available / canvasW;
-        wrapper.style.transform = `scale(${s})`;
-        wrapper.style.transformOrigin = 'top center';
-        wrapper.style.width = canvasW + 'px';
-        wrapper.style.height = canvasH + 'px';
-        centering.style.height = Math.round(canvasH * s + pad * 2) + 'px';
-        centering.style.overflow = 'visible';
-        centering.style.minWidth = 'unset';
-        centering.style.width = '100%';
-        centering.style.padding = pad + 'px';
-        centering.style.justifyContent = 'center';
-        zoomScale = s;
-    } else {
-        wrapper.style.transform = '';
-        centering.style.height = '';
-        centering.style.overflow = '';
-        centering.style.minWidth = '100%';
-        centering.style.width = '';
-        centering.style.padding = '100px';
-        centering.style.justifyContent = 'center';
-        zoomScale = 1;
-    }
+    console.log("fitCanvasToScreen: Using fixed 908px layout with natural scroll.");
 }
 viewport.onwheel = (e) => { if(e.ctrlKey) { e.preventDefault(); applyZoom(e.deltaY>0?0.9:1.1, e.clientX, e.clientY); } };
 
