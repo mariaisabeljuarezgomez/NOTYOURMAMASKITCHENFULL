@@ -126,16 +126,37 @@ body {{ margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-
 /* Header High Visibility */
 #btn-lock-global {{ font-size: 11px; padding: 8px 15px; border-radius: 20px; }}
 .lock-unlocked {{ background: var(--accent) !important; color: #000 !important; border-color: #000 !important; }}
+
+/* Smart Tooltip Premium Style */
+#smart-tooltip {{
+    position: fixed;
+    display: none;
+    background: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 12px;
+    line-height: 1.5;
+    z-index: 100000;
+    pointer-events: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.1);
+    border-left: 4px solid var(--accent);
+    max-width: 280px;
+    animation: tooltipFade 0.2s ease-out;
+}}
+@keyframes tooltipFade {{ from {{ opacity: 0; transform: translateY(5px); }} to {{ opacity: 1; transform: translateY(0); }} }}
 </style>
 </head>
 <body>
 <div id="toast-container"></div>
+<div id="smart-tooltip"></div>
 <div id="top-header">
     <div id="header-title">MENU EDITOR PRO V2</div>
     <div class="header-actions">
-        <button id="btn-undo" class="btn-ui" onclick="undo()" title="Undo Last Change">↺ UNDO</button>
-        <button id="btn-lock-global" class="btn-ui primary" onclick="toggleGlobalLock()">🔒 LAYOUT LOCKED</button>
-        <button class="btn-ui" onclick="location.reload()">↺ RELOAD</button>
+        <button id="btn-undo" class="btn-ui" onclick="undo()" title="Undo Last Change" data-help="Reverses your last action (move, edit, delete, etc.)">↺ UNDO</button>
+        <button id="btn-lock-global" class="btn-ui primary" onclick="toggleGlobalLock()" data-help="When locked, elements cannot be moved or edited — click to unlock for editing">🔒 LAYOUT LOCKED</button>
+        <button id="btn-reload" class="btn-ui" onclick="location.reload()" data-help="Reloads the page to reset the session if needed.">↺ RELOAD</button>
     </div>
 </div>
 
@@ -163,18 +184,18 @@ for i, s in enumerate(spans):
 
 html_footer = f"""</div></div></main>
 
-<button id="fab" onclick="this.classList.toggle('open'); document.getElementById('bottom-drawer').classList.toggle('closed')">☰</button>
+<button id="fab" onclick="this.classList.toggle('open'); document.getElementById('bottom-drawer').classList.toggle('closed')" data-help="Opens the asset tray and main menu controls.">☰</button>
 
 <div id="bottom-drawer" class="closed">
     <div class="asset-tray">{asset_gallery_html}</div>
     <div class="btn-row">
-        <button id="btn-save" class="btn-ui primary" onclick="save()">💾 Save Project</button>
-        <button id="btn-load" class="btn-ui" onclick="load()">📂 Load Draft</button>
-        <button id="btn-add-text" class="btn-ui" onclick="addText()">＋ Add Text</button>
-        <button id="btn-add-rect" class="btn-ui" onclick="addRect()">⬜ Add Rect</button>
-        <button class="btn-ui" onclick="document.getElementById('in-img').click()">🖼️ Upload Img</button>
-        <button id="btn-toggle-bg" class="btn-ui" onclick="toggleBg()">👁️ Toggle Original BG</button>
-        <button id="btn-png" class="btn-ui accent" onclick="exportPng()">⬇️ Final PNG Export</button>
+        <button id="btn-save" class="btn-ui primary" onclick="save()" data-help="Saves your current layout to the server AND to browser memory as a backup">💾 Save Project</button>
+        <button id="btn-load" class="btn-ui" onclick="load()" data-help="Loads your last saved project from the server or browser backup">📂 Load Draft</button>
+        <button id="btn-add-text" class="btn-ui" onclick="addText()" data-help="Creates a new editable text box in the center of the menu — double-click to type">＋ Add Text</button>
+        <button id="btn-add-rect" class="btn-ui" onclick="addRect()" data-help="Adds a colored rectangle shape — useful for backgrounds, banners, or price tags">⬜ Add Rect</button>
+        <button id="btn-upload-img" class="btn-ui" onclick="document.getElementById('in-img').click()" data-help="Upload a photo or logo from your device to place on the menu">🖼️ Upload Img</button>
+        <button id="btn-toggle-bg" class="btn-ui" onclick="toggleBg()" data-help="Show or hide the original scanned menu background image">👁️ Toggle Original BG</button>
+        <button id="btn-png" class="btn-ui accent" onclick="exportPng()" data-help="Renders the entire menu as a high-resolution PNG file ready to print or share">⬇️ Final PNG Export</button>
     </div>
     <div id="layers-panel"></div>
     <input type="file" id="in-img" style="display:none" accept="image/*" onchange="importImg(this)">
@@ -182,15 +203,15 @@ html_footer = f"""</div></div></main>
 
 <div id="selection-bar">
     <div style="display:flex; gap:6px; margin-right:10px; flex-shrink:0;">
-        <div class="bar-tab active" id="tab-layer" onclick="setBarTab('layer')">LAYER</div>
-        <div class="bar-tab" id="tab-design" onclick="setBarTab('design')">DESIGN</div>
-        <div class="bar-tab" id="tab-arrange" onclick="setBarTab('arrange')">ARRANGE</div>
+        <div class="bar-tab active" id="tab-layer" onclick="setBarTab('layer')" data-help="Controls visibility, opacity, rotation, and layer role">LAYER</div>
+        <div class="bar-tab" id="tab-design" onclick="setBarTab('design')" data-help="Controls font, color, line height, letter spacing (text) or corner radius and stroke (shapes)">DESIGN</div>
+        <div class="bar-tab" id="tab-arrange" onclick="setBarTab('arrange')" data-help="Controls position in the layer stack and center alignment">ARRANGE</div>
     </div>
 
     <div id="bar-content" style="display:flex; align-items:center; gap:10px; flex-grow:1; overflow-x:auto; scrollbar-width:none;">
         <div id="bar-tab-layer" style="display:flex; align-items:center; gap:10px;">
-            <button class="ctrl-btn" id="ctrl-lock" onclick="toggleItemLock()" title="Lock Layer">🔓</button>
-            <button class="ctrl-btn" id="ctrl-visible" onclick="toggleVisibility()" title="Show/Hide">👁️</button>
+            <button class="ctrl-btn" id="ctrl-lock" onclick="toggleItemLock()" title="Lock Layer" data-help="Prevents the element from being moved or edited">🔓</button>
+            <button class="ctrl-btn" id="ctrl-visible" onclick="toggleVisibility()" title="Show/Hide" data-help="Hides or shows the element on the canvas">👁️</button>
             <div class="ctrl-group"><label>Role</label><select id="sel-role" onchange="updateProp('layerRole', this.value)"><option value="content">Content</option><option value="background">Background</option><option value="overlay">Overlay</option></select></div>
             <div class="ctrl-group"><label>Opac</label><input type="range" id="sel-opacity" min="0" max="100" style="width:40px" oninput="updateProp('opacity', this.value/100)"></div>
             <div class="ctrl-group"><label>Rot</label><input type="range" id="sel-rotate" min="0" max="359" style="width:40px" oninput="updateProp('rotation', parseInt(this.value))"></div>
@@ -210,19 +231,19 @@ html_footer = f"""</div></div></main>
         </div>
 
         <div id="bar-tab-arrange" style="display:none; align-items:center; gap:10px;">
-            <button class="btn-ui" style="padding:6px 12px; font-size:10px;" onclick="centerElement('h')">Center H</button>
-            <button class="btn-ui" style="padding:6px 12px; font-size:10px;" onclick="centerElement('v')">Center V</button>
+            <button id="btn-center-h" class="btn-ui" style="padding:6px 12px; font-size:10px;" onclick="centerElement('h')" data-help="Snaps the element to the exact horizontal center of the menu">Center H</button>
+            <button id="btn-center-v" class="btn-ui" style="padding:6px 12px; font-size:10px;" onclick="centerElement('v')" data-help="Snaps the element to the exact vertical center of the menu">Center V</button>
             <div class="ctrl-group">
-                <button class="ctrl-btn" style="width:30px; height:30px" onclick="updateZ(1)" title="Layer Up">⬆️</button>
-                <button class="ctrl-btn" style="width:30px; height:30px" onclick="updateZ(-1)" title="Layer Down">⬇️</button>
-                <button class="ctrl-btn" style="width:30px; height:30px; font-size:12px;" onclick="bringToFront()" title="To Front">⇈</button>
-                <button class="ctrl-btn" style="width:30px; height:30px; font-size:12px;" onclick="sendToBack()" title="To Back">⇊</button>
+                <button id="btn-layer-up" class="ctrl-btn" style="width:30px; height:30px" onclick="updateZ(1)" title="Layer Up" data-help="Moves the element forward in the stacking order">⬆️</button>
+                <button id="btn-layer-down" class="ctrl-btn" style="width:30px; height:30px" onclick="updateZ(-1)" title="Layer Down" data-help="Moves the element backward in the stacking order">⬇️</button>
+                <button id="btn-layer-front" class="ctrl-btn" style="width:30px; height:30px; font-size:12px;" onclick="bringToFront()" title="To Front" data-help="Sends element all the way to the very top of the layer stack">⇈</button>
+                <button id="btn-layer-back" class="ctrl-btn" style="width:30px; height:30px; font-size:12px;" onclick="sendToBack()" title="To Back" data-help="Sends element all the way to the very bottom of the layer stack">⇊</button>
             </div>
         </div>
     </div>
     <div style="display:flex; gap:10px; flex-shrink:0; margin-left:10px; border-left:1px solid #444; padding-left:10px;">
-        <button class="ctrl-btn" style="background:#2980b9" onclick="duplicateEl()" title="Duplicate Layer">📋</button>
-        <button class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c;" onclick="deleteEl()" title="Delete Layer">🗑</button>
+        <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9" onclick="duplicateEl()" title="Duplicate Layer" data-help="Makes an exact copy of the selected layer — text, image, or shape">📋</button>
+        <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c;" onclick="deleteEl()" title="Delete Layer" data-help="Permanently removes the selected element from the menu">🗑</button>
     </div>
 </div>
 
@@ -565,7 +586,11 @@ async function exportPng() {{
     canvas.toBlob(b => {{ let a=document.createElement('a'); a.download='menu_v2_hardened.png'; a.href=URL.createObjectURL(b); a.click(); }}, 'image/png');
 }}
 
-window.onload = () => {{ render(); setTimeout(load, 500); }};
+window.onload = () => {{ 
+    render(); 
+    setTimeout(load, 500); 
+    initSmartTooltips();
+}};
 viewport.onwheel = (e) => {{ if(e.ctrlKey) {{ e.preventDefault(); applyZoom(e.deltaY>0?0.9:1.1, e.clientX, e.clientY); }} }};
 
 window.addEventListener('keydown', (e) => {{
@@ -593,6 +618,56 @@ function onTextBlur(e) {{
         if(historyStack.length > 30) historyStack.shift();
         item.text = e.target.innerText; // put back the new text
     }}
+}}
+
+// Smart Tooltip Logic
+let tooltipTimer = null;
+const tooltipEl = document.getElementById('smart-tooltip');
+
+function showTooltip(el, e) {{
+    const helpText = el.getAttribute('data-help');
+    const tipKey = 'tip_seen_' + (el.id || el.innerText.trim().toLowerCase());
+    
+    if(!helpText || sessionStorage.getItem(tipKey)) return;
+
+    clearTimeout(tooltipTimer);
+    tooltipEl.innerText = helpText;
+    tooltipEl.style.display = 'block';
+    
+    // Position logic
+    const rect = el.getBoundingClientRect();
+    let top = rect.top - tooltipEl.offsetHeight - 10;
+    let left = rect.left + (rect.width / 2) - (tooltipEl.offsetWidth / 2);
+
+    // Collision detection
+    if(top < 10) top = rect.bottom + 10;
+    if(left < 10) left = 10;
+    if(left + tooltipEl.offsetWidth > window.innerWidth - 10) {{
+        left = window.innerWidth - tooltipEl.offsetWidth - 10;
+    }}
+
+    tooltipEl.style.top = top + 'px';
+    tooltipEl.style.left = left + 'px';
+    
+    sessionStorage.setItem(tipKey, 'true');
+    tooltipTimer = setTimeout(hideTooltip, 3000);
+}}
+
+function hideTooltip() {{
+    clearTimeout(tooltipTimer);
+    tooltipEl.style.display = 'none';
+}}
+
+function initSmartTooltips() {{
+    document.body.addEventListener('mouseenter', (e) => {{
+        const target = e.target.closest('[data-help]');
+        if(target) showTooltip(target, e);
+    }}, true);
+
+    document.body.addEventListener('mouseleave', (e) => {{
+        const target = e.target.closest('[data-help]');
+        if(target) hideTooltip();
+    }}, true);
 }}
 </script>
 </body>
