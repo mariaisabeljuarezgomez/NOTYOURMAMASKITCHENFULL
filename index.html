@@ -14,7 +14,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 :root { --primary: #95201d; --accent: #f1c40f; --bg: #1a1a1a; --surface: #2d2d2d; --selection: rgba(241, 196, 15, 0.5); }
 html { height: 100%; overflow: hidden; margin: 0; }
-body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-serif; overflow:hidden; height:100%; color:#fff; }
+body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-serif; overflow:hidden; height:100%; color:#fff; user-select: none; -webkit-user-select: none; }
+
+/* Fix 4 - Bigger Main Viewport Scrollbars */
+#editor-viewport::-webkit-scrollbar { width: 10px; height: 10px; }
+#editor-viewport::-webkit-scrollbar-track { background: #222; }
+#editor-viewport::-webkit-scrollbar-thumb { background: #666; border-radius: 5px; }
+#editor-viewport::-webkit-scrollbar-thumb:hover { background: #999; }
+#editor-viewport { scrollbar-width: thin; scrollbar-color: #666 #222; }
 
 #top-header { position:fixed; top:0; left:0; right:0; height:60px; background:rgba(0,0,0,0.9); backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index:1000; border-bottom:1px solid #333; }
 #header-title { font-weight:700; font-size:16px; letter-spacing:1px; color:var(--accent); }
@@ -81,21 +88,51 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 .btn-ui.accent { background:var(--accent); color:#000; border-color:transparent; font-weight:700; }
 
 /* Selection Bar (Contextual) */
-#selection-bar { position:fixed; bottom:120px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.95); backdrop-filter:blur(10px); padding:12px 20px; border-radius:50px; display:none; align-items:center; gap:12px; z-index:2000; box-shadow:0 15px 40px rgba(0,0,0,0.8); border:1px solid #444; flex-wrap:nowrap; max-width: 90vw; overflow-x: auto; scrollbar-width: none; }
+/* Fix 2 & 3 - Moveable Toolbar & Horizontal Scroll */
+#selection-bar { 
+    position:fixed; 
+    bottom:120px; 
+    left:50%; 
+    transform:translateX(-50%); 
+    background:rgba(0,0,0,0.95); 
+    backdrop-filter:blur(10px); 
+    padding:12px 20px; 
+    border-radius:50px; 
+    display:none; 
+    align-items:center; 
+    gap:12px; 
+    z-index:2000; 
+    box-shadow:0 15px 40px rgba(0,0,0,0.8); 
+    border:1px solid #444; 
+    flex-wrap:nowrap; 
+    max-width: 90vw; 
+    overflow-x: auto; 
+    scrollbar-width: none; 
+    -webkit-overflow-scrolling: touch;
+}
+#bar-content {
+    display:flex; 
+    align-items:center; 
+    gap:10px; 
+    flex-grow:1; 
+    overflow-x:auto; 
+    scrollbar-width:none;
+    -webkit-overflow-scrolling: touch; 
+    min-width: max-content;
+}
+.ctrl-group { 
+    display:flex; 
+    align-items:center; 
+    gap:8px; 
+    border-left:1px solid #333; 
+    padding-left:12px; 
+    flex-shrink: 0; 
+}
 #selection-bar.show { display:flex; animation: barPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 @keyframes barPop { from { opacity:0; transform:translateX(-50%) translateY(20px) scale(0.9); } to { opacity:1; transform:translateX(-50%) translateY(0) scale(1); } }
 
 .bar-tab { padding: 6px 14px; border-radius: 20px; font-size: 10px; font-weight: 800; color: #888; cursor: pointer; transition: 0.2s; background: #111; border: 1px solid #222; text-transform: uppercase; }
 .bar-tab.active { background: var(--primary); color: #fff; border-color: var(--accent); box-shadow: 0 0 10px rgba(149, 32, 29, 0.5); }
-
-.ctrl-btn { background:#222; border:1px solid #333; color:#fff; min-width:34px; height:34px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; transition:0.2s; }
-.ctrl-btn:hover { background:#333; border-color:var(--accent); }
-.ctrl-btn.active { background:var(--primary); border-color:var(--accent); }
-
-.ctrl-group { display:flex; align-items:center; gap:8px; border-left:1px solid #333; padding-left:12px; flex-shrink: 0; }
-.ctrl-group label { font-size:9px; color:#999; text-transform:uppercase; font-weight:700; }
-.ctrl-group select, .ctrl-group input { background:#111; color:#fff; border:1px solid #333; border-radius:4px; padding:6px 8px; font-size:12px; height: 34px; box-sizing: border-box; }
-.btn-ui { min-height: 34px; padding: 8px 16px; }
 
 #selection-bar::-webkit-scrollbar { display: none; }
 #bar-content::-webkit-scrollbar { display: none; }
@@ -170,6 +207,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 </div>
 
 <div id="selection-bar">
+    <div id="bar-handle" style="cursor:grab; padding:4px 8px; color:#666; font-size:18px; flex-shrink:0; touch-action:none;" title="Drag to move toolbar">⠿</div>
     <div style="display:flex; gap:6px; margin-right:10px; flex-shrink:0;">
         <div class="bar-tab active" id="tab-layer" onclick="setBarTab('layer')" data-help="Controls visibility, opacity, rotation, and layer role">LAYER</div>
         <div class="bar-tab" id="tab-design" onclick="setBarTab('design')" data-help="Controls font, color, line height, letter spacing (text) or corner radius and stroke (shapes)">DESIGN</div>
@@ -261,6 +299,44 @@ const viewport = document.getElementById('editor-viewport');
 const scaler = document.getElementById('scaler-wrapper');
 const selBar = document.getElementById('selection-bar');
 const layersPanel = document.getElementById('layers-panel');
+
+// Fix 2 - Moveable Toolbar JS Logic
+let isBarDragged = false;
+const barHandle = document.getElementById('bar-handle');
+if(barHandle) {
+    barHandle.onpointerdown = (e) => {
+        e.preventDefault();
+        barHandle.setPointerCapture(e.pointerId);
+        barHandle.style.cursor = 'grabbing';
+        let startX = e.clientX, startY = e.clientY;
+        let rect = selBar.getBoundingClientRect();
+        let offX = e.clientX - rect.left, offY = e.clientY - rect.top;
+
+        document.onpointermove = (pe) => {
+            if(!isBarDragged) {
+                isBarDragged = true;
+                selBar.style.transform = 'none';
+                selBar.style.margin = '0';
+            }
+            let nx = pe.clientX - offX;
+            let ny = pe.clientY - offY;
+
+            // Viewport Constraints
+            nx = Math.max(0, Math.min(nx, window.innerWidth - selBar.offsetWidth));
+            ny = Math.max(60, Math.min(ny, window.innerHeight - selBar.offsetHeight));
+
+            selBar.style.left = nx + 'px';
+            selBar.style.top = ny + 'px';
+            selBar.style.bottom = 'auto'; // Break the fixed bottom rule
+        };
+
+        document.onpointerup = () => {
+            document.onpointermove = null;
+            document.onpointerup = null;
+            barHandle.style.cursor = 'grab';
+        };
+    };
+}
 
 function showToast(m) {
     const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = `<span>✔</span> ${m}`;
@@ -488,6 +564,11 @@ function toggleGlobalLock() {
     btn.innerText = layoutLocked ? '🔒 LAYOUT LOCKED' : '🔓 LAYOUT UNLOCKED';
     btn.classList.toggle('lock-unlocked', !layoutLocked);
     showToast(layoutLocked ? 'Layout Protected' : 'Edit Mode Active');
+    
+    // Fix 5b - Show zoom controls only when layout is UNLOCKED
+    const zoomControls = document.getElementById('zoom-controls');
+    if(zoomControls) zoomControls.style.display = layoutLocked ? 'none' : 'flex';
+
     render();
 }
 
@@ -520,9 +601,26 @@ function addRect() { pushState(); let id='rect_'+Date.now(); docV2.elements.push
 function importImg(input) { let f = input.files[0]; if(!f) return; let r = new FileReader(); r.onload=(e)=>{ addFromTray(e.target.result); }; r.readAsDataURL(f); }
 function addFromTray(src) { let id='img_'+Date.now(); docV2.elements.push({id, type:'image', src, x:500, y:500, width:400, height:400, zIndex:20, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content' }); render(); selectById(id); }
 
+// Fix 5c - Pinch-vs-drag suppression
+document.addEventListener('touchstart', (e) => {
+    if(e.touches.length > 1 && document.onmousemove) {
+        document.onmousemove = null;
+        document.onmouseup = null;
+        const gcx = document.getElementById('guide-cx');
+        const gcy = document.getElementById('guide-cy');
+        if(gcx) gcx.style.display='none';
+        if(gcy) gcy.style.display='none';
+        sync();
+    }
+}, { passive: true });
+
 function applyZoom(f) {
-    // Scaling disabled for mobile UX stability (requested 908px full size)
-    console.log("Zoom disabled: Using full-size scrollable canvas.");
+    zoomScale = Math.max(0.3, Math.min(4, zoomScale * f));
+    const scalerWrapper = document.getElementById('scaler-wrapper');
+    if(scalerWrapper) {
+        scalerWrapper.style.transform = `scale(${zoomScale})`;
+        scalerWrapper.style.transformOrigin = 'top center';
+    }
 }
 
 async function save() { sync(); localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2)); await fetch('/api/menu', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(docV2)}); showToast('Project Saved Locally'); }
@@ -598,6 +696,14 @@ window.onload = () => {
     initSmartTooltips();
     fitCanvasToScreen();
     window.addEventListener('resize', fitCanvasToScreen);
+
+    // Fix 1 - Font Force-Load on Mobile
+    const fontNames = ['bernard-mt-condensed-regular','century-gothic-bold-italic','century-gothic-bold','century-gothic-regular','centurygothic'];
+    fontNames.forEach(name => { document.fonts.load(`16px "${name}"`); });
+    
+    // Fix 5b - Initial Zoom Controls State
+    const zoomControls = document.getElementById('zoom-controls');
+    if(zoomControls) zoomControls.style.display = 'none';
 };
 
 function fitCanvasToScreen() {
@@ -682,5 +788,12 @@ function initSmartTooltips() {
     }, true);
 }
 </script>
+
+<!-- Fix 5b - Floating Zoom Buttons -->
+<div id="zoom-controls" style="position:fixed; right:20px; bottom:100px; display:flex; flex-direction:column; gap:8px; z-index:2100;">
+    <button onclick="applyZoom(1.2)" style="width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,0.85);color:#fff;border:1px solid #555;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;">＋</button>
+    <button onclick="applyZoom(0.833)" style="width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,0.85);color:#fff;border:1px solid #555;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;">－</button>
+</div>
+
 </body>
 </html>
