@@ -44,6 +44,7 @@ html_start = f"""<!DOCTYPE html>
 {font_css}
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 :root {{ --primary: #95201d; --accent: #f1c40f; --bg: #1a1a1a; --surface: #2d2d2d; --selection: rgba(241, 196, 15, 0.5); }}
+html {{ height: 100%; overflow: hidden; margin: 0; }}
 body {{ margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-serif; overflow:hidden; height:100%; color:#fff; }}
 
 #top-header {{ position:fixed; top:0; left:0; right:0; height:60px; background:rgba(0,0,0,0.9); backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index:1000; border-bottom:1px solid #333; }}
@@ -397,6 +398,23 @@ function attach(el) {{
         }};
         document.onmouseup = () => {{ document.onmousemove = null; gcx.style.display='none'; gcy.style.display='none'; sync(); }};
     }};
+
+    el.ontouchstart = (e) => {{
+        if(e.touches.length !== 1) return;
+        const touch = e.touches[0];
+        const fakeEvent = {{ clientX: touch.clientX, clientY: touch.clientY, stopPropagation: () => e.stopPropagation() }};
+        el.onmousedown(fakeEvent);
+        e.preventDefault();
+    }};
+    el.ontouchmove = (e) => {{
+        if(e.touches.length !== 1) return;
+        const touch = e.touches[0];
+        if(document.onmousemove) document.onmousemove({{ clientX: touch.clientX, clientY: touch.clientY }});
+        e.preventDefault();
+    }};
+    el.ontouchend = () => {{
+        if(document.onmouseup) document.onmouseup();
+    }};
 }}
 
 function selectById(id) {{
@@ -534,10 +552,13 @@ function addRect() {{ pushState(); let id='rect_'+Date.now(); docV2.elements.pus
 function importImg(input) {{ let f = input.files[0]; if(!f) return; let r = new FileReader(); r.onload=(e)=>{{ addFromTray(e.target.result); }}; r.readAsDataURL(f); }}
 function addFromTray(src) {{ let id='img_'+Date.now(); docV2.elements.push({{id, type:'image', src, x:500, y:500, width:400, height:400, zIndex:20, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content' }}); render(); selectById(id); }}
 
-function applyZoom(f, cx, cy) {{
-    const old = zoomScale; zoomScale = Math.max(0.1, Math.min(5, zoomScale * f));
-    scaler.style.width = ({width} * zoomScale) + 'px'; scaler.style.height = ({height} * zoomScale) + 'px';
+function applyZoom(f) {{
+    zoomScale = Math.max(0.1, Math.min(5, zoomScale * f));
     scaler.style.transform = `scale(${{zoomScale}})`;
+    scaler.style.transformOrigin = 'top left';
+    const centering = document.getElementById('centering-wrapper');
+    const pad = 20;
+    centering.style.height = Math.round({height} * zoomScale + pad * 2) + 'px';
 }}
 
 async function save() {{ sync(); localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2)); await fetch('/api/menu', {{method:'POST', headers:{{'Content-Type':'application/json'}}, body:JSON.stringify(docV2)}}); showToast('Project Saved Locally'); }}
@@ -545,7 +566,7 @@ async function load() {{
     try {{ 
         let r = await fetch('/api/menu'); 
         let s = await r.json(); 
-        if(s.elements && s.elements.length >= docV2.elements.length) {{ 
+        if(s.elements && s.elements.length > 0) {{ 
             docV2 = s; 
             layoutLocked = docV2.settings.layoutLocked ?? true; 
             render(); 
@@ -555,7 +576,7 @@ async function load() {{
         let l = localStorage.getItem('menu_pro_draft_v2'); 
         if(l) {{ 
             let parsed = JSON.parse(l); 
-            if(parsed.elements && parsed.elements.length >= docV2.elements.length) {{
+            if(parsed.elements && parsed.elements.length > 0) {{
                 docV2 = parsed; 
                 layoutLocked = docV2.settings.layoutLocked ?? true; 
                 render(); 
