@@ -520,12 +520,7 @@ function updateSelectionBar() {{
     console.log("UpdateSelectionBar. ID:", selectedId);
     if(!selectedId) return;
     
-    // Robust find: handles both literal ID and numeric/txt_/text_ prefix mismatches
-    const item = docV2.elements.find(e => {{
-        const normE = String(e.id).replace(/^(txt_|text_)/, '');
-        const normS = String(selectedId).replace(/^(txt_|text_)/, '');
-        return e.id == selectedId || normE == normS;
-    }});
+    const item = docV2.elements.find(e => e.id === selectedId);
 
     if(!item) {{ 
         console.warn("Item not found for selection:", selectedId);
@@ -607,14 +602,14 @@ function toggleGlobalLock() {{
     btn.classList.toggle('lock-unlocked', !layoutLocked);
     showToast(layoutLocked ? 'Layout Protected' : 'Edit Mode Active');
     
-    // Fix 5b - Show zoom controls only when layout is UNLOCKED
-    const zoomControls = document.getElementById('zoom-controls');
-    if(zoomControls) {{
-        zoomControls.style.display = layoutLocked ? 'none' : 'flex';
-        console.log("Zoom controls visibility:", zoomControls.style.display);
-    }}
+    syncZoomControlsVisibility();
 
     render();
+}}
+
+function syncZoomControlsVisibility() {{
+    const zoomControls = document.getElementById('zoom-controls');
+    if(zoomControls) zoomControls.style.display = layoutLocked ? 'none' : 'flex';
 }}
 
 function toggleItemLock() {{ if(!selectedId) return; pushState(); let item = docV2.elements.find(e=>e.id===selectedId); item.locked = !item.locked; render(); }}
@@ -675,7 +670,7 @@ function applyZoom(f) {{
     }}
 }}
 
-async function save() {{ sync(); localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2)); await fetch('/api/menu', {{method:'POST', headers:{{'Content-Type':'application/json'}}, body:JSON.stringify(docV2)}}); showToast('Project Saved Locally'); }}
+async function save() {{ sync(); docV2.editorState.zoom = zoomScale; localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2)); await fetch('/api/menu', {{method:'POST', headers:{{'Content-Type':'application/json'}}, body:JSON.stringify(docV2)}}); showToast('Project Saved Locally'); }}
 async function load() {{
     try {{ 
         let r = await fetch('/api/menu'); 
@@ -683,7 +678,10 @@ async function load() {{
         if(s.elements && s.elements.length > 0) {{ 
             docV2 = s; 
             layoutLocked = docV2.settings.layoutLocked ?? true; 
+            zoomScale = docV2.editorState?.zoom || 1;
             render(); 
+            applyZoom(1); // reset visual size
+            syncZoomControlsVisibility();
             showToast('Project Loaded');
         }}
     }} catch(e) {{ 
@@ -693,7 +691,10 @@ async function load() {{
             if(parsed.elements && parsed.elements.length > 0) {{
                 docV2 = parsed; 
                 layoutLocked = docV2.settings.layoutLocked ?? true; 
+                zoomScale = docV2.editorState?.zoom || 1;
                 render(); 
+                applyZoom(1);
+                syncZoomControlsVisibility();
             }}
         }} 
     }}
@@ -754,8 +755,8 @@ window.onload = () => {{
     fontNames.forEach(name => {{ document.fonts.load(`16px "${{name}}"`); }});
     
     // Fix 5b - Initial Zoom Controls State
-    const zoomControls = document.getElementById('zoom-controls');
-    if(zoomControls) zoomControls.style.display = layoutLocked ? 'none' : 'flex';
+    zoomScale = 1;
+    syncZoomControlsVisibility();
 }};
 
 function fitCanvasToScreen() {{
@@ -775,19 +776,13 @@ let textEditingOriginal = null;
 function onTextFocus(e) {{ textEditingOriginal = e.target.innerText; }}
 function onTextBlur(e) {{
     if(textEditingOriginal !== e.target.innerText) {{
-        // Push the original state BEFORE syncing the new text
-        const snapshot = JSON.stringify(docV2.elements);
-        // Robust find for history matching
-        const item = docV2.elements.find(el => {{
-            const normE = String(el.id).replace(/^(txt_|text_)/, '');
-            const normS = String(e.target.id).replace(/^(txt_|text_)/, '');
-            return el.id == e.target.id || normE == normS;
-        }});
-        if(item) item.text = textEditingOriginal; // temporarily restore
-        historyStack.push(snapshot);
+        const snapshot = JSON.parse(JSON.stringify(docV2.elements));
+        historyStack.push(JSON.stringify(snapshot));
         if(historyStack.length > 30) historyStack.shift();
-        item.text = e.target.innerText; // put back the new text
+        const item = docV2.elements.find(i => i.id === e.target.id);
+        if(item) item.text = e.target.innerText;
     }}
+}}
 }}
 
 // Smart Tooltip Logic
