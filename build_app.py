@@ -605,7 +605,6 @@ async function exportPng() {{
 
 window.onload = () => {{ 
     render(); 
-    setTimeout(load, 500); 
     initSmartTooltips();
 }};
 viewport.onwheel = (e) => {{ if(e.ctrlKey) {{ e.preventDefault(); applyZoom(e.deltaY>0?0.9:1.1, e.clientX, e.clientY); }} }};
