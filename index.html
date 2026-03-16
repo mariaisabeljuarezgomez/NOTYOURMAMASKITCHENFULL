@@ -23,6 +23,16 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 #editor-viewport::-webkit-scrollbar-thumb:hover { background: #999; }
 #editor-viewport { scrollbar-width: thin; scrollbar-color: #666 #222; }
 
+.ctrl-btn {
+    width:36px; height:36px; border-radius:8px;
+    background:#333; color:#fff; border:1px solid #555;
+    cursor:pointer; font-size:16px; display:flex;
+    align-items:center; justify-content:center;
+    transition:0.2s; flex-shrink:0;
+}
+.ctrl-btn:hover { background:#444; }
+.ctrl-btn.active { background:var(--primary); border-color:var(--accent); }
+
 #top-header { position:fixed; top:0; left:0; right:0; height:60px; background:rgba(0,0,0,0.9); backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index:1000; border-bottom:1px solid #333; }
 #header-title { font-weight:700; font-size:16px; letter-spacing:1px; color:var(--accent); }
 .header-actions { display:flex; gap:10px; align-items:center; }
@@ -575,6 +585,12 @@ function syncZoomControlsVisibility() {
 
 function toggleItemLock() { if(!selectedId) return; pushState(); let item = docV2.elements.find(e=>e.id===selectedId); item.locked = !item.locked; render(); }
 function toggleVisibility() { if(!selectedId) return; pushState(); let item = docV2.elements.find(e=>e.id===selectedId); item.visible = !item.visible; render(); }
+function updateZ(dir) {
+    if(!selectedId) return;
+    pushState();
+    let item = docV2.elements.find(e => e.id === selectedId);
+    if(item) { item.zIndex = (item.zIndex || 10) + dir; render(); }
+}
 function toggleBg() { docV2.settings.legacyBgVisible = !docV2.settings.legacyBgVisible; render(); }
 
 function duplicateEl() {
@@ -631,7 +647,7 @@ function applyZoom(f) {
     }
 }
 
-async function save() { sync(); docV2.editorState.zoom = zoomScale; localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2)); await fetch('/api/menu', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(docV2)}); showToast('Project Saved Locally'); }
+async function save() { sync(); docV2.editorState.zoom = zoomScale; docV2.settings.layoutLocked = layoutLocked; localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2)); await fetch('/api/menu', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(docV2)}); showToast('Project Saved Locally'); }
 async function load() {
     try { 
         let r = await fetch('/api/menu'); 
@@ -723,7 +739,7 @@ window.onload = () => {
 function fitCanvasToScreen() {
     console.log("fitCanvasToScreen: Using fixed 908px layout with natural scroll.");
 }
-viewport.onwheel = (e) => { if(e.ctrlKey) { e.preventDefault(); applyZoom(e.deltaY>0?0.9:1.1, e.clientX, e.clientY); } };
+viewport.onwheel = (e) => { if(e.ctrlKey) { e.preventDefault(); applyZoom(e.deltaY > 0 ? 0.9 : 1.1); } };
 
 window.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
@@ -743,7 +759,6 @@ function onTextBlur(e) {
         const item = docV2.elements.find(i => i.id === e.target.id);
         if(item) item.text = e.target.innerText;
     }
-}
 }
 
 // Smart Tooltip Logic
