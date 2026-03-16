@@ -374,9 +374,17 @@ function attach(el) {{
     }};
 }}
 
-function selectById(id) {{ 
-    selectedId = id; 
-    render(); // High cost but ensures consistency for now
+function selectById(id) {{
+    // Remove selected class from old element without full re-render
+    if(selectedId) {{
+        const oldEl = document.getElementById(selectedId);
+        if(oldEl) oldEl.classList.remove('selected');
+    }}
+    selectedId = id;
+    const newEl = document.getElementById(id);
+    if(newEl) newEl.classList.add('selected');
+    updateSelectionBar();
+    renderLayerList();
 }}
 
 function updateSelectionBar() {{
@@ -419,10 +427,13 @@ function updateSelectionBar() {{
 }}
 
 function deselect() {{
-    console.log("Deselecting");
-    selectedId = null; 
-    if(selBar) selBar.classList.remove('show'); 
-    render();
+    if(selectedId) {{
+        const el = document.getElementById(selectedId);
+        if(el) el.classList.remove('selected');
+    }}
+    selectedId = null;
+    if(selBar) selBar.classList.remove('show');
+    renderLayerList();
 }}
 
 function onCanvasClick(e) {{ if(e.target.id === 'menu-container' || e.target.id === 'elements-layer') deselect(); }}
@@ -561,15 +572,13 @@ let textEditingOriginal = null;
 function onTextFocus(e) {{ textEditingOriginal = e.target.innerText; }}
 function onTextBlur(e) {{
     if(textEditingOriginal !== e.target.innerText) {{
-        // State was NOT pushed on focus (to avoid unnecessary history items if nothing changed)
-        // But if we push it NOW, we've already changed the model? 
-        // No, the model (docV2) is synced via sync() which is called on mouseup or manually.
-        // We should reach into the elements and update it first, then reload? 
-        // Actually, the easiest way: call pushState() with the ORIGINAL state BEFORE the sync.
-        
-        // Let's refine sync() to take an optional override.
-        pushState(); // This takes the state before sync() updates docV2.elements with new text.
-        sync();
+        // Push the original state BEFORE syncing the new text
+        const snapshot = JSON.stringify(docV2.elements);
+        const item = docV2.elements.find(el => el.id === e.target.id);
+        if(item) item.text = textEditingOriginal; // temporarily restore
+        historyStack.push(snapshot);
+        if(historyStack.length > 30) historyStack.shift();
+        item.text = e.target.innerText; // put back the new text
     }}
 }}
 </script>
