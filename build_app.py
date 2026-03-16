@@ -646,7 +646,7 @@ function fitCanvasToScreen() {{
     if (available < canvasW) {{
         const s = available / canvasW;
         wrapper.style.transform = `scale(${{s}})`;
-        wrapper.style.transformOrigin = 'top left';
+        wrapper.style.transformOrigin = 'top center';
         wrapper.style.width = canvasW + 'px';
         wrapper.style.height = canvasH + 'px';
         centering.style.height = Math.round(canvasH * s + pad * 2) + 'px';
@@ -654,7 +654,7 @@ function fitCanvasToScreen() {{
         centering.style.minWidth = 'unset';
         centering.style.width = '100%';
         centering.style.padding = pad + 'px';
-        centering.style.justifyContent = 'flex-start';
+        centering.style.justifyContent = 'center';
         zoomScale = s;
     }} else {{
         wrapper.style.transform = '';
