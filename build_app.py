@@ -58,7 +58,7 @@ body {{ margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-
     display: flex; 
     justify-content: center; 
 }}
-#scaler-wrapper {{ position:relative; background:#fff; box-shadow:0 10px 50px rgba(0,0,0,0.8); transform-origin: top left; transition: transform 0.1s; }}
+#scaler-wrapper {{ position:relative; background:#fff; box-shadow:0 10px 50px rgba(0,0,0,0.8); transform-origin: top center; transition: transform 0.1s; }}
 #menu-container {{ position:absolute; top:0; left:0; width:100%; height:100%; overflow:hidden; cursor: default; }}
 #menu-bg {{ width:100%; height:100%; display:block; pointer-events:none; transition: opacity 0.3s; }}
 .legacy-bg-hidden {{ opacity: 0; }}
@@ -555,7 +555,7 @@ function addFromTray(src) {{ let id='img_'+Date.now(); docV2.elements.push({{id,
 function applyZoom(f) {{
     zoomScale = Math.max(0.1, Math.min(5, zoomScale * f));
     scaler.style.transform = `scale(${{zoomScale}})`;
-    scaler.style.transformOrigin = 'top left';
+    scaler.style.transformOrigin = 'top center';
     const centering = document.getElementById('centering-wrapper');
     const pad = 20;
     centering.style.height = Math.round({height} * zoomScale + pad * 2) + 'px';
