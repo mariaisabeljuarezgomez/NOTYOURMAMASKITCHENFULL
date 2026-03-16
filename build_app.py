@@ -537,8 +537,26 @@ function applyZoom(f, cx, cy) {{
 
 async function save() {{ sync(); localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2)); await fetch('/api/menu', {{method:'POST', headers:{{'Content-Type':'application/json'}}, body:JSON.stringify(docV2)}}); showToast('Project Saved Locally'); }}
 async function load() {{
-    try {{ let r=await fetch('/api/menu'); let s=await r.json(); if(s.elements) {{ docV2=s; layoutLocked = docV2.settings.layoutLocked ?? true; render(); }} }} 
-    catch(e) {{ let l=localStorage.getItem('menu_pro_draft_v2'); if(l) {{ docV2=JSON.parse(l); layoutLocked = docV2.settings.layoutLocked ?? true; render(); }} }}
+    try {{ 
+        let r = await fetch('/api/menu'); 
+        let s = await r.json(); 
+        if(s.elements && s.elements.length >= docV2.elements.length) {{ 
+            docV2 = s; 
+            layoutLocked = docV2.settings.layoutLocked ?? true; 
+            render(); 
+            showToast('Project Loaded');
+        }}
+    }} catch(e) {{ 
+        let l = localStorage.getItem('menu_pro_draft_v2'); 
+        if(l) {{ 
+            let parsed = JSON.parse(l); 
+            if(parsed.elements && parsed.elements.length >= docV2.elements.length) {{
+                docV2 = parsed; 
+                layoutLocked = docV2.settings.layoutLocked ?? true; 
+                render(); 
+            }}
+        }} 
+    }}
 }}
 
 async function exportPng() {{
