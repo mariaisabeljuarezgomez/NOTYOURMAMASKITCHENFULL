@@ -571,7 +571,10 @@ function toggleGlobalLock() {
     
     // Fix 5b - Show zoom controls only when layout is UNLOCKED
     const zoomControls = document.getElementById('zoom-controls');
-    if(zoomControls) zoomControls.style.display = layoutLocked ? 'none' : 'flex';
+    if(zoomControls) {
+        zoomControls.style.display = layoutLocked ? 'none' : 'flex';
+        console.log("Zoom controls visibility:", zoomControls.style.display);
+    }
 
     render();
 }
@@ -714,7 +717,7 @@ window.onload = () => {
     
     // Fix 5b - Initial Zoom Controls State
     const zoomControls = document.getElementById('zoom-controls');
-    if(zoomControls) zoomControls.style.display = 'none';
+    if(zoomControls) zoomControls.style.display = layoutLocked ? 'none' : 'flex';
 };
 
 function fitCanvasToScreen() {
@@ -800,10 +803,10 @@ function initSmartTooltips() {
 }
 </script>
 
-<!-- Fix 5b - Floating Zoom Buttons -->
-<div id="zoom-controls" style="position:fixed; right:20px; bottom:100px; display:flex; flex-direction:column; gap:8px; z-index:2100;">
-    <button onclick="applyZoom(1.2)" style="width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,0.85);color:#fff;border:1px solid #555;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;">＋</button>
-    <button onclick="applyZoom(0.833)" style="width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,0.85);color:#fff;border:1px solid #555;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;">－</button>
+<!-- Fix 5b - Floating Zoom Buttons (High Visibility Debug Mode) -->
+<div id="zoom-controls" style="position:fixed; right:20px; bottom:200px; display:flex; flex-direction:column; gap:12px; z-index:9999; padding:8px; background:rgba(0,0,0,0.8); border:2px solid #ff0000; border-radius:12px;">
+    <button onclick="applyZoom(1.2)" style="width:50px;height:50px;border-radius:50%;background:#000;color:#fff;border:2px solid #fff;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;">＋</button>
+    <button onclick="applyZoom(0.833)" style="width:50px;height:50px;border-radius:50%;background:#000;color:#fff;border:2px solid #fff;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;">－</button>
 </div>
 
 </body>
