@@ -44,7 +44,7 @@ html_start = f"""<!DOCTYPE html>
 {font_css}
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 :root {{ --primary: #95201d; --accent: #f1c40f; --bg: #1a1a1a; --surface: #2d2d2d; --selection: rgba(241, 196, 15, 0.5); }}
-body {{ margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-serif; overflow:hidden; height:100vh; color:#fff; }}
+body {{ margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-serif; overflow:hidden; height:100%; color:#fff; }}
 
 #top-header {{ position:fixed; top:0; left:0; right:0; height:60px; background:rgba(0,0,0,0.9); backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index:1000; border-bottom:1px solid #333; }}
 #header-title {{ font-weight:700; font-size:16px; letter-spacing:1px; color:var(--accent); }}
@@ -626,13 +626,17 @@ function fitCanvasToScreen() {{
         const s = available / canvasW;
         wrapper.style.transform = `scale(${{s}})`;
         wrapper.style.transformOrigin = 'top left';
-        wrapper.style.marginBottom = `-${{Math.round(canvasH * (1 - s))}}px`;
+        wrapper.style.width = canvasW + 'px';
+        wrapper.style.height = canvasH + 'px';
+        centering.style.height = Math.round(canvasH * s) + 'px';
+        centering.style.overflow = 'hidden';
         centering.style.padding = pad + 'px';
         centering.style.justifyContent = 'flex-start';
         zoomScale = s;
     }} else {{
         wrapper.style.transform = '';
-        wrapper.style.marginBottom = '0';
+        centering.style.height = '';
+        centering.style.overflow = '';
         centering.style.padding = '100px';
         centering.style.justifyContent = 'center';
         zoomScale = 1;
