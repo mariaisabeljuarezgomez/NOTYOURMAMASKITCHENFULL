@@ -589,8 +589,10 @@ function fitCanvasToScreen() {
         wrapper.style.transformOrigin = 'top left';
         wrapper.style.width = canvasW + 'px';
         wrapper.style.height = canvasH + 'px';
-        centering.style.height = Math.round(canvasH * s) + 'px';
-        centering.style.overflow = 'hidden';
+        centering.style.height = Math.round(canvasH * s + pad * 2) + 'px';
+        centering.style.overflow = 'visible';
+        centering.style.minWidth = 'unset';
+        centering.style.width = '100%';
         centering.style.padding = pad + 'px';
         centering.style.justifyContent = 'flex-start';
         zoomScale = s;
@@ -598,6 +600,8 @@ function fitCanvasToScreen() {
         wrapper.style.transform = '';
         centering.style.height = '';
         centering.style.overflow = '';
+        centering.style.minWidth = '100%';
+        centering.style.width = '';
         centering.style.padding = '100px';
         centering.style.justifyContent = 'center';
         zoomScale = 1;
