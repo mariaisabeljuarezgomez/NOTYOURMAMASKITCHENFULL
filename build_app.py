@@ -46,6 +46,7 @@ html_start = f"""<!DOCTYPE html>
 <link rel="preload" as="image" href="menu-bg-preview.jpg" fetchpriority="high">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 <title>Menu Editor Pro V2 - UX Hardened</title>
+<meta name="description" content="Menu Editor Pro — Professional restaurant menu layout tool. Edit, save, and export print-ready menus with drag-and-drop text, images, and shapes.">
 <style>
 {font_css}
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
@@ -156,6 +157,18 @@ body {{ margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-
     scrollbar-width: none; 
     -webkit-overflow-scrolling: touch;
 }}
+
+@media (max-width: 768px) {{
+    #selection-bar {{
+        left: 2vw !important;
+        right: 2vw !important;
+        transform: none !important;
+        width: 96vw;
+        bottom: 100px;
+        border-radius: 16px;
+    }}
+}}
+
 #bar-content {{
     display:flex; 
     align-items:center; 
@@ -226,6 +239,7 @@ body {{ margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-
 <div id="top-header">
     <div id="header-title">MENU EDITOR PRO V2</div>
     <div class="header-actions">
+        <button id="btn-save-header" class="btn-ui" onclick="save()" data-help="Saves your current layout to the server and browser backup" style="background:#27ae60; border-color:#2ecc71; color:#fff;">💾 Save</button>
         <button id="btn-undo" class="btn-ui" onclick="undo()" title="Undo Last Change" data-help="Reverses your last action (move, edit, delete, etc.)">↺ Undo Last Change</button>
         <button id="btn-lock-global" class="btn-ui primary" onclick="toggleGlobalLock()" data-help="When locked, elements cannot be moved or edited — click to unlock for editing">🔒 Layout Locked</button>
         <button id="btn-reload" class="btn-ui" onclick="location.reload()" data-help="Reloads the page to reset the session if needed.">↺ RELOAD</button>
@@ -256,7 +270,7 @@ for i, s in enumerate(spans):
 
 html_footer = f"""</div></div></main>
 
-<button id="fab-main" class="fab" onclick="this.classList.toggle('open'); openDrawer()" data-help="Open/Close Editing Tools">🛠️</button>
+<button id="fab" class="fab" onclick="this.classList.toggle('open'); openDrawer()" data-help="Open/Close Editing Tools">🛠️</button>
 
 <div id="bottom-drawer" class="closed">
     <div class="asset-tray">{asset_gallery_html}</div>
