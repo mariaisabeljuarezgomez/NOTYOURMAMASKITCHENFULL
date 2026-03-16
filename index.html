@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="preload" as="image" href="menu-bg-preview.jpg" fetchpriority="high">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 <title>Menu Editor Pro V2 - UX Hardened</title>
 <style>
-@font-face { font-family: 'bernard-mt-condensed-regular'; src: url('bernard-mt-condensed-regular.ttf') format('truetype'); font-display: swap; }
-@font-face { font-family: 'century-gothic-bold-italic'; src: url('century-gothic-bold-italic.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'bernard-mt-condensed-regular'; src: url('bernard-mt-condensed-regular.ttf') format('truetype'); font-display: optional; }
+@font-face { font-family: 'century-gothic-bold-italic'; src: url('century-gothic-bold-italic.ttf') format('truetype'); font-display: optional; }
 @font-face { font-family: 'century-gothic-bold'; src: url('century-gothic-bold.ttf') format('truetype'); font-display: swap; }
 @font-face { font-family: 'century-gothic-regular'; src: url('century-gothic-regular.ttf') format('truetype'); font-display: swap; }
-@font-face { font-family: 'centurygothic'; src: url('centurygothic.ttf') format('truetype'); font-display: swap; }
-
+@font-face { font-family: 'centurygothic'; src: url('centurygothic.ttf') format('truetype'); font-display: optional; }
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 :root { --primary: #95201d; --accent: #f1c40f; --bg: #1a1a1a; --surface: #2d2d2d; --selection: rgba(241, 196, 15, 0.5); }
 html { height: 100%; overflow: hidden; margin: 0; }
@@ -199,17 +199,17 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     <div id="centering-wrapper">
         <div id="scaler-wrapper" style="width:908.4429931640625px; height:1336.02001953125px;">
             <div id="menu-container" onclick="onCanvasClick(event)">
-                <img id="menu-bg" src="menu-bg-preview.jpg" alt="BG">
+                <img id="menu-bg" src="menu-bg-preview.jpg" alt="BG" fetchpriority="high">
                 <div id="elements-layer" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div>
                 <div id="guide-cx" class="guide guide-v" style="left:50%"></div>
                 <div id="guide-cy" class="guide guide-h" style="top:50%"></div>
             </div>
 </div></div></main>
 
-<button id="fab" onclick="this.classList.toggle('open'); document.getElementById('bottom-drawer').classList.toggle('closed')" data-help="Opens the asset tray and main menu controls.">☰</button>
+<button id="fab-main" class="fab" onclick="this.classList.toggle('open'); openDrawer()" data-help="Open/Close Editing Tools">🛠️</button>
 
 <div id="bottom-drawer" class="closed">
-    <div class="asset-tray"><img src="Images/Asset1.png" class="tray-item" onclick="addFromTray(this.src)" title="Asset1.png" loading="lazy" width="80" height="80"><img src="Images/Asset10.png" class="tray-item" onclick="addFromTray(this.src)" title="Asset10.png" loading="lazy" width="80" height="80"><img src="Images/Asset11.png" class="tray-item" onclick="addFromTray(this.src)" title="Asset11.png" loading="lazy" width="80" height="80"><img src="Images/Asset12.png" class="tray-item" onclick="addFromTray(this.src)" title="Asset12.png" loading="lazy" width="80" height="80"><img src="Images/Asset13.png" class="tray-item" onclick="addFromTray(this.src)" title="Asset13.png" loading="lazy" width="80" height="80"><img src="Images/Asset14.png" class="tray-item" onclick="addFromTray(this.src)" title="Asset14.png" loading="lazy" width="80" height="80"><img src="Images/Asset2.png" class="tray-item" onclick="addFromTray(this.src)" title="Asset2.png" loading="lazy" width="80" height="80"><img src="Images/Asset3.png" class="tray-item" onclick="addFromTray(this.src)" title="Asset3.png" loading="lazy" width="80" height="80"><img src="Images/Asset4.png" class="tray-item" onclick="addFromTray(this.src)" title="Asset4.png" loading="lazy" width="80" height="80"><img src="Images/Asset6.png" class="tray-item" onclick="addFromTray(this.src)" title="Asset6.png" loading="lazy" width="80" height="80"><img src="Images/Asset7.png" class="tray-item" onclick="addFromTray(this.src)" title="Asset7.png" loading="lazy" width="80" height="80"><img src="Images/Asset8.png" class="tray-item" onclick="addFromTray(this.src)" title="Asset8.png" loading="lazy" width="80" height="80"><img src="Images/Asset9.png" class="tray-item" onclick="addFromTray(this.src)" title="Asset9.png" loading="lazy" width="80" height="80"></div>
+    <div class="asset-tray"><img data-src="Images/Asset1.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset1" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset10.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset10" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset11.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset11" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset12.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset12" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset13.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset13" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset14.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset14" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset2.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset2" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset3.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset3" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset4.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset4" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset6.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset6" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset7.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset7" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset8.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset8" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset9.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset9" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"></div>
     <div class="btn-row">
         <button id="btn-save" class="btn-ui primary" onclick="save()" data-help="Saves your current layout to the server AND to browser memory as a backup">💾 Save Session</button>
         <button id="btn-load" class="btn-ui" onclick="load()" data-help="Loads your last saved project from the server or browser backup">📂 Load Session</button>
@@ -306,6 +306,17 @@ function pushState() {
     if(historyStack.length > 30) historyStack.shift();
     historyStack.push(JSON.stringify(docV2.elements));
     console.log("State Pushed. Stack Size:", historyStack.length);
+}
+
+function openDrawer() {
+    const drawer = document.getElementById('bottom-drawer');
+    drawer.classList.toggle('closed');
+    if (!drawer.dataset.loaded) {
+        drawer.querySelectorAll('img[data-src]').forEach(img => {
+            img.src = img.dataset.src;
+        });
+        drawer.dataset.loaded = 'true';
+    }
 }
 
 function undo() {

@@ -19,9 +19,9 @@ image_files = sorted(glob.glob("Images/*.png") + glob.glob("Images/*.jpg"))
 for fpath in image_files:
     fname = os.path.basename(fpath)
     asset_html.append(
-        f'<img src="Images/{fname}" class="tray-item" '
-        f'onclick="addFromTray(this.src)" title="{fname}" '
-        f'loading="lazy" width="80" height="80">'
+        f'<img data-src="Images/{fname}" src="" class="tray-item" '
+        f'onclick="addFromTray(this.dataset.src)" title="{fname.replace(".png","").replace(".jpg","")}" '
+        f'data-help="Click to add this image to your menu" loading="lazy" width="80" height="80">'
     )
 
 asset_gallery_html = "".join(asset_html)
@@ -32,12 +32,18 @@ with open("raw_coords.json", "r", encoding="utf-8") as f:
 width, height = raw_data["width"], raw_data["height"]
 spans = raw_data["text_data"]
 
-font_css = "".join([f"@font-face {{ font-family: '{n}'; src: url('{f}') format('truetype'); font-display: swap; }}\n" for n, f in fonts.items()])
+# Sort fonts: critical vs non-critical
+font_css_list = []
+for n, f in fonts.items():
+    disp = "swap" if n in ["century-gothic-bold", "century-gothic-regular"] else "optional"
+    font_css_list.append(f"@font-face {{ font-family: '{n}'; src: url('{f}') format('truetype'); font-display: {disp}; }}")
+font_css = "\n".join(font_css_list)
 
 html_start = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="preload" as="image" href="menu-bg-preview.jpg" fetchpriority="high">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 <title>Menu Editor Pro V2 - UX Hardened</title>
 <style>
@@ -230,7 +236,7 @@ body {{ margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-
     <div id="centering-wrapper">
         <div id="scaler-wrapper" style="width:{width}px; height:{height}px;">
             <div id="menu-container" onclick="onCanvasClick(event)">
-                <img id="menu-bg" src="{bg_url}" alt="BG">
+                <img id="menu-bg" src="{bg_url}" alt="BG" fetchpriority="high">
                 <div id="elements-layer" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div>
                 <div id="guide-cx" class="guide guide-v" style="left:50%"></div>
                 <div id="guide-cy" class="guide guide-h" style="top:50%"></div>
@@ -250,7 +256,7 @@ for i, s in enumerate(spans):
 
 html_footer = f"""</div></div></main>
 
-<button id="fab" onclick="this.classList.toggle('open'); document.getElementById('bottom-drawer').classList.toggle('closed')" data-help="Opens the asset tray and main menu controls.">☰</button>
+<button id="fab-main" class="fab" onclick="this.classList.toggle('open'); openDrawer()" data-help="Open/Close Editing Tools">🛠️</button>
 
 <div id="bottom-drawer" class="closed">
     <div class="asset-tray">{asset_gallery_html}</div>
@@ -345,6 +351,17 @@ function pushState() {{
     if(historyStack.length > 30) historyStack.shift();
     historyStack.push(JSON.stringify(docV2.elements));
     console.log("State Pushed. Stack Size:", historyStack.length);
+}}
+
+function openDrawer() {{
+    const drawer = document.getElementById('bottom-drawer');
+    drawer.classList.toggle('closed');
+    if (!drawer.dataset.loaded) {{
+        drawer.querySelectorAll('img[data-src]').forEach(img => {{
+            img.src = img.dataset.src;
+        }});
+        drawer.dataset.loaded = 'true';
+    }}
 }}
 
 function undo() {{
