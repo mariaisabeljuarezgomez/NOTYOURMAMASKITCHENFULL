@@ -470,7 +470,7 @@ function render() {
         
         if(d.type==='text') { 
             el.innerText = d.text; 
-            el.contentEditable = (!d.locked && d.visible); 
+            el.contentEditable = (!d.locked && d.visible) ? 'true' : 'false'; 
             el.onfocus = onTextFocus;
             el.onblur = onTextBlur;
             el.ondblclick = (e) => { if(!d.locked) el.focus(); e.stopPropagation(); };
