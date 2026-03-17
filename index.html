@@ -55,9 +55,9 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 #menu-bg { width:100%; height:100%; display:block; pointer-events:none; transition: opacity 0.3s; }
 .legacy-bg-hidden { opacity: 0; }
 
-.editable-element { position:absolute; cursor:pointer; transition: outline 0.1s, opacity 0.2s, border-radius 0.2s; user-select:none; z-index:10; transform-origin: center; box-sizing: border-box; }
+.editable-element { position:absolute; cursor:pointer; transition: outline 0.1s, opacity 0.2s, border-radius 0.2s; user-select:none; z-index:auto; transform-origin: center; box-sizing: border-box; }
 .editable-element:hover { outline: 2px solid var(--accent); }
-.editable-element.selected { outline: 3px solid var(--accent); box-shadow: 0 0 15px var(--selection); z-index: 100 !important; }
+.editable-element.selected { outline: 3px solid var(--accent); box-shadow: 0 0 15px var(--selection); z-index: 999 !important; }
 .editable-element.locked { cursor: default; }
 .editable-element.hidden-editor { opacity: 0.2 !important; outline: 1px dashed #666; }
 
@@ -813,7 +813,19 @@ async function resetToOriginal() {
 
 function bringToFront() { if(!selectedId) return; pushState(); let maxZ = Math.max(...docV2.elements.map(e => e.zIndex || 10)); let item=docV2.elements.find(e=>e.id===selectedId); if(item) item.zIndex = maxZ + 1; render(); }
 function sendToBack() { if(!selectedId) return; pushState(); let minZ = Math.min(...docV2.elements.map(e => e.zIndex || 10)); let item=docV2.elements.find(e=>e.id===selectedId); if(item) item.zIndex = minZ - 1; render(); }
-function centerElement(dir) { if(!selectedId) return; pushState(); let item = docV2.elements.find(e=>e.id===selectedId); let el = document.getElementById(selectedId); if(!item || !el) return; if(dir==='h') item.x = (BASE_W/2) - (el.offsetWidth/2); if(dir==='v') item.y = (BASE_H/2) - (el.offsetHeight/2); render(); sync(); }
+function centerElement(dir) {
+    if(!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    const el = document.getElementById(selectedId);
+    if(!item || !el) return;
+    const w = item.width || el.offsetWidth;
+    const h = item.height || el.offsetHeight;
+    if(dir==='h') item.x = (BASE_W / 2) - (w / 2);
+    if(dir==='v') item.y = (BASE_H / 2) - (h / 2);
+    render();
+    sync();
+}
 function deleteEl() { if(!selectedId) return; pushState(); docV2.elements = docV2.elements.filter(e => e.id !== selectedId); selectedId = null; render(); deselect(); }
 
 function addText() { 
