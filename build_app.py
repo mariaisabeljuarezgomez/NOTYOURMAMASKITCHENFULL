@@ -390,10 +390,11 @@ const PAD = 100;
 let layoutLocked = true, selectedId = null, zoomScale = 1;
 let historyStack = [];
 
-function pushState() {{
+function pushState(snapshot) {{
     // Keep max 30 states for memory hygiene
-    if(historyStack.length > 30) historyStack.shift();
-    historyStack.push(JSON.stringify(docV2.elements));
+    if(historyStack.length >= 30) historyStack.shift();
+    const state = snapshot || JSON.stringify(docV2.elements);
+    historyStack.push(state);
     console.log("State Pushed. Stack Size:", historyStack.length);
 }}
 
@@ -1114,7 +1115,14 @@ async function exportPng() {{
         if(el.type==='text') {{ 
             ctx.font=`${{el.style.fontSize*S}}px "${{el.style.fontFamily}}"`; 
             ctx.fillStyle=el.style.color; ctx.textBaseline='top'; 
-            ctx.fillText(el.text, L, T); 
+            if(ctx.letterSpacing !== undefined) {{
+                ctx.letterSpacing = (el.style.letterSpacing || 0) + 'px';
+            }}
+            const lineH = el.style.fontSize * S * (el.style.lineHeight || 1.1);
+            const lines = el.text.split('\n');
+            lines.forEach((line, i) => {{
+                ctx.fillText(line, L, T + i * lineH);
+            }});
         }}
         else if(el.type==='image') {{ 
             let img = new Image();
@@ -1237,8 +1245,7 @@ function onTextBlur(e) {{
             item.text = textEditingOriginal;        // restore original first
             const snapshot = JSON.stringify(docV2.elements); // NOW snapshot
             item.text = e.target.innerText;         // apply new value
-            if(historyStack.length >= 30) historyStack.shift(); // pre-trim
-            historyStack.push(snapshot);
+            pushState(snapshot);
             sync();
         }}
     }}
