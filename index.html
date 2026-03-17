@@ -1066,8 +1066,7 @@ async function exportPng() {
         let L = el.x * S, T = el.y * S, W = (el.width||0) * S, H = (el.height||0) * S;
         if(el.type==='text') { 
             ctx.font=`${el.style.fontSize*S}px "${el.style.fontFamily}"`; 
-            const _lines = el.text.split('
-');
+            const _lines = el.text.split('\n');
             W = Math.max(..._lines.map(l => ctx.measureText(l).width));
             H = el.style.fontSize * S * (el.style.lineHeight || 1.1) * _lines.length;
         }
@@ -1089,8 +1088,7 @@ async function exportPng() {
                 ctx.letterSpacing = (el.style.letterSpacing || 0) + 'px';
             }
             const lineH = el.style.fontSize * S * (el.style.lineHeight || 1.1);
-            const lines = el.text.split('
-');
+            const lines = el.text.split('\n');
             lines.forEach((line, i) => {
                 ctx.fillText(line, L, T + i * lineH);
             });
