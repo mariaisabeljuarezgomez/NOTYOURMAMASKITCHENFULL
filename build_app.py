@@ -11,7 +11,7 @@ bg_master = "menu-bg.png"
 # Assets: Fonts
 font_files = glob.glob("*.ttf") + glob.glob("*.otf")
 fonts = {os.path.splitext(f)[0]: f for f in font_files}
-font_options = "".join([f"<option value=\"{n}\">{n.replace('-', ' ').title()}</option>\n" for n in sorted(fonts.keys())])
+font_options = "".join([f"<option value=\"{n}\">{n.replace('-', ' ').title()}</option>\n" for n in sorted(fonts.keys()) if n != 'centurygothic'])
 
 # Assets: Project Images (Referenced by file path for performance)
 asset_html = []
@@ -33,13 +33,11 @@ width, height = raw_data["width"], raw_data["height"]
 spans = raw_data["text_data"]
 
 # Sort fonts: critical vs non-critical
-font_css_list = [
-    f"@font-face {{ font-family: 'bernard-mt-condensed-regular'; src: url('bernard-mt-condensed-regular.ttf') format('truetype'); font-display: swap; }}",
-    f"@font-face {{ font-family: 'century-gothic-bold-italic'; src: url('century-gothic-bold-italic.ttf') format('truetype'); font-display: swap; }}",
-    f"@font-face {{ font-family: 'century-gothic-bold'; src: url('century-gothic-bold.ttf') format('truetype'); font-display: swap; }}",
-    f"@font-face {{ font-family: 'century-gothic-regular'; src: url('century-gothic-regular.ttf') format('truetype'); font-display: swap; }}",
-    f"@font-face {{ font-family: 'centurygothic'; src: url('centurygothic.ttf') format('truetype'); font-display: swap; }}"
-]
+font_css_list = []
+for n, f in fonts.items():
+    if n == 'centurygothic': continue
+    disp = "swap" if n in ["century-gothic-bold", "century-gothic-regular", "bernard-mt-condensed-regular", "century-gothic-bold-italic"] else "optional"
+    font_css_list.append(f"@font-face {{ font-family: '{n}'; src: url('{f}') format('truetype'); font-display: {disp}; }}")
 font_css = "\n".join(font_css_list)
 
 html_start = f"""<!DOCTYPE html>
@@ -562,7 +560,7 @@ function injectResizeHandles(el) {{
             e.stopPropagation(); e.preventDefault();
             h.setPointerCapture(e.pointerId);
             const item = docV2.elements.find(i => i.id === el.id);
-            if (!item) return;
+            if (!item || item.locked) return;
             pushState();
             const startX=e.clientX, startY=e.clientY;
             const naturalW = el.naturalWidth || 400;
@@ -573,7 +571,9 @@ function injectResizeHandles(el) {{
             const ar = startW/startH;
             h.onpointermove = (pe) => {{
                 const scalerRect = document.getElementById('scaler-wrapper').getBoundingClientRect();
-                const dx=(pe.clientX-startX)/zoomScale, dy=(pe.clientY-startY)/zoomScale;
+                const currentScale = scalerRect.width / BASE_W;
+                const dx = (pe.clientX - startX) / currentScale;
+                const dy = (pe.clientY - startY) / currentScale;
                 let nW,nH,nX=startLeft,nY=startTop;
                 if(corner==='se'){{ nW=Math.max(40,startW+dx); nH=nW/ar; }}
                 else if(corner==='sw'){{ nW=Math.max(40,startW-dx); nH=nW/ar; nX=startLeft+(startW-nW); }}
@@ -595,8 +595,9 @@ function attach(el) {{
         e.stopPropagation();
         const _itemData = d(el);
         selectById(el.id);
-        
-        // Bug B Fix: Ensure saved images have explicit dimensions before handles are injected
+
+        // Always init dimensions and inject resize handles for images,
+        // even if layout is globally locked
         if (_itemData && _itemData.type === 'image') {{
             if (!_itemData.width || !_itemData.height) {{
                 const initImg = document.getElementById(_itemData.id);
@@ -609,7 +610,8 @@ function attach(el) {{
             }}
             injectResizeHandles(el);
         }}
-        
+
+        // ONLY block DRAG/MOVE when locked — resize handles have their own pointerdown
         if(layoutLocked || _itemData.locked || (docV2.settings.backgroundLayerLocked && _itemData.layerRole==='background')) return;
         
         pushState(); // Store state BEFORE move
@@ -968,8 +970,7 @@ window.onload = async () => {{
         'bernard-mt-condensed-regular',
         'century-gothic-bold-italic',
         'century-gothic-bold',
-        'century-gothic-regular',
-        'centurygothic'
+        'century-gothic-regular'
     ];
 
     // Step 3: Wait for fonts, then render once
