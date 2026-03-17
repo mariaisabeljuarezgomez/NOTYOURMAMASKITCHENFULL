@@ -194,13 +194,8 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 .modal-actions { display:flex; gap:15px; justify-content:center; }
 @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
 
-.resize-handle {
-    position:absolute; width:20px; height:20px;
-    background:#f1c40f; border:2px solid #000;
-    border-radius:50%; z-index:9999;
-    touch-action:none; user-select:none;
-}
-.editable-element:not(.selected) .resize-handle { display:none; }
+    .resize-handle { display: none; }
+    .editable-element.selected .resize-handle { display: block; }
 </style>
 </head>
 <body>
@@ -587,10 +582,6 @@ function attach(el) {
         document.onmouseup = () => { document.onmousemove = null; gcx.style.display='none'; gcy.style.display='none'; sync(); };
     };
 
-    const _itemData = docV2.elements.find(e => e.id === el.id);
-    if (_itemData && _itemData.type === 'image') {
-        injectResizeHandles(el);
-    }
 
     el.ontouchstart = (e) => {
         if(e.touches.length !== 1) return;
