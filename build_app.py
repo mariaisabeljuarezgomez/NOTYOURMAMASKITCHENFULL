@@ -105,6 +105,19 @@ body {{ margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-
 .image-wrapper img {{ width:100%; height:100%; object-fit:contain; pointer-events:none; display:block; }}
 .shape-object {{ overflow: hidden; }}
 
+.resize-handle {{
+    display: none;
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: #f1c40f;
+    border: 2px solid #000;
+    border-radius: 50%;
+    z-index: 9999;
+    box-sizing: border-box;
+}}
+.editable-element.selected .resize-handle {{ display: block; }}
+
 /* Snapping Guides */
 .guide {{ position:absolute; pointer-events:none; border: 1px dashed var(--accent); z-index: 500; display:none; }}
 .guide-h {{ left:0; width: 100%; height: 0; }}
@@ -234,8 +247,7 @@ body {{ margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-
 .modal-actions {{ display:flex; gap:15px; justify-content:center; }}
 @keyframes fadeIn {{ from {{ opacity:0; }} to {{ opacity:1; }} }}
 
-    .resize-handle {{ display: none; }}
-    .editable-element.selected .resize-handle {{ display: block; }}
+    /* Handles are styled in the global sheet above */
 </style>
 </head>
 <body>
@@ -524,6 +536,7 @@ function render() {{
         if(d.width) el.style.width = d.width+'px'; if(d.height) el.style.height = d.height+'px';
         
         elementsLayer.appendChild(el); attach(el);
+        if(selectedId === d.id && d.type === 'image') injectResizeHandles(el);
     }});
     renderLayerList();
     if(selectedId) updateSelectionBar();
@@ -576,9 +589,9 @@ function injectResizeHandles(el) {{
             const item = docV2.elements.find(i => i.id === el.id);
             if (!item || item.locked) return;
             pushState();
-            const startX=e.clientX, startY=e.clientY;
-            const naturalW = el.naturalWidth || 400;
-            const naturalH = el.naturalHeight || 400;
+            const imgChild = el.querySelector('img');
+            const naturalW = imgChild?.naturalWidth || 400;
+            const naturalH = imgChild?.naturalHeight || 400;
             const startW = item.width || el.offsetWidth || naturalW;
             const startH = item.height || el.offsetHeight || naturalH;
             const startLeft=item.x, startTop=item.y;
@@ -614,7 +627,7 @@ function attach(el) {{
         // even if layout is globally locked
         if (_itemData && _itemData.type === 'image') {{
             if (!_itemData.width || !_itemData.height) {{
-                const initImg = document.getElementById(_itemData.id);
+                const initImg = document.getElementById(_itemData.id)?.querySelector('img');
                 if (initImg && initImg.naturalWidth) {{
                     _itemData.width = initImg.naturalWidth > 800 ? 400 : initImg.naturalWidth;
                     _itemData.height = initImg.naturalHeight > 800 ? 400 : initImg.naturalHeight;
