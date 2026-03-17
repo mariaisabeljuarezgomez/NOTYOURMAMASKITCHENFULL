@@ -1079,6 +1079,7 @@ async function exportPng() {{
         exportToastEl.innerHTML = '<span>⏳</span> Exporting... please wait';
         exportToastEl.style.cssText = 'background:rgba(0,0,0,0.95); color:#fff; padding:10px 20px; border-radius:30px; border:1px solid var(--accent); margin-bottom:10px; display:flex; align-items:center; gap:8px; font-size:13px;';
         document.getElementById('toast-container').appendChild(exportToastEl);
+        await document.fonts.ready;
         sync(); // Ensure all element positions/text are current before canvas render
 
         // 12in × 18in @ 300 DPI = 3600 × 5400 px
@@ -1100,7 +1101,12 @@ async function exportPng() {{
         ctx.save();
         ctx.globalAlpha = el.opacity ?? 1;
         let L = el.x * S, T = el.y * S, W = (el.width||0) * S, H = (el.height||0) * S;
-        if(el.type==='text') {{ ctx.font=`${{el.style.fontSize*S}}px "${{el.style.fontFamily}}"`; W=ctx.measureText(el.text).width; H=el.style.fontSize*S; }}
+        if(el.type==='text') {{ 
+            ctx.font=`${{el.style.fontSize*S}}px "${{el.style.fontFamily}}"`; 
+            const _lines = el.text.split('\n');
+            W = Math.max(..._lines.map(l => ctx.measureText(l).width));
+            H = el.style.fontSize * S * (el.style.lineHeight || 1.1) * _lines.length;
+        }}
         
         if(el.rotation) {{
             let cx = L + W/2, cy = T + H/2;
@@ -1115,7 +1121,7 @@ async function exportPng() {{
         if(el.type==='text') {{ 
             ctx.font=`${{el.style.fontSize*S}}px "${{el.style.fontFamily}}"`; 
             ctx.fillStyle=el.style.color; ctx.textBaseline='top'; 
-            if(ctx.letterSpacing !== undefined) {{
+            if('letterSpacing' in ctx) {{
                 ctx.letterSpacing = (el.style.letterSpacing || 0) + 'px';
             }}
             const lineH = el.style.fontSize * S * (el.style.lineHeight || 1.1);
