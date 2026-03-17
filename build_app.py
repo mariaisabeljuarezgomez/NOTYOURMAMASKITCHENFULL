@@ -1068,8 +1068,15 @@ async function load() {{
     }}
 }}
 
+let _exportInProgress = false;
 async function exportPng() {{
-    showToast('⏳ Exporting... please wait');
+    if (_exportInProgress) {{ showToast('⏳ Export already in progress...'); return; }}
+    _exportInProgress = true;
+    const exportToastEl = document.createElement('div');
+    exportToastEl.className = 'toast';
+    exportToastEl.innerHTML = '<span>⏳</span> Exporting... please wait';
+    exportToastEl.style.cssText = 'background:rgba(0,0,0,0.95); color:#fff; padding:10px 20px; border-radius:30px; border:1px solid var(--accent); margin-bottom:10px; display:flex; align-items:center; gap:8px; font-size:13px;';
+    document.getElementById('toast-container').appendChild(exportToastEl);
     // 12in × 18in @ 300 DPI = 3600 × 5400 px
     const TARGET_W = 3600;
     const S = TARGET_W / BASE_W;
@@ -1127,7 +1134,15 @@ async function exportPng() {{
         }}
         ctx.restore();
     }}
-    canvas.toBlob(b => {{ let a=document.createElement('a'); a.download='menu_12x18_300dpi.png'; a.href=URL.createObjectURL(b); a.click(); }}, 'image/png');
+    _exportInProgress = false;
+    canvas.toBlob(b => {{
+        let a = document.createElement('a');
+        a.download = 'menu_12x18_300dpi.png';
+        a.href = URL.createObjectURL(b);
+        a.click();
+        exportToastEl.remove();
+        showToast('✅ Export complete! Check your downloads.');
+    }}, 'image/png');
 }}
 
 window.onload = async () => {{
@@ -1206,12 +1221,18 @@ window.addEventListener('keydown', (e) => {{
 let textEditingOriginal = null;
 function onTextFocus(e) {{ textEditingOriginal = e.target.innerText; }}
 function onTextBlur(e) {{
-    if(textEditingOriginal !== e.target.innerText) {{
-        pushState();
+    if(textEditingOriginal !== null && textEditingOriginal !== e.target.innerText) {{
         const item = docV2.elements.find(i => i.id === e.target.id);
-        if(item) item.text = e.target.innerText;
-        sync();
+        if(item) {{
+            const snapshot = JSON.stringify(docV2.elements);
+            item.text = textEditingOriginal; // restore old value into state
+            historyStack.push(snapshot);     // push BEFORE new value
+            if(historyStack.length > 30) historyStack.shift();
+            item.text = e.target.innerText;  // now apply new value
+            sync();
+        }}
     }}
+    textEditingOriginal = null;
 }}
 
 // Smart Tooltip Logic
