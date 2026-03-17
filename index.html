@@ -1025,23 +1025,26 @@ async function exportPng() {
     if (_exportInProgress) { showToast('⏳ Export already in progress...'); return; }
     _exportInProgress = true;
     const exportToastEl = document.createElement('div');
-    exportToastEl.className = 'toast';
-    exportToastEl.innerHTML = '<span>⏳</span> Exporting... please wait';
-    exportToastEl.style.cssText = 'background:rgba(0,0,0,0.95); color:#fff; padding:10px 20px; border-radius:30px; border:1px solid var(--accent); margin-bottom:10px; display:flex; align-items:center; gap:8px; font-size:13px;';
-    document.getElementById('toast-container').appendChild(exportToastEl);
-    // 12in × 18in @ 300 DPI = 3600 × 5400 px
-    const TARGET_W = 3600;
-    const S = TARGET_W / BASE_W;
-    const canvas = document.createElement('canvas');
-    canvas.width = TARGET_W;
-    canvas.height = Math.round(BASE_H * S);
-    const ctx = canvas.getContext('2d');
-    if(docV2.settings.legacyBgVisible) {
-        const img = new Image();
-        img.src = "menu-bg.png";
-        await new Promise(r => { img.onload = r; img.onerror = () => { showToast('⚠️ Background image not found, exporting without it.'); r(); }; });
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    } else { ctx.fillStyle='#fff'; ctx.fillRect(0,0,canvas.width,canvas.height); }
+    try {
+        exportToastEl.className = 'toast';
+        exportToastEl.innerHTML = '<span>⏳</span> Exporting... please wait';
+        exportToastEl.style.cssText = 'background:rgba(0,0,0,0.95); color:#fff; padding:10px 20px; border-radius:30px; border:1px solid var(--accent); margin-bottom:10px; display:flex; align-items:center; gap:8px; font-size:13px;';
+        document.getElementById('toast-container').appendChild(exportToastEl);
+        sync(); // Ensure all element positions/text are current before canvas render
+
+        // 12in × 18in @ 300 DPI = 3600 × 5400 px
+        const TARGET_W = 3600;
+        const S = TARGET_W / BASE_W;
+        const canvas = document.createElement('canvas');
+        canvas.width = TARGET_W;
+        canvas.height = Math.round(BASE_H * S);
+        const ctx = canvas.getContext('2d');
+        if(docV2.settings.legacyBgVisible) {
+            const img = new Image();
+            img.src = "menu-bg.png";
+            await new Promise(r => { img.onload = r; img.onerror = () => { showToast('⚠️ Background image not found, exporting without it.'); r(); }; });
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        } else { ctx.fillStyle='#fff'; ctx.fillRect(0,0,canvas.width,canvas.height); }
     
     for(const el of [...docV2.elements].sort((a,b)=>(a.zIndex||10)-(b.zIndex||10))) {
         if(!el.visible) continue;
@@ -1086,8 +1089,8 @@ async function exportPng() {
         }
         ctx.restore();
     }
-    _exportInProgress = false;
     canvas.toBlob(b => {
+        _exportInProgress = false;
         let a = document.createElement('a');
         a.download = 'menu_12x18_300dpi.png';
         a.href = URL.createObjectURL(b);
@@ -1095,6 +1098,12 @@ async function exportPng() {
         exportToastEl.remove();
         showToast('✅ Export complete! Check your downloads.');
     }, 'image/png');
+    } catch(err) {
+        _exportInProgress = false;
+        if(exportToastEl) exportToastEl.remove();
+        showToast('❌ Export failed. Please try again.');
+        console.error('Export error:', err);
+    }
 }
 
 window.onload = async () => {
@@ -1105,6 +1114,7 @@ window.onload = async () => {
         if (s.elements && s.elements.length > 0) {
             docV2 = s;
             layoutLocked = docV2.settings?.layoutLocked ?? true;
+            syncZoomControlsVisibility();
             zoomScale = docV2.editorState?.zoom || 1;
         }
     } catch(e) {
@@ -1115,6 +1125,7 @@ window.onload = async () => {
                 if (parsed.elements && parsed.elements.length > 0) {
                     docV2 = parsed;
                     layoutLocked = docV2.settings?.layoutLocked ?? true;
+                    syncZoomControlsVisibility();
                     zoomScale = docV2.editorState?.zoom || 1;
                 }
             }
@@ -1145,7 +1156,6 @@ window.onload = async () => {
     window.addEventListener('resize', fitCanvasToScreen);
     zoomScale = zoomScale || 1;
     applyZoom(1);
-    syncZoomControlsVisibility();
 };
 
 function fitCanvasToScreen() {
@@ -1176,11 +1186,11 @@ function onTextBlur(e) {
     if(textEditingOriginal !== null && textEditingOriginal !== e.target.innerText) {
         const item = docV2.elements.find(i => i.id === e.target.id);
         if(item) {
-            const snapshot = JSON.stringify(docV2.elements);
-            item.text = textEditingOriginal; // restore old value into state
-            historyStack.push(snapshot);     // push BEFORE new value
-            if(historyStack.length > 30) historyStack.shift();
-            item.text = e.target.innerText;  // now apply new value
+            item.text = textEditingOriginal;        // restore original first
+            const snapshot = JSON.stringify(docV2.elements); // NOW snapshot
+            item.text = e.target.innerText;         // apply new value
+            if(historyStack.length >= 30) historyStack.shift(); // pre-trim
+            historyStack.push(snapshot);
             sync();
         }
     }
