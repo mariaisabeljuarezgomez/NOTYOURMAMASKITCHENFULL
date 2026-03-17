@@ -373,8 +373,11 @@ function undo() {
     const lastElements = JSON.parse(historyStack.pop());
     docV2.elements = lastElements;
     // If the selected element was removed in the undone state, deselect
-    if(selectedId && !docV2.elements.find(e => e.id === selectedId)) {
-        selectedId = null;
+    if(selectedId) {
+        const item = docV2.elements.find(e => e.id === selectedId);
+        if(!item || item.locked || (docV2.settings.backgroundLayerLocked && item.layerRole === 'background')) {
+            selectedId = null;
+        }
     }
     render();
     showToast("Action Undone");
@@ -546,7 +549,7 @@ function injectResizeHandles(el) {
             e.stopPropagation(); e.preventDefault();
             h.setPointerCapture(e.pointerId);
             const item = docV2.elements.find(i => i.id === el.id);
-            if (!item || item.locked) return;
+            if (!item || item.locked || (docV2.settings.backgroundLayerLocked && item.layerRole === 'background')) return;
             pushState();
             const startX = e.clientX, startY = e.clientY;
             const imgChild = el.querySelector('img');
@@ -792,7 +795,7 @@ function duplicateEl() {
     if(!selectedId) return;
     pushState();
     let item = docV2.elements.find(e=>e.id===selectedId);
-    if(!item) return;
+    if(!item || item.locked) return;
     let clone = JSON.parse(JSON.stringify(item));
     clone.id = item.id + '_copy_' + Date.now();
     clone.x += 30; clone.y += 30;
