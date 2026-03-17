@@ -101,8 +101,9 @@ body {{ margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-
 .editable-element.hidden-editor {{ opacity: 0.2 !important; outline: 1px dashed #666; }}
 
 .editable-text {{ white-space: pre-wrap; padding: 2px; }}
-.image-object {{ object-fit: contain; overflow: hidden; }}
-.shape-object {{ border: none; }}
+.image-wrapper {{ overflow: visible; }}
+.image-wrapper img {{ width:100%; height:100%; object-fit:contain; pointer-events:none; display:block; }}
+.shape-object {{ overflow: hidden; }}
 
 /* Snapping Guides */
 .guide {{ position:absolute; pointer-events:none; border: 1px dashed var(--accent); z-index: 500; display:none; }}
@@ -471,8 +472,27 @@ function render() {{
     const sorted = [...docV2.elements].sort((a,b)=> (a.zIndex||10)-(b.zIndex||10));
     
     sorted.forEach(d => {{
-        const el = document.createElement(d.type==='image'?'img':'div'); el.id = d.id;
-        el.className = 'editable-element ' + (d.type==='text'?'editable-text':(d.type==='image'?'image-object':'shape-object'));
+        let el, imgEl = null;
+        if (d.type === 'image') {{
+            el = document.createElement('div');
+            el.id = d.id;
+            el.className = 'editable-element image-wrapper';
+            el.style.position = 'absolute';
+            el.style.overflow = 'visible';
+            imgEl = document.createElement('img');
+            imgEl.src = d.src;
+            imgEl.style.width = '100%';
+            imgEl.style.height = '100%';
+            imgEl.style.display = 'block';
+            imgEl.style.objectFit = 'contain';
+            imgEl.style.pointerEvents = 'none';
+            el.appendChild(imgEl);
+        }} else {{
+            el = document.createElement('div');
+            el.id = d.id;
+            el.className = 'editable-element ' + (d.type==='text'?'editable-text':'shape-object');
+        }}
+
         if(d.locked) el.classList.add('locked');
         if(!d.visible) el.classList.add('hidden-editor');
         if(selectedId === d.id) el.classList.add('selected');
@@ -484,7 +504,6 @@ function render() {{
             el.onblur = onTextBlur;
             el.ondblclick = (e) => {{ if(!d.locked) el.focus(); e.stopPropagation(); }};
         }}
-        if(d.type==='image') el.src = d.src;
         
         Object.assign(el.style, {{ 
             left:d.x+'px', top:d.y+'px', zIndex:d.zIndex||10, 
