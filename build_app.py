@@ -51,7 +51,9 @@ html_start = f"""<!DOCTYPE html>
 <style>
 {font_css}
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-:root {{ --primary: #95201d; --accent: #f1c40f; --bg: #1a1a1a; --surface: #2d2d2d; --selection: rgba(241, 196, 15, 0.5); }}
+:root {{ --primary: #95201d; --accent: #f1c40f; --bg: #1a1a1a; --surface: #2d2d2d; --selection: rgba(241, 196, 15, 0.5);
+    --brand-red: #95201d; --brand-yellow: #f8f4ad; --gold: #c8a96a; --ink: #181818; --paper: #fffdf8; --muted: #5b5b5b; --line: #d8d0c5;
+}}
 html {{ height: 100%; overflow: hidden; margin: 0; }}
 body {{ margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-serif; overflow:hidden; height:100%; color:#fff; user-select: none; -webkit-user-select: none; }}
 
@@ -249,6 +251,52 @@ body {{ margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-
 @keyframes fadeIn {{ from {{ opacity:0; }} to {{ opacity:1; }} }}
 
     /* Handles are styled in the global sheet above */
+    /* Manual Modal & Help Popout */
+    .manual-modal-overlay {{
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.72); backdrop-filter: blur(3px);
+        display: none; align-items: center; justify-content: center;
+        z-index: 10000; opacity: 0; transition: opacity 220ms ease;
+    }}
+    .manual-modal-overlay.visible {{ display: flex; opacity: 1; }}
+    .manual-modal {{
+        width: 90%; max-width: 860px; height: 88vh; background: var(--paper);
+        border-radius: 20px; display: flex; flex-direction: column; overflow: hidden;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.35); transform: scale(0.96); transition: transform 220ms ease;
+    }}
+    .manual-modal-overlay.visible .manual-modal {{ transform: scale(1.0); }}
+    .manual-modal-header {{ background: var(--brand-red); color: #fff; height: 64px; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }}
+    .manual-modal-header h2 {{ margin: 0; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }}
+    .manual-lang-toggle {{ display: flex; gap: 8px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 999px; }}
+    .manual-lang-btn {{ padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); background: transparent; color: rgba(255,255,255,0.85); transition: 0.2s; display: flex; align-items: center; gap: 4px; }}
+    .manual-lang-btn.active {{ background: #fff; color: var(--brand-red); border-color: #fff; }}
+    .manual-close-btn {{ background: transparent; border: none; color: #fff; font-size: 24px; cursor: pointer; line-height: 1; }}
+    .manual-modal-body {{ flex-grow: 1; overflow-y: auto; padding: 28px 32px; color: var(--ink); background: var(--paper); }}
+    
+    .help-popout {{
+        position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+        width: 320px; background: #fff; border-radius: 18px; box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+        border-top: 4px solid var(--brand-red); padding: 18px; z-index: 9999;
+        opacity: 0; pointer-events: none; transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex; gap: 12px;
+    }}
+    .help-popout.visible {{ opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }}
+    .help-popout.dismissing {{ opacity: 0; transform: translateX(-50%) translateY(20px); }}
+    .help-popout-content {{ display: flex; flex-direction: column; gap: 4px; flex-grow: 1; text-align: left; }}
+    .help-popout-title {{ font-weight: 700; color: #181818; font-size: 15px; margin: 0; }}
+    .help-popout-text {{ font-size: 13px; color: #5b5b5b; margin: 0; line-height: 1.4; }}
+    .help-popout-btn {{ align-self: flex-start; margin-top: 8px; background: var(--brand-red); color: #fff; border-radius: 999px; padding: 7px 22px; font-size: 13px; font-weight: 700; border: none; cursor: pointer; }}
+    .help-dismiss-x {{ position: absolute; top: 10px; right: 12px; background: transparent; border: none; color: #999; font-size: 18px; cursor: pointer; padding: 4px; }}
+
+    .btn-ghost {{ background: transparent; color: rgba(255,255,255,0.85); border: 1px solid rgba(255,255,255,0.3); border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }}
+    .btn-ghost:hover {{ background: rgba(255,255,255,0.15); }}
+
+    @media (max-width: 768px) {{
+        .manual-modal {{ width: 100vw; height: 100vh; max-height: 100vh; border-radius: 0; }}
+        .manual-modal-header h2 span {{ display: none; }}
+        .btn-header-manual {{ display: none; }}
+        .help-popout {{ width: calc(100% - 48px); bottom: 24px; }}
+    }}
 </style>
 </head>
 <body>
@@ -257,6 +305,7 @@ body {{ margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-
 <div id="top-header">
     <div id="header-title">MENU EDITOR PRO V2</div>
     <div class="header-actions">
+        <button id="btn-header-manual" class="btn-ghost btn-header-manual" onclick="openManualModal('en')" data-help="Open the user manual for help and tips">📖 Manual</button>
         <button id="btn-save-header" class="btn-ui" onclick="save()" data-help="Saves your current layout to the server and browser backup" style="background:#27ae60; border-color:#2ecc71; color:#fff;">💾 Save</button>
         <button id="btn-undo" class="btn-ui" onclick="undo()" title="Undo Last Change" data-help="Reverses your last action (move, edit, delete, etc.)">↺ Undo Last Change</button>
         <button id="btn-lock-global" class="btn-ui primary" onclick="toggleGlobalLock()" data-help="When locked, elements cannot be moved or edited — click to unlock for editing">🔒 Layout Locked</button>
@@ -293,6 +342,7 @@ html_footer = f"""</div></div></main>
 <div id="bottom-drawer" class="closed">
     <div class="asset-tray">{asset_gallery_html}</div>
     <div class="btn-row">
+        <button id="btn-manual-drawer" class="btn-ui" onclick="openManualModal('en')" data-help="Open the comprehensive step-by-step user manual">📖 MANUAL</button>
         <button id="btn-save" class="btn-ui primary" onclick="save()" data-help="Saves your current layout to the server AND to browser memory as a backup">💾 Save Session</button>
         <button id="btn-load" class="btn-ui" onclick="load()" data-help="Loads your last saved project from the server or browser backup">📂 Load Session</button>
         <button id="btn-add-text" class="btn-ui" onclick="addText()" data-help="Creates a new editable text box in the center of the menu — double-click to type">＋ Add Text</button>
@@ -1237,6 +1287,7 @@ window.onload = async () => {{
     window.addEventListener('resize', fitCanvasToScreen);
     zoomScale = zoomScale || 1;
     applyZoom(1);
+    maybeShowHelpPopout();
 }};
 
 function fitCanvasToScreen() {{
@@ -1259,6 +1310,20 @@ window.addEventListener('keydown', (e) => {{
         if (e.key==='ArrowDown')  nudge(0,  step);
         if (e.key==='ArrowLeft')  nudge(-step, 0);
         if (e.key==='ArrowRight') nudge( step, 0);
+    }}
+    // Manual Modal Esc and Trap
+    const modal = document.getElementById('manual-modal-overlay');
+    if (modal && modal.classList.contains('visible')) {{
+        if (e.key === 'Escape') closeManualModal();
+        if (e.key === 'Tab') {{
+            const focusables = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            const first = focusables[0], last = focusables[focusables.length - 1];
+            if (e.shiftKey) {{
+                if (document.activeElement === first) {{ last.focus(); e.preventDefault(); }}
+            }} else {{
+                if (document.activeElement === last) {{ first.focus(); e.preventDefault(); }}
+            }}
+        }}
     }}
 }});
 
@@ -1328,12 +1393,97 @@ function initSmartTooltips() {{
         if(target) hideTooltip();
     }}, true);
 }}
+
+// --- Manual & Help Logic ---
+let helpPopoutTimer = null;
+function openManualModal(lang = 'en') {{
+    const modal = document.getElementById('manual-modal-overlay');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('visible'), 10);
+    switchManualLang(lang);
+}}
+function closeManualModal() {{
+    const modal = document.getElementById('manual-modal-overlay');
+    if (!modal) return;
+    modal.classList.remove('visible');
+    setTimeout(() => {{ modal.style.display = 'none'; }}, 220);
+}}
+async function switchManualLang(lang) {{
+    const body = document.getElementById('manual-modal-body');
+    if (!body) return;
+    document.querySelectorAll('.manual-lang-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
+    body.innerHTML = '<div style="padding:40px; text-align:center; color:#666;">⏳ Loading manual...</div>';
+    try {{
+        const response = await fetch(`/manual-${{lang}}.html`);
+        const html = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        let scopedStyles = '';
+        doc.querySelectorAll('style').forEach(style => {{
+            const css = style.innerHTML;
+            const scoped = css.replace(/([^{{\\r\\n]+)\\s*{{/g, (match, selector) => {{
+                const trimmed = selector.trim();
+                if (trimmed.startsWith('@') || trimmed.startsWith(':root')) return match;
+                return `.manual-content-scope ${{trimmed}} {{`;
+            }});
+            scopedStyles += scoped;
+        }});
+        body.innerHTML = `<style>${{scopedStyles}}</style><div class="manual-content-scope">${{doc.body.innerHTML}}</div>`;
+        body.scrollTop = 0;
+    }} catch (e) {{
+        body.innerHTML = '<div style="padding:40px; text-align:center; color:#c0392b;">❌ Error loading manual.</div>';
+    }}
+}}
+function maybeShowHelpPopout() {{
+    if (localStorage.getItem('mde_help_shown')) return;
+    setTimeout(() => {{
+        const popout = document.getElementById('help-popout');
+        if (popout) {{
+            popout.classList.add('visible');
+            helpPopoutTimer = setTimeout(dismissHelpPopout, 12000);
+        }}
+    }}, 3000);
+}}
+function dismissHelpPopout() {{
+    if (helpPopoutTimer) clearTimeout(helpPopoutTimer);
+    const popout = document.getElementById('help-popout');
+    if (!popout) return;
+    popout.classList.remove('visible');
+    popout.classList.add('dismissing');
+    localStorage.setItem('mde_help_shown', '1');
+    setTimeout(() => {{ popout.style.display = 'none'; }}, 300);
+}}
 </script>
 
 <!-- Fix 5b - Floating Zoom Buttons (Mobile Repaired) -->
 <div id="zoom-controls" style="position:fixed; right:20px; top:70px; display:none; flex-direction:column; gap:8px; z-index:9999; padding:6px; background:rgba(0,0,0,0.85); border:1px solid #444; border-radius:12px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);">
     <button onclick="applyZoom(1.2)" style="width:52px;height:52px;border-radius:50%;background:rgba(20,20,20,0.95);color:#fff;border:1px solid #666;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow: 0 4px 12px rgba(0,0,0,0.3);">＋</button>
     <button onclick="applyZoom(0.833)" style="width:52px;height:52px;border-radius:50%;background:rgba(20,20,20,0.95);color:#fff;border:1px solid #666;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow: 0 4px 12px rgba(0,0,0,0.3);">－</button>
+</div>
+
+<div id="manual-modal-overlay" class="manual-modal-overlay">
+    <div class="manual-modal">
+        <div class="manual-modal-header">
+            <h2>📖 <span>User Manual</span></h2>
+            <div class="manual-lang-toggle">
+                <button class="manual-lang-btn active" onclick="switchManualLang('en')" data-lang="en">🇺🇸 EN</button>
+                <button class="manual-lang-btn" onclick="switchManualLang('es')" data-lang="es">🇲🇽 ES</button>
+            </div>
+            <button class="manual-close-btn" onclick="closeManualModal()">✕</button>
+        </div>
+        <div id="manual-modal-body" class="manual-modal-body"></div>
+    </div>
+</div>
+
+<div id="help-popout" class="help-popout">
+    <div class="help-popout-icon">📖</div>
+    <div class="help-popout-content">
+        <h4 class="help-popout-title">Need help getting started?</h4>
+        <p class="help-popout-text">Tap the 🛠️ menu, then MANUAL for a full step-by-step guide.</p>
+        <button class="help-popout-btn" onclick="dismissHelpPopout()">Got it</button>
+    </div>
+    <button class="help-dismiss-x" onclick="dismissHelpPopout()">✕</button>
 </div>
 
 </body>
