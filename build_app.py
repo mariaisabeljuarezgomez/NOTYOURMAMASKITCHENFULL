@@ -34,6 +34,10 @@ spans = raw_data["text_data"]
 
 # Sort fonts: critical vs non-critical
 font_css_list = []
+# Bug A Fix: Add specific font definitions
+font_css_list.append(f"@font-face {{ font-family: 'bernard-mt-condensed-regular'; src: url('bernard-mt-condensed-regular.ttf') format('truetype'); font-display: swap; }}")
+font_css_list.append(f"@font-face {{ font-family: 'century-gothic-bold-italic'; src: url('century-gothic-bold-italic.ttf') format('truetype'); font-display: swap; }}")
+font_css_list.append(f"@font-face {{ font-family: 'centurygothic'; src: url('centurygothic.ttf') format('truetype'); font-display: swap; }}")
 for n, f in fonts.items():
     disp = "swap" if n in ["century-gothic-bold", "century-gothic-regular"] else "optional"
     font_css_list.append(f"@font-face {{ font-family: '{n}'; src: url('{f}') format('truetype'); font-display: {disp}; }}")
@@ -562,10 +566,14 @@ function injectResizeHandles(el) {{
             if (!item) return;
             pushState();
             const startX=e.clientX, startY=e.clientY;
-            const startW=item.width||el.offsetWidth, startH=item.height||el.offsetHeight;
+            const naturalW = el.naturalWidth || 400;
+            const naturalH = el.naturalHeight || 400;
+            const startW = item.width || el.offsetWidth || naturalW;
+            const startH = item.height || el.offsetHeight || naturalH;
             const startLeft=item.x, startTop=item.y;
             const ar = startW/startH;
             h.onpointermove = (pe) => {{
+                const scalerRect = document.getElementById('scaler-wrapper').getBoundingClientRect();
                 const dx=(pe.clientX-startX)/zoomScale, dy=(pe.clientY-startY)/zoomScale;
                 let nW,nH,nX=startLeft,nY=startTop;
                 if(corner==='se'){{ nW=Math.max(40,startW+dx); nH=nW/ar; }}
@@ -586,10 +594,24 @@ function attach(el) {{
     el.onmousedown = (e) => {{
         console.log("Element Mousedown:", el.id);
         e.stopPropagation();
-        const itemData = d(el);
+        const _itemData = d(el);
         selectById(el.id);
         
-        if(layoutLocked || itemData.locked || (docV2.settings.backgroundLayerLocked && itemData.layerRole==='background')) return;
+        // Bug B Fix: Ensure saved images have explicit dimensions before handles are injected
+        if (_itemData && _itemData.type === 'image') {{
+            if (!_itemData.width || !_itemData.height) {{
+                const initImg = document.getElementById(_itemData.id);
+                if (initImg && initImg.naturalWidth) {{
+                    _itemData.width = initImg.naturalWidth > 800 ? 400 : initImg.naturalWidth;
+                    _itemData.height = initImg.naturalHeight > 800 ? 400 : initImg.naturalHeight;
+                }} else {{
+                    _itemData.width = 400; _itemData.height = 400;
+                }}
+            }}
+            injectResizeHandles(el);
+        }}
+        
+        if(layoutLocked || _itemData.locked || (docV2.settings.backgroundLayerLocked && _itemData.layerRole==='background')) return;
         
         pushState(); // Store state BEFORE move
         
@@ -943,8 +965,14 @@ window.onload = async () => {{
         }} catch(e2) {{}}
     }}
 
-    // Step 3: Render with whatever state we have
-    render();
+    // Step 3: Wait for fonts then render
+    const fontLoadPromises = fontNames.map(name =>
+        document.fonts.load(`16px "${{name}}"`)
+    );
+    Promise.all(fontLoadPromises).then(() => {{
+        render(); // Re-render with correct fonts after all TTFs load
+        showToast('Fonts Ready');
+    }});
     initSmartTooltips();
     fitCanvasToScreen();
     window.addEventListener('resize', fitCanvasToScreen);
