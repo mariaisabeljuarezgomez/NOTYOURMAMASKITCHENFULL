@@ -143,6 +143,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         width: 96vw;
         bottom: 100px;
         border-radius: 16px;
+        max-width: 96vw;
     }
 }
 
@@ -296,6 +297,12 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
                 <input type="color" id="sel-color" onchange="updateStyle('color', this.value)">
                 <div class="ctrl-group"><label>L.H.</label><input type="number" id="sel-l-height" step="0.1" min="0.5" max="3" style="width:40px" onchange="updateStyle('lineHeight', parseFloat(this.value))"></div>
                 <div class="ctrl-group"><label>L.S.</label><input type="number" id="sel-l-spacing" min="-10" max="50" style="width:40px" onchange="updateStyle('letterSpacing', parseInt(this.value))"></div>
+                <div class="ctrl-group">
+                    <label>Size</label>
+                    <input type="number" id="sel-font-size" min="4" max="300"
+                        style="width:50px"
+                        onchange="updateStyle('fontSize', parseFloat(this.value))">
+                </div>
             </div>
         </div>
 
@@ -695,6 +702,8 @@ function updateSelectionBar() {
         document.getElementById('sel-color').value = item.style.color;
         document.getElementById('sel-l-height').value = item.style.lineHeight || 1.1;
         document.getElementById('sel-l-spacing').value = item.style.letterSpacing || 0;
+        const fontSizeInput = document.getElementById('sel-font-size');
+        if (fontSizeInput) fontSizeInput.value = item.style.fontSize || 40;
         // Default text elements to DESIGN tab if unlocked
         if(item.type === 'text') setBarTab('design');
     }
@@ -1036,6 +1045,8 @@ let _exportInProgress = false;
 async function exportPng() {
     if (_exportInProgress) { showToast('⏳ Export already in progress...'); return; }
     _exportInProgress = true;
+    try { await save(); } catch(e) {}
+    showToast('💾 Auto-saved before export...');
     const exportToastEl = document.createElement('div');
     try {
         exportToastEl.className = 'toast';
@@ -1201,7 +1212,6 @@ window.onload = async () => {
 
     // Step 4: Init the rest
     initSmartTooltips();
-    await loadUserImageTray();
     fitCanvasToScreen();
     window.addEventListener('resize', fitCanvasToScreen);
     zoomScale = zoomScale || 1;
@@ -1221,6 +1231,11 @@ window.addEventListener('keydown', (e) => {
         undo();
         return;
     }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+        e.preventDefault();
+        exportPng();
+        return;
+    }
     if (selectedId && !layoutLocked && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
         e.preventDefault();
         const step = e.shiftKey ? 10 : 2;
@@ -1238,13 +1253,12 @@ function onTextFocus(e) {
     textEditingOriginal = item ? item.text : e.target.innerText;
 }
 function onTextBlur(e) {
-    if(textEditingOriginal !== null && textEditingOriginal !== e.target.innerText) {
+    if (textEditingOriginal !== null && textEditingOriginal !== e.target.innerText) {
         const item = docV2.elements.find(i => i.id === e.target.id);
-        if(item) {
-            item.text = textEditingOriginal;        // restore original first
-            const snapshot = JSON.stringify(docV2.elements); // NOW snapshot
-            item.text = e.target.innerText;         // apply new value
-            pushState(snapshot);
+        if (item) {
+            item.text = textEditingOriginal;
+            pushState();
+            item.text = e.target.innerText;
         }
     }
     textEditingOriginal = null;
