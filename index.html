@@ -1230,7 +1230,6 @@ function onTextBlur(e) {
             const snapshot = JSON.stringify(docV2.elements); // NOW snapshot
             item.text = e.target.innerText;         // apply new value
             pushState(snapshot);
-            sync();
         }
     }
     textEditingOriginal = null;
