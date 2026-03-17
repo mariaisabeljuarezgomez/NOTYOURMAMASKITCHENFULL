@@ -1069,7 +1069,13 @@ async function load() {{
 }}
 
 async function exportPng() {{
-    const S = 4.1687, canvas = document.createElement('canvas'); canvas.width = BASE_W*S; canvas.height = BASE_H*S; const ctx = canvas.getContext('2d');
+    // 12in × 18in @ 300 DPI = 3600 × 5400 px
+    const TARGET_W = 3600, TARGET_H = 5400;
+    const S = TARGET_W / BASE_W;
+    const canvas = document.createElement('canvas');
+    canvas.width = TARGET_W;
+    canvas.height = TARGET_H;
+    const ctx = canvas.getContext('2d');
     if(docV2.settings.legacyBgVisible) {{
         const img = new Image(); img.src = "{bg_master}"; await new Promise(r => img.onload = r);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -1118,7 +1124,7 @@ async function exportPng() {{
         }}
         ctx.restore();
     }}
-    canvas.toBlob(b => {{ let a=document.createElement('a'); a.download='menu_v2_hardened.png'; a.href=URL.createObjectURL(b); a.click(); }}, 'image/png');
+    canvas.toBlob(b => {{ let a=document.createElement('a'); a.download='menu_12x18_300dpi.png'; a.href=URL.createObjectURL(b); a.click(); }}, 'image/png');
 }}
 
 window.onload = async () => {{
