@@ -675,7 +675,7 @@ function updateSelectionBar() {{
     }}
     document.getElementById('ctrl-lock').innerText = item.locked ? '🔒' : '🔓';
     document.getElementById('ctrl-lock').classList.toggle('active', item.locked);
-    document.getElementById('ctrl-visible').innerText = item.visible ? '👁️' : '👁️‍🗨️';
+    document.getElementById('ctrl-visible').innerText = item.visible ? '👁️' : '🙈';
     document.getElementById('ctrl-visible').classList.toggle('active', !item.visible);
     document.getElementById('sel-role').value = item.layerRole || 'content';
     
@@ -744,9 +744,11 @@ function syncZoomControlsVisibility() {{
     if(zoomControls) zoomControls.style.display = layoutLocked ? 'none' : 'flex';
 }}
 
-function toggleItemLock() {{ if(!selectedId) return; pushState(); let item = docV2.elements.find(e=>e.id===selectedId); item.locked = !item.locked; render(); }}
-function toggleVisibility() {{ if(!selectedId) return; pushState(); let item = docV2.elements.find(e=>e.id===selectedId); item.visible = !item.visible; render(); }}
-    if(item) {{ item.zIndex = (item.zIndex || 10) + dir; render(); }}
+function updateZ(dir) {{
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (item) {{ item.zIndex = (item.zIndex || 10) + dir; render(); }}
 }}
 
 function nudge(dx, dy) {{
@@ -984,9 +986,7 @@ let textEditingOriginal = null;
 function onTextFocus(e) {{ textEditingOriginal = e.target.innerText; }}
 function onTextBlur(e) {{
     if(textEditingOriginal !== e.target.innerText) {{
-        const snapshot = JSON.parse(JSON.stringify(docV2.elements));
-        historyStack.push(JSON.stringify(snapshot));
-        if(historyStack.length > 30) historyStack.shift();
+        pushState();
         const item = docV2.elements.find(i => i.id === e.target.id);
         if(item) item.text = e.target.innerText;
         sync();
