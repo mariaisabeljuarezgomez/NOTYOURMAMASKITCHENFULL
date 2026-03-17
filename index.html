@@ -1008,7 +1008,9 @@ async function load() {
             layoutLocked = docV2.settings.layoutLocked ?? true; 
             zoomScale = docV2.editorState?.zoom || 1;
             render(); 
-            applyZoom(1); // reset visual size
+            const savedZoom = docV2.editorState?.zoom || 1;
+            zoomScale = 1;
+            applyZoom(savedZoom);
             syncZoomControlsVisibility();
             showToast('Project Loaded');
         }
@@ -1021,7 +1023,9 @@ async function load() {
                 layoutLocked = docV2.settings.layoutLocked ?? true; 
                 zoomScale = docV2.editorState?.zoom || 1;
                 render(); 
-                applyZoom(1);
+                const savedZoom = docV2.editorState?.zoom || 1;
+                zoomScale = 1;
+                applyZoom(savedZoom);
                 syncZoomControlsVisibility();
             }
         } 
