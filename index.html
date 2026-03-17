@@ -819,7 +819,17 @@ function addText() {
 }
 function addRect() { pushState(); let id='rect_'+Date.now(); docV2.elements.push({id, type:'shape', x:600, y:400, width:300, height:200, zIndex:5, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fill:'#f1c40f'} }); render(); selectById(id); }
 function importImg(input) { let f = input.files[0]; if(!f) return; let r = new FileReader(); r.onload=(e)=>{ addFromTray(e.target.result); }; r.readAsDataURL(f); }
-function addFromTray(src) { let id='img_'+Date.now(); docV2.elements.push({id, type:'image', src, x:500, y:500, width:400, height:400, zIndex:20, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content' }); render(); selectById(id); }
+function addFromTray(src) {
+    let id = 'img_' + Date.now();
+    const vpRect = viewport.getBoundingClientRect();
+    const scalerRect = scaler.getBoundingClientRect();
+    const cx = (vpRect.left + vpRect.width / 2 - scalerRect.left) / zoomScale;
+    const cy = (vpRect.top + vpRect.height / 2 - scalerRect.top) / zoomScale;
+    const x = Math.max(50, Math.min(BASE_W - 400, cx - 200));
+    const y = Math.max(50, Math.min(BASE_H - 400, cy - 200));
+    docV2.elements.push({id, type:'image', src, x, y, width:400, height:400, zIndex:20, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content'});
+    render(); selectById(id);
+}
 
 // Fix 5c - Pinch-vs-drag suppression
 document.addEventListener('touchstart', (e) => {
@@ -910,8 +920,17 @@ async function exportPng() {
             ctx.fillText(el.text, L, T); 
         }
         else if(el.type==='image') { 
-            let img=new Image(); img.src=el.src; await new Promise(r=>img.onload=r); 
-            ctx.drawImage(img, L, T, W, H); 
+            let img = new Image();
+            img.src = el.src;
+            await new Promise(r => { img.onload = r; img.onerror = r; });
+            const natW = img.naturalWidth || W;
+            const natH = img.naturalHeight || H;
+            const scale = Math.min(W / natW, H / natH);
+            const drawW = natW * scale;
+            const drawH = natH * scale;
+            const offsetX = L + (W - drawW) / 2;
+            const offsetY = T + (H - drawH) / 2;
+            ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
         }
         else if(el.type==='shape') { ctx.fillStyle=el.style.fill; ctx.fillRect(L, T, W, H); }
         
@@ -1059,7 +1078,7 @@ function initSmartTooltips() {
 </script>
 
 <!-- Fix 5b - Floating Zoom Buttons (Mobile Repaired) -->
-<div id="zoom-controls" style="position:fixed; right:20px; bottom:200px; display:flex; flex-direction:column; gap:12px; z-index:9999; padding:8px; background:rgba(0,0,0,0.85); border:1px solid #444; border-radius:12px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);">
+<div id="zoom-controls" style="position:fixed; bottom:20px; right:20px; display:none; gap:10px; z-index:2000; flex-direction:column; padding:8px; background:rgba(0,0,0,0.85); border:1px solid #444; border-radius:12px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);">
     <button onclick="applyZoom(1.2)" style="width:52px;height:52px;border-radius:50%;background:rgba(20,20,20,0.95);color:#fff;border:1px solid #666;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow: 0 4px 12px rgba(0,0,0,0.3);">＋</button>
     <button onclick="applyZoom(0.833)" style="width:52px;height:52px;border-radius:50%;background:rgba(20,20,20,0.95);color:#fff;border:1px solid #666;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow: 0 4px 12px rgba(0,0,0,0.3);">－</button>
 </div>
