@@ -99,6 +99,51 @@ def reset_menu():
 def static_proxy(path):
     return send_from_directory(".", path)
 
+# --- IMAGE PERSISTENCE (Phase 13) ---
+import base64
+from pathlib import Path
+
+IMAGES_DIR = os.path.join(STORAGE_BASE, "user_images")
+os.makedirs(IMAGES_DIR, exist_ok=True)
+
+@app.route("/api/upload-image", methods=["POST"])
+def upload_image():
+    try:
+        data = request.json
+        filename = data.get("filename", f"upload_{int(datetime.now().timestamp())}.png")
+        img_data = data.get("data", "")
+        if "," in img_data:
+            img_data = img_data.split(",")[1]
+        filepath = os.path.join(IMAGES_DIR, filename)
+        with open(filepath, "wb") as f:
+            f.write(base64.b64decode(img_data))
+        return jsonify({"status": "ok", "filename": filename, "url": f"/user-images/{filename}"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/delete-image/<filename>", methods=["DELETE"])
+def delete_image(filename):
+    try:
+        filepath = os.path.join(IMAGES_DIR, filename)
+        if os.path.exists(filepath):
+            os.remove(filepath)
+            return jsonify({"status": "deleted"}), 200
+        return jsonify({"error": "File not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/list-images", methods=["GET"])
+def list_images():
+    try:
+        files = [f for f in os.listdir(IMAGES_DIR) if f.lower().endswith((".png", ".jpg", ".jpeg"))]
+        return jsonify({"images": [{"filename": f, "url": f"/user-images/{f}"} for f in sorted(files)]}), 200
+    except Exception as e:
+        return jsonify({"images": []}), 200
+
+@app.route("/user-images/<path:filename>")
+def serve_user_image(filename):
+    return send_from_directory(IMAGES_DIR, filename)
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)

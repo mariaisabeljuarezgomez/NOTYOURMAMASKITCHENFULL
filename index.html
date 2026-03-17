@@ -350,6 +350,9 @@ function pushState() {
 
 function openDrawer() {
     const drawer = document.getElementById('bottom-drawer');
+    drawer.style.height = '140px'; 
+    loadUserImageTray();
+    // Lazy load tray images to prevent heavy initial load
     drawer.classList.toggle('closed');
     if (!drawer.dataset.loaded) {
         drawer.querySelectorAll('img[data-src]').forEach(img => {
@@ -879,12 +882,63 @@ async function addFromTray(src) {
     render(); selectById(id);
 }
 
-function importImg(input) {
-    let f = input.files;
+async function importImg(input) {
+    let f = input.files[0];
     if (!f) return;
     let r = new FileReader();
-    r.onload = async (e) => { await addFromTray(e.target.result); };
-    r.readAsDataURL(f[0]);
+    r.onload = async (e) => {
+        const trimmedSrc = await trimTransparentPixels(e.target.result);
+        const filename = f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        try {
+            const res = await fetch('/api/upload-image', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ filename, data: trimmedSrc })
+            });
+            const json = await res.json();
+            if (json.url) {
+                await loadUserImageTray();
+                await addFromTray(json.url);
+                showToast('Image saved to your library!');
+                return;
+            }
+        } catch(e2) {}
+        await addFromTray(trimmedSrc);
+    };
+    r.readAsDataURL(f);
+}
+
+async function loadUserImageTray() {
+    try {
+        const res = await fetch('/api/list-images');
+        const json = await res.json();
+        const tray = document.querySelector('.asset-tray');
+        tray.querySelectorAll('.user-upload-item').forEach(el => el.remove());
+        json.images.forEach(img => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'user-upload-item';
+            wrapper.style.cssText = 'position:relative; display:inline-block; flex-shrink:0;';
+            const imgEl = document.createElement('img');
+            imgEl.src = img.url;
+            imgEl.className = 'tray-item';
+            imgEl.style.cssText = 'height:80px; width:auto; border-radius:6px; cursor:pointer; border:2px solid transparent;';
+            imgEl.title = img.filename;
+            imgEl.onclick = () => addFromTray(img.url);
+            const delBtn = document.createElement('button');
+            delBtn.innerText = '✕';
+            delBtn.title = 'Remove from library';
+            delBtn.style.cssText = 'position:absolute; top:-6px; right:-6px; width:18px; height:18px; border-radius:50%; background:#c0392b; color:#fff; border:none; font-size:10px; cursor:pointer; z-index:10; display:flex; align-items:center; justify-content:center; padding:0;';
+            delBtn.onclick = async (e) => {
+                e.stopPropagation();
+                await fetch(`/api/delete-image/${img.filename}`, { method: 'DELETE' });
+                wrapper.remove();
+                showToast('Image removed from library');
+            };
+            wrapper.appendChild(imgEl);
+            wrapper.appendChild(delBtn);
+            tray.appendChild(wrapper);
+        });
+    } catch(e) {}
 }
 
 // Fix 5c - Pinch-vs-drag suppression
@@ -1042,6 +1096,7 @@ window.onload = async () => {
 
     // Step 4: Init the rest
     initSmartTooltips();
+    await loadUserImageTray();
     fitCanvasToScreen();
     window.addEventListener('resize', fitCanvasToScreen);
     zoomScale = zoomScale || 1;
