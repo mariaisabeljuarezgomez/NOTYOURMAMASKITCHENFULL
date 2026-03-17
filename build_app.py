@@ -298,6 +298,7 @@ body {{ margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-
         .help-popout {{ width: calc(100% - 48px); bottom: 24px; }}
     }}
 </style>
+<script src="export-utils.js"></script>
 </head>
 <body>
 <div id="toast-container"></div>
@@ -1221,36 +1222,10 @@ async function exportPng() {{
         ctx.restore();
     }}
     canvas.toBlob(async (b) => {{
-      try {{
-        const arrayBuffer = await b.arrayBuffer();
-        const bytes = new Uint8Array(arrayBuffer);
-        const PPM = 11811;
-        const phys = new Uint8Array(21);
-        phys[0]=0; phys[1]=0; phys[2]=0; phys[3]=9;
-        phys[4]=112; phys[5]=72; phys[6]=89; phys[7]=115;
-        phys[8]=(PPM>>24)&0xFF; phys[9]=(PPM>>16)&0xFF; phys[10]=(PPM>>8)&0xFF; phys[11]=PPM&0xFF;
-        phys[12]=(PPM>>24)&0xFF; phys[13]=(PPM>>16)&0xFF; phys[14]=(PPM>>8)&0xFF; phys[15]=PPM&0xFF;
-        phys[16]=1;
-        const crcVal = crc32(phys.slice(4, 17));
-        phys[17]=(crcVal>>24)&0xFF; phys[18]=(crcVal>>16)&0xFF; phys[19]=(crcVal>>8)&0xFF; phys[20]=crcVal&0xFF;
-        const before = bytes.slice(0, 33);
-        const after = bytes.slice(33);
-        const merged = new Uint8Array(before.length + phys.length + after.length);
-        merged.set(before, 0);
-        merged.set(phys, before.length);
-        merged.set(after, before.length + phys.length);
-        const fixedBlob = new Blob([merged], {{ type: 'image/png' }});
-        let a = document.createElement('a');
-        a.download = 'menu_12x18_300dpi.png';
-        a.href = URL.createObjectURL(fixedBlob);
-        a.click();
+        _exportInProgress = false;
         exportToastEl.remove();
+        await inject300DpiAndDownload(b, 'menu_12x18_300dpi.png');
         showToast('✅ Export complete! 300 DPI PNG ready.');
-      }} catch(err) {{
-        showToast('❌ Export failed. Please try again.');
-        console.error('Export error:', err);
-      }}
-      _exportInProgress = false;
     }}, 'image/png');
     }} catch(err) {{
         _exportInProgress = false;
