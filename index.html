@@ -576,11 +576,13 @@ function attach(el) {
         console.log("Element Mousedown:", el.id);
         e.stopPropagation();
         const _itemData = d(el);
+        // If locked or background role — completely ignore click, do not select
+        if (!_itemData || _itemData.locked || (docV2.settings.backgroundLayerLocked && _itemData.layerRole === 'background')) return;
+        
         selectById(el.id);
 
-        // Always init dimensions and inject resize handles for images,
-        // even if layout is globally locked
-        if (_itemData && _itemData.type === 'image') {
+        // Always init dimensions and inject resize handles for images
+        if (_itemData.type === 'image') {
             if (!_itemData.width || !_itemData.height) {
                 const initImg = document.getElementById(_itemData.id)?.querySelector('img');
                 if (initImg && initImg.naturalWidth) {
@@ -593,8 +595,7 @@ function attach(el) {
             injectResizeHandles(el);
         }
 
-        // ONLY block DRAG/MOVE when locked — resize handles have their own pointerdown
-        if(layoutLocked || _itemData.locked || (docV2.settings.backgroundLayerLocked && _itemData.layerRole==='background')) return;
+        if(layoutLocked) return;
         
         pushState(); // Store state BEFORE move
         
