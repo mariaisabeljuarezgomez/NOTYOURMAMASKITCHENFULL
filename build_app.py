@@ -98,6 +98,7 @@ body {{ margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-
 .editable-element:hover {{ outline: 2px solid var(--accent); }}
 .editable-element.selected {{ outline: 3px solid var(--accent); box-shadow: 0 0 15px var(--selection); z-index: 999 !important; }}
 .editable-element.locked {{ cursor: default; }}
+.editable-element.locked:hover {{ outline: none; cursor: default; }}
 .editable-element.hidden-editor {{ opacity: 0.2 !important; outline: 1px dashed #666; }}
 
 .editable-text {{ white-space: pre-wrap; padding: 2px; }}
@@ -549,7 +550,11 @@ function renderLayerList() {{
     [...docV2.elements].sort((a,b)=> (b.zIndex||10)-(a.zIndex||10)).forEach(item => {{
         const div = document.createElement('div');
         div.className = 'layer-item' + (selectedId === item.id ? ' active' : '');
-        div.onclick = (e) => {{ e.stopPropagation(); selectById(item.id); }};
+        div.onclick = (e) => {{ 
+            e.stopPropagation(); 
+            if (item.locked || (docV2.settings.backgroundLayerLocked && item.layerRole === 'background')) return;
+            selectById(item.id); 
+        }};
         
         const icon = item.type==='text'?'T':(item.type==='image'?'🖼️':'⬜');
         const name = item.text || item.id;
