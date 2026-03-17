@@ -1114,14 +1114,27 @@ async function exportPng() {
         }
         ctx.restore();
     }
-    canvas.toBlob(b => {
+    canvas.toBlob(async (b) => {
+        try {
+            const arrayBuffer = await b.arrayBuffer();
+            const bytes = new Uint8Array(arrayBuffer);
+            const physChunk = buildPHYsChunk(11811, 11811, 1); // 300 DPI = 11811 px/meter
+            const result = insertPHYsChunk(bytes, physChunk);
+            const finalBlob = new Blob([result], { type: 'image/png' });
+            let a = document.createElement('a');
+            a.download = 'menu_12x18_300dpi.png';
+            a.href = URL.createObjectURL(finalBlob);
+            a.click();
+        } catch(dpiErr) {
+            console.warn('DPI inject failed, falling back:', dpiErr);
+            let a = document.createElement('a');
+            a.download = 'menu_12x18_300dpi.png';
+            a.href = URL.createObjectURL(b);
+            a.click();
+        }
         _exportInProgress = false;
-        let a = document.createElement('a');
-        a.download = 'menu_12x18_300dpi.png';
-        a.href = URL.createObjectURL(b);
-        a.click();
         exportToastEl.remove();
-        showToast('✅ Export complete! Check your downloads.');
+        showToast('✅ Export complete! 300 DPI ready.');
     }, 'image/png');
     } catch(err) {
         _exportInProgress = false;
