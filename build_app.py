@@ -33,14 +33,13 @@ width, height = raw_data["width"], raw_data["height"]
 spans = raw_data["text_data"]
 
 # Sort fonts: critical vs non-critical
-font_css_list = []
-# Bug A Fix: Add specific font definitions
-font_css_list.append(f"@font-face {{ font-family: 'bernard-mt-condensed-regular'; src: url('bernard-mt-condensed-regular.ttf') format('truetype'); font-display: swap; }}")
-font_css_list.append(f"@font-face {{ font-family: 'century-gothic-bold-italic'; src: url('century-gothic-bold-italic.ttf') format('truetype'); font-display: swap; }}")
-font_css_list.append(f"@font-face {{ font-family: 'centurygothic'; src: url('centurygothic.ttf') format('truetype'); font-display: swap; }}")
-for n, f in fonts.items():
-    disp = "swap" if n in ["century-gothic-bold", "century-gothic-regular"] else "optional"
-    font_css_list.append(f"@font-face {{ font-family: '{n}'; src: url('{f}') format('truetype'); font-display: {disp}; }}")
+font_css_list = [
+    f"@font-face {{ font-family: 'bernard-mt-condensed-regular'; src: url('bernard-mt-condensed-regular.ttf') format('truetype'); font-display: swap; }}",
+    f"@font-face {{ font-family: 'century-gothic-bold-italic'; src: url('century-gothic-bold-italic.ttf') format('truetype'); font-display: swap; }}",
+    f"@font-face {{ font-family: 'century-gothic-bold'; src: url('century-gothic-bold.ttf') format('truetype'); font-display: swap; }}",
+    f"@font-face {{ font-family: 'century-gothic-regular'; src: url('century-gothic-regular.ttf') format('truetype'); font-display: swap; }}",
+    f"@font-face {{ font-family: 'centurygothic'; src: url('centurygothic.ttf') format('truetype'); font-display: swap; }}"
+]
 font_css = "\n".join(font_css_list)
 
 html_start = f"""<!DOCTYPE html>
@@ -941,7 +940,7 @@ async function exportPng() {{
 }}
 
 window.onload = async () => {{
-    // Step 1: Try server volume first
+    // Step 1: Load saved data
     try {{
         const r = await fetch('/api/menu');
         const s = await r.json();
@@ -951,7 +950,6 @@ window.onload = async () => {{
             zoomScale = docV2.editorState?.zoom || 1;
         }}
     }} catch(e) {{
-        // Step 2: Server unreachable — fall back to localStorage
         try {{
             const l = localStorage.getItem('menu_pro_draft_v2');
             if (l) {{
@@ -965,24 +963,28 @@ window.onload = async () => {{
         }} catch(e2) {{}}
     }}
 
-    // Step 3: Wait for fonts then render
+    // Step 2: Declare fontNames FIRST, then use it
+    const fontNames = [
+        'bernard-mt-condensed-regular',
+        'century-gothic-bold-italic',
+        'century-gothic-bold',
+        'century-gothic-regular',
+        'centurygothic'
+    ];
+
+    // Step 3: Wait for fonts, then render once
     const fontLoadPromises = fontNames.map(name =>
         document.fonts.load(`16px "${{name}}"`)
     );
     Promise.all(fontLoadPromises).then(() => {{
-        render(); // Re-render with correct fonts after all TTFs load
-        showToast('Fonts Ready');
+        render();
+        showToast('✔ Fonts Ready');
     }});
+
+    // Step 4: Init the rest
     initSmartTooltips();
     fitCanvasToScreen();
     window.addEventListener('resize', fitCanvasToScreen);
-
-    // Fix 1 - Font Force-Load on Mobile
-    const fontNames = ['bernard-mt-condensed-regular','century-gothic-bold-italic',
-                       'century-gothic-bold','century-gothic-regular','centurygothic'];
-    fontNames.forEach(name => {{ document.fonts.load(`16px "${{name}}"`); }});
-
-    // Fix 5b - Initial Zoom Controls State
     zoomScale = zoomScale || 1;
     applyZoom(1);
     syncZoomControlsVisibility();
