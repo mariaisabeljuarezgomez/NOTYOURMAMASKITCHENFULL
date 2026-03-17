@@ -541,6 +541,7 @@ function injectResizeHandles(el) {
             const item = docV2.elements.find(i => i.id === el.id);
             if (!item || item.locked) return;
             pushState();
+            const startX = e.clientX, startY = e.clientY;
             const imgChild = el.querySelector('img');
             const naturalW = imgChild?.naturalWidth || 400;
             const naturalH = imgChild?.naturalHeight || 400;
@@ -700,6 +701,13 @@ function deselect() {
 
 function onCanvasClick(e) { if(e.target.id === 'menu-container' || e.target.id === 'elements-layer') deselect(); }
 function onViewportClick(e) { if(e.target.id === 'editor-viewport' || e.target.id === 'centering-wrapper') deselect(); }
+
+function toggleItemLock() {
+    if (selectedId) toggleLockById({ stopPropagation: () => {} }, selectedId);
+}
+function toggleVisibility() {
+    if (selectedId) toggleVisById({ stopPropagation: () => {} }, selectedId);
+}
 
 function toggleVisById(e, id) { e.stopPropagation(); const item = docV2.elements.find(i=>i.id===id); if(item) { pushState(); item.visible = !item.visible; render(); } }
 function toggleLockById(e, id) { e.stopPropagation(); const item = docV2.elements.find(i=>i.id===id); if(item) { pushState(); item.locked = !item.locked; render(); } }
