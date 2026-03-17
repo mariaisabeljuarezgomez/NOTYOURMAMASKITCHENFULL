@@ -297,12 +297,14 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         <button id="btn-add-text" class="btn-ui" onclick="addText()" data-help="Creates a new editable text box in the center of the menu — double-click to type">＋ Add Text</button>
         <button id="btn-add-rect" class="btn-ui" onclick="addRect()" data-help="Adds a colored rectangle shape — useful for backgrounds, banners, or price tags">⬜ Add Rect</button>
         <button id="btn-upload-img" class="btn-ui" onclick="document.getElementById('in-img').click()" data-help="Upload a photo or logo from your device to place on the menu">🖼️ Upload Img</button>
+        <button id="btn-replace-bg" class="btn-ui" onclick="document.getElementById('in-bg').click()" data-help="Replace the entire background with a new image - fills the page exactly">🖼️ Replace Background</button>
         <button id="btn-toggle-bg" class="btn-ui" onclick="toggleBg()" data-help="Show or hide the original scanned menu background image">👁️ Toggle Original BG</button>
         <button id="btn-png" class="btn-ui accent" onclick="exportPng()" data-help="Renders the entire menu as a high-resolution PNG file ready to print or share">⬇️ Export Pro PNG</button>
         <button id="btn-reset" class="btn-ui" style="background:#444" onclick="showResetModal()" data-help="Wipes all edits and restores the original template">🔄 Reset to Original</button>
     </div>
     <div id="layers-panel"></div>
     <input type="file" id="in-img" style="display:none" accept="image/*" onchange="importImg(this)">
+    <input type="file" id="in-bg" style="display:none" accept="image/*" onchange="importBackground(this)">
 </div>
 
 <div id="reset-modal" class="modal-overlay">
@@ -978,6 +980,65 @@ async function importImg(input) {
         await addFromTray(trimmedSrc);
     };
     r.readAsDataURL(f);
+}
+
+async function importBackground(input) {
+    let f = input.files[0];
+    if (!f) return;
+    let r = new FileReader();
+    r.onload = async (e) => {
+        const src = e.target.result;
+        const filename = 'bg_' + Date.now() + '_' + f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        try {
+            const res = await fetch('/api/upload-image', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ filename, data: src })
+            });
+            const json = await res.json();
+            if (json.url) {
+                setAsBackground(json.url);
+                return;
+            }
+        } catch(e2) {}
+        setAsBackground(src);
+    };
+    r.readAsDataURL(f);
+}
+
+function setAsBackground(src) {
+    pushState();
+    docV2.settings.legacyBgVisible = false;
+    
+    let bgLayer = docV2.elements.find(e => e.type === 'image' && e.layerRole === 'background');
+    if (bgLayer) {
+        bgLayer.src = src;
+        bgLayer.x = 0; bgLayer.y = 0;
+        bgLayer.width = BASE_W; bgLayer.height = BASE_H;
+        bgLayer.locked = true;
+        bgLayer.visible = true;
+        bgLayer.opacity = 1;
+        bgLayer.rotation = 0;
+    } else {
+        const minZ = Math.min(...docV2.elements.map(e => e.zIndex || 10));
+        bgLayer = {
+            id: 'bg_upload_' + Date.now(),
+            type: 'image',
+            src: src,
+            x: 0, y: 0,
+            width: BASE_W, height: BASE_H,
+            zIndex: minZ - 1,
+            opacity: 1,
+            rotation: 0,
+            visible: true,
+            locked: true,
+            layerRole: 'background'
+        };
+        docV2.elements.push(bgLayer);
+    }
+    selectedId = null;
+    render();
+    showToast('✅ Background replaced and locked');
 }
 
 async function loadUserImageTray() {

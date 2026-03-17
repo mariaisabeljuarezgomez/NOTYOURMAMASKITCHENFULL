@@ -1,0 +1,847 @@
+part2_en = '''
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Menu Editor Pro V2 &ndash; User Manual (EN) Part 2</title>
+  <style>
+    :root {
+      --brand-red: #95201d;
+      --brand-yellow: #f8f4ad;
+      --gold: #c8a96a;
+      --ink: #181818;
+      --paper: #fffdf8;
+      --muted: #5b5b5b;
+      --line: #d8d0c5;
+      --soft: #fbf5e7;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background: #ece7df;
+      line-height: 1.6;
+    }
+
+    .page {
+      width: 8.5in;
+      min-height: 11in;
+      margin: 24px auto;
+      background: var(--paper);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
+      padding: 0.9in 0.8in 0.85in;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-break {
+      page-break-after: always;
+    }
+
+    h2 {
+      font-size: 24px;
+      border-bottom: 2px solid var(--line);
+      padding-bottom: 8px;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+
+    h3 {
+      font-size: 18px;
+      margin: 22px 0 10px;
+      color: var(--brand-red);
+    }
+
+    h4 {
+      font-size: 14px;
+      margin: 14px 0 6px;
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    p {
+      margin: 0 0 14px;
+    }
+
+    ul,
+    ol {
+      margin: 0 0 16px 22px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0 18px;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 12px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--soft);
+      color: var(--brand-red);
+    }
+
+    .callout {
+      background: #fff8de;
+      border: 1px solid #eadc98;
+      border-left: 6px solid var(--brand-red);
+      padding: 14px 16px;
+      border-radius: 10px;
+      margin: 18px 0;
+    }
+
+    .callout.tip {
+      border-left-color: #27ae60;
+      background: #f0fff4;
+      border-color: #a8dbb9;
+    }
+
+    .callout.warning {
+      border-left-color: #e67e22;
+      background: #fff8f0;
+      border-color: #f0cfa0;
+    }
+
+    .spec-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .spec-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      background: #fff;
+    }
+
+    .spec-card h4 {
+      margin: 0 0 10px;
+      color: var(--brand-red);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .ui-mock {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-family: monospace;
+      font-size: 13px;
+      color: #f1c40f;
+      border: 1px solid #333;
+    }
+
+    .ui-mock .ui-label {
+      color: #aaa;
+      font-size: 11px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+    }
+
+    .ui-mock .ui-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .ui-btn {
+      display: inline-block;
+      background: #333;
+      color: #fff;
+      border: 1px solid #555;
+      border-radius: 8px;
+      padding: 5px 12px;
+      font-size: 12px;
+      font-family: "Inter", Arial, sans-serif;
+    }
+
+    .ui-btn.primary {
+      background: #95201d;
+      border-color: #b64334;
+    }
+
+    .ui-btn.accent {
+      background: #f1c40f;
+      color: #000;
+      border-color: #c8a96a;
+      font-weight: 700;
+    }
+
+    .ui-btn.active {
+      background: #95201d;
+      border-color: #f1c40f;
+    }
+
+    .footer {
+      position: absolute;
+      left: 0.8in;
+      right: 0.8in;
+      bottom: 0.35in;
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #666;
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+    }
+
+    .kbd {
+      display: inline-block;
+      background: #f0f0f0;
+      border: 1px solid #bbb;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-family: monospace;
+      font-size: 13px;
+      box-shadow: 0 2px 0 #bbb;
+      color: #222;
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+
+      .page {
+        margin: 0;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- PAGE 9: ASSET TRAY -->
+  <section class="page page-break">
+    <h2>7. The Asset Tray &ndash; Built-In &amp; Uploaded Images</h2>
+    <p>Inside the Tools Drawer, at the very top, you will find the <strong>Asset Tray</strong> &mdash; a horizontal
+      scrolling row of image thumbnails. These are your menu&apos;s built-in graphic assets (pre-designed borders,
+      decorations, logos) plus any images you have personally uploaded.</p>
+
+    <div class="ui-mock">
+      <div class="ui-label">Asset Tray &mdash; Inside the Drawer</div>
+      <div class="ui-row">
+        <span
+          style="display:inline-block; width:70px; height:60px; background:#333; border-radius:6px; border:2px solid #555; text-align:center; line-height:60px; font-size:20px;">&#128444;</span>
+        <span
+          style="display:inline-block; width:70px; height:60px; background:#333; border-radius:6px; border:2px solid #555; text-align:center; line-height:60px; font-size:20px;">&#128444;</span>
+        <span
+          style="display:inline-block; width:70px; height:60px; background:#333; border-radius:6px; border:2px solid #555; text-align:center; line-height:60px; font-size:20px;">&#128444;</span>
+        <span style="color:#aaa; font-size:12px;">&larr; Scroll left/right to see all images</span>
+      </div>
+    </div>
+
+    <h3>Using Built-In Images</h3>
+    <p>The built-in images are pre-loaded decorative graphics designed to match your menu&apos;s visual style. To add
+      one to your canvas, simply <strong>click or tap its thumbnail</strong> in the tray. The image will be placed on
+      the canvas and selected automatically so you can reposition and resize it.</p>
+
+    <h3>Uploading Your Own Images</h3>
+    <ol>
+      <li>Click <strong>&#128444; Upload Img</strong> in the drawer.</li>
+      <li>Your device&apos;s file picker opens. Select a JPG, PNG, WEBP, GIF, or SVG file.</li>
+      <li>The image uploads, is stored in your permanent library, appears in the Asset Tray, and is placed on the canvas
+        automatically.</li>
+      <li>Use the resize handles (visible when selected) to adjust its size, then drag it into position.</li>
+    </ol>
+
+    <div class="callout tip">
+      <strong>Tip:</strong> Uploaded images persist in your library permanently. Even if you clear the canvas and start
+      fresh, your uploaded images will still be in the Asset Tray ready to use again.
+    </div>
+
+    <h3>Transparent Images (PNG with Transparency)</h3>
+    <p>If you upload a PNG file with a transparent background (such as a logo), the editor automatically trims empty
+      transparent space around the image before placing it, so it fits cleanly on your menu without a white box behind
+      it.</p>
+
+    <h3>Image File Tips</h3>
+    <ul>
+      <li>Use <strong>PNG</strong> for logos and graphics with transparent backgrounds</li>
+      <li>Use <strong>JPG</strong> for photographs of food or your restaurant</li>
+      <li>For best print quality, upload images at <strong>300 DPI or higher</strong> resolution</li>
+      <li>File size limit is generous &mdash; most phone photos upload without issue</li>
+    </ul>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Complete Manual</span><span>Page 9</span></div>
+  </section>
+
+  <!-- PAGE 10: TEXT ELEMENTS -->
+  <section class="page page-break">
+    <h2>8. Adding &amp; Managing Text Elements</h2>
+
+    <h3>Adding New Text</h3>
+    <ol>
+      <li>Open the drawer (&#128296; FAB button).</li>
+      <li>Click <strong>&#65291; Add Text</strong>.</li>
+      <li>A new element labeled &ldquo;New Text&rdquo; appears at the center of your current view, already selected.
+      </li>
+      <li>Double-click (or double-tap on mobile) to enter editing mode and type your content.</li>
+      <li>Click anywhere on the canvas background to finish editing.</li>
+    </ol>
+
+    <h3>Selecting an Existing Text Element</h3>
+    <p>Make sure the layout is unlocked (&#128275;), then click or tap once on any text element. A yellow glowing border
+      appears around it and the Selection Bar shows at the bottom. The element is now selected.</p>
+
+    <h3>Editing Text Content</h3>
+    <p>With a text element selected, <strong>double-click it</strong> (or double-tap on mobile) to place your cursor
+      inside. The text becomes editable &mdash; you will see a cursor blinking. Type your changes: update a price, fix a
+      name, change a description. Press Enter for a new line. When done, click the canvas background to confirm.</p>
+
+    <div class="callout tip">
+      <strong>Tip:</strong> Text supports multiple lines. Press Enter/Return while editing to create a line break inside
+      the same text element.
+    </div>
+
+    <h3>Moving Text Elements</h3>
+    <ol>
+      <li>Ensure layout is <strong>&#128275; Unlocked</strong>.</li>
+      <li>Click the element once to select it (do NOT double-click &mdash; that enters text editing mode).</li>
+      <li>Hold and drag it to its new position.</li>
+      <li>Release. The new position is recorded in undo history.</li>
+      <li>Lock the layout again with &#128274; once finished.</li>
+    </ol>
+
+    <h3>Deleting a Text Element</h3>
+    <p>Select the element, then in the Selection Bar click the <strong>&#128465; Delete</strong> button (red trash icon
+      on the right side of the bar). A confirmation dialog appears. Confirm the deletion. You can restore the element
+      with <strong>&#8634; Undo Last Change</strong> if needed.</p>
+
+    <h3>Duplicating an Element</h3>
+    <p>Select any element. In the Selection Bar, click the <strong>&#128203; Duplicate</strong> button. An exact copy of
+      the element appears, offset slightly from the original. It is automatically selected so you can immediately move
+      it into position.</p>
+
+    <h3>Background-Labeled Text Behavior</h3>
+    <p>If a text element is named &ldquo;background&rdquo; and set to Locked in the LAYER tab, it will not respond to
+      click selection while the layout is locked. It behaves as a fixed background layer that cannot accidentally be
+      moved or selected. This protects the base design of your menu.</p>
+    <div class="footer"><span>Customer Edition</span><span>Page 10</span></div>
+  </section>
+
+  <!-- PAGE 11: IMAGE ELEMENTS -->
+  <section class="page page-break">
+    <h2>9. Adding &amp; Managing Image Elements</h2>
+
+    <h3>Adding an Image from the Asset Tray</h3>
+    <p>Open the drawer and click any image thumbnail in the Asset Tray. The image is placed on the canvas at a default
+      size and is automatically selected. Drag it to position it, and use the corner resize handles to change its size.
+    </p>
+
+    <h3>Resizing Images</h3>
+    <p>When an image element is selected, you will see <strong>four yellow circular handles</strong> at each corner.
+      These are the resize handles.</p>
+    <ul>
+      <li><strong>Bottom-right corner:</strong> Drag to resize the image freely (width and height independently)</li>
+      <li>Resize is <strong>zoom-aware</strong> &mdash; handles work correctly whether you are zoomed in at 200% or
+        zoomed out at 50%</li>
+      <li>Minimum size protection prevents images from being accidentally shrunk to nothing</li>
+    </ul>
+
+    <div class="callout tip">
+      <strong>Tip:</strong> To resize proportionally (keep the image&apos;s original shape), hold <strong>Shift</strong>
+      while dragging a corner handle. The image will scale in proportion automatically.
+    </div>
+
+    <h3>Moving Images</h3>
+    <p>Same as moving text &mdash; ensure layout is <strong>&#128275; Unlocked</strong>, click the image to select it,
+      then drag it. The center of the image is the drag target. Be sure to grab the image body, not one of the corner
+      handles (those resize, not move).</p>
+
+    <h3>Image Opacity</h3>
+    <p>Select an image element, go to the <strong>LAYER tab</strong> in the Selection Bar, and use the <strong>Opacity
+        slider</strong> to fade the image. Useful for watermarks, decorative backgrounds, or semi-transparent overlays.
+    </p>
+
+    <h3>Hiding an Image</h3>
+    <p>In the LAYER tab, click the <strong>&#128065; Visibility</strong> toggle to hide the image. It becomes very faint
+      (20% opacity) in the editor so you can still see where it is, but it will not appear in your exported PNG. This is
+      useful for temporarily hiding elements without deleting them.</p>
+
+    <h3>Locking an Image in Place</h3>
+    <p>In the LAYER tab, click the <strong>&#128274; Lock Element</strong> toggle. A locked element cannot be moved,
+      resized, or accidentally selected. The lock protects important elements like background frames or watermarks that
+      should never move.</p>
+
+    <div class="callout">
+      <strong>Background images:</strong> Any element named &ldquo;background&rdquo; and set to Locked will not respond
+      to click selection when the global layout is locked. This means your menu&apos;s background image stays completely
+      protected at all times.
+    </div>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Complete Manual</span><span>Page 11</span></div>
+  </section>
+
+  <!-- PAGE 12: SHAPE ELEMENTS -->
+  <section class="page page-break">
+    <h2>10. Adding &amp; Managing Shape Elements</h2>
+    <p>The shape tool lets you add solid-color rectangles to your menu. Use them to create price tag backgrounds,
+      section header banners, colored dividers, highlight boxes, or any decorative block.</p>
+
+    <h3>Adding a Rectangle</h3>
+    <ol>
+      <li>Open the drawer (&#128296; FAB).</li>
+      <li>Click <strong>&#9634; Add Rect</strong>.</li>
+      <li>A yellow rectangle appears on the canvas, centered in your current view, and is automatically selected.</li>
+      <li>Use the DESIGN tab in the Selection Bar to customize its appearance.</li>
+      <li>Drag it to position and use resize handles to adjust size.</li>
+    </ol>
+
+    <h3>Customizing Shape Appearance (DESIGN Tab)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Control</th>
+          <th>What It Does</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Fill Color</strong></td>
+          <td>Changes the solid color that fills the rectangle. Click the color swatch to open the color picker.</td>
+        </tr>
+        <tr>
+          <td><strong>Corner Radius</strong></td>
+          <td>Rounds the corners of the rectangle. Set to 0 for sharp corners, or increase to create pill shapes and
+            rounded cards.</td>
+        </tr>
+        <tr>
+          <td><strong>Border Width</strong></td>
+          <td>Sets the thickness of the outline border in pixels. Set to 0 for no border.</td>
+        </tr>
+        <tr>
+          <td><strong>Border Color</strong></td>
+          <td>Sets the color of the outline border. Only visible when Border Width is greater than 0.</td>
+        </tr>
+        <tr>
+          <td><strong>Opacity</strong></td>
+          <td>Available in the LAYER tab. Fade the shape for watermark or overlay effects.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Layering Shapes Behind Text</h3>
+    <p>To use a rectangle as a background behind text, add the shape first, position and size it, then go to the
+      <strong>ARRANGE tab</strong> and click <strong>Send to Back</strong> to move it behind all other elements.</p>
+
+    <h3>Common Shape Uses</h3>
+    <ul>
+      <li><strong>Price highlight:</strong> Dark red or gold rectangle behind a price number</li>
+      <li><strong>Section divider:</strong> Thin horizontal rectangle between menu sections</li>
+      <li><strong>Special item badge:</strong> Rounded rectangle in gold or red behind &ldquo;Chef&apos;s Special&rdquo;
+        text</li>
+      <li><strong>Semi-transparent overlay:</strong> Low-opacity black rectangle over a photo for text readability</li>
+    </ul>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Complete Manual</span><span>Page 12</span></div>
+  </section>
+
+  <!-- PAGE 13: SELECTION BAR -->
+  <section class="page page-break">
+    <h2>11. The Selection Bar &ndash; Complete Reference</h2>
+    <p>The Selection Bar is the floating toolbar that appears whenever you click on any element (text, image, or shape).
+      It is your primary tool for adjusting the properties of any element. It contains three tabs, a Duplicate button,
+      and a Delete button.</p>
+
+    <div class="ui-mock">
+      <div class="ui-label">Selection Bar &mdash; Full Layout</div>
+      <div class="ui-row">
+        <span style="color:#888; font-size:18px; cursor:grab;">&#10783;</span>
+        <span class="ui-btn active" style="font-size:10px; font-weight:800;">LAYER</span>
+        <span class="ui-btn" style="font-size:10px; font-weight:800;">DESIGN</span>
+        <span class="ui-btn" style="font-size:10px; font-weight:800;">ARRANGE</span>
+        <span style="flex:1;"></span>
+        <span class="ui-btn" style="background:#2980b9; padding:5px 10px;">&#128203;</span>
+        <span class="ui-btn" style="background:#c0392b; padding:5px 10px;">&#128465;</span>
+      </div>
+    </div>
+
+    <h3>Dragging the Selection Bar</h3>
+    <p>The <strong>&#10783; drag handle</strong> on the far left of the bar can be held and dragged to move the entire
+      toolbar anywhere on the screen. This is very useful on mobile when the bar blocks part of the menu you are trying
+      to see.</p>
+
+    <h3>&#128203; Duplicate Button (Blue)</h3>
+    <p>Creates an exact copy of the selected element &mdash; same text, style, size, position offset slightly. The
+      duplicate is selected immediately so you can move it into place. Works for text, images, and shapes.</p>
+
+    <h3>&#128465; Delete Button (Red)</h3>
+    <p>Removes the selected element after a confirmation dialog. The deletion is recorded in undo history &mdash; you
+      can restore it with <strong>&#8634; Undo Last Change</strong> as long as it is still within the 30-step history.
+    </p>
+
+    <h3>Tab Overview</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Tab</th>
+          <th>Available For</th>
+          <th>Controls Inside</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>LAYER</strong></td>
+          <td>All elements</td>
+          <td>Visibility toggle, Lock toggle, Opacity slider, Element Name, Role (Content / Background / Overlay)</td>
+        </tr>
+        <tr>
+          <td><strong>DESIGN</strong></td>
+          <td>Text: full controls. Shape: fill/border. Image: opacity.</td>
+          <td>Font family, Font size (numeric input), Bold, Italic, Text color, Letter spacing, Line height, Text
+            alignment. Shapes: Fill color, Corner radius, Border width, Border color.</td>
+        </tr>
+        <tr>
+          <td><strong>ARRANGE</strong></td>
+          <td>All elements</td>
+          <td>Exact X/Y position inputs, Width/Height inputs, Rotation slider (0&ndash;360&deg;), Bring Forward, Send
+            Backward, Bring to Front, Send to Back</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout tip">
+      <strong>Tip:</strong> On mobile, the Selection Bar scrolls horizontally. If you cannot see a tab or button, swipe
+      left or right on the bar itself to reveal the rest of the controls.
+    </div>
+    <div class="footer"><span>Customer Edition</span><span>Page 13</span></div>
+  </section>
+
+  <!-- PAGE 14: LAYER TAB -->
+  <section class="page page-break">
+    <h2>12. The LAYER Tab &ndash; Visibility, Opacity, Lock &amp; Role</h2>
+    <p>The <strong>LAYER tab</strong> appears first in the Selection Bar when you select any element. It controls the
+      element&apos;s visibility, whether it can be moved, its transparency, its name, and its role in the menu layout.
+    </p>
+
+    <div class="ui-mock">
+      <div class="ui-label">LAYER Tab Controls</div>
+      <div class="ui-row">
+        <span class="ui-btn active" style="font-size:10px;">LAYER</span>
+        <span style="color:#aaa;">|</span>
+        <span class="ui-btn" style="font-size:11px;">&#128065; Visible</span>
+        <span class="ui-btn" style="font-size:11px;">&#128275; Unlocked</span>
+        <span style="color:#aaa;">Opacity:</span>
+        <span style="color:#f1c40f; font-size:12px;">[========80%===]</span>
+      </div>
+      <div class="ui-row">
+        <span style="color:#aaa; font-size:11px;">Name: </span>
+        <span style="color:#fff; font-size:12px;">[price-header_____]</span>
+        <span style="color:#aaa; font-size:11px;">Role: </span>
+        <span class="ui-btn" style="font-size:10px;">Content &#9660;</span>
+      </div>
+    </div>
+
+    <h3>&#128065; Visibility Toggle</h3>
+    <p>Toggles the element between visible and hidden. Hidden elements show as very faint (&#128584; with 20% opacity)
+      in the editor so you can still see their position, but they are completely invisible in the exported PNG. Use this
+      to temporarily remove elements without deleting them.</p>
+
+    <h3>&#128274; Lock Element Toggle</h3>
+    <p>When locked, the element cannot be selected, moved, or resized. The cursor changes when you hover over a locked
+      element to indicate it is protected. Unlock an element anytime by selecting it in the Layers Panel and turning off
+      the lock. This is especially useful for background frames and anchored elements that should never move.</p>
+
+    <h3>Opacity Slider</h3>
+    <p>Drag the slider left to make the element more transparent, right to make it fully opaque. The value ranges from
+      0% (completely invisible) to 100% (fully solid). Changes are visible immediately on the canvas and are recorded in
+      undo history.</p>
+
+    <h3>Element Name</h3>
+    <p>Each element has a name used to identify it in the Layers Panel. You can type a new name in the name field to
+      give it a meaningful label like &ldquo;main-title&rdquo; or &ldquo;price-section-2&rdquo;. The name does not
+      appear on the menu &mdash; it is only used internally for organization.</p>
+
+    <h3>Role (Content / Background / Overlay)</h3>
+    <ul>
+      <li><strong>Content</strong> &mdash; Default. A standard element that participates normally in the design.</li>
+      <li><strong>Background</strong> &mdash; The element is treated as a background layer. If also Locked, it will not
+        respond to click selection while the global layout is locked, protecting the base design completely.</li>
+      <li><strong>Overlay</strong> &mdash; The element is treated as a top-layer overlay, always rendered above Content
+        elements in the final export.</li>
+    </ul>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Complete Manual</span><span>Page 14</span></div>
+  </section>
+
+  <!-- PAGE 15: DESIGN TAB -->
+  <section class="page page-break">
+    <h2>13. The DESIGN Tab &ndash; Fonts, Color, Size &amp; Spacing</h2>
+    <p>The <strong>DESIGN tab</strong> contains all styling controls for the selected element. The controls shown depend
+      on the element type &mdash; text elements show the full typography suite, shapes show fill and border controls.
+    </p>
+
+    <div class="ui-mock">
+      <div class="ui-label">DESIGN Tab &mdash; Text Element Controls</div>
+      <div class="ui-row">
+        <span style="color:#aaa; font-size:11px;">Font:</span>
+        <span class="ui-btn" style="font-size:11px;">Century Gothic &#9660;</span>
+        <span style="color:#aaa; font-size:11px;">Size:</span>
+        <span
+          style="background:#222; color:#f1c40f; border:1px solid #555; border-radius:6px; padding:4px 8px; font-size:12px;">24</span>
+        <span class="ui-btn" style="font-size:11px; font-weight:700;">B</span>
+        <span class="ui-btn" style="font-size:11px; font-style:italic;">I</span>
+      </div>
+      <div class="ui-row">
+        <span style="color:#aaa; font-size:11px;">Color:</span>
+        <span
+          style="display:inline-block; width:24px; height:24px; background:#95201d; border-radius:4px; border:2px solid #fff;"></span>
+        <span style="color:#aaa; font-size:11px;">Spacing:</span>
+        <span class="ui-btn" style="font-size:11px;">&minus; 0.05em +</span>
+        <span style="color:#aaa; font-size:11px;">Line H:</span>
+        <span class="ui-btn" style="font-size:11px;">&minus; 1.4 +</span>
+      </div>
+    </div>
+
+    <h3>Font Family Selector</h3>
+    <p>Click the font dropdown to see all available fonts. The editor includes: <strong>Century Gothic</strong>,
+      <strong>Century Gothic Bold</strong>, <strong>Century Gothic Bold Italic</strong>, <strong>Bernard MT
+        Condensed</strong>, and <strong>Inter</strong>. Every font uses <code>font-display: swap</code> for instant
+      display while loading.</p>
+
+    <h3>Font Size (Numeric Input)</h3>
+    <p>Click the number field next to &ldquo;Size&rdquo; and type any number directly. You can enter values like 14,
+      24.5, 36, or 72. Press Tab or click elsewhere to apply. This precise input lets you set exact sizes without
+      clicking repeatedly.</p>
+
+    <h3>Bold &amp; Italic</h3>
+    <p>Click <strong>B</strong> to toggle bold weight. Click <strong>I</strong> to toggle italic style. Both can be
+      active simultaneously.</p>
+
+    <h3>Text Color</h3>
+    <p>Click the colored square to open a full color picker. Choose any color using the color wheel, or type a hex code
+      directly (e.g., <code>#95201d</code> for the brand red). The color applies immediately and is saved with your
+      session.</p>
+
+    <h3>Letter Spacing</h3>
+    <p>Use the &minus; and + buttons to decrease or increase the spacing between individual letters. A value of 0 is
+      normal spacing. Positive values spread letters apart for an elegant headline look.</p>
+
+    <h3>Line Height</h3>
+    <p>Use the &minus; and + buttons to adjust the spacing between lines of text. A value of 1.4 means line spacing is
+      1.4&times; the font size. Increase it for more breathing room in longer descriptions.</p>
+
+    <h3>Text Alignment</h3>
+    <p>Alignment buttons (Left, Center, Right) control how text is aligned within its element box. Center is common for
+      titles and prices; Left is standard for descriptions.</p>
+
+    <div class="callout tip">
+      <strong>Shape Design:</strong> When a shape is selected in the DESIGN tab, you will see Fill Color, Corner Radius,
+      Border Width, and Border Color instead of typography controls.
+    </div>
+    <div class="footer"><span>Customer Edition</span><span>Page 15</span></div>
+  </section>
+
+  <!-- PAGE 16: ARRANGE TAB -->
+  <section class="page page-break">
+    <h2>14. The ARRANGE Tab &ndash; Position, Order &amp; Rotation</h2>
+    <p>The <strong>ARRANGE tab</strong> gives you precise numerical control over an element&apos;s position, size, and
+      layer order. It also includes a rotation control.</p>
+
+    <div class="ui-mock">
+      <div class="ui-label">ARRANGE Tab Controls</div>
+      <div class="ui-row">
+        <span style="color:#aaa; font-size:11px;">X:</span>
+        <span
+          style="background:#222; color:#f1c40f; border:1px solid #555; border-radius:6px; padding:4px 8px; font-size:12px;">142</span>
+        <span style="color:#aaa; font-size:11px;">Y:</span>
+        <span
+          style="background:#222; color:#f1c40f; border:1px solid #555; border-radius:6px; padding:4px 8px; font-size:12px;">87</span>
+        <span style="color:#aaa; font-size:11px;">W:</span>
+        <span
+          style="background:#222; color:#f1c40f; border:1px solid #555; border-radius:6px; padding:4px 8px; font-size:12px;">280</span>
+        <span style="color:#aaa; font-size:11px;">H:</span>
+        <span
+          style="background:#222; color:#f1c40f; border:1px solid #555; border-radius:6px; padding:4px 8px; font-size:12px;">40</span>
+      </div>
+      <div class="ui-row">
+        <span style="color:#aaa; font-size:11px;">Rotate:</span>
+        <span style="color:#f1c40f;">[====15&deg;=========]</span>
+        <span class="ui-btn" style="font-size:11px;">&#8679; Fwd</span>
+        <span class="ui-btn" style="font-size:11px;">&#8681; Back</span>
+        <span class="ui-btn" style="font-size:11px;">&#8679;&#8679; Top</span>
+        <span class="ui-btn" style="font-size:11px;">&#8681;&#8681; Bottom</span>
+      </div>
+    </div>
+
+    <h3>X and Y Position</h3>
+    <p>The X and Y fields show the element&apos;s exact position in pixels measured from the top-left corner of the
+      canvas. Type a new number to move the element to an exact coordinate. Useful for aligning multiple elements to the
+      same X value.</p>
+
+    <h3>Width and Height</h3>
+    <p>Shows and sets the element&apos;s exact size in pixels. Type new values to resize precisely. For text elements,
+      the width determines the text wrap boundary.</p>
+
+    <h3>Rotation</h3>
+    <p>Drag the rotation slider or type a degree value (0&ndash;360) to rotate the element around its center point.
+      Useful for angled labels, watermarks, or decorative text at a slant.</p>
+
+    <h3>Layer Order Controls</h3>
+    <ul>
+      <li><strong>&#8679; Bring Forward:</strong> Moves the element one layer forward, in front of the next element
+        above it</li>
+      <li><strong>&#8681; Send Backward:</strong> Moves the element one layer back, behind the next element below it
+      </li>
+      <li><strong>&#8679;&#8679; Bring to Front:</strong> Moves the element to the very front, on top of everything else
+      </li>
+      <li><strong>&#8681;&#8681; Send to Back:</strong> Moves the element to the very back, behind everything else</li>
+    </ul>
+    <div class="callout tip">
+      <strong>Common use:</strong> When you add a rectangle behind text, click the rectangle, go to ARRANGE &rarr; Send
+      to Back. The text always appears on top of the colored background shape.
+    </div>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Complete Manual</span><span>Page 16</span></div>
+  </section>
+
+  <!-- PAGE 17: LAYERS PANEL -->
+  <section class="page page-break">
+    <h2>15. The Layers Panel</h2>
+    <p>The <strong>Layers Panel</strong> is located at the bottom of the Tools Drawer. It shows a complete list of every
+      element on your canvas so you can see, select, hide, lock, and organize them all from one place.</p>
+
+    <div class="ui-mock">
+      <div class="ui-label">Layers Panel &mdash; Inside the Drawer</div>
+      <div style="background:#222; border-radius:8px; padding:8px; margin-top:8px;">
+        <div
+          style="display:flex; align-items:center; gap:10px; padding:6px 8px; background:#333; border-radius:6px; margin-bottom:4px; font-family:sans-serif; font-size:12px;">
+          <span style="color:#f1c40f;">&#9733;</span>
+          <span style="color:#ccc; flex:1;">main-title</span>
+          <span style="color:#f1c40f; font-size:11px;">T</span>
+          <span style="color:#aaa;">&#128065;</span>
+          <span style="color:#aaa;">&#128275;</span>
+        </div>
+        <div
+          style="display:flex; align-items:center; gap:10px; padding:6px 8px; margin-bottom:4px; font-family:sans-serif; font-size:12px;">
+          <span style="color:#888;">&#9675;</span>
+          <span style="color:#ccc; flex:1;">price-section-1</span>
+          <span style="color:#f1c40f; font-size:11px;">T</span>
+          <span style="color:#aaa;">&#128065;</span>
+          <span style="color:#aaa;">&#128275;</span>
+        </div>
+        <div
+          style="display:flex; align-items:center; gap:10px; padding:6px 8px; margin-bottom:4px; font-family:sans-serif; font-size:12px;">
+          <span style="color:#888;">&#9675;</span>
+          <span style="color:#999; flex:1; text-decoration:line-through;">logo-image</span>
+          <span style="color:#3498db; font-size:11px;">I</span>
+          <span style="color:#666;">&#128584;</span>
+          <span style="color:#aaa;">&#128274;</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>Reading the Layers Panel</h3>
+    <ul>
+      <li><strong>Active indicator (&#9733;/&#9675;):</strong> The currently selected element is highlighted with a gold
+        border and a star</li>
+      <li><strong>Element name:</strong> The label you assigned in the LAYER tab</li>
+      <li><strong>Type badge (T/I/S):</strong> T = Text, I = Image, S = Shape</li>
+      <li><strong>Visibility icon (&#128065;/&#128584;):</strong> Click to toggle visible or hidden</li>
+      <li><strong>Lock icon (&#128275;/&#128274;):</strong> Click to lock or unlock the element</li>
+      <li><strong>Strikethrough name:</strong> Indicates the element is currently hidden</li>
+    </ul>
+
+    <h3>Selecting Elements from the Layers Panel</h3>
+    <p>Click any element&apos;s row in the Layers Panel to select that element on the canvas. This is especially helpful
+      for selecting elements that are hidden, stacked under other elements, or too small to click precisely on the
+      canvas.</p>
+
+    <h3>Toggling Visibility and Lock from the Panel</h3>
+    <p>Click the visibility or lock icon in any row to instantly change that element&apos;s state without selecting it
+      first. This lets you quickly manage multiple elements in a row.</p>
+    <div class="footer"><span>Customer Edition</span><span>Page 17</span></div>
+  </section>
+
+  <!-- PAGE 18: LAYOUT LOCK + SAVE/LOAD -->
+  <section class="page page-break">
+    <h2>16. Layout Lock vs. Edit Mode</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>State</th>
+          <th>What It Controls</th>
+          <th>When to Use</th>
+          <th>Button Color</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>&#128274; Layout Locked</strong></td>
+          <td>Elements cannot be dragged or repositioned. Canvas is safe to scroll and touch. Text can still be edited
+            by double-clicking.</td>
+          <td>Any time you are editing text, changing styles, reviewing the menu, or on mobile. This is the default and
+            safest state.</td>
+          <td>Red</td>
+        </tr>
+        <tr>
+          <td><strong>&#128275; Layout Unlocked</strong></td>
+          <td>Elements can be dragged to new positions. Zoom controls (+ / &minus;) appear in the top-right corner.</td>
+          <td>Only when you specifically need to drag an element to reposition it. Lock again immediately after.</td>
+          <td>Yellow</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout warning">
+      <strong>Mobile caution:</strong> When Layout is Unlocked on a mobile device, accidental touch movement is
+      possible. Always re-lock after repositioning any element.
+    </div>
+
+    <h2 style="margin-top: 32px;">17. Save, Load &amp; Auto-Save</h2>
+
+    <h3>&#128190; Save Session</h3>
+    <p>Saves your entire current state to the server. This includes every element&apos;s content, position, style, layer
+      settings, visibility, lock state, and the positions of all custom images. You will see a green toast:
+      <em>&ldquo;Project Saved Locally&rdquo;</em>.</p>
+
+    <h3>&#128193; Load Session</h3>
+    <p>Loads the latest server-saved version of your menu. Use this when continuing on a new device or browser. All
+      unsaved local changes will be replaced by the server version. Always save before loading if you have unsaved work
+      you want to keep.</p>
+
+    <h3>Auto-Save on Export</h3>
+    <p>Every time you click <strong>&#8681; Export Pro PNG</strong>, the editor automatically runs a Save first. This
+      ensures your exported file always matches exactly what is saved on the server.</p>
+
+    <h3>Local Browser Backup</h3>
+    <p>In addition to the server save, the editor maintains a local backup in your browser&apos;s storage. This protects
+      your most recent work even if your internet connection drops temporarily.</p>
+
+    <div class="callout">
+      <strong>Best practice:</strong> Save after completing each menu section, before closing the browser, and before
+      switching to another device. These three habits protect all your work.
+    </div>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Complete Manual</span><span>Page 18</span></div>
+  </section>
+
+</body>
+
+</html>'''
+
+with open('/tmp/manual_en_part2.html', 'w', encoding='utf-8') as f:
+f.write(part2_en)
+
+print("Part 2 EN written — Pages 9-18 complete")
