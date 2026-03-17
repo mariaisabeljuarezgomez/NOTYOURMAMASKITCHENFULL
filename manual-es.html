@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dine In Menu Editor Pro – Manual Profesional de Usuario</title>
+  <title>Menu Editor Pro V2 – Manual de Usuario (ES)</title>
   <style>
-    :root {
+:root {
       --brand-red: #95201d;
       --brand-yellow: #f8f4ad;
       --gold: #c8a96a;
@@ -15,7 +15,11 @@
       --line: #d8d0c5;
       --soft: #fbf5e7;
     }
-    * { box-sizing: border-box; }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: "Inter", "Segoe UI", Arial, sans-serif;
@@ -23,26 +27,32 @@
       background: #ece7df;
       line-height: 1.6;
     }
+
     .page {
       width: 8.5in;
       min-height: 11in;
       margin: 24px auto;
       background: var(--paper);
-      box-shadow: 0 10px 30px rgba(0,0,0,.12);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
       padding: 0.9in 0.8in 0.85in;
       position: relative;
       overflow: hidden;
     }
-    .page-break { page-break-after: always; }
+
+    .page-break {
+      page-break-after: always;
+    }
+
     .cover {
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       min-height: 9.2in;
       background:
-        radial-gradient(circle at top right, rgba(200,169,106,.22), transparent 28%),
+        radial-gradient(circle at top right, rgba(200, 169, 106, .22), transparent 28%),
         linear-gradient(135deg, #fffdf8 0%, #f6f0e6 45%, #efe7da 100%);
     }
+
     .brand-bar {
       height: 10px;
       width: 100%;
@@ -50,6 +60,7 @@
       border-radius: 999px;
       margin-bottom: 36px;
     }
+
     .eyebrow {
       color: var(--brand-red);
       font-size: 12px;
@@ -58,25 +69,29 @@
       font-weight: 800;
       margin-bottom: 24px;
     }
+
     h1 {
       font-size: 34px;
       line-height: 1.05;
       margin: 0 0 10px;
       letter-spacing: -.03em;
     }
+
     .subtitle {
       font-size: 20px;
       color: var(--muted);
       margin: 0 0 26px;
     }
+
     .hero-box {
       border: 1px solid var(--line);
       border-left: 8px solid var(--brand-red);
-      background: rgba(255,255,255,.9);
+      background: rgba(255, 255, 255, .9);
       padding: 22px 24px;
       border-radius: 14px;
       margin: 24px 0 32px;
     }
+
     .meta {
       display: grid;
       grid-template-columns: 170px 1fr;
@@ -84,7 +99,12 @@
       font-size: 14px;
       margin-top: 24px;
     }
-    .meta div:nth-child(odd) { font-weight: 700; color: var(--brand-red); }
+
+    .meta div:nth-child(odd) {
+      font-weight: 700;
+      color: var(--brand-red);
+    }
+
     h2 {
       font-size: 24px;
       border-bottom: 2px solid var(--line);
@@ -92,31 +112,56 @@
       margin-top: 0;
       margin-bottom: 20px;
     }
+
     h3 {
       font-size: 18px;
       margin: 22px 0 10px;
       color: var(--brand-red);
     }
-    p { margin: 0 0 14px; }
-    ul, ol { margin: 0 0 16px 22px; }
-    li { margin-bottom: 8px; }
-    .toc li { margin-bottom: 6px; }
+
+    h4 {
+      font-size: 15px;
+      margin: 16px 0 8px;
+      color: var(--ink);
+    }
+
+    p {
+      margin: 0 0 14px;
+    }
+
+    ul,
+    ol {
+      margin: 0 0 16px 22px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    .toc li {
+      margin-bottom: 6px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
       margin: 14px 0 18px;
       font-size: 14px;
     }
-    th, td {
+
+    th,
+    td {
       border: 1px solid var(--line);
       padding: 12px 10px;
       text-align: left;
       vertical-align: top;
     }
+
     th {
       background: var(--soft);
       color: var(--brand-red);
     }
+
     .callout {
       background: #fff8de;
       border: 1px solid #eadc98;
@@ -125,18 +170,33 @@
       border-radius: 10px;
       margin: 18px 0;
     }
+
+    .callout.tip {
+      border-left-color: #27ae60;
+      background: #f0fff4;
+      border-color: #a8dbb9;
+    }
+
+    .callout.warning {
+      border-left-color: #e67e22;
+      background: #fff8f0;
+      border-color: #f0cfa0;
+    }
+
     .spec-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 14px;
       margin-top: 18px;
     }
+
     .spec-card {
       border: 1px solid var(--line);
       border-radius: 14px;
       padding: 16px;
       background: #fff;
     }
+
     .spec-card h4 {
       margin: 0 0 10px;
       color: var(--brand-red);
@@ -144,6 +204,88 @@
       text-transform: uppercase;
       letter-spacing: .06em;
     }
+
+    .ui-mock {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-family: monospace;
+      font-size: 13px;
+      color: #f1c40f;
+      border: 1px solid #333;
+    }
+
+    .ui-mock .ui-label {
+      color: #aaa;
+      font-size: 11px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+    }
+
+    .ui-mock .ui-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .ui-btn {
+      display: inline-block;
+      background: #333;
+      color: #fff;
+      border: 1px solid #555;
+      border-radius: 8px;
+      padding: 5px 12px;
+      font-size: 12px;
+      font-family: "Inter", Arial, sans-serif;
+    }
+
+    .ui-btn.primary {
+      background: #95201d;
+      border-color: #b64334;
+    }
+
+    .ui-btn.accent {
+      background: #f1c40f;
+      color: #000;
+      border-color: #c8a96a;
+      font-weight: 700;
+    }
+
+    .ui-btn.green {
+      background: #27ae60;
+      border-color: #2ecc71;
+    }
+
+    .ui-btn.active {
+      background: #95201d;
+      border-color: #f1c40f;
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--brand-red);
+      color: #fff;
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      margin-right: 4px;
+    }
+
+    .badge.yellow {
+      background: #c8a96a;
+    }
+
+    .badge.green {
+      background: #27ae60;
+    }
+
     .footer {
       position: absolute;
       left: 0.8in;
@@ -156,10 +298,65 @@
       border-top: 1px solid var(--line);
       padding-top: 10px;
     }
-    .small { font-size: 13px; color: var(--muted); }
+
+    .small {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .step-num {
+      display: inline-block;
+      width: 26px;
+      height: 26px;
+      background: var(--brand-red);
+      color: #fff;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 26px;
+      font-weight: 700;
+      font-size: 13px;
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+
+    .step-row {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .step-row p {
+      margin: 0;
+      padding-top: 3px;
+    }
+
+    .kbd {
+      display: inline-block;
+      background: #f0f0f0;
+      border: 1px solid #bbb;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-family: monospace;
+      font-size: 13px;
+      box-shadow: 0 2px 0 #bbb;
+      color: #222;
+    }
+
     @media print {
-      body { background: white; }
-      .page { margin: 0; box-shadow: none; }
+      body {
+        background: white;
+      }
+
+      .page {
+        margin: 0;
+        box-shadow: none;
+      }
     }
   </style>
 </head>
@@ -168,314 +365,1188 @@
     <div>
       <div class="brand-bar"></div>
       <div class="eyebrow">MARIAS DIGITAL DESIGNS</div>
-      <h1>Dine In Menu Editor Pro</h1>
-      <p class="subtitle">Manual Profesional de Usuario – Edición para Clientes</p>
+      <h1>Menu Editor Pro V2</h1>
+      <p class="subtitle">Manual de Usuario Profesional Completo &ndash; Edición para el Cliente</p>
       <div class="hero-box">
-        <p><strong>Edición profesional de menús para escritorio y móvil</strong></p>
-        <p>Esta guía y el programa Dine In Menu Editor Pro fueron creados por <strong>MARIAS DIGITAL DESIGNS</strong>.</p>
-        <p>Diseñado para ayudar a dueños de restaurantes y a su personal a editar menús con claridad, confianza y una presentación profesional.</p>
+        <p><strong>Edición de Menús Profesional para Escritorio y Móvil</strong></p>
+        <p>Esta guía y el programa Menu Editor Pro V2 fueron creados por <strong>MARIAS DIGITAL DESIGNS</strong>.</p>
+        <p>Diseñado para ayudar a los propietarios y el personal de restaurantes a editar, diseñar y exportar menús listos para imprimir de manera clara, segura y profesional &mdash; sin necesidad de software de diseño ni formación técnica.</p>
+        <p>Este manual cubre <strong>cada característica</strong> del editor en detalle, incluyendo el sistema de capas, estilo de texto, gestión de imágenes, herramientas de formas, motor de exportación, atajos de teclado, historial de deshacer y flujo de trabajo móvil.</p>
       </div>
       <div class="meta">
-        <div>Versión</div><div>2.2</div>
-        <div>Fecha de Lanzamiento</div><div>Marzo 2026</div>
-        <div>Última Actualización</div><div>14 de marzo de 2026</div>
-        <div>Tipo de Documento</div><div>Guía de Usuario para Clientes</div>
-        <div>Preparado Por</div><div>MARIAS DIGITAL DESIGNS</div>
-        <div>Programa Por</div><div>MARIAS DIGITAL DESIGNS</div>
+        <div>Versión</div>
+        <div>3.0 (Fase 29 &ndash; UX Hardened)</div>
+        <div>Fecha de Lanzamiento</div>
+        <div>Marzo 2026</div>
+        <div>Última Actualización</div>
+        <div>17 de Marzo, 2026</div>
+        <div>Tipo de Documento</div>
+        <div>Guía de Usuario Completa para el Cliente</div>
+        <div>Preparado Por</div>
+        <div>MARIAS DIGITAL DESIGNS</div>
+        <div>Programado Por</div>
+        <div>MARIAS DIGITAL DESIGNS</div>
+        <div>Idioma</div>
+        <div>Español</div>
+        <div>Compañero</div>
+        <div>manual-en.html (Edición en Inglés)</div>
       </div>
     </div>
-    <div class="small">Documentación premium orientada al cliente para uso autorizado.</div>
-    <div class="footer"><span>Dine In Menu Editor Pro</span><span>MARIAS DIGITAL DESIGNS</span></div>
+    <div class="small">Documentación premium para el cliente para uso autorizado solamente. Todas las características descritas reflejan el editor de producción en vivo.</div>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Manual Completo</span><span>MARIAS DIGITAL DESIGNS</span></div>
   </section>
 
   <section class="page page-break">
-    <h2>Tabla de Contenido</h2>
+    <h2>Índice de Contenidos</h2>
     <ol class="toc">
-      <li>Bienvenida</li>
-      <li>Antes de Empezar</li>
-      <li>Flujo de Inicio Rápido</li>
-      <li>Qué Afecta Cada Acción</li>
-      <li>Referencia de Controles Principales</li>
-      <li>Barra de Herramientas de Selección</li>
-      <li>Modo de Edición vs. Bloqueo de Diseño</li>
-      <li>Comportamiento Detallado de Edición</li>
+      <li>Bienvenida y Novedades en V2</li>
+      <li>Antes de Comenzar</li>
+      <li>Entendiendo el Diseño del Editor</li>
+      <li>Flujo de Trabajo de Inicio Rápido</li>
+      <li>La Barra de Encabezado Superior</li>
+      <li>El Botón de Acción Flotante (FAB) y el Cajón</li>
+      <li>La Bandeja de Activos &ndash; Imágenes Integradas y Cargadas</li>
+      <li>Añadir y Gestionar Elementos de Texto</li>
+      <li>Añadir y Gestionar Elementos de Imagen</li>
+      <li>Añadir y Gestionar Elementos de Forma</li>
+      <li>La Barra de Selección &ndash; Referencia Completa</li>
+      <li>La Pestaña CAPA (LAYER) &ndash; Visibilidad, Opacidad, Rotación y Rol</li>
+      <li>La Pestaña DISEÑO (DESIGN) &ndash; Fuentes, Color, Tamaño y Espaciado</li>
+      <li>La Pestaña ORGANIZAR (ARRANGE) &ndash; Posición, Orden y Ajuste</li>
+      <li>El Panel de Capas</li>
+      <li>Bloqueo de Diseño vs. Modo de Edición</li>
+      <li>Guardar, Cargar y Guardado Automático</li>
+      <li>Historial de Deshacer</li>
+      <li>Exportación Pro PNG &ndash; Salida Lista para Imprimir</li>
+      <li>Atajos de Teclado</li>
+      <li>Zoom y Navegación por el Lienzo</li>
+      <li>Tooltips Inteligentes</li>
+      <li>Restablecer al Original</li>
       <li>Sincronización entre Dispositivos</li>
       <li>Guía Móvil</li>
       <li>Solución de Problemas</li>
-      <li>Buenas Prácticas</li>
+      <li>Mejores Prácticas</li>
       <li>Especificaciones Técnicas</li>
       <li>Información del Documento</li>
     </ol>
-    <div class="footer"><span>Edición para Clientes</span><span>Página 2</span></div>
+    <div class="footer"><span>Edición para el Cliente</span><span>Página 2</span></div>
   </section>
 
   <section class="page page-break">
-    <h2>1. Bienvenida</h2>
-    <p>Bienvenido a <strong>Dine In Menu Editor Pro</strong>.</p>
-    <p>Este editor le permite actualizar el texto del menú de su restaurante, mover elementos cuando sea necesario, guardar su progreso, continuar en otro dispositivo y exportar un archivo profesional listo para impresión.</p>
-    <p>Está diseñado para ser comprensible en el uso diario del negocio, sin requerir software de diseño ni conocimientos técnicos avanzados.</p>
-    <h3>Qué Incluye Este Manual</h3>
+    <h2>1. Bienvenida y Novedades en V2</h2>
+    <p>Bienvenido a <strong>Menu Editor Pro V2</strong> &mdash; la versión más avanzada del sistema de edición de menús profesional creado por <strong>MARIAS DIGITAL DESIGNS</strong>.</p>
+    <p>Este editor se ejecuta completamente en su navegador web. No hay nada que instalar. Simplemente abra su enlace personal del editor, realice sus cambios, guarde y exporte un archivo listo para imprimir. Funciona en computadoras de escritorio, laptops, tablets y teléfonos.</p>
+
+    <h3>Qué Cubre Este Manual</h3>
     <ul>
-      <li>Cómo editar texto y mover elementos de forma segura</li>
-      <li>Cómo funcionan el guardado y la carga entre dispositivos</li>
-      <li>Cómo funciona la versión móvil, incluyendo desplazamiento de la barra, paneo, pinch para zoom y controles táctiles seguros</li>
-      <li>Cómo exportar un PNG final profesional</li>
+      <li>Cada botón, control y característica del editor explicados en lenguaje sencillo</li>
+      <li>Cómo añadir, editar, dar estilo, mover y eliminar texto, imágenes y formas</li>
+      <li>Cómo el sistema de capas mantiene organizado su menú</li>
+      <li>Cómo guardar, cargar y sincronizar su trabajo entre dispositivos</li>
+      <li>Cómo exportar un PNG profesional de 12&times;18 pulgadas y 300 DPI listo para imprimir</li>
+      <li>Flujo de trabajo móvil completo incluyendo gestos táctiles y zoom de pellizco</li>
+      <li>Atajos de teclado para una edición más rápida</li>
+      <li>Solución de todos los problemas comunes</li>
     </ul>
-    <div class="footer"><span>Dine In Menu Editor Pro</span><span>Página 3</span></div>
-  </section>
 
-  <section class="page page-break">
-    <h2>2. Antes de Empezar</h2>
-    <h3>Navegador Recomendado</h3>
-    <ul>
-      <li>Google Chrome</li>
-      <li>Microsoft Edge</li>
-      <li>Apple Safari</li>
-    </ul>
-    <h3>Conexión a Internet</h3>
-    <p>Se requiere una conexión activa a internet para el guardado permanente y la sincronización entre dispositivos. Save Session guarda su trabajo en el servidor y Load Session recupera la última versión guardada cuando continúa en otro dispositivo. [file:1]</p>
-    <h3>Calidad de Vista Previa</h3>
-    <p>Mientras edita, el fondo puede mostrarse con menor resolución para mantener el editor rápido y responsivo. La exportación final siempre usa la fuente original de alta resolución. [file:1]</p>
-    <div class="callout"><strong>Mejor hábito:</strong> Guarde con frecuencia, especialmente después de cambios importantes o antes de cambiar de dispositivo.</div>
-    <div class="footer"><span>Edición para Clientes</span><span>Página 4</span></div>
-  </section>
-
-  <section class="page page-break">
-    <h2>3. Flujo de Inicio Rápido</h2>
-    <ol>
-      <li>Abra el editor usando el enlace proporcionado.</li>
-      <li>Abra el menú principal tocando o haciendo clic en el botón flotante (FAB).</li>
-      <li>Active <strong>Edit Mode</strong>.</li>
-      <li>Mantenga <strong>Layout Locked</strong> activado mientras edita texto.</li>
-      <li>Seleccione un elemento de texto y haga sus cambios.</li>
-      <li>Si necesita mover un elemento, cambie a <strong>Layout Unlocked</strong>, reposiciónelo y vuelva inmediatamente a <strong>Layout Locked</strong>. [file:1]</li>
-      <li>Haga clic en <strong>Save Session</strong> para guardar su trabajo en el servidor. [file:1]</li>
-      <li>Haga clic en <strong>Export Pro PNG</strong> cuando esté listo para crear el archivo final listo para impresión. [file:1]</li>
-    </ol>
-    <div class="footer"><span>Dine In Menu Editor Pro</span><span>Página 5</span></div>
-  </section>
-
-  <section class="page page-break">
-    <h2>4. Qué Afecta Cada Acción</h2>
-    <h3>Borrador Local</h3>
-    <p>Mientras trabaja, el editor conserva un borrador temporal en su navegador actual. Esto ayuda a proteger cambios recientes si la página se cierra inesperadamente, pero no es su versión guardada de forma permanente.</p>
-    <h3>Save Session</h3>
-    <p><strong>Save Session</strong> sube su trabajo actual al sistema permanente respaldado por servidor para que pueda recuperarse después o cargarse en otro dispositivo. [file:1]</p>
-    <h3>Load Session</h3>
-    <p><strong>Load Session</strong> reemplaza su vista actual con la última versión guardada en el servidor. [file:1]</p>
-    <h3>Undo Last Change</h3>
-    <p><strong>Undo Last Change</strong> revierte una acción reciente a la vez, hasta 50 pasos, y cubre ediciones de texto, movimientos, cambios de estilo, agregar texto y eliminar elementos. [file:1]</p>
-    <h3>Reset to Original</h3>
-    <p><strong>Reset to Original</strong> restaura la plantilla original y elimina todas las ediciones personalizadas. Es independiente de <strong>Undo Last Change</strong> y debe usarse solo cuando desea reiniciar por completo. [file:1]</p>
-    <h3>Export Pro PNG</h3>
-    <p><strong>Export Pro PNG</strong> crea el archivo PNG final de 12 pulgadas y 300 DPI para impresión profesional o entrega final. [file:1]</p>
-    <div class="footer"><span>Edición para Clientes</span><span>Página 6</span></div>
-  </section>
-
-  <section class="page page-break">
-    <h2>5. Referencia de Controles Principales</h2>
-    <h3>Botón Flotante (FAB)</h3>
-    <p>El botón flotante es el punto principal de entrada al panel de controles. Úselo para acceder al modo de edición, bloqueo de diseño, guardar, cargar, deshacer, agregar texto, exportar y reiniciar.</p>
-    <h3>Edit Mode</h3>
-    <p>Active <strong>Edit Mode</strong> cuando quiera cambiar texto como precios, nombres de platillos, descripciones o títulos.</p>
-    <h3>Layout Locked / Layout Unlocked</h3>
-    <p><strong>Layout Locked</strong> es el estado predeterminado cada vez que el editor se abre. Úselo para editar texto, hacer paneo, zoom y navegar de forma segura. Use <strong>Layout Unlocked</strong> solo cuando quiera mover físicamente un elemento a otra posición. [file:1]</p>
-    <h3>Save Session</h3>
-    <p>Use <strong>Save Session</strong> después de cambios importantes, antes de cerrar el editor y antes de cambiar de dispositivo. [file:1]</p>
-    <h3>Load Session</h3>
-    <p>Use <strong>Load Session</strong> para recuperar la última versión guardada en el servidor al continuar en otro dispositivo. [file:1]</p>
-    <h3>Undo Last Change</h3>
-    <p><strong>Undo Last Change</strong> revierte una acción a la vez y cubre ediciones de texto, elementos movidos, cambios de estilo, texto agregado y elementos eliminados. [file:1]</p>
-    <h3>Add Text</h3>
-    <p><strong>Add Text</strong> crea un nuevo elemento de texto en blanco en el centro de su vista actual. [file:1]</p>
-    <h3>Export Pro PNG</h3>
-    <p><strong>Export Pro PNG</strong> crea el PNG final de alta resolución usando la fuente original de alta resolución en lugar de la vista previa de edición. [file:1]</p>
-    <h3>Reset to Original</h3>
-    <p><strong>Reset to Original</strong> elimina todos los cambios personalizados y restaura la plantilla original. Esta acción es independiente de Undo y no puede revertirse con <strong>Undo Last Change</strong>. [file:1]</p>
-    <div class="footer"><span>Dine In Menu Editor Pro</span><span>Página 7</span></div>
-  </section>
-
-  <section class="page page-break">
-    <h2>6. Barra de Herramientas de Selección</h2>
-    <p>La barra de herramientas de selección aparece cuando se selecciona un elemento de texto.</p>
-    <ul>
-      <li><strong>Font Dropdown</strong> para cambiar la fuente</li>
-      <li><strong>Size (+ / -)</strong> para cambiar el tamaño del texto</li>
-      <li><strong>Color Picker</strong> para cambiar el color del texto</li>
-      <li><strong>Letter Spacing</strong> para ajustar el espacio entre letras</li>
-      <li><strong>Delete Element</strong> para eliminar el elemento seleccionado</li>
-    </ul>
-    <h3>Comportamiento en Móvil</h3>
-    <p>En dispositivos móviles, la barra aparece cerca de la parte inferior de la pantalla y puede ser desplazable horizontalmente porque la pantalla del teléfono es más estrecha. Si no ve todas las herramientas de inmediato, deslice hacia la izquierda o derecha sobre la barra para revelar las opciones restantes.</p>
-    <p>Eliminar un elemento requiere confirmación, y el elemento puede recuperarse con <strong>Undo Last Change</strong> siempre que todavía esté dentro del historial de deshacer. [file:1]</p>
-    <div class="footer"><span>Edición para Clientes</span><span>Página 8</span></div>
-  </section>
-
-  <section class="page page-break">
-    <h2>7. Modo de Edición vs. Bloqueo de Diseño</h2>
-    <table>
-      <thead>
-        <tr><th>Función</th><th>Controla</th><th>Mejor Para</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><strong>Edit Mode</strong></td><td>Contenido como palabras y precios</td><td>Cambiar texto, corregir errores y actualizar precios</td></tr>
-        <tr><td><strong>Layout Lock</strong></td><td>Posición en la página</td><td>Mover bloques de texto, encabezados o alineación de precios</td></tr>
-      </tbody>
-    </table>
-    <p>Use <strong>Edit Mode</strong> cuando quiera cambiar palabras. Use <strong>Layout Unlocked</strong> solo cuando quiera mover algo. Regrese a <strong>Layout Locked</strong> tan pronto como el elemento quede en su lugar. [file:1]</p>
-    <p>Esta separación es especialmente importante en móvil, donde los gestos táctiles podrían causar movimiento accidental. [file:1]</p>
-    <div class="footer"><span>Dine In Menu Editor Pro</span><span>Página 9</span></div>
-  </section>
-
-  <section class="page page-break">
-    <h2>8. Comportamiento Detallado de Edición</h2>
-    <h3>Seleccionar y Editar Texto</h3>
-    <ol>
-      <li>Asegúrese de que <strong>Edit Mode</strong> esté activado.</li>
-      <li>Toque o haga clic una vez sobre un elemento para seleccionarlo.</li>
-      <li>Aparecerán un recuadro de selección y la barra de herramientas.</li>
-      <li>Toque el texto otra vez, o haga doble toque/doble clic según su dispositivo, para colocar el cursor.</li>
-      <li>Escriba sus cambios.</li>
-      <li>Toque el fondo o seleccione otro elemento para terminar la edición.</li>
-    </ol>
-    <h3>Mover Elementos</h3>
-    <ol>
-      <li>Abra el menú principal.</li>
-      <li>Cambie a <strong>Layout Unlocked</strong>.</li>
-      <li>Seleccione el elemento que desea mover.</li>
-      <li>Arrástrelo a la nueva posición.</li>
-      <li>Regrese a <strong>Layout Locked</strong> inmediatamente después de colocarlo. [file:1]</li>
-    </ol>
-    <div class="footer"><span>Edición para Clientes</span><span>Página 10</span></div>
-  </section>
-
-  <section class="page page-break">
-    <h2>9. Sincronización entre Dispositivos</h2>
-    <ol>
-      <li>Termine sus ediciones en el primer dispositivo.</li>
-      <li>Haga clic en <strong>Save Session</strong>.</li>
-      <li>Abra el mismo enlace del editor en el segundo dispositivo.</li>
-      <li>Haga clic en <strong>Load Session</strong>.</li>
-    </ol>
-    <p>Si olvida guardar en el primer dispositivo, el segundo cargará la última versión guardada, no sus cambios más recientes sin guardar. [file:1]</p>
-    <div class="footer"><span>Dine In Menu Editor Pro</span><span>Página 11</span></div>
-  </section>
-
-  <section class="page page-break">
-    <h2>10. Guía Móvil</h2>
-    <p>La versión móvil está diseñada para una edición segura en teléfonos y tabletas. Como la interacción táctil es menos precisa que el mouse, el flujo protege primero el diseño y solo permite mover elementos cuando usted lo desbloquea de forma intencional. [file:1]</p>
-    <h3>Cómo Funciona la Versión Móvil</h3>
-    <p>El diseño se abre <strong>bloqueado por defecto</strong> para que pueda hacer paneo, zoom y revisar el menú sin arrastrar texto accidentalmente. [file:1]</p>
-    <h3>Áreas Principales en Móvil</h3>
-    <ul>
-      <li><strong>FAB:</strong> Abre el menú principal con Edit Mode, Layout Lock, Save Session, Load Session, Undo Last Change, Add Text, Export Pro PNG y Reset to Original.</li>
-      <li><strong>Área del Lienzo:</strong> La zona visual principal donde hace paneo, zoom, selecciona texto y revisa el espaciado.</li>
-      <li><strong>Barra Inferior de Selección:</strong> Aparece después de seleccionar texto y puede ser desplazable horizontalmente en teléfonos.</li>
-      <li><strong>Controles Flotantes de Zoom:</strong> Cuando Layout Unlocked está activo, deben aparecer controles flotantes <strong>+</strong> y <strong>-</strong> para un control más preciso. [file:1]</li>
-    </ul>
-    <h3>Gestos Móviles</h3>
-    <ul>
-      <li><strong>Paneo:</strong> Use un dedo para moverse por el lienzo.</li>
-      <li><strong>Pinch para Zoom:</strong> Use dos dedos para acercar o alejar.</li>
-      <li><strong>Seleccionar:</strong> Toque una vez para seleccionar un elemento de texto.</li>
-      <li><strong>Editar:</strong> Toque nuevamente después de seleccionar para colocar el cursor y mostrar el teclado.</li>
-      <li><strong>Arrastrar para Mover:</strong> Solo mientras Layout Unlocked esté activado.</li>
-    </ul>
-    <h3>Protección Multi-Touch</h3>
-    <p>Si comienza un gesto multitáctil mientras está arrastrando, el arrastre debe cancelarse o suprimirse inmediatamente para que el diseño no se desplace accidentalmente durante el pinch zoom. [file:1]</p>
-    <div class="callout"><strong>Mejor flujo en móvil:</strong> Mantenga Layout Locked activado mientras navega y edita texto. Desbloquee solo cuando vaya a reposicionar algo y vuelva a bloquear inmediatamente después. [file:1]</div>
-    <div class="footer"><span>Edición para Clientes</span><span>Página 12</span></div>
-  </section>
-
-  <section class="page page-break">
-    <h2>11. Solución de Problemas</h2>
-    <h3>Puedo escribir texto pero no puedo mover elementos</h3>
-    <p>Asegúrese de que <strong>Layout Unlocked</strong> esté activado. El editor se abre en <strong>Layout Locked</strong> por defecto. [file:1]</p>
-    <h3>Puedo mover elementos pero no puedo editar texto</h3>
-    <p>Asegúrese de que <strong>Edit Mode</strong> esté activado.</p>
-    <h3>No puedo ver todos los botones de la barra en mi teléfono</h3>
-    <p>Deslice a la izquierda o derecha sobre la barra inferior. En móvil, puede ser desplazable horizontalmente para que todas las herramientas quepan en pantalla.</p>
-    <h3>Mis cambios no aparecen en otro dispositivo</h3>
-    <p>Asegúrese de haber hecho clic en <strong>Save Session</strong> en el primer dispositivo antes de usar <strong>Load Session</strong> en el segundo. [file:1]</p>
-    <h3>La vista previa del editor se ve de menor calidad</h3>
-    <p>Esto es normal. El editor usa una vista previa ligera para mayor velocidad, mientras que <strong>Export Pro PNG</strong> usa la fuente original de alta resolución para el resultado final. [file:1]</p>
-    <div class="footer"><span>Dine In Menu Editor Pro</span><span>Página 13</span></div>
-  </section>
-
-  <section class="page page-break">
-    <h2>12. Buenas Prácticas</h2>
-    <ul>
-      <li>Mantenga <strong>Layout Locked</strong> activado a menos que esté moviendo elementos activamente.</li>
-      <li>Guarde después de cada sección importante del trabajo.</li>
-      <li>Use <strong>Undo Last Change</strong> inmediatamente cuando note un error. [file:1]</li>
-      <li>Revise su PNG exportado antes de enviarlo a impresión.</li>
-      <li>En móvil, haga zoom antes de seleccionar precios pequeños o texto fino.</li>
-      <li>Deslice la barra en móvil si no todas las herramientas están visibles.</li>
-      <li>Vuelva a bloquear el diseño inmediatamente después de mover cualquier elemento. [file:1]</li>
-    </ul>
-    <div class="footer"><span>Edición para Clientes</span><span>Página 14</span></div>
-  </section>
-
-  <section class="page page-break">
-    <h2>13. Especificaciones Técnicas</h2>
-    <p>Esta sección se incluye como un resumen técnico profesional del estado de producción aceptado. Ayuda a documentar los estándares de calidad y confiabilidad detrás del editor, incluso para lectores que no son técnicos. [file:1]</p>
+    <h3>Novedades en la Versión 2</h3>
     <div class="spec-grid">
       <div class="spec-card">
-        <h4>Estándar de Exportación</h4>
-        <p>La exportación final permanece como un PNG determinístico de alta resolución de <strong>12 pulgadas</strong> de ancho y <strong>300 DPI</strong>. [file:1]</p>
+        <h4>Sistema de Capas</h4>
+        <p>Cada elemento ahora tiene un rol de capa (Contenido, Fondo, Superposición), interruptor de visibilidad, interruptor de bloqueo y control de opacidad gestionados a través de un Panel de Capas dedicado.</p>
       </div>
       <div class="spec-card">
-        <h4>Fuente de Exportación</h4>
-        <p>La vista previa del editor está optimizada para velocidad, mientras que la exportación usa el fondo original de alta resolución. [file:1]</p>
+        <h4>Barra de Selección de 3 Pestañas</h4>
+        <p>Cuando selecciona cualquier elemento, aparece una barra de herramientas flotante con tres pestañas: Capa, Diseño y Organizar &mdash; dándole control total sobre cada propiedad sin abrir menús.</p>
       </div>
       <div class="spec-card">
-        <h4>Persistencia</h4>
-        <p>El guardado permanente está respaldado por servidor, con persistencia en volumen de Railway aceptada como base. [file:1]</p>
+        <h4>Biblioteca de Carga de Imágenes</h4>
+        <p>Cargue sus propias fotos y logotipos directamente desde su dispositivo. Se guardan permanentemente en su biblioteca y son accesibles desde la Bandeja de Activos en cualquier momento.</p>
       </div>
       <div class="spec-card">
-        <h4>Flujo Entre Dispositivos</h4>
-        <p>La persistencia entre dispositivos y navegadores fue verificada como parte del estado base aceptado. [file:1]</p>
+        <h4>Herramienta de Formas</h4>
+        <p>Añada rectángulos de colores con color de relleno personalizado, radio de esquina, ancho de borde y color de borde para crear etiquetas de precio, banners, divisores o bloques decorativos.</p>
       </div>
       <div class="spec-card">
-        <h4>Sistema de Undo</h4>
-        <p>Undo Last Change usa un historial real paso a paso que cubre ediciones de texto, movimientos, cambios de estilo, agregar texto y eliminar. [file:1]</p>
+        <h4>Control de Tamaño de Fuente</h4>
+        <p>Escriba directamente un número preciso de tamaño de fuente para cualquier elemento de texto. No más pasos de más/menos &mdash; escriba exactamente 17.5 o 33 o cualquier valor que necesite.</p>
       </div>
       <div class="spec-card">
-        <h4>Seguridad de Reinicio</h4>
-        <p>Reset to Original permanece separado de Undo Last Change y se conserva como una acción deliberada de restauración. [file:1]</p>
+        <h4>Guardado Automático al Exportar</h4>
+        <p>Cada vez que hace clic en Exportar, el editor guarda automáticamente su sesión primero para que su exportación siempre refleje el último estado guardado.</p>
       </div>
       <div class="spec-card">
-        <h4>Interacción Móvil</h4>
-        <p>El diseño se abre bloqueado por defecto en móvil, el arrastre se cancela durante multi-touch y aparecen controles flotantes <strong>+</strong> / <strong>-</strong> mientras está desbloqueado. [file:1]</p>
+        <h4>Redimensionamiento con Zoom</h4>
+        <p>Los tiradores de redimensionamiento de imagen ahora funcionan correctamente en cualquier nivel de zoom. Arrastrar una esquina siempre redimensiona en la cantidad correcta independientemente de cuánto zoom tenga aplicado.</p>
       </div>
       <div class="spec-card">
-        <h4>Rendimiento</h4>
-        <p>El tiempo de carga inicial se optimizó al sacar el fondo pesado de la ruta crítica del editor y mantener una vista previa ligera para edición. [file:1]</p>
-      </div>
-      <div class="spec-card">
-        <h4>Sistema de Notificaciones</h4>
-        <p>El editor usa un sistema de modales y toasts con marca propia en lugar de alertas nativas del navegador. [file:1]</p>
-      </div>
-      <div class="spec-card">
-        <h4>Estilo de Marca</h4>
-        <p>Los colores aprobados de notificación incluyen rojo profundo <strong>#95201d</strong>, amarillo <strong>#f8f4ad</strong>, negro y blanco. [file:1]</p>
+        <h4>Atajos de Teclado</h4>
+        <p>Ctrl+Z para Deshacer y Ctrl+E para Exportar están ahora disponibles para un flujo de trabajo profesional más rápido en escritorio.</p>
       </div>
     </div>
-    <div class="callout"><strong>Nota profesional:</strong> Estas especificaciones reflejan la base de producción estabilizada y ayudan a demostrar que el editor está construido sobre estándares deliberados de calidad, seguridad y salida profesional. [file:1]</div>
-    <div class="footer"><span>Dine In Menu Editor Pro</span><span>Página 15</span></div>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Manual Completo</span><span>Página 3</span></div>
   </section>
 
-  <section class="page">
-    <h2>14. Información del Documento</h2>
-    <p><strong>Título del Documento:</strong> Dine In Menu Editor Pro – Manual Profesional de Usuario<br>
-    <strong>Edición:</strong> Edición para Clientes<br>
-    <strong>Versión:</strong> 2.2<br>
-    <strong>Fecha de Lanzamiento:</strong> Marzo 2026<br>
-    <strong>Última Actualización:</strong> 14 de marzo de 2026<br>
-    <strong>Preparado Por:</strong> MARIAS DIGITAL DESIGNS<br>
-    <strong>Programa Por:</strong> MARIAS DIGITAL DESIGNS</p>
-    <p><strong>MARIAS DIGITAL DESIGNS</strong> creó esta guía y el programa Dine In Menu Editor Pro.</p>
-    <div class="footer"><span>Edición para Clientes</span><span>Página 16</span></div>
+  <section class="page page-break">
+    <h2>2. Antes de Comenzar</h2>
+
+    <h3>Navegadores Recomendados</h3>
+    <ul>
+      <li><strong>Google Chrome</strong> &mdash; La mejor experiencia general en escritorio y Android</li>
+      <li><strong>Microsoft Edge</strong> &mdash; Excelente en escritorio Windows</li>
+      <li><strong>Apple Safari</strong> &mdash; El mejor en iPhone y iPad</li>
+      <li><strong>Mozilla Firefox</strong> &mdash; Totalmente compatible en escritorio</li>
+    </ul>
+
+    <h3>Conexión a Internet</h3>
+    <p>Se requiere una conexión a internet activa para guardar en el servidor y cargar el trabajo guardado previamente en otro dispositivo. El editor también utilizará el almacenamiento local de su navegador como respaldo para que su trabajo más reciente esté protegido incluso si la conexión se interrumpe temporalmente.</p>
+
+    <h3>Tamaño de Pantalla y Orientación</h3>
+    <p>El editor funciona en cualquier tamaño de pantalla. En escritorio, verá el lienzo completo y todos los controles simultáneamente. En teléfonos, el lienzo llena la pantalla y los controles aparecen como una barra de herramientas flotante. Si está en un teléfono o tablet, la <strong>orientación horizontal</strong> le da más espacio de trabajo y facilita ver los controles de la barra de herramientas.</p>
+
+    <h3>Calidad de Vista Previa vs. Calidad de Exportación</h3>
+    <p>Mientras está editando, la imagen de fondo en el lienzo se muestra a una resolución más baja para que el editor se cargue rápidamente y se mantenga receptivo. <strong>Esto es normal e intencional.</strong> Cuando hace clic en Exportar PNG Pro, el editor utiliza automáticamente el archivo de fondo original a resolución completa, lo que produce un archivo de impresión nítido y profesional de 300 DPI independientemente de cómo se viera la vista previa.</p>
+
+    <div class="callout">
+      <strong>Mejor hábito:</strong> Guarde su sesión regularmente &mdash; especialmente después de completar una sección de trabajo, antes de cerrar el navegador y antes de cambiar a otro dispositivo. Un clic en Guardar protege todo.
+    </div>
+
+    <h3>Su Enlace del Editor</h3>
+    <p>Se accede a su editor a través de una dirección web privada (URL) proporcionada por MARIAS DIGITAL DESIGNS. Márquelo en su navegador para poder volver a él rápidamente. Nunca comparta este enlace públicamente &mdash; es su entorno de edición privado.</p>
+
+    <div class="callout tip">
+      <strong>Consejo:</strong> En iPhone o Android, puede guardar el enlace de su editor en su pantalla de inicio para que se abra como una aplicación. En Safari o Chrome, use el menú del navegador y seleccione &ldquo;Añadir a la pantalla de inicio&rdquo;.
+    </div>
+    <div class="footer"><span>Edición para el Cliente</span><span>Página 4</span></div>
+  </section>
+
+  <section class="page page-break">
+    <h2>3. Entendiendo el Diseño del Editor</h2>
+    <p>Cuando abra el editor, verá cuatro áreas principales. Entender qué hace cada área le ayudará a trabajar con confianza y eficiencia.</p>
+
+    <h3>Área 1 &mdash; La Barra de Encabezado Superior</h3>
+    <div class="ui-mock">
+      <div class="ui-label">Parte Superior de la Pantalla &mdash; Siempre Visible</div>
+      <div class="ui-row">
+        <span style="color:#f1c40f; font-weight:700; font-family:sans-serif;">MENU EDITOR PRO V2</span>
+        <span class="ui-btn green">&#128190; Guardar (Save)</span>
+        <span class="ui-btn">&#8634; Deshacer Último Cambio</span>
+        <span class="ui-btn primary">&#128274; Diseño Bloqueado (Locked)</span>
+        <span class="ui-btn">&#8634; RECARGAR (RELOAD)</span>
+      </div>
+    </div>
+    <p>La barra de encabezado superior recorre la parte superior de la pantalla en todo momento. Contiene sus controles más importantes: Guardar, Deshacer, el interruptor de Bloqueo de Diseño y un botón de Recargar. Estos son siempre accesibles sin importar lo que esté haciendo.</p>
+
+    <h3>Área 2 &mdash; El Lienzo (Área de Edición Principal)</h3>
+    <p>El área grande en el centro de la pantalla es el lienzo &mdash; este es su menú. El lienzo muestra una vista previa a escala de su menú de 12&times;18 pulgadas. Puede desplazarse por él, acercar y alejar, hacer clic en los elementos para seleccionarlos y arrastrarlos cuando el Diseño (Layout) está desbloqueado. Todo lo que ve en el lienzo es exactamente lo que aparecerá en su PNG exportado.</p>
+
+    <h3>Área 3 &mdash; El Botón de Acción Flotante (FAB)</h3>
+    <div class="ui-mock">
+      <div class="ui-label">Esquina Inferior Izquierda de la Pantalla</div>
+      <div class="ui-row">
+        <span class="ui-btn primary"
+          style="border-radius:50%; width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center;">&#128296;</span>
+        <span style="color:#aaa; font-size:12px;">&larr; Toque para abrir el Cajón de Herramientas</span>
+      </div>
+    </div>
+    <p>El botón circular &#128296; en la esquina inferior izquierda abre y cierra el Cajón de Herramientas. Este cajón contiene su bandeja de imágenes, todos los botones de acción (Añadir Texto, Añadir Rect, Cargar Imagen, Exportar, Restablecer, etc.) y el Panel de Capas.</p>
+
+    <h3>Área 4 &mdash; La Barra de Selección (Barra de Herramientas Contextual)</h3>
+    <div class="ui-mock">
+      <div class="ui-label">Aparece Sobre el Cajón Cuando se Selecciona un Elemento</div>
+      <div class="ui-row">
+        <span style="color:#666; font-size:18px;">&#10783;</span>
+        <span class="ui-btn accent" style="font-size:10px;">CAPA (LAYER)</span>
+        <span class="ui-btn" style="font-size:10px;">DISEÑO (DESIGN)</span>
+        <span class="ui-btn" style="font-size:10px;">ORGANIZAR (ARRANGE)</span>
+        <span class="ui-btn" style="background:#2980b9;">&#128203;</span>
+        <span class="ui-btn" style="background:#c0392b;">&#128465;</span>
+      </div>
+    </div>
+    <p>Cuando hace clic o toca cualquier elemento en el lienzo, aparece una barra de herramientas flotante. Esta es la Barra de Selección. Tiene tres pestañas &mdash; <strong>CAPA</strong>, <strong>DISEÑO</strong> y <strong>ORGANIZAR</strong> &mdash; cada una con diferentes controles para el elemento seleccionado. También puede arrastrar esta barra de herramientas a cualquier posición en la pantalla agarrando el tirador &#10783; en su lado izquierdo.</p>
+
+    <div class="callout tip">
+      <strong>Consejo:</strong> En el móvil, si la Barra de Selección se superpone a su trabajo, agarre el tirador de arrastre &#10783; a la izquierda y deslícela a una posición más cómoda. Se queda donde la ponga.
+    </div>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Manual Completo</span><span>Página 5</span></div>
+  </section>
+
+  <section class="page page-break">
+    <h2>4. Flujo de Trabajo de Inicio Rápido</h2>
+    <p>Si es nuevo en el editor, siga estos pasos para su primera sesión de edición. Cada paso se explica en detalle en las secciones posteriores de este manual.</p>
+
+    <div class="step-row"><span class="step-num">1</span>
+      <p><strong>Abra su enlace del editor</strong> en Google Chrome o Safari. El menú se carga automáticamente con su última sesión guardada.</p>
+    </div>
+    <div class="step-row"><span class="step-num">2</span>
+      <p><strong>Desbloquee el diseño</strong> haciendo clic en el botón &#128274; Layout Locked (Fondo Rojo) en el encabezado superior. Cambiará a amarillo y dirá &#128275; Layout Unlocked. Esto le permite hacer clic y seleccionar elementos.</p>
+    </div>
+    <div class="step-row"><span class="step-num">3</span>
+      <p><strong>Haga clic en cualquier elemento de texto</strong> en el lienzo para seleccionarlo. Aparecerá un cuadro de resaltado amarillo a su alrededor y la Barra de Selección aparecerá en la parte inferior de la pantalla.</p>
+    </div>
+    <div class="step-row"><span class="step-num">4</span>
+      <p><strong>Haga doble clic en el texto</strong> (o toque dos veces en el móvil) para colocar el cursor dentro de él. Escriba sus cambios &mdash; actualice un precio, corrija una falta de ortografía, cambie el nombre de un plato.</p>
+    </div>
+    <div class="step-row"><span class="step-num">5</span>
+      <p><strong>Haga clic en el fondo del lienzo</strong> (no en ningún elemento) para deseleccionar y terminar de editar ese texto.</p>
+    </div>
+    <div class="step-row"><span class="step-num">6</span>
+      <p><strong>Use la pestaña DISEÑO (DESIGN)</strong> en la Barra de Selección para cambiar la fuente, el color, el tamaño, la altura de línea o el espaciado entre letras del texto seleccionado.</p>
+    </div>
+    <div class="step-row"><span class="step-num">7</span>
+      <p><strong>Haga clic en &#128190; Guardar (Save)</strong> en la barra de encabezado superior para guardar su trabajo en el servidor. Verá una notificación confirmando el guardado.</p>
+    </div>
+    <div class="step-row"><span class="step-num">8</span>
+      <p><strong>Cuando su menú esté completo</strong>, abra el cajón (botón &#128296; FAB) y haga clic en &#8681; Export Pro PNG. Su archivo de 300 DPI listo para imprimir se descargará automáticamente.</p>
+    </div>
+
+    <div class="callout">
+      <strong>Recuerde:</strong> El botón de Bloqueo de Diseño (Layout Lock) controla si los elementos se pueden mover arrastrándolos. Manténgalo <strong>Bloqueado (Locked)</strong> siempre que solo esté editando texto o navegando por el menú. Desbloquéelo solo cuando necesite mover algo físicamente a una nueva posición, luego bloquéelo de nuevo inmediatamente.
+    </div>
+
+    <h3>Resumen de su Primera Sesión</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Objetivo</th>
+          <th>Qué Hacer</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Editar contenido de texto</td>
+          <td>Desbloquear diseño &rarr; Clic en elemento &rarr; Doble clic para escribir</td>
+        </tr>
+        <tr>
+          <td>Cambiar fuente o color</td>
+          <td>Clic en elemento &rarr; Pestaña DISEÑO &rarr; Elegir fuente / color / tamaño</td>
+        </tr>
+        <tr>
+          <td>Mover un elemento</td>
+          <td>Desbloquear diseño &rarr; Clic en elemento &rarr; Arrastrar a nueva posición</td>
+        </tr>
+        <tr>
+          <td>Añadir nuevo texto</td>
+          <td>Abrir cajón &rarr; &#65291; Add Text (Añadir Texto)</td>
+        </tr>
+        <tr>
+          <td>Añadir un logo o imagen</td>
+          <td>Abrir cajón &rarr; &#128444; Upload Img (Cargar Imagen) o clic en elemento de la bandeja</td>
+        </tr>
+        <tr>
+          <td>Guardar su trabajo</td>
+          <td>Botón &#128190; Save (Superior)</td>
+        </tr>
+        <tr>
+          <td>Exportar para imprimir</td>
+          <td>Abrir cajón &rarr; &#8681; Export Pro PNG o presione Ctrl+E</td>
+        </tr>
+        <tr>
+          <td>Deshacer un error</td>
+          <td>&#8634; Undo Last Change (Superior) o Ctrl+Z</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="footer"><span>Edición para el Cliente</span><span>Página 6</span></div>
+  </section>
+
+  <section class="page page-break">
+    <h2>5. La Barra de Encabezado Superior</h2>
+    <p>La barra de encabezado superior siempre está visible en la parte superior de la pantalla. Contiene cuatro controles que usará constantemente en cada sesión de edición.</p>
+
+    <div class="ui-mock">
+      <div class="ui-label">Encabezado Superior &mdash; Vista Completa</div>
+      <div class="ui-row">
+        <span style="color:#f1c40f; font-weight:700; font-family:sans-serif; letter-spacing:1px;">MENU EDITOR PRO V2</span>
+        <span class="ui-btn green">&#128190; Save</span>
+        <span class="ui-btn">&#8634; Undo Last Change</span>
+        <span class="ui-btn primary">&#128274; Layout Locked</span>
+        <span class="ui-btn">&#8634; RELOAD</span>
+      </div>
+    </div>
+
+    <h3>&#128190; Guardar (Save)</h3>
+    <p>Al hacer clic en <strong>Save</strong>, se guarda inmediatamente toda su sesión actual (contenido de texto, posiciones, estilos, ajustes de capa y colocación de imágenes) en el servidor. También crea un respaldo local en el navegador al mismo tiempo. Un mensaje verde confirmará: <em>&ldquo;Project Saved Locally&rdquo;</em>.</p>
+    <p>Use Guardar con frecuencia. No hay guardado automático programado &mdash; solo usted controla cuándo se guarda su trabajo.</p>
+    <div class="callout tip"><strong>Atajo:</strong> El guardado también se activa automáticamente cada vez que hace clic en Export Pro PNG, por lo que su exportación siempre coincide con su trabajo más reciente.</div>
+
+    <h3>&#8634; Deshacer (Undo Last Change)</h3>
+    <p>Al hacer clic en <strong>Undo Last Change</strong>, se revierte su acción más reciente paso a paso. El sistema de deshacer recuerda hasta 30 acciones, incluyendo ediciones de texto, movimientos de elementos, cambios de estilo, adiciones de elementos, eliminaciones, cambios de visibilidad y bloqueos. Puede hacer clic repetidamente para retroceder en su historial.</p>
+    <div class="callout warning"><strong>Importante:</strong> Deshacer NO revierte una acción de &ldquo;Reset to Original&rdquo; ni &ldquo;Load Session&rdquo;. Esas son acciones de restauración completa intencionadas.</div>
+
+    <h3>&#128274; Bloqueo de Diseño (Layout Locked / Unlocked)</h3>
+    <p>Este es uno de los controles más importantes del editor. Tiene dos estados:</p>
+    <ul>
+      <li><strong>&#128274; Layout Locked (por defecto, botón rojo):</strong> Los elementos no se pueden arrastrar o mover por accidente. Use este estado para toda la edición de texto, estilo y navegación general. El lienzo es seguro de tocar y desplazar.</li>
+      <li><strong>&#128275; Layout Unlocked (botón amarillo):</strong> Los elementos SE PUEDEN arrastrar a nuevas posiciones. Los controles de Zoom flotantes (+/&minus;) también aparecen en la esquina superior derecha cuando está desbloqueado. Use esto solo cuando necesite reposicionar algo intencionalmente, luego vuelva a Locked inmediatamente.</li>
+    </ul>
+    <div class="callout"><strong>Regla de oro:</strong> Si no está arrastrando algo activamente, el diseño debe estar bloqueado (Locked). Esto evita reposicionamientos accidentales, especialmente en móviles donde el toque es menos preciso.</div>
+
+    <h3>&#8634; RECARGAR (RELOAD)</h3>
+    <p>El botón <strong>RELOAD</strong> refresca toda la página. Es una recarga completa del navegador que restablece la sesión del editor. Úselo solo si el editor deja de responder o algo parece visualmente roto. <strong>Guarde su trabajo antes de hacer clic en RELOAD</strong> &mdash; cualquier cambio no guardado se perderá.</p>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Manual Completo</span><span>Página 7</span></div>
+  </section>
+
+  <section class="page page-break">
+    <h2>6. El Botón de Acción Flotante (FAB) y el Cajón</h2>
+    <p>El botón flotante &#128296; en la esquina inferior izquierda de la pantalla abre y cierra el <strong>Cajón de Herramientas (Tools Drawer)</strong> &mdash; su centro de mando principal para todas las acciones de edición.</p>
+
+    <div class="ui-mock">
+      <div class="ui-label">Cajón de Herramientas &mdash; Parte Inferior de la Pantalla</div>
+      <div class="ui-row" style="margin-bottom:10px;">
+        <span style="color:#aaa; font-size:11px;">[ Bandeja de Imágenes &mdash; fila desplazable de imágenes integradas y cargadas ]</span>
+      </div>
+      <div class="ui-row">
+        <span class="ui-btn primary">&#128190; Save Session</span>
+        <span class="ui-btn">&#128193; Load Session</span>
+        <span class="ui-btn">&#65291; Add Text</span>
+        <span class="ui-btn">&#9634; Add Rect</span>
+      </div>
+      <div class="ui-row">
+        <span class="ui-btn">&#128444; Upload Img</span>
+        <span class="ui-btn">&#128065; Toggle Original BG</span>
+        <span class="ui-btn accent">&#8681; Export Pro PNG</span>
+        <span class="ui-btn" style="background:#444;">&#8635; Reset to Original</span>
+      </div>
+      <div class="ui-row" style="margin-top:8px;">
+        <span style="color:#aaa; font-size:11px;">[ Panel de Capas &mdash; lista de todos los elementos ]</span>
+      </div>
+    </div>
+
+    <h3>&#128190; Guardar Sesión (Save Session)</h3>
+    <p>Igual que el botón Guardar en la barra de encabezado. Guarda todo su trabajo actual en el servidor permanentemente. También crea un respaldo en el almacenamiento local del navegador. Úselo siempre antes de cerrar el editor o cambiar de dispositivo.</p>
+
+    <h3>&#128193; Cargar Sesión (Load Session)</h3>
+    <p>Carga la última versión que guardó en el servidor. Use esto cuando abra el editor en un dispositivo diferente y quiera continuar donde lo dejó. <strong>Advertencia:</strong> Esto reemplazará su trabajo no guardado actual con la versión del servidor. Guarde primero si tiene cambios que desea conservar.</p>
+
+    <h3>&#65291; Añadir Texto (Add Text)</h3>
+    <p>Crea un nuevo elemento de texto en el centro de su vista actual. El nuevo texto dirá &ldquo;New Text&rdquo; y se seleccionará automáticamente para que pueda escribir su contenido inmediatamente, cambiar la fuente, el tamaño y el color desde la Barra de Selección.</p>
+
+    <h3>&#9634; Añadir Rectángulo (Add Rect)</h3>
+    <p>Crea una nueva forma de rectángulo amarillo en el centro del lienzo. Use rectángulos para crear fondos de etiquetas de precio, divisores de sección, banners de colores o cualquier bloque decorativo. Después de añadirlo, use la pestaña DISEÑO (DESIGN) en la Barra de Selección para cambiar el color de relleno, redondez de las esquinas, ancho del borde y color del borde.</p>
+
+    <h3>&#128444; Cargar Imagen (Upload Img)</h3>
+    <p>Abre el selector de archivos de su dispositivo para que pueda cargar una foto, logo o gráfico. Los formatos compatibles incluyen JPG, PNG, WEBP, GIF y SVG. La imagen se guarda automáticamente en su biblioteca de imágenes permanente (verá que aparece en la Bandeja de Activos) y se añade a su lienzo. Las imágenes PNG transparentes tienen sus bordes automáticos recortados para que encajen limpiamente.</p>
+
+    <h3>&#128065; Alternar Fondo Original (Toggle Original BG)</h3>
+    <p>Muestra u oculta la imagen de fondo escaneada original. Ocultarla le permite ver solo el texto y los elementos que ha añadido, lo que es útil para comprobar la alineación. El ajuste de visibilidad del fondo se guarda con su sesión.</p>
+
+    <h3>&#8681; Exportar PNG Pro (Export Pro PNG)</h3>
+    <p>Genera un archivo PNG profesional listo para imprimir de <strong>12 pulgadas &times; 18 pulgadas a 300 DPI</strong> (3600 &times; 5400 píxeles). El editor guarda automáticamente su sesión primero, luego renderiza cada elemento visible a resolución completa y descarga el archivo a su dispositivo. Esto se cubre con todo detalle en la Sección 19.</p>
+
+    <h3>&#8635; Restablecer al Original (Reset to Original)</h3>
+    <p>Restaura el menú a su estado de plantilla original, borrando todas sus ediciones personalizadas. Aparecerá un cuadro de diálogo pidiéndole que confirme antes de que ocurra el restablecimiento. <strong>Esto no se puede deshacer con el botón Deshacer.</strong> Úselo solo cuando desee un comienzo completamente nuevo.</p>
+
+    <div class="footer"><span>Edición para el Cliente</span><span>Página 8</span></div>
+  </section>
+
+  <section class="page page-break">
+    <h2>7. La Bandeja de Activos &ndash; Imágenes Integradas y Cargadas</h2>
+    <p>Dentro del Cajón de Herramientas, en la parte superior, encontrará la <strong>Bandeja de Activos (Asset Tray)</strong> &mdash; una fila de miniaturas de imágenes con desplazamiento horizontal. Estos son los activos gráficos integrados en su menú (bordes pre-diseñados, decoraciones, logotipos) además de cualquier imagen que haya cargado personalmente.</p>
+
+    <div class="ui-mock">
+      <div class="ui-label">Bandeja de Activos &mdash; Dentro del Cajón</div>
+      <div class="ui-row">
+        <span
+          style="display:inline-block; width:70px; height:60px; background:#333; border-radius:6px; border:2px solid #555; text-align:center; line-height:60px; font-size:20px;">&#128444;</span>
+        <span
+          style="display:inline-block; width:70px; height:60px; background:#333; border-radius:6px; border:2px solid #555; text-align:center; line-height:60px; font-size:20px;">&#128444;</span>
+        <span
+          style="display:inline-block; width:70px; height:60px; background:#333; border-radius:6px; border:2px solid #555; text-align:center; line-height:60px; font-size:20px;">&#128444;</span>
+        <span style="color:#aaa; font-size:12px;">&larr; Desplace a la izquierda/derecha para ver todas las imágenes</span>
+      </div>
+    </div>
+
+    <h3>Uso de Imágenes Integradas</h3>
+    <p>Las imágenes integradas son gráficos decorativos precargados diseñados para coincidir con el estilo visual de su menú. Para añadir una a su lienzo, simplemente <strong>haga clic o toque su miniatura</strong> en la bandeja. La imagen se colocará en el lienzo y se seleccionará automáticamente para que pueda reposicionarla y redimensionarla.</p>
+
+    <h3>Cargar sus Propias Imágenes</h3>
+    <ol>
+      <li>Haga clic en <strong>&#128444; Upload Img</strong> en el cajón.</li>
+      <li>Se abre el selector de archivos de su dispositivo. Seleccione un archivo JPG, PNG, WEBP, GIF o SVG.</li>
+      <li>La imagen se carga, se guarda en su biblioteca permanente, aparece en la Bandeja de Activos y se coloca en el lienzo automáticamente.</li>
+      <li>Use los tiradores de redimensionamiento (visibles al seleccionar) para ajustar su tamaño, luego arrástrela a su posición.</li>
+    </ol>
+
+    <div class="callout tip">
+      <strong>Consejo:</strong> Las imágenes cargadas persisten en su biblioteca de forma permanente. Incluso si limpia el lienzo y comienza de nuevo, sus imágenes cargadas seguirán en la Bandeja de Activos listas para ser usadas de nuevo.
+    </div>
+
+    <h3>Imágenes Transparentes (PNG con Transparencia)</h3>
+    <p>Si carga un archivo PNG con fondo transparente (como un logotipo), el editor recorta automáticamente el espacio transparente vacío alrededor de la imagen antes de colocarla, para que encaje limpiamente en su menú sin un recuadro blanco detrás.</p>
+
+    <h3>Consejos para Archivos de Imagen</h3>
+    <ul>
+      <li>Use <strong>PNG</strong> para logotipos y gráficos con fondos transparentes</li>
+      <li>Use <strong>JPG</strong> para fotografías de comida o de su restaurante</li>
+      <li>Para obtener la mejor calidad de impresión, cargue imágenes a una resolución de <strong>300 DPI o superior</strong></li>
+      <li>El límite de tamaño de archivo es generoso &mdash; la mayoría de las fotos de los teléfonos se cargan sin problemas</li>
+    </ul>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Manual Completo</span><span>Página 9</span></div>
+  </section>
+
+  <section class="page page-break">
+    <h2>8. Añadir y Gestionar Elementos de Texto</h2>
+
+    <h3>Añadir Nuevo Texto</h3>
+    <ol>
+      <li>Abra el cajón (botón &#128296; FAB).</li>
+      <li>Haga clic en <strong>&#65291; Add Text</strong>.</li>
+      <li>Un nuevo elemento llamado &ldquo;New Text&rdquo; aparece en el centro de su vista actual, ya seleccionado.</li>
+      <li>Haga doble clic (o toque dos veces en el móvil) para entrar en el modo de edición y escribir su contenido.</li>
+      <li>Haga clic en cualquier parte del fondo del lienzo para terminar la edición.</li>
+    </ol>
+
+    <h3>Seleccionar un Elemento de Texto Existente</h3>
+    <p>Asegúrese de que el diseño está desbloqueado (&#128275;), luego haga clic o toque una vez sobre cualquier elemento de texto. Aparecerá un borde amarillo brillante a su alrededor y la Barra de Selección se mostrará en la parte inferior. El elemento ahora está seleccionado.</p>
+
+    <h3>Editar el Contenido del Texto</h3>
+    <p>Con un elemento de texto seleccionado, <strong>haga doble clic en él</strong> (o toque dos veces en el móvil) para colocar el cursor dentro. El texto se vuelve editable &mdash; verá el cursor parpadeando. Escriba sus cambios: actualice un precio, corrija un nombre, cambie una descripción. Pulse Enter para una nueva línea. Cuando haya terminado, haga clic en el fondo del lienzo para confirmar.</p>
+
+    <div class="callout tip">
+      <strong>Consejo:</strong> El texto admite varias líneas. Pulse Enter/Return mientras edita para crear un salto de línea dentro del mismo elemento de texto.
+    </div>
+
+    <h3>Mover Elementos de Texto</h3>
+    <ol>
+      <li>Asegúrese de que el diseño está <strong>&#128275; Unlocked (Desbloqueado)</strong>.</li>
+      <li>Haga clic una vez en el elemento para seleccionarlo (NO haga doble clic &mdash; eso entraría en el modo de edición de texto).</li>
+      <li>Mantenga presionado y arrástrelo a su nueva posición.</li>
+      <li>Suelte. La nueva posición se registrará en el historial de deshacer.</li>
+      <li>Bloquee el diseño de nuevo con &#128274; una vez terminado.</li>
+    </ol>
+
+    <h3>Eliminar un Elemento de Texto</h3>
+    <p>Seleccione el elemento, luego en la Barra de Selección haga clic en el botón <strong>&#128465; Eliminar</strong> (icono de papelera roja en el lado derecho de la barra). Aparecerá un cuadro de diálogo de confirmación. Confirme la eliminación. Puede restaurar el elemento con <strong>&#8634; Undo Last Change</strong> si es necesario.</p>
+
+    <h3>Duplicar un Elemento</h3>
+    <p>Seleccione cualquier elemento. En la Barra de Selección, haga clic en el botón <strong>&#128203; Duplicar</strong>. Aparecerá una copia exacta del elemento, ligeramente desplazada del original. Se seleccionará automáticamente para que pueda moverla inmediatamente a su posición.</p>
+
+    <h3>Comportamiento de Texto Etiquetado como Fondo</h3>
+    <p>Si un elemento de texto se llama &ldquo;background&rdquo; y está configurado como Bloqueado (Locked) en la pestaña CAPA (LAYER), no responderá a la selección por clic mientras el diseño global esté bloqueado. Se comporta como una capa de fondo fija que no se puede mover ni seleccionar accidentalmente. Esto protege el diseño base de su menú.</p>
+    <div class="footer"><span>Edición para el Cliente</span><span>Página 10</span></div>
+  </section>
+
+  <section class="page page-break">
+    <h2>9. Añadir y Gestionar Elementos de Imagen</h2>
+
+    <h3>Añadir una Imagen desde la Bandeja de Activos</h3>
+    <p>Abra el cajón y haga clic en cualquier miniatura de imagen en la Bandeja de Activos. La imagen se colocará en el lienzo con un tamaño predeterminado y se seleccionará automáticamente. Arrástrela para posicionarla y use los tiradores circulares de las esquinas para cambiar su tamaño.</p>
+
+    <h3>Redimensionar Imágenes</h3>
+    <p>Cuando se selecciona un elemento de imagen, verá <strong>cuatro tiradores circulares amarillos</strong> en cada esquina. Estos son los tiradores de redimensionamiento.</p>
+    <ul>
+      <li><strong>Esquina inferior derecha:</strong> Arrastre para redimensionar la imagen libremente (ancho y alto de forma independiente).</li>
+      <li>El redimensionamiento es <strong>sensible al zoom</strong> &mdash; los tiradores funcionan correctamente ya sea que esté con un zoom del 200% o del 50%.</li>
+      <li>La protección de tamaño mínimo evita que las imágenes se reduzcan accidentalmente hasta desaparecer.</li>
+    </ul>
+
+    <div class="callout tip">
+      <strong>Consejo:</strong> Para redimensionar proporcionalmente (mantener la forma original de la imagen), mantenga presionada la tecla <strong>Shift</strong> mientras arrastra un tirador de esquina. La imagen se escalará en proporción automáticamente.
+    </div>
+
+    <h3>Mover Imágenes</h3>
+    <p>Igual que al mover texto &mdash; asegúrese de que el diseño está <strong>&#128275; Unlocked (Desbloqueado)</strong>, haga clic en la imagen para seleccionarla y luego arrástrela. El centro de la imagen es el objetivo de arrastre. Asegúrese de agarrar el cuerpo de la imagen, no uno de los tiradores de las esquinas (esos redimensionan, no mueven).</p>
+
+    <h3>Opacidad de la Imagen</h3>
+    <p>Seleccione un elemento de imagen, vaya a la pestaña <strong>CAPA (LAYER)</strong> en la Barra de Selección y use el <strong>deslizador de Opacidad</strong> para desvanecer la imagen. Útil para marcas de agua, fondos decorativos o superposiciones semitransparentes.</p>
+
+    <h3>Ocultar una Imagen</h3>
+    <p>En la pestaña CAPA (LAYER), haga clic en el interruptor de <strong>&#128065; Visibilidad</strong> para ocultar la imagen. Se volverá muy tenue (20% de opacidad) en el editor para que aún pueda ver dónde está, pero no aparecerá en su PNG exportado. Esto es útil para ocultar elementos temporalmente sin eliminarlos.</p>
+
+    <h3>Bloquear una Imagen en su Lugar</h3>
+    <p>En la pestaña CAPA (LAYER), haga clic en el interruptor de <strong>&#128274; Bloquear Elemento (Lock Element)</strong>. Un elemento bloqueado no se puede mover, redimensionar ni seleccionar accidentalmente. El bloqueo protege elementos importantes como marcos de fondo o marcas de agua que nunca deberían moverse.</p>
+
+    <div class="callout">
+      <strong>Imágenes de fondo:</strong> Cualquier elemento llamado &ldquo;background&rdquo; y configurado como Bloqueado (Locked) no responderá a la selección por clic cuando el diseño global esté bloqueado. Esto significa que la imagen de fondo de su menú permanece completamente protegida en todo momento.
+    </div>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Manual Completo</span><span>Página 11</span></div>
+  </section>
+
+  <section class="page page-break">
+    <h2>10. Añadir y Gestionar Elementos de Forma</h2>
+    <p>La herramienta de formas le permite añadir rectángulos de color sólido a su menú. Úselos para crear fondos de etiquetas de precio, banners de encabezado de sección, divisores de colores, cuadros de resaltado o cualquier bloque decorativo.</p>
+
+    <h3>Añadir un Rectángulo</h3>
+    <ol>
+      <li>Abra el cajón (&#128296; FAB).</li>
+      <li>Haga clic en <strong>&#9634; Add Rect</strong>.</li>
+      <li>Aparece un rectángulo amarillo en el lienzo, centrado en su vista actual, y se selecciona automáticamente.</li>
+      <li>Use la pestaña DISEÑO (DESIGN) en la Barra de Selección para personalizar su apariencia.</li>
+      <li>Arrástrelo a su posición y use los tiradores de redimensionamiento para ajustar el tamaño.</li>
+    </ol>
+
+    <h3>Personalización de la Apariencia de la Forma (Pestaña DISEÑO)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Control</th>
+          <th>Qué Hace</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Fill Color (Color de Relleno)</strong></td>
+          <td>Cambia el color sólido que rellena el rectángulo. Haga clic en la muestra de color para abrir el selector de color.</td>
+        </tr>
+        <tr>
+          <td><strong>Corner Radius (Radio de Esquina)</strong></td>
+          <td>Redondea las esquinas del rectángulo. Establézcalo en 0 para esquinas afiladas, o auméntelo para crear formas de píldora y tarjetas redondeadas.</td>
+        </tr>
+        <tr>
+          <td><strong>Border Width (Ancho del Borde)</strong></td>
+          <td>Establece el grosor del borde del contorno en píxeles. Establézcalo en 0 para que no haya borde.</td>
+        </tr>
+        <tr>
+          <td><strong>Border Color (Color del Borde)</strong></td>
+          <td>Establece el color del borde del contorno. Solo es visible cuando el Ancho del Borde es mayor que 0.</td>
+        </tr>
+        <tr>
+          <td><strong>Opacity (Opacidad)</strong></td>
+          <td>Disponible en la pestaña CAPA. Desvanezca la forma para obtener efectos de marca de agua o superposición.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Capas de Formas Detrás del Texto</h3>
+    <p>Para usar un rectángulo como fondo detrás del texto, añada la forma primero, posiciónela y redimensiónela, luego vaya a la pestaña <strong>ORGANIZAR (ARRANGE)</strong> y haga clic en <strong>Send to Back (Enviar al fondo)</strong> para moverla detrás de todos los demás elementos.</p>
+
+    <h3>Usos Comunes de las Formas</h3>
+    <ul>
+      <li><strong>Resaltado de precio:</strong> Rectángulo rojo oscuro o dorado detrás de un número de precio.</li>
+      <li><strong>Divisor de sección:</strong> Rectángulo horizontal delgado entre las secciones del menú.</li>
+      <li><strong>Distintivo de plato especial:</strong> Rectángulo redondeado en dorado o rojo detrás del texto &ldquo;Especial del Chef&rdquo;.</li>
+      <li><strong>Superposición semitransparente:</strong> Rectángulo negro de baja opacidad sobre una foto para mejorar la legibilidad del texto.</li>
+    </ul>
+    <div class="footer"><span>Edición para el Cliente</span><span>Página 12</span></div>
+  </section>
+
+  <section class="page page-break">
+    <h2>11. La Barra de Selección &ndash; Referencia Completa</h2>
+    <p>La Barra de Selección es la barra de herramientas flotante que aparece cada vez que hace clic en cualquier elemento (texto, imagen o forma). Es su herramienta principal para ajustar las propiedades de cualquier elemento. Contiene tres pestañas, un botón de Duplicar y un botón de Eliminar.</p>
+
+    <div class="ui-mock">
+      <div class="ui-label">Barra de Selección &mdash; Diseño Completo</div>
+      <div class="ui-row">
+        <span style="color:#888; font-size:18px; cursor:grab;">&#10783;</span>
+        <span class="ui-btn active" style="font-size:10px; font-weight:800;">LAYER</span>
+        <span class="ui-btn" style="font-size:10px; font-weight:800;">DESIGN</span>
+        <span class="ui-btn" style="font-size:10px; font-weight:800;">ARRANGE</span>
+        <span style="flex:1;"></span>
+        <span class="ui-btn" style="background:#2980b9; padding:5px 10px;">&#128203;</span>
+        <span class="ui-btn" style="background:#c0392b; padding:5px 10px;">&#128465;</span>
+      </div>
+    </div>
+
+    <h3>Arrastrar la Barra de Selección</h3>
+    <p>El tirarador de arrastre <strong>&#10783;</strong> en el extremo izquierdo de la barra se puede mantener presionado y arrastrar para mover toda la barra de herramientas a cualquier lugar de la pantalla. Esto es muy útil en el móvil cuando la barra bloquea parte del menú que está intentando ver.</p>
+
+    <h3>Botón &#128203; Duplicar (Duplicate) &mdash; Azul</h3>
+    <p>Crea una copia exacta del elemento seleccionado: mismo texto, estilo, tamaño y posición ligeramente desplazada. El duplicado se selecciona inmediatamente para que pueda moverlo a su lugar. Funciona para texto, imágenes y formas.</p>
+
+    <h3>Botón &#128465; Eliminar (Delete) &mdash; Rojo</h3>
+    <p>Elimina el elemento seleccionado tras un cuadro de diálogo de confirmación. La eliminación se registra en el historial de deshacer; puede restaurarlo con <strong>&#8634; Undo Last Change</strong> siempre que esté dentro del historial de 30 pasos.</p>
+
+    <h3>Resumen de Pestañas</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Pestaña</th>
+          <th>Disponible Para</th>
+          <th>Controles Internos</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>CAPA (LAYER)</strong></td>
+          <td>Todos los elementos</td>
+          <td>Alternar visibilidad, alternar bloqueo, deslizador de opacidad, nombre del elemento, rol (Contenido / Fondo / Superposición).</td>
+        </tr>
+        <tr>
+          <td><strong>DISEÑO (DESIGN)</strong></td>
+          <td>Texto: controles completos. Forma: relleno/borde. Imagen: opacidad.</td>
+          <td>Familia de fuentes, tamaño de fuente (entrada numérica), negrita, cursiva, color de texto, espaciado entre letras, altura de línea, alineación del texto. Formas: color de relleno, radio de esquina, ancho de borde, color de borde.</td>
+        </tr>
+        <tr>
+          <td><strong>ORGANIZAR (ARRANGE)</strong></td>
+          <td>Todos los elementos</td>
+          <td>Entradas de posición X/Y exacta, entradas de ancho/alto, deslizador de rotación (0&ndash;360&deg;), Traer al Frente, Enviar Atrás, Traer Adelante, Enviar al Fondo.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout tip">
+      <strong>Consejo:</strong> En el móvil, la Barra de Selección se desplaza horizontalmente. Si no puede ver una pestaña o botón, deslice hacia la izquierda o derecha sobre la propia barra para revelar el resto de los controles.
+    </div>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Manual Completo</span><span>Página 13</span></div>
+  </section>
+
+  <section class="page page-break">
+    <h2>12. La Pestaña CAPA (LAYER) &ndash; Visibilidad, Opacidad, Bloqueo y Rol</h2>
+    <p>La pestaña <strong>CAPA (LAYER)</strong> aparece primero en la Barra de Selección cuando selecciona cualquier elemento. Controla la visibilidad del elemento, si se puede mover, su transparencia, su nombre y su rol en el diseño del menú.</p>
+
+    <div class="ui-mock">
+      <div class="ui-label">Controles de la Pestaña CAPA</div>
+      <div class="ui-row">
+        <span class="ui-btn active" style="font-size:10px;">LAYER</span>
+        <span style="color:#aaa;">|</span>
+        <span class="ui-btn" style="font-size:11px;">&#128065; Visible</span>
+        <span class="ui-btn" style="font-size:11px;">&#128275; Unlocked</span>
+        <span style="color:#aaa;">Opacidad:</span>
+        <span style="color:#f1c40f; font-size:12px;">[========80%===]</span>
+      </div>
+      <div class="ui-row">
+        <span style="color:#aaa; font-size:11px;">Nombre: </span>
+        <span style="color:#fff; font-size:12px;">[price-header_____]</span>
+        <span style="color:#aaa; font-size:11px;">Rol: </span>
+        <span class="ui-btn" style="font-size:10px;">Content &#9660;</span>
+      </div>
+    </div>
+
+    <h3>Alternar Visibilidad &#128065;</h3>
+    <p>Cambia el elemento entre visible y oculto. Los elementos ocultos se muestran muy tenues (&#128584; con 20% de opacidad) en el editor para que aún pueda ver su posición, pero son completamente invisibles en el PNG exportado. Use esto para eliminar temporalmente elementos sin borrarlos.</p>
+
+    <h3>Alternar Bloqueo de Elemento &#128274;</h3>
+    <p>Cuando está bloqueado, el elemento no se puede seleccionar, mover ni redimensionar. El cursor cambia cuando pasa por encima de un elemento bloqueado para indicar que está protegido. Desbloquee un elemento en cualquier momento seleccionándolo en el Panel de Capas y desactivando el bloqueo. Esto es especialmente útil para marcos de fondo y elementos anclados que nunca deben moverse.</p>
+
+    <h3>Deslizador de Opacidad</h3>
+    <p>Arrastre el deslizador a la izquierda para hacer el elemento más transparente, y a la derecha para hacerlo totalmente opaco. El valor va de 0% (completamente invisible) a 100% (totalmente sólido). Los cambios son visibles inmediatamente en el lienzo y se registran en el historial de deshacer.</p>
+
+    <h3>Nombre del Elemento</h3>
+    <p>Cada elemento tiene un nombre que se utiliza para identificarlo en el Panel de Capas. Puede escribir un nuevo nombre en el campo de nombre para darle una etiqueta significativa como &ldquo;titulo-principal&rdquo; o &ldquo;seccion-precios-2&rdquo;. El nombre no aparece en el menú &mdash; solo se usa internamente para la organización.</p>
+
+    <h3>Rol (Contenido / Fondo / Superposición)</h3>
+    <ul>
+      <li><strong>Contenido (Content)</strong> &mdash; Por defecto. Un elemento estándar que participa normalmente en el diseño.</li>
+      <li><strong>Fondo (Background)</strong> &mdash; El elemento se trata como una capa de fondo. Si también está bloqueado (Locked), no responderá a la selección por clic mientras el diseño global esté bloqueado, protegiendo completamente el diseño base.</li>
+      <li><strong>Superposición (Overlay)</strong> &mdash; El elemento se trata como una capa superior de superposición, renderizándose siempre por encima de los elementos de Contenido en la exportación final.</li>
+    </ul>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Manual Completo</span><span>Página 14</span></div>
+  </section>
+
+  <section class="page page-break">
+    <h2>13. La Pestaña DISEÑO (DESIGN) &ndash; Fuentes, Color, Tamaño y Espaciado</h2>
+    <p>La pestaña <strong>DISEÑO (DESIGN)</strong> contiene todos los controles de estilo para el elemento seleccionado. Los controles mostrados dependen del tipo de elemento: los elementos de texto muestran la suite tipográfica completa, las formas muestran los controles de relleno y borde.</p>
+
+    <div class="ui-mock">
+      <div class="ui-label">Pestaña DISEÑO &mdash; Controles de Elemento de Texto</div>
+      <div class="ui-row">
+        <span style="color:#aaa; font-size:11px;">Fuente:</span>
+        <span class="ui-btn" style="font-size:11px;">Century Gothic &#9660;</span>
+        <span style="color:#aaa; font-size:11px;">Tamaño:</span>
+        <span
+          style="background:#222; color:#f1c40f; border:1px solid #555; border-radius:6px; padding:4px 8px; font-size:12px;">24</span>
+        <span class="ui-btn" style="font-size:11px; font-weight:700;">B</span>
+        <span class="ui-btn" style="font-size:11px; font-style:italic;">I</span>
+      </div>
+      <div class="ui-row">
+        <span style="color:#aaa; font-size:11px;">Color:</span>
+        <span
+          style="display:inline-block; width:24px; height:24px; background:#95201d; border-radius:4px; border:2px solid #fff;"></span>
+        <span style="color:#aaa; font-size:11px;">Espaciado:</span>
+        <span class="ui-btn" style="font-size:11px;">&minus; 0.05em +</span>
+        <span style="color:#aaa; font-size:11px;">Altura L:</span>
+        <span class="ui-btn" style="font-size:11px;">&minus; 1.4 +</span>
+      </div>
+    </div>
+
+    <h3>Selector de Familia de Fuentes</h3>
+    <p>Haga clic en el desplegable de fuentes para ver todas las fuentes disponibles. El editor incluye: <strong>Century Gothic</strong>, <strong>Century Gothic Bold</strong>, <strong>Century Gothic Bold Italic</strong>, <strong>Bernard MT Condensed</strong> e <strong>Inter</strong>. Todas las fuentes utilizan <code>font-display: swap</code> para una visualización instantánea mientras se cargan.</p>
+
+    <h3>Tamaño de Fuente (Entrada Numérica)</h3>
+    <p>Haga clic en el campo numérico junto a &ldquo;Size&rdquo; y escriba cualquier número directamente. Puede introducir valores como 14, 24.5, 36 o 72. Pulse Tab o haga clic en otro lugar para aplicar. Esta entrada precisa le permite establecer tamaños exactos sin tener que hacer clic repetidamente.</p>
+
+    <h3>Negrita (Bold) y Cursiva (Italic)</h3>
+    <p>Haga clic en <strong>B</strong> para activar o desactivar el peso en negrita. Haga clic en <strong>I</strong> para activar o desactivar el estilo de cursiva. Ambos pueden estar activos simultáneamente.</p>
+
+    <h3>Color del Texto</h3>
+    <p>Haga clic en el cuadrado coloreado para abrir un selector de color completo. Elija cualquier color usando la rueda de colores, o escriba un código hexadecimal directamente (ej. <code>#95201d</code> para el rojo de la marca). El color se aplica inmediatamente y se guarda con su sesión.</p>
+
+    <h3>Espaciado entre Letras</h3>
+    <p>Use los botones &minus; y + para disminuir o aumentar el espacio entre las letras individuales. Un valor de 0 es el espaciado normal. Los valores positivos separan las letras para un aspecto de titular elegante.</p>
+
+    <h3>Altura de Línea</h3>
+    <p>Use los botones &minus; y + para ajustar el espacio entre las líneas de texto. Un valor de 1.4 significa que el interlineado es 1.4 veces el tamaño de la fuente. Auméntelo para dar más espacio en descripciones largas.</p>
+
+    <h3>Alineación del Texto</h3>
+    <p>Los botones de alineación (Izquierda, Centro, Derecha) controlan cómo se alinea el texto dentro de su cuadro de elemento. El centro es común para títulos y precios; la izquierda es estándar para las descripciones.</p>
+
+    <div class="callout tip">
+      <strong>Diseño de Formas:</strong> Cuando se selecciona una forma en la pestaña DISEÑO (DESIGN), verá Color de Relleno, Radio de Esquina, Ancho de Borde y Color de Borde en lugar de los controles de tipografía.
+    </div>
+    <div class="footer"><span>Edición para el Cliente</span><span>Página 15</span></div>
+  </section>
+
+  <section class="page page-break">
+    <h2>14. La Pestaña ORGANIZAR (ARRANGE) &ndash; Posición, Orden y Rotación</h2>
+    <p>La pestaña <strong>ORGANIZAR (ARRANGE)</strong> le ofrece un control numérico preciso sobre la posición, el tamaño y el orden de capas de un elemento. También incluye un control de rotación.</p>
+
+    <div class="ui-mock">
+      <div class="ui-label">Controles de la Pestaña ORGANIZAR</div>
+      <div class="ui-row">
+        <span style="color:#aaa; font-size:11px;">X:</span>
+        <span
+          style="background:#222; color:#f1c40f; border:1px solid #555; border-radius:6px; padding:4px 8px; font-size:12px;">142</span>
+        <span style="color:#aaa; font-size:11px;">Y:</span>
+        <span
+          style="background:#222; color:#f1c40f; border:1px solid #555; border-radius:6px; padding:4px 8px; font-size:12px;">87</span>
+        <span style="color:#aaa; font-size:11px;">W:</span>
+        <span
+          style="background:#222; color:#f1c40f; border:1px solid #555; border-radius:6px; padding:4px 8px; font-size:12px;">280</span>
+        <span style="color:#aaa; font-size:11px;">H:</span>
+        <span
+          style="background:#222; color:#f1c40f; border:1px solid #555; border-radius:6px; padding:4px 8px; font-size:12px;">40</span>
+      </div>
+      <div class="ui-row">
+        <span style="color:#aaa; font-size:11px;">Rotar:</span>
+        <span style="color:#f1c40f;">[====15&deg;=========]</span>
+        <span class="ui-btn" style="font-size:11px;">&#8679; Fwd</span>
+        <span class="ui-btn" style="font-size:11px;">&#8681; Back</span>
+        <span class="ui-btn" style="font-size:11px;">&#8679;&#8679; Top</span>
+        <span class="ui-btn" style="font-size:11px;">&#8681;&#8681; Bottom</span>
+      </div>
+    </div>
+
+    <h3>Posición X e Y</h3>
+    <p>Los campos X e Y muestran la posición exacta del elemento en píxeles medidos desde la esquina superior izquierda del lienzo. Escriba un nuevo número para mover el elemento a una coordenada exacta. Es muy útil para alinear varios elementos con el mismo valor X.</p>
+
+    <h3>Ancho (Width) y Alto (Height)</h3>
+    <p>Muestra y establece el tamaño exacto del elemento en píxeles. Escriba nuevos valores para redimensionar con precisión. En los elementos de texto, el ancho determina el límite de ajuste del texto.</p>
+
+    <h3>Rotación</h3>
+    <p>Arrastre el deslizador de rotación o escriba un valor de grados (0&ndash;360) para rotar el elemento alrededor de su punto central. Útil para etiquetas inclinadas, marcas de agua o texto decorativo en ángulo.</p>
+
+    <h3>Controles de Orden de Capas</h3>
+    <ul>
+      <li><strong>&#8679; Traer Adelante (Bring Forward):</strong> Mueve el elemento una capa hacia adelante, delante del siguiente elemento que tenga por encima.</li>
+      <li><strong>&#8681; Enviar Atrás (Send Backward):</strong> Mueve el elemento una capa hacia atrás, detrás del siguiente elemento que tenga por debajo.</li>
+      <li><strong>&#8679;&#8679; Traer al Frente (Bring to Front):</strong> Mueve el elemento al frente de todo, por encima de cualquier otro elemento.</li>
+      <li><strong>&#8681;&#8681; Enviar al Fondo (Send to Back):</strong> Mueve el elemento al fondo de todo, detrás de cualquier otro elemento.</li>
+    </ul>
+    <div class="callout tip">
+      <strong>Uso común:</strong> Cuando añada un rectángulo detrás de un texto, haga clic en el rectángulo, vaya a ORGANIZAR &rarr; Enviar al fondo (Send to Back). El texto aparecerá siempre encima de la forma de fondo coloreada.
+    </div>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Manual Completo</span><span>Página 16</span></div>
+  </section>
+
+  <section class="page page-break">
+    <h2>15. El Panel de Capas</h2>
+    <p>El <strong>Panel de Capas (Layers Panel)</strong> se encuentra en la parte inferior del Cajón de Herramientas. Muestra una lista completa de cada elemento de su lienzo para que pueda verlos, seleccionarlos, ocultarlos, bloquearlos y organizarlos todos desde un solo lugar.</p>
+
+    <div class="ui-mock">
+      <div class="ui-label">Panel de Capas &mdash; Dentro del Cajón</div>
+      <div style="background:#222; border-radius:8px; padding:8px; margin-top:8px;">
+        <div
+          style="display:flex; align-items:center; gap:10px; padding:6px 8px; background:#333; border-radius:6px; margin-bottom:4px; font-family:sans-serif; font-size:12px;">
+          <span style="color:#f1c40f;">&#9733;</span>
+          <span style="color:#ccc; flex:1;">main-title</span>
+          <span style="color:#f1c40f; font-size:11px;">T</span>
+          <span style="color:#aaa;">&#128065;</span>
+          <span style="color:#aaa;">&#128275;</span>
+        </div>
+        <div
+          style="display:flex; align-items:center; gap:10px; padding:6px 8px; margin-bottom:4px; font-family:sans-serif; font-size:12px;">
+          <span style="color:#888;">&#9675;</span>
+          <span style="color:#ccc; flex:1;">price-section-1</span>
+          <span style="color:#f1c40f; font-size:11px;">T</span>
+          <span style="color:#aaa;">&#128065;</span>
+          <span style="color:#aaa;">&#128275;</span>
+        </div>
+        <div
+          style="display:flex; align-items:center; gap:10px; padding:6px 8px; margin-bottom:4px; font-family:sans-serif; font-size:12px;">
+          <span style="color:#888;">&#9675;</span>
+          <span style="color:#999; flex:1; text-decoration:line-through;">logo-image</span>
+          <span style="color:#3498db; font-size:11px;">I</span>
+          <span style="color:#666;">&#128584;</span>
+          <span style="color:#aaa;">&#128274;</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>Lectura del Panel de Capas</h3>
+    <ul>
+      <li><strong>Indicador activo (&#9733;/&#9675;):</strong> El elemento seleccionado actualmente se resalta con un borde dorado y una estrella.</li>
+      <li><strong>Nombre del elemento:</strong> La etiqueta que asignó en la pestaña CAPA (LAYER).</li>
+      <li><strong>Insignia de tipo (T/I/S):</strong> T = Texto (Text), I = Imagen (Image), S = Forma (Shape).</li>
+      <li><strong>Icono de visibilidad (&#128065;/&#128584;):</strong> Haga clic para alternar entre visible u oculto.</li>
+      <li><strong>Icono de bloqueo (&#128275;/&#128274;):</strong> Haga clic para bloquear o desbloquear el elemento.</li>
+      <li><strong>Nombre tachado:</strong> Indica que el elemento está oculto actualmente.</li>
+    </ul>
+
+    <h3>Seleccionar Elementos desde el Panel de Capas</h3>
+    <p>Haga clic en la fila de cualquier elemento en el Panel de Capas para seleccionar ese elemento en el lienzo. Esto es especialmente útil para seleccionar elementos que están ocultos, apilados debajo de otros elementos o que son demasiado pequeños para hacer clic con precisión en el lienzo.</p>
+
+    <h3>Alternar Visibilidad y Bloqueo desde el Panel</h3>
+    <p>Haga clic en el icono de visibilidad o de bloqueo en cualquier fila para cambiar instantáneamente el estado de ese elemento sin seleccionarlo primero. Esto le permite gestionar rápidamente varios elementos seguidos.</p>
+    <div class="footer"><span>Edición para el Cliente</span><span>Página 17</span></div>
+  </section>
+
+  <section class="page page-break">
+    <h2>16. Bloqueo de Diseño vs. Modo de Edición</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Estado</th>
+          <th>Qué Controla</th>
+          <th>Cuándo Usarlo</th>
+          <th>Color del Botón</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>&#128274; Layout Locked (Bloqueado)</strong></td>
+          <td>Los elementos no se pueden arrastrar ni reposicionar. El lienzo es seguro para desplazarse y tocar. El texto se puede seguir editando haciendo doble clic.</td>
+          <td>Cualquier momento en que esté editando texto, cambiando estilos, revisando el menú o en dispositivos móviles. Es el estado por defecto y más seguro.</td>
+          <td>Rojo</td>
+        </tr>
+        <tr>
+          <td><strong>&#128275; Layout Unlocked (Desbloqueado)</strong></td>
+          <td>Los elementos se pueden arrastrar a nuevas posiciones. Los controles de zoom (+ / &minus;) aparecen en la esquina superior derecha.</td>
+          <td>Solo cuando necesite arrastrar un elemento específicamente para reposicionarlo. Bloquee de nuevo inmediatamente después.</td>
+          <td>Amarillo</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout warning">
+      <strong>Precaución en móviles:</strong> Cuando el Diseño está Desbloqueado (Unlocked) en un dispositivo móvil, es posible el movimiento táctil accidental. Vuelva a bloquear siempre después de reposicionar cualquier elemento.
+    </div>
+
+    <h2 style="margin-top: 32px;">17. Guardar, Cargar y Guardado Automático</h2>
+
+    <h3>&#128190; Guardar Sesión (Save Session)</h3>
+    <p>Guarda todo su estado actual en el servidor. Esto incluye el contenido de cada elemento, posición, estilo, ajustes de capa, visibilidad, estado de bloqueo y las posiciones de todas las imágenes personalizadas. Verá un mensaje verde: <em>&ldquo;Project Saved Locally&rdquo;</em>.</p>
+
+    <h3>&#128193; Cargar Sesión (Load Session)</h3>
+    <p>Carga la última versión guardada en el servidor de su menú. Use esto al continuar en un nuevo dispositivo o navegador. Todos los cambios locales no guardados serán reemplazados por la versión del servidor. Guarde siempre antes de cargar si tiene trabajo no guardado que desea conservar.</p>
+
+    <h3>Guardado Automático al Exportar</h3>
+    <p>Cada vez que hace clic en <strong>&#8681; Export Pro PNG</strong>, el editor ejecuta automáticamente un Guardado (Save) primero. Esto asegura que su archivo exportado coincida exactamente con lo que está guardado en el servidor.</p>
+
+    <h3>Respaldo Local del Navegador</h3>
+    <p>Además del guardado en el servidor, el editor mantiene un respaldo local en el almacenamiento de su navegador. Esto protege su trabajo más reciente incluso si su conexión a internet se interrumpe temporalmente.</p>
+
+    <div class="callout">
+      <strong>Mejor práctica:</strong> Guarde después de completar cada sección del menú, antes de cerrar el navegador y antes de cambiar a otro dispositivo. Estos tres hábitos protegen todo su trabajo.
+    </div>
+    <div class="footer"><span>Edición para el Cliente</span><span>Página 18</span></div>
+  </section>
+
+  <section class="page page-break">
+    <h2>18. Historial de Deshacer</h2>
+    <p>El sistema de deshacer le permite revertir errores paso a paso. El editor recuerda sus últimas <strong>30 acciones</strong> en su pila de historial.</p>
+
+    <h3>Qué Cubre el Deshacer</h3>
+    <ul>
+      <li>Cambios en el contenido del texto (escribir, borrar caracteres)</li>
+      <li>Cambios de familia de fuente, tamaño de fuente, color, negrita/cursiva</li>
+      <li>Cambios de espaciado entre letras y altura de línea</li>
+      <li>Movimientos de elementos (arrastrar a nueva posición)</li>
+      <li>Adiciones de elementos (Añadir Texto, Añadir Rect, colocación de imagen)</li>
+      <li>Eliminaciones de elementos</li>
+      <li>Alternancias de visibilidad</li>
+      <li>Alternancias de bloqueo</li>
+      <li>Cambios en el estilo de relleno/borde de las formas</li>
+      <li>Cambios de opacidad</li>
+      <li>Cambios de rotación</li>
+      <li>Cambios en el orden de las capas (traer adelante, enviar atrás)</li>
+    </ul>
+
+    <h3>Qué NO Cubre el Deshacer</h3>
+    <ul>
+      <li><strong>Reset to Original (Restablecer al Original)</strong> &mdash; se trata de una restauración completa intencionada, no se puede deshacer.</li>
+      <li><strong>Load Session (Cargar Sesión)</strong> &mdash; reemplaza todo el estado desde el servidor.</li>
+      <li>Cambios realizados antes del límite de historial de 30 pasos.</li>
+    </ul>
+
+    <div class="callout tip">
+      <strong>Atajo:</strong> Presione <span class="kbd">Ctrl</span> + <span class="kbd">Z</span> en Windows/Linux, o <span class="kbd">Cmd</span> + <span class="kbd">Z</span> en Mac, para deshacer sin hacer clic en el botón. Funciona en cualquier momento mientras el editor está abierto.
+    </div>
+
+    <h2 style="margin-top: 36px;">19. Exportación Pro PNG &ndash; Salida Lista para Imprimir</h2>
+    <p>Cuando su menú esté completo, la Exportación Pro PNG crea el archivo profesional final para la impresión. Esta es la salida más importante de todo el editor.</p>
+
+    <h3>Qué Produce la Exportación</h3>
+    <ul>
+      <li>Un <strong>archivo de imagen PNG</strong> descargado directamente a su dispositivo.</li>
+      <li>Resolución: <strong>3600 &times; 5400 píxeles</strong>.</li>
+      <li>Tamaño de impresión: <strong>12 pulgadas &times; 18 pulgadas a 300 DPI</strong>.</li>
+      <li>Todos los elementos visibles se renderizan a máxima calidad.</li>
+      <li>Los elementos ocultos se excluyen automáticamente de la exportación.</li>
+      <li>Se utiliza el fondo original a resolución completa (no la vista previa del editor).</li>
+    </ul>
+
+    <h3>Cómo Exportar</h3>
+    <ol>
+      <li>Abra el cajón (botón &#128296; FAB).</li>
+      <li>Haga clic en <strong>&#8681; Export Pro PNG</strong>.</li>
+      <li>El editor guarda automáticamente su sesión primero (aparece la confirmación del guardado).</li>
+      <li>Un mensaje de progreso muestra &ldquo;Rendering export&hellip;&rdquo;.</li>
+      <li>El archivo se descarga automáticamente en la carpeta de Descargas de su dispositivo.</li>
+      <li>Un mensaje de finalización confirma que la exportación está lista.</li>
+    </ol>
+
+    <div class="callout tip">
+      <strong>Atajo de teclado:</strong> Presione <span class="kbd">Ctrl</span> + <span class="kbd">E</span> (o <span class="kbd">Cmd</span> + <span class="kbd">E</span> en Mac) para activar la exportación instantáneamente desde cualquier lugar del editor.
+    </div>
+
+    <div class="callout warning">
+      <strong>Antes de enviar a imprimir:</strong> Abra el PNG exportado y amplíelo para verificar que todo el texto es nítido y está correctamente colocado. Confirme que los precios y los nombres son exactos. Envíe el archivo a su imprenta tal cual &mdash; no reduzca su resolución.
+    </div>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Manual Completo</span><span>Página 19</span></div>
+  </section>
+
+  <section class="page page-break">
+    <h2>20. Atajos de Teclado</h2>
+    <p>Estos atajos funcionan en computadoras de escritorio y portátiles. Aceleran significativamente su flujo de trabajo una vez que los aprende.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Atajo (Windows/Linux)</th>
+          <th>Atajo (Mac)</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="kbd">Ctrl</span> + <span class="kbd">Z</span></td>
+          <td><span class="kbd">Cmd</span> + <span class="kbd">Z</span></td>
+          <td>Deshacer último cambio (Undo Last Change)</td>
+        </tr>
+        <tr>
+          <td><span class="kbd">Ctrl</span> + <span class="kbd">E</span></td>
+          <td><span class="kbd">Cmd</span> + <span class="kbd">E</span></td>
+          <td>Exportar PNG Pro (guarda automáticamente primero)</td>
+        </tr>
+        <tr>
+          <td><span class="kbd">Suprimir</span> o <span class="kbd">Retroceso</span></td>
+          <td><span class="kbd">Delete</span></td>
+          <td>Eliminar elemento seleccionado (con confirmación)</td>
+        </tr>
+        <tr>
+          <td><span class="kbd">Escape</span></td>
+          <td><span class="kbd">Escape</span></td>
+          <td>Deseleccionar elemento actual / Cerrar editor de texto activo</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout tip">
+      <strong>Nota:</strong> Los atajos de teclado solo funcionan cuando el cursor de edición de texto NO está activo dentro de un elemento. Si está escribiendo activamente dentro de un elemento de texto, <span class="kbd">Ctrl+Z</span> deshará dentro del campo de texto, no el historial del editor.
+    </div>
+
+    <h2 style="margin-top: 36px;">21. Zoom y Navegación por el Lienzo</h2>
+    <p>El lienzo del editor se puede ampliar y desplazar para que pueda trabajar cómodamente en cualquier nivel de detalle.</p>
+
+    <h3>Controles de Zoom (Modo Diseño Desbloqueado)</h3>
+    <p>Cuando el diseño está <strong>&#128275; Unlocked (Desbloqueado)</strong>, aparecen dos botones de zoom flotantes en la esquina superior derecha de la pantalla:</p>
+    <ul>
+      <li><strong>Botón ＋:</strong> Acerca el lienzo (hace que todo parezca más grande).</li>
+      <li><strong>Botón &minus;:</strong> Aleja el lienzo (muestra una mayor parte del menú a la vez).</li>
+    </ul>
+
+    <h3>Pellizcar para Zoom (Móvil)</h3>
+    <p>En el móvil, use el gesto de pellizcar con dos dedos en el lienzo para acercar y alejar en cualquier momento, independientemente de si el diseño está bloqueado o desbloqueado.</p>
+
+    <h3>Desplazamiento por el Lienzo</h3>
+    <p>Use un solo dedo (móvil) o haga clic y arrastre en el fondo del lienzo (escritorio) para desplazarse por el menú. El lienzo admite el desplazamiento en todas las direcciones cuando se aplica zoom.</p>
+
+    <h3>Edición con Zoom</h3>
+    <p>Todas las operaciones de edición &mdash; hacer clic, arrastrar, redimensionar &mdash; funcionan correctamente en cualquier nivel de zoom. Los tiradores de redimensionamiento de las imágenes compensan el nivel de zoom actual para que el arrastre de una esquina siempre redimensione en la cantidad visual correcta.</p>
+
+    <h3>Volver a la Vista Predeterminada</h3>
+    <p>Si se pierde o se aleja demasiado, vuelva al centro de la página o use el zoom nativo del navegador (<span class="kbd">Ctrl</span>+<span class="kbd">0</span> en escritorio) para restablecer el nivel de zoom del navegador al 100%.</p>
+    <div class="footer"><span>Edición para el Cliente</span><span>Página 20</span></div>
+  </section>
+
+  <section class="page page-break">
+    <h2>22. Tooltips Inteligentes</h2>
+    <p>El editor incluye un sistema integrado de ayuda contextual llamado &ldquo;Tooltips Inteligentes&rdquo;. Estos proporcionan explicaciones instantáneas de lo que hace cada botón sin que tenga que consultar este manual cada vez.</p>
+
+    <h3>Cómo Ver un Tooltip</h3>
+    <ul>
+      <li><strong>En Escritorio:</strong> Simplemente pase el cursor sobre cualquier botón o control. Una pequeña etiqueta amarilla aparecerá después de un segundo con una breve explicación de la función del botón.</li>
+      <li><strong>En Móvil:</strong> Mantenga presionado cualquier botón durante un segundo para que aparezca el tooltip.</li>
+    </ul>
+
+    <h3>Ejemplos de Qué Dicen los Tooltips</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Botón</th>
+          <th>Texto del Tooltip (Ejemplo)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Guardar (Save)</strong></td>
+          <td>Guarda permanentemente su sesión actual en el servidor y crea un respaldo local.</td>
+        </tr>
+        <tr>
+          <td><strong>Diseño Bloqueado (Locked)</strong></td>
+          <td>Evita que los elementos se muevan por accidente. Desbloquee solo para reposicionar.</td>
+        </tr>
+        <tr>
+          <td><strong>Duplicar (Duplicate)</strong></td>
+          <td>Crea una copia exacta del elemento seleccionado.</td>
+        </tr>
+        <tr>
+          <td><strong>Exportar (Export)</strong></td>
+          <td>Descarga un PNG de 12x18 pulgadas a 300 DPI listo para imprimir de su menú.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout tip">
+      <strong>Progresión de Aprendizaje:</strong> Al principio, use los tooltips para aprenderse los iconos. Una vez que se sienta cómodo, descubrirá que el editor es extremadamente rápido e intuitivo.
+    </div>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Manual Completo</span><span>Página 21</span></div>
+  </section>
+
+  <section class="page page-break">
+    <h2>23. Restablecer al Original (Reset to Original)</h2>
+    <p>Si alguna vez siente que ha cometido demasiados errores o el diseño se ha vuelto desordenado, puede usar la función <strong>&#8635; Reset to Original</strong> para volver al estado de la plantilla original con la que comenzó.</p>
+
+    <div class="callout warning">
+      <strong>IMPORTANTE:</strong> El restablecimiento borra permanentemente todas sus ediciones, imágenes cargadas del lienzo y cambios de estilo. Esta acción NO se puede deshacer con el botón Deshacer.
+    </div>
+
+    <h3>Cómo Restablecer</h3>
+    <ol>
+      <li>Abra el cajón (botón &#128296; FAB).</li>
+      <li>Haga clic en el botón <strong>&#8635; Reset to Original</strong> (fondo gris oscuro).</li>
+      <li>Aparecerá un mensaje de confirmación del navegador preguntando: <em>&ldquo;Are you sure you want to reset everything? This will clear all your progress.&rdquo;</em></li>
+      <li>Si está seguro, haga clic en <strong>Aceptar</strong>. El editor se recargará y volverá al diseño de fábrica.</li>
+    </ol>
+
+    <h3>Cuándo Usar el Restablecimiento</h3>
+    <ul>
+      <li>Cuando quiera empezar un diseño de temporada completamente nuevo desde cero.</li>
+      <li>Si ha movido demasiados elementos y el diseño ya no se ve equilibrado.</li>
+      <li>Si el editor muestra comportamientos visuales extraños después de muchas ediciones experimentales.</li>
+    </ul>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Manual Completo</span><span>Página 22</span></div>
+  </section>
+
+  <section class="page page-break">
+    <h2>24. Sincronización entre Dispositivos</h2>
+    <p>Su Menu Editor Pro V2 es un sistema basado en la nube. Esto significa que puede empezar a editar en una computadora de escritorio en su oficina y terminar el trabajo en un iPhone en casa o en una tablet en su restaurante.</p>
+
+    <h3>Cómo Cambiar de Dispositivo</h3>
+    <div class="step-row"><span class="step-num">1</span>
+      <p><strong>En el Dispositivo A:</strong> Haga clic en el botón <strong>&#128190; Save Session</strong> para asegurarse de que todos sus últimos cambios estén en el servidor. Espere a que aparezca la confirmación verde.</p>
+    </div>
+    <div class="step-row"><span class="step-num">2</span>
+      <p><strong>En el Dispositivo B:</strong> Abra su enlace personal del editor.</p>
+    </div>
+    <div class="step-row"><span class="step-num">3</span>
+      <p><strong>En el Dispositivo B:</strong> Abra el cajón y haga clic en <strong>&#128193; Load Session</strong>. El editor descargará su trabajo guardado más reciente del servidor y lo mostrará en pantalla.</p>
+    </div>
+
+    <div class="callout tip">
+      <strong>Imágenes personalizadas:</strong> Cualquier imagen que cargue en un dispositivo se guardará automáticamente en su biblioteca del servidor y aparecerá en la Bandeja de Activos en todos sus otros dispositivos de forma automática.
+    </div>
+
+    <div class="callout warning">
+      <strong>Nota sobre sesiones simultáneas:</strong> Evite tener el editor abierto y editando activamente en dos dispositivos al mismo tiempo (ej. una pestaña en el teléfono y una pestaña en el escritorio a la vez). Guarde y cierre siempre un dispositivo antes de pasar al siguiente para evitar que una sesión sobrescriba a la otra.
+    </div>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Manual Completo</span><span>Página 23</span></div>
+  </section>
+
+  <section class="page page-break">
+    <h2>25. Guía Móvil</h2>
+    <p>El editor es totalmente táctil y está optimizado para iPhone, iPad y dispositivos Android. El flujo de trabajo móvil es el mismo que en escritorio, pero utiliza gestos táctiles naturales.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Acción Móvil</th>
+          <th>Gesto Táctil</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Seleccionar Elemento</strong></td>
+          <td>Toque una vez sobre el elemento. Aparece el borde amarillo.</td>
+        </tr>
+        <tr>
+          <td><strong>Editar Texto</strong></td>
+          <td>Toque dos veces rápidamente sobre el elemento de texto seleccionado.</td>
+        </tr>
+        <tr>
+          <td><strong>Mover Elemento</strong></td>
+          <td>Ponga el diseño en <strong>Unlocked</strong>, luego presione y arrastre el elemento.</td>
+        </tr>
+        <tr>
+          <td><strong>Zoom / Pellizcar</strong></td>
+          <td>Use dos dedos en la pantalla y pellizque para cerrar (alejar) o abrir (acercar).</td>
+        </tr>
+        <tr>
+          <td><strong>Desplazarse (Scroll)</strong></td>
+          <td>Deslice con un solo dedo por el fondo del lienzo.</td>
+        </tr>
+        <tr>
+          <td><strong>Ver Ayuda (Tooltip)</strong></td>
+          <td>Mantenga presionado cualquier botón durante 1.5 segundos.</td>
+        </tr>
+        <tr>
+          <td><strong>Mover Barra de Herramientas</strong></td>
+          <td>Presione el tirador <strong>&#10783;</strong> a la izquierda de la barra de selección y deslícela.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout tip">
+      <strong>Orientación:</strong> El editor funciona tanto en modo retrato como en modo horizontal. El <strong>modo horizontal</strong> suele ser más fácil para editar, ya que le ofrece más anchura para el lienzo y la barra de herramientas.
+    </div>
+
+    <h3>Uso del Teclado del Teléfono</h3>
+    <p>Al tocar dos veces para editar texto, aparecerá el teclado de su teléfono. Si el teclado cubre el texto que está editando, simplemente desplácese por el lienzo hacia arriba hasta que el texto sea visible por encima del teclado. Toque en el fondo del lienzo cuando haya terminado de escribir para ocultar el teclado.</p>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Manual Completo</span><span>Página 24</span></div>
+  </section>
+
+  <section class="page page-break">
+    <h2>26. Solución de Problemas</h2>
+    <p>Aquí tienen soluciones para los problemas más comunes:</p>
+    <ul>
+      <li><strong>No puedo seleccionar nada:</strong> Asegúrese de que el diseño está configurado como <strong>&#128275; Layout Unlocked</strong> (botón amarillo en el encabezado).</li>
+      <li><strong>El texto no cambia cuando escribo:</strong> Asegúrese de haber tocado dos veces para entrar en modo edición y que vea el cursor parpadeando.</li>
+      <li><strong>El editor va lento:</strong> Cierre otras pestañas del navegador o aplicaciones. El editor utiliza una gran cantidad de memoria para mantener el diseño de 300 DPI.</li>
+      <li><strong>Falta el botón de zoom:</strong> Los botones de zoom (+ / &minus;) solo son visibles cuando el Diseño está Desbloqueado (Unlocked).</li>
+      <li><strong>La exportación no se descarga:</strong> Compruebe si su navegador tiene bloqueadas las ventanas emergentes para este sitio.</li>
+      <li><strong>El fondo se ve borroso:</strong> Esto es normal en la vista previa del editor para mantener la velocidad. Su archivo exportado utilizará el fondo original de alta resolución y será nítido.</li>
+    </ul>
+
+    <h3>Mejores Prácticas</h3>
+    <ul>
+      <li><strong>Guardado Frecuente:</strong> El hábito más importante. Guarde después de cada cambio importante.</li>
+      <li><strong>Bloqueo de Diseño:</strong> Manténgalo bloqueado el 90% del tiempo para evitar errores de movimiento táctil.</li>
+      <li><strong>Verificación de PNG:</strong> Revise siempre su archivo exportado antes de imprimir.</li>
+      <li><strong>Uso de Grupos de Texto:</strong> Cree elementos de texto separados para nombres de platos y precios para que pueda alinearlos de forma independiente.</li>
+    </ul>
+
+    <h3>Especificaciones Técnicas</h3>
+    <ul>
+      <li><strong>Dimensiones de Lienzo:</strong> 3600 x 5400 px (12" x 18")</li>
+      <li><strong>Resolución:</strong> 300 DPI reales en exportación</li>
+      <li><strong>Formato:</strong> PNG con gestión de color sRGB</li>
+      <li><strong>Tecnología:</strong> Motor de renderizado HTML5 Canvas &amp; SVG</li>
+      <li><strong>Navegadores:</strong> Chrome, Safari, Edge, Firefox (Versiones 2024+)</li>
+    </ul>
+
+    <h3>Información del Documento</h3>
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h4>Diseñado por</h4>
+        <p>MARIAS DIGITAL DESIGNS</p>
+      </div>
+      <div class="spec-card">
+        <h4>Versión de Manual</h4>
+        <p>3.0 (Marzo 2026)</p>
+      </div>
+    </div>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Manual Completo</span><span>Página 25</span></div>
   </section>
 </body>
 </html>

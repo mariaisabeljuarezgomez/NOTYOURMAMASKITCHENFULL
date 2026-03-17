@@ -474,7 +474,7 @@ function undo() {{
     // If the selected element was removed in the undone state, deselect
     if(selectedId) {{
         const item = docV2.elements.find(e => e.id === selectedId);
-        if(!item || item.locked || (docV2.settings.backgroundLayerLocked && item.layerRole === 'background')) {{
+        if(!item || item.locked || (docV2.settings?.backgroundLayerLocked && item.layerRole === 'background')) {{
             selectedId = null;
         }}
     }}
@@ -535,7 +535,7 @@ function showToast(m) {{
 
 function render() {{
     const bg = document.getElementById('menu-bg'); 
-    if(bg) bg.classList.toggle('legacy-bg-hidden', !docV2.settings.legacyBgVisible);
+    if(bg) bg.classList.toggle('legacy-bg-hidden', docV2.settings?.legacyBgVisible === false);
     
     elementsLayer.innerHTML = ''; 
     const sorted = [...docV2.elements].sort((a,b)=> (a.zIndex||10)-(b.zIndex||10));
@@ -606,7 +606,7 @@ function renderLayerList() {{
         div.className = 'layer-item' + (selectedId === item.id ? ' active' : '');
         div.onclick = (e) => {{ 
             e.stopPropagation(); 
-            if (item.locked || (docV2.settings.backgroundLayerLocked && item.layerRole === 'background')) return;
+            if (item.locked || (docV2.settings?.backgroundLayerLocked && item.layerRole === 'background')) return;
             selectById(item.id); 
         }};
         
@@ -1102,8 +1102,8 @@ async function load() {{
         let r = await fetch('/api/menu'); 
         let s = await r.json(); 
         if(s.elements && s.elements.length > 0) {{ 
-            docV2 = s; 
-            layoutLocked = docV2.settings.layoutLocked ?? true; 
+            docV2 = {{ ...docV2, ...s }}; // Merge to ensure settings exist
+            layoutLocked = docV2.settings?.layoutLocked ?? true; 
             zoomScale = docV2.editorState?.zoom || 1;
             render(); 
             applyZoom(1); // reset visual size
@@ -1115,8 +1115,8 @@ async function load() {{
         if(l) {{ 
             let parsed = JSON.parse(l); 
             if(parsed.elements && parsed.elements.length > 0) {{
-                docV2 = parsed; 
-                layoutLocked = docV2.settings.layoutLocked ?? true; 
+                docV2 = {{ ...docV2, ...parsed }}; 
+                layoutLocked = docV2.settings?.layoutLocked ?? true; 
                 zoomScale = docV2.editorState?.zoom || 1;
                 render(); 
                 applyZoom(1);
@@ -1160,7 +1160,7 @@ async function exportPng() {{
         let L = el.x * S, T = el.y * S, W = (el.width||0) * S, H = (el.height||0) * S;
         if(el.type==='text') {{ 
             ctx.font=`${{el.style.fontSize*S}}px "${{el.style.fontFamily}}"`; 
-            const _lines = el.text.split('\n');
+            const _lines = el.text.split('\\\\n');
             W = Math.max(..._lines.map(l => ctx.measureText(l).width));
             H = el.style.fontSize * S * (el.style.lineHeight || 1.1) * _lines.length;
         }}
@@ -1182,7 +1182,7 @@ async function exportPng() {{
                 ctx.letterSpacing = (el.style.letterSpacing || 0) + 'px';
             }}
             const lineH = el.style.fontSize * S * (el.style.lineHeight || 1.1);
-            const lines = el.text.split('\n');
+            const lines = el.text.split('\\\\n');
             lines.forEach((line, i) => {{
                 ctx.fillText(line, L, T + i * lineH);
             }});
@@ -1231,7 +1231,7 @@ window.onload = async () => {{
         const r = await fetch('/api/menu');
         const s = await r.json();
         if (s.elements && s.elements.length > 0) {{
-            docV2 = s;
+            docV2 = {{ ...docV2, ...s }};
             layoutLocked = docV2.settings?.layoutLocked ?? true;
             syncZoomControlsVisibility();
             zoomScale = docV2.editorState?.zoom || 1;
@@ -1242,7 +1242,7 @@ window.onload = async () => {{
             if (l) {{
                 const parsed = JSON.parse(l);
                 if (parsed.elements && parsed.elements.length > 0) {{
-                    docV2 = parsed;
+                    docV2 = {{ ...docV2, ...parsed }};
                     layoutLocked = docV2.settings?.layoutLocked ?? true;
                     syncZoomControlsVisibility();
                     zoomScale = docV2.editorState?.zoom || 1;
@@ -1422,7 +1422,7 @@ async function switchManualLang(lang) {{
         let scopedStyles = '';
         doc.querySelectorAll('style').forEach(style => {{
             const css = style.innerHTML;
-            const scoped = css.replace(/([^{{\\r\\n]+)\\s*{{/g, (match, selector) => {{
+            const scoped = css.replace(/([^{{\\\\\\\\r\\\\\\\\n]+)\\s*{{/g, (match, selector) => {{
                 const trimmed = selector.trim();
                 if (trimmed.startsWith('@') || trimmed.startsWith(':root')) return match;
                 return `.manual-content-scope ${{trimmed}} {{`;
