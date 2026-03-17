@@ -1218,7 +1218,10 @@ window.addEventListener('keydown', (e) => {
 
 // Text editing history tracking
 let textEditingOriginal = null;
-function onTextFocus(e) { textEditingOriginal = e.target.innerText; }
+function onTextFocus(e) {
+    const item = docV2.elements.find(i => i.id === e.target.id);
+    textEditingOriginal = item ? item.text : e.target.innerText;
+}
 function onTextBlur(e) {
     if(textEditingOriginal !== null && textEditingOriginal !== e.target.innerText) {
         const item = docV2.elements.find(i => i.id === e.target.id);
