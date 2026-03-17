@@ -387,7 +387,7 @@ const BASE_W = 908.4429931640625;
 const BASE_H = 1336.02001953125;
 const PAD = 100;
 
-let layoutLocked = true, selectedId = null, zoomScale = 1;
+let layoutLocked = true, selectedId = null, zoomScale = 1, _isFitZoom = false;
 let historyStack = [];
 
 function pushState(snapshot) {{
@@ -478,7 +478,7 @@ if(barHandle) {{
 }}
 
 function showToast(m) {{
-    const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = `<span>✔</span> ${{m}}`;
+    const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = m;
     const container = document.getElementById('toast-container');
     container.appendChild(t); setTimeout(() => t.remove(), 2500);
 }}
@@ -1025,6 +1025,13 @@ document.addEventListener('touchstart', (e) => {{
 
 function applyZoom(f) {{
     zoomScale = Math.max(0.3, Math.min(4, zoomScale * f));
+    
+    // Only persist zoom that the user explicitly triggered
+    // fitCanvasToScreen auto-fits should not overwrite the saved zoom
+    if(!_isFitZoom) {{
+        docV2.editorState._userZoom = zoomScale;
+    }}
+
     const scalerWrapper = document.getElementById('scaler-wrapper');
     const centeringWrapper = document.getElementById('centering-wrapper');
     
@@ -1039,7 +1046,7 @@ function applyZoom(f) {{
     }}
 }}
 
-async function save() {{ sync(); docV2.editorState.zoom = zoomScale; docV2.settings.layoutLocked = layoutLocked; localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2)); await fetch('/api/menu', {{method:'POST', headers:{{'Content-Type':'application/json'}}, body:JSON.stringify(docV2)}}); showToast('Project Saved Locally'); }}
+async function save() {{ sync(); docV2.editorState.zoom = docV2.editorState._userZoom ?? zoomScale; docV2.settings.layoutLocked = layoutLocked; localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2)); await fetch('/api/menu', {{method:'POST', headers:{{'Content-Type':'application/json'}}, body:JSON.stringify(docV2)}}); showToast('Project Saved Locally'); }}
 async function load() {{
     try {{ 
         let r = await fetch('/api/menu'); 
@@ -1221,7 +1228,9 @@ window.onload = async () => {{
 }};
 
 function fitCanvasToScreen() {{
+    _isFitZoom = true;
     console.log("fitCanvasToScreen: Using fixed 908px layout with natural scroll.");
+    _isFitZoom = false;
 }}
 viewport.onwheel = (e) => {{ if(e.ctrlKey) {{ e.preventDefault(); applyZoom(e.deltaY > 0 ? 0.9 : 1.1); }} }};
 
