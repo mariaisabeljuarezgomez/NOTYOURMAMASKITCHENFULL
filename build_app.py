@@ -231,6 +231,14 @@ body {{ margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-
 .modal-body {{ font-size:14px; margin-bottom:25px; line-height:1.5; color:#eee; }}
 .modal-actions {{ display:flex; gap:15px; justify-content:center; }}
 @keyframes fadeIn {{ from {{ opacity:0; }} to {{ opacity:1; }} }}
+
+.resize-handle {{
+    position:absolute; width:20px; height:20px;
+    background:#f1c40f; border:2px solid #000;
+    border-radius:50%; z-index:9999;
+    touch-action:none; user-select:none;
+}}
+.editable-element:not(.selected) .resize-handle {{ display:none; }}
 </style>
 </head>
 <body>
@@ -337,6 +345,18 @@ html_footer = f"""</div></div></main>
                 <button id="btn-layer-down" class="ctrl-btn" style="width:30px; height:30px" onclick="updateZ(-1)" title="Layer Down" data-help="Moves the element backward in the stacking order">⬇️</button>
                 <button id="btn-layer-front" class="ctrl-btn" style="width:30px; height:30px; font-size:12px;" onclick="bringToFront()" title="To Front" data-help="Sends element all the way to the very top of the layer stack">⇈</button>
                 <button id="btn-layer-back" class="ctrl-btn" style="width:30px; height:30px; font-size:12px;" onclick="sendToBack()" title="To Back" data-help="Sends element all the way to the very bottom of the layer stack">⇊</button>
+            </div>
+            <div class="ctrl-group" style="gap:4px; flex-direction:column; align-items:center;">
+                <button class="ctrl-btn" style="width:32px;height:32px;font-size:14px;"
+                    onclick="nudge(0,-2)" title="Nudge Up">▲</button>
+                <div style="display:flex;gap:4px;">
+                    <button class="ctrl-btn" style="width:32px;height:32px;font-size:14px;"
+                        onclick="nudge(-2,0)" title="Nudge Left">◀</button>
+                    <button class="ctrl-btn" style="width:32px;height:32px;font-size:14px;"
+                        onclick="nudge(2,0)" title="Nudge Right">▶</button>
+                </div>
+                <button class="ctrl-btn" style="width:32px;height:32px;font-size:14px;"
+                    onclick="nudge(0,2)" title="Nudge Down">▼</button>
             </div>
         </div>
     </div>
@@ -509,10 +529,56 @@ function renderLayerList() {{
         div.innerHTML = `
             <div style="font-size:12px">${{icon}}</div>
             <div class="layer-name">${{roleTag}}${{name}}</div>
-            <button class="layer-btn ${{item.visible?'active':''}}" onclick="toggleVisById(event, '${{item.id}}')">👁️</button>
-            <button class="layer-btn ${{item.locked?'active':''}}" onclick="toggleLockById(event, '${{item.id}}')">🔒</button>
+            <button class="layer-btn" title="${{item.visible ? 'Visible' : 'Hidden — click to show'}}"
+                onclick="toggleVisById(event, '${{item.id}}')"
+                style="font-size:15px; opacity:${{item.visible ? '1' : '0.4'}};">
+                ${{item.visible ? '👁️' : '🙈'}}
+            </button>
+            <button class="layer-btn" title="${{item.locked ? 'Locked' : 'Unlocked — click to lock'}}"
+                onclick="toggleLockById(event, '${{item.id}}')"
+                style="font-size:15px; opacity:${{item.locked ? '1' : '0.4'}};">
+                ${{item.locked ? '🔒' : '🔓'}}
+            </button>
         `;
         layersPanel.appendChild(div);
+    }});
+}}
+
+function injectResizeHandles(el) {{
+    el.querySelectorAll('.resize-handle').forEach(h => h.remove());
+    ['nw','ne','sw','se'].forEach(corner => {{
+        const h = document.createElement('div');
+        h.className = 'resize-handle';
+        const isN = corner.includes('n'), isW = corner.includes('w');
+        Object.assign(h.style, {{
+            cursor: corner+'-resize',
+            top: isN ? '-10px' : 'auto', bottom: isN ? 'auto' : '-10px',
+            left: isW ? '-10px' : 'auto', right: isW ? 'auto' : '-10px',
+        }});
+        h.onpointerdown = (e) => {{
+            e.stopPropagation(); e.preventDefault();
+            h.setPointerCapture(e.pointerId);
+            const item = docV2.elements.find(i => i.id === el.id);
+            if (!item) return;
+            pushState();
+            const startX=e.clientX, startY=e.clientY;
+            const startW=item.width||el.offsetWidth, startH=item.height||el.offsetHeight;
+            const startLeft=item.x, startTop=item.y;
+            const ar = startW/startH;
+            h.onpointermove = (pe) => {{
+                const dx=(pe.clientX-startX)/zoomScale, dy=(pe.clientY-startY)/zoomScale;
+                let nW,nH,nX=startLeft,nY=startTop;
+                if(corner==='se'){{ nW=Math.max(40,startW+dx); nH=nW/ar; }}
+                else if(corner==='sw'){{ nW=Math.max(40,startW-dx); nH=nW/ar; nX=startLeft+(startW-nW); }}
+                else if(corner==='ne'){{ nW=Math.max(40,startW+dx); nH=nW/ar; nY=startTop+(startH-nH); }}
+                else{{ nW=Math.max(40,startW-dx); nH=nW/ar; nX=startLeft+(startW-nW); nY=startTop+(startH-nH); }}
+                item.width=nW; item.height=nH; item.x=nX; item.y=nY;
+                el.style.width=nW+'px'; el.style.height=nH+'px';
+                el.style.left=nX+'px'; el.style.top=nY+'px';
+            }};
+            h.onpointerup = () => {{ h.onpointermove=null; h.onpointerup=null; sync(); }};
+        }};
+        el.appendChild(h);
     }});
 }}
 
@@ -545,6 +611,11 @@ function attach(el) {{
         }};
         document.onmouseup = () => {{ document.onmousemove = null; gcx.style.display='none'; gcy.style.display='none'; sync(); }};
     }};
+
+    const _itemData = docV2.elements.find(e => e.id === el.id);
+    if (_itemData && _itemData.type === 'image') {{
+        injectResizeHandles(el);
+    }}
 
     el.ontouchstart = (e) => {{
         if(e.touches.length !== 1) return;
@@ -675,11 +746,19 @@ function syncZoomControlsVisibility() {{
 
 function toggleItemLock() {{ if(!selectedId) return; pushState(); let item = docV2.elements.find(e=>e.id===selectedId); item.locked = !item.locked; render(); }}
 function toggleVisibility() {{ if(!selectedId) return; pushState(); let item = docV2.elements.find(e=>e.id===selectedId); item.visible = !item.visible; render(); }}
-function updateZ(dir) {{
-    if(!selectedId) return;
-    pushState();
-    let item = docV2.elements.find(e => e.id === selectedId);
     if(item) {{ item.zIndex = (item.zIndex || 10) + dir; render(); }}
+}}
+
+function nudge(dx, dy) {{
+    if (!selectedId) return;
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item) return;
+    pushState();
+    item.x += dx;
+    item.y += dy;
+    const el = document.getElementById(selectedId);
+    if (el) {{ el.style.left = item.x+'px'; el.style.top = item.y+'px'; }}
+    sync();
 }}
 function toggleBg() {{ docV2.settings.legacyBgVisible = !docV2.settings.legacyBgVisible; render(); }}
 
@@ -888,6 +967,15 @@ window.addEventListener('keydown', (e) => {{
     if ((e.ctrlKey || e.metaKey) && e.key === 'z') {{
         e.preventDefault();
         undo();
+        return;
+    }}
+    if (selectedId && !layoutLocked && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {{
+        e.preventDefault();
+        const step = e.shiftKey ? 10 : 2;
+        if (e.key==='ArrowUp')    nudge(0, -step);
+        if (e.key==='ArrowDown')  nudge(0,  step);
+        if (e.key==='ArrowLeft')  nudge(-step, 0);
+        if (e.key==='ArrowRight') nudge( step, 0);
     }}
 }});
 
