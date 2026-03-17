@@ -1021,15 +1021,18 @@ async function load() {
 }
 
 async function exportPng() {
+    showToast('⏳ Exporting... please wait');
     // 12in × 18in @ 300 DPI = 3600 × 5400 px
-    const TARGET_W = 3600, TARGET_H = 5400;
+    const TARGET_W = 3600;
     const S = TARGET_W / BASE_W;
     const canvas = document.createElement('canvas');
     canvas.width = TARGET_W;
-    canvas.height = TARGET_H;
+    canvas.height = Math.round(BASE_H * S);
     const ctx = canvas.getContext('2d');
     if(docV2.settings.legacyBgVisible) {
-        const img = new Image(); img.src = "menu-bg.png"; await new Promise(r => img.onload = r);
+        const img = new Image();
+        img.src = "menu-bg.png";
+        await new Promise(r => { img.onload = r; img.onerror = () => { showToast('⚠️ Background image not found, exporting without it.'); r(); }; });
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     } else { ctx.fillStyle='#fff'; ctx.fillRect(0,0,canvas.width,canvas.height); }
     
