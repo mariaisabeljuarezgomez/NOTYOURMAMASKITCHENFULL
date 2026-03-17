@@ -88,7 +88,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 #fab { position:fixed; bottom:30px; left:30px; width:60px; height:60px; border-radius:50%; background:var(--primary); color:#fff; border:none; font-size:24px; cursor:pointer; z-index:1100; box-shadow:0 4px 20px rgba(0,0,0,0.6); transition:0.3s; display:flex; align-items:center; justify-content:center; }
 #fab.open { transform: rotate(90deg); background: #444; }
 
-#bottom-drawer { position:fixed; bottom:0; left:0; right:0; background:var(--surface); border-top:1px solid #444; padding:20px; z-index:900; transform:translateY(0); transition:0.4s cubic-bezier(0.19,1,0.22,1); width: 100%; box-sizing: border-box; }
+#bottom-drawer { position:fixed; bottom:0; left:0; right:0; background:var(--surface); border-top:1px solid #444; padding:20px; z-index:900; transform:translateY(0); transition:0.4s cubic-bezier(0.19,1,0.22,1); width: 100%; box-sizing: border-box; max-height: 80vh; overflow-y: auto; }
 #bottom-drawer.closed { transform:translateY(100%); }
 
 .asset-tray { display:flex; gap:12px; overflow-x:auto; padding-bottom:15px; margin-bottom:15px; border-bottom:1px solid #444; scrollbar-width: thin; }
@@ -350,7 +350,6 @@ function pushState() {
 
 function openDrawer() {
     const drawer = document.getElementById('bottom-drawer');
-    drawer.style.height = '140px'; 
     loadUserImageTray();
     // Lazy load tray images to prevent heavy initial load
     drawer.classList.toggle('closed');
