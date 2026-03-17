@@ -1299,6 +1299,47 @@ function initSmartTooltips() {
         if(target) hideTooltip();
     }, true);
 }
+
+function buildPHYsChunk(x, y, unit) {
+    const data = new Uint8Array(9);
+    const view = new DataView(data.buffer);
+    view.setUint32(0, x);
+    view.setUint32(4, y);
+    data[8] = unit;
+    const type = new TextEncoder().encode('pHYs');
+    const crcInput = new Uint8Array(4 + 9);
+    crcInput.set(type);
+    crcInput.set(data, 4);
+    const crc = pngCRC32(crcInput);
+    const chunk = new Uint8Array(4 + 4 + 9 + 4);
+    const cv = new DataView(chunk.buffer);
+    cv.setUint32(0, 9);
+    chunk.set(type, 4);
+    chunk.set(data, 8);
+    cv.setUint32(17, crc);
+    return chunk;
+}
+
+function insertPHYsChunk(png, phys) {
+    // Insert after PNG signature (8 bytes) + IHDR chunk (4+4+13+4 = 25 bytes) = index 33
+    const idx = 33;
+    const result = new Uint8Array(png.length + phys.length);
+    result.set(png.slice(0, idx));
+    result.set(phys, idx);
+    result.set(png.slice(idx), idx + phys.length);
+    return result;
+}
+
+function pngCRC32(data) {
+    let c = 0xFFFFFFFF;
+    for (let i = 0; i < data.length; i++) {
+        c ^= data[i];
+        for (let k = 0; k < 8; k++) {
+            c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        }
+    }
+    return (c ^ 0xFFFFFFFF) >>> 0;
+}
 </script>
 
 <!-- Fix 5b - Floating Zoom Buttons (Mobile Repaired) -->
