@@ -837,18 +837,45 @@ async function exportPng() {{
     canvas.toBlob(b => {{ let a=document.createElement('a'); a.download='menu_v2_hardened.png'; a.href=URL.createObjectURL(b); a.click(); }}, 'image/png');
 }}
 
-window.onload = () => {{
+window.onload = async () => {{
+    // Step 1: Try server volume first
+    try {{
+        const r = await fetch('/api/menu');
+        const s = await r.json();
+        if (s.elements && s.elements.length > 0) {{
+            docV2 = s;
+            layoutLocked = docV2.settings?.layoutLocked ?? true;
+            zoomScale = docV2.editorState?.zoom || 1;
+        }}
+    }} catch(e) {{
+        // Step 2: Server unreachable — fall back to localStorage
+        try {{
+            const l = localStorage.getItem('menu_pro_draft_v2');
+            if (l) {{
+                const parsed = JSON.parse(l);
+                if (parsed.elements && parsed.elements.length > 0) {{
+                    docV2 = parsed;
+                    layoutLocked = docV2.settings?.layoutLocked ?? true;
+                    zoomScale = docV2.editorState?.zoom || 1;
+                }}
+            }}
+        }} catch(e2) {{}}
+    }}
+
+    // Step 3: Render with whatever state we have
     render();
     initSmartTooltips();
     fitCanvasToScreen();
     window.addEventListener('resize', fitCanvasToScreen);
 
     // Fix 1 - Font Force-Load on Mobile
-    const fontNames = ['bernard-mt-condensed-regular','century-gothic-bold-italic','century-gothic-bold','century-gothic-regular','centurygothic'];
+    const fontNames = ['bernard-mt-condensed-regular','century-gothic-bold-italic',
+                       'century-gothic-bold','century-gothic-regular','centurygothic'];
     fontNames.forEach(name => {{ document.fonts.load(`16px "${{name}}"`); }});
-    
+
     // Fix 5b - Initial Zoom Controls State
-    zoomScale = 1;
+    zoomScale = zoomScale || 1;
+    applyZoom(1);
     syncZoomControlsVisibility();
 }};
 
