@@ -1374,9 +1374,9 @@ async function switchManualLang(lang) {
         let scopedStyles = '';
         doc.querySelectorAll('style').forEach(style => {
             const css = style.innerHTML;
-            const scoped = css.replace(/([^{\\\\r\\\\n]+)\s*{/g, (match, selector) => {
+            const scoped = css.replace(/([^{@][^{]*)\{/g, (match, selector) => {
                 const trimmed = selector.trim();
-                if (trimmed.startsWith('@') || trimmed.startsWith(':root')) return match;
+                if (!trimmed || trimmed.startsWith('@') || trimmed.startsWith(':root')) return match;
                 return `.manual-content-scope ${trimmed} {`;
             });
             scopedStyles += scoped;
