@@ -1167,9 +1167,21 @@ window.onload = async () => {
     const fontLoadPromises = fontNames.map(name =>
         document.fonts.load(`16px "${name}"`)
     );
+
+    // Fallback: ensure render fires even if fonts never resolve
+    setTimeout(() => { try { render(); } catch(e) {} }, 800);
+
     Promise.all(fontLoadPromises).then(() => {
+        try {
+            render();
+            showToast('✔ Fonts Ready');
+        } catch(e) {
+            console.error('Render error on load:', e);
+            render();
+        }
+    }).catch(e => {
+        console.error('Font load failed, rendering anyway:', e);
         render();
-        showToast('✔ Fonts Ready');
     });
 
     // Step 4: Init the rest
