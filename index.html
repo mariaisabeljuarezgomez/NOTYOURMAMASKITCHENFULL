@@ -251,6 +251,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 
     .btn-ghost { background: transparent; color: rgba(255,255,255,0.85); border: 1px solid rgba(255,255,255,0.3); border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
     .btn-ghost:hover { background: rgba(255,255,255,0.15); }
+    .ctrl-btn.set-bg { background: var(--accent) !important; color: #000 !important; font-size: 11px; padding: 4px 8px; }
 
     @media (max-width: 768px) {
         .manual-modal { width: 100vw; height: 100vh; max-height: 100vh; border-radius: 0; }
@@ -376,6 +377,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         </div>
     </div>
     <div style="display:flex; gap:10px; flex-shrink:0; margin-left:10px; border-left:1px solid #444; padding-left:10px;">
+        <button id="btn-set-bg" class="ctrl-btn set-bg" onclick="setSelectedAsBackground()" title="Promote this image to full-page locked background" data-help="Sets the selected image as the full-page menu background">🖼️ BG</button>
         <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9" onclick="duplicateEl()" title="Duplicate Layer" data-help="Makes an exact copy of the selected layer — text, image, or shape">📋</button>
         <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c;" onclick="deleteEl()" title="Delete Layer" data-help="Permanently removes the selected element from the menu">🗑</button>
     </div>
@@ -751,6 +753,12 @@ function updateSelectionBar() {
         // Default text elements to DESIGN tab if unlocked
         if(item.type === 'text') setBarTab('design');
     }
+
+    const btnSetBg = document.getElementById('btn-set-bg');
+    if (btnSetBg) {
+        btnSetBg.style.display = (item?.type === 'image') ? 'block' : 'none';
+    }
+
     renderLayerList();
 }
 
@@ -1039,6 +1047,48 @@ function setAsBackground(src) {
     selectedId = null;
     render();
     showToast('✅ Background replaced and locked');
+}
+
+async function setSelectedAsBackground() {
+    if (!selectedId) return showToast("Select an image first");
+
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item || item.type !== 'image') return showToast("Only images can become backgrounds");
+
+    pushState(); // Save before change
+
+    // Hide legacy background
+    docV2.settings.legacyBgVisible = false;
+
+    // Find or create background layer
+    let bgLayer = docV2.elements.find(e => e.type === 'image' && e.layerRole === 'background');
+    if (!bgLayer) {
+        const minZ = Math.min(...docV2.elements.map(e => e.zIndex || 10));
+        bgLayer = {
+            id: 'bg_upload_' + Date.now(),
+            type: 'image',
+            layerRole: 'background',
+            zIndex: minZ - 1
+        };
+        docV2.elements.push(bgLayer);
+    }
+
+    // Copy image src to background, set full-page bounds
+    bgLayer.src = item.src;
+    bgLayer.x = 0;
+    bgLayer.y = 0;
+    bgLayer.width = BASE_W;
+    bgLayer.height = BASE_H;
+    bgLayer.opacity = 1;
+    bgLayer.rotation = 0;
+    bgLayer.visible = true;
+    bgLayer.locked = true;
+
+    // Deselect original image (it stays according to user request)
+    selectedId = null;
+
+    render();
+    showToast("✅ Selected image promoted to background (locked)");
 }
 
 async function loadUserImageTray() {
