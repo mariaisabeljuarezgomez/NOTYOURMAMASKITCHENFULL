@@ -1,0 +1,83 @@
+# Menu App Generator: AI Agent Instructions
+**Notice to User:** If you want another AI to build a new menu project exactly like this one without having to explain the complex history or struggle with bugs, simply copy this file into the new folder alongside your new assets, and give the AI the following prompt:
+> *"Please read `Agent_Instructions.md` and follow it exactly to build my new menu HTML file using the assets in this folder."*
+
+---
+
+## Notice to AI Agent Readership:
+**CRITICAL:** Do not reinvent the wheel. We have already spent hours solving the exact layout, CORS security, blurriness, and 300 DPI metadata export failures that plague client-side HTML canvas generation. **You must follow these 5 structural mandates exactly as written to succeed on the first try.**
+
+### The Goal
+The user wants a single-file, zero-server `index.html` Single Page Application. It must contain a large graphic menu background, over which exact text strings (titles, items, prices, notes) are overlaid via CSS absolute positioning. You will be provided a background image graphic and a source-of-truth reference PDF containing the exact text placement. The user needs to be able to click the text, edit it inline, save it to `localStorage`, and export the final visible result to a print-ready 300 DPI PNG file.
+
+---
+
+### Strict Implementation Mandates
+
+#### 1. Aspect Ratio matching the Native PDF
+**DO NOT** guess the container size or force a responsive aspect ratio. 
+Identify the *exact native internal pixel dimensions* of the provided structural reference PDF. Set the main `<div id="menu-container">` CSS `width` and `height` to those exact values. This completely prevents horizontal stretching or squishing when you map the PDF coordinates over the background graphic.
+
+#### 2. Raw Hardcoded Coordinate Mapping
+**DO NOT** attempt to write fuzzy logic regular expressions to group menu items with their prices programmatically. 
+Extract every single line/span of text and its bounding box `cy/cx` coordinates from the PDF. Write a script that manually and explicitly maps the exact specific string (e.g. `"Chicken & Waffles"`) to the specific CSS `position: absolute; left/top` anchor points. Programmatic grouping always fails and results in overlapping overlapping text and misalignment.
+
+#### 3. Base64 DOM Injection (The CORS & Blur Fix)
+**DO NOT** link the user's background image as a CSS `background-image: url('menu-bg.png');`. 
+1. If you link a local file directly, modern browsers will throw a "Tainted Canvas" Security CORS error when `html2canvas` tries to export the PNG from a local `file://` hard drive path.
+2. If you use a CSS background property, `html2canvas` downsamples the high-res image to the container size *before* upscaling it for export, resulting in a heavily compressed, blurry background.
+
+**The Solution:** You must write a script to open the user's large background graphic file, encode the entire massive file into a Base64 string, and inject it securely as the `src` attribute of a native DOM `<img>` element placed at `z-index: 1` underneath all the text spans. This bypasses CORS and forces the rendering engine to use the uncompressed graphic data.
+
+#### 4. The 300 DPI Binary Hex Injector (The Photoshop Fix)
+**DO NOT** assume `html2canvas({ scale: 4 })` is enough. 
+Scaling simply makes the physical PNG file pixel dimensions larger, but the browser engine permanently hard-codes the resulting PNG file metadata block to `72 DPI`. For print workflows in Photoshop, the file *must* read as 300 DPI. 
+
+**The Solution:** When the user clicks "Save PNG", you must execute `html2canvas`, intercept the `canvas.toBlob()`, and run the resulting byte string through the following exact Javascript binary dissecting function before calling the browser download link. This manually writes the `pHYs` metadata chunk (11811 Pixels Per Meter = 300 DPI) into the PNG binary.
+
+```javascript
+function changeDpiBlob(blob, dpi) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const bytes = new Uint8Array(e.target.result);
+            let offset = 8;
+            while (offset < bytes.length) {
+                const chunkLen = (bytes[offset] << 24) | (bytes[offset+1] << 16) | (bytes[offset+2] << 8) | bytes[offset+3];
+                const chunkType = String.fromCharCode(bytes[offset+4], bytes[offset+5], bytes[offset+6], bytes[offset+7]);
+                if (chunkType === 'IHDR') { offset += 8 + chunkLen + 4; break; }
+                offset += 8 + chunkLen + 4;
+            }
+            const ppm = Math.round(dpi / 0.0254);
+            const physChunk = new Uint8Array(21);
+            physChunk.set([0, 0, 0, 9, 112, 72, 89, 115, 
+                (ppm >>> 24) & 0xFF, (ppm >>> 16) & 0xFF, (ppm >>> 8) & 0xFF, ppm & 0xFF,
+                (ppm >>> 24) & 0xFF, (ppm >>> 16) & 0xFF, (ppm >>> 8) & 0xFF, ppm & 0xFF, 1], 0);
+            
+            const crcTable = [];
+            for (let i = 0; i < 256; i++) {
+                let c = i;
+                for (let j = 0; j < 8; j++) {
+                    if (c & 1) c = 0xedb88320 ^ (c >>> 1);
+                    else c = c >>> 1;
+                }
+                crcTable[i] = c;
+            }
+            let crc = 0xffffffff;
+            for (let i = 4; i < 17; i++) { crc = crcTable[(crc ^ physChunk[i]) & 0xff] ^ (crc >>> 8); }
+            crc = crc ^ 0xffffffff;
+            physChunk[17] = (crc >>> 24) & 0xFF; physChunk[18] = (crc >>> 16) & 0xFF;
+            physChunk[19] = (crc >>> 8) & 0xFF; physChunk[20] = crc & 0xFF;
+            
+            resolve(newBlob = new Blob([bytes.subarray(0, offset), physChunk, bytes.subarray(offset)], { type: 'image/png' }));
+        };
+        reader.readAsArrayBuffer(blob);
+    });
+}
+```
+
+#### 5. Local `@font-face`
+Always embed the provided custom `.ttf` fonts locally using `@font-face` inside the CSS block, otherwise the absolute positioning coordinates will massively shift on different machines that lack the system font.
+
+---
+*Following these 5 steps precisely will result in a perfectly functional, offline, high-res editable graphic replicating the original Menu App capabilities with zero trial-and-error bugs.*
