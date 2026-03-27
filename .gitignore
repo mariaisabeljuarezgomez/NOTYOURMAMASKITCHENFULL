@@ -25,6 +25,7 @@ __pycache__/
 # Documentation
 # Documentation
 *.md
+!dine_in_menu_editor_v2_data_model_contract.md
 
 # Local Environment
 .env
