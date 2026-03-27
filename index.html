@@ -11,6 +11,7 @@
 @font-face { font-family: 'century-gothic-bold-italic'; src: url('century-gothic-bold-italic.ttf') format('truetype'); font-display: swap; }
 @font-face { font-family: 'century-gothic-bold'; src: url('century-gothic-bold.ttf') format('truetype'); font-display: swap; }
 @font-face { font-family: 'century-gothic-regular'; src: url('century-gothic-regular.ttf') format('truetype'); font-display: swap; }
+.editable-element.multi-selected { outline: 3px solid #2980b9; box-shadow: 0 0 15px rgba(41,128,185,0.5); }
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 :root { --primary: #95201d; --accent: #f1c40f; --bg: #1a1a1a; --surface: #2d2d2d; --selection: rgba(241, 196, 15, 0.5);
     --brand-red: #95201d; --brand-yellow: #f8f4ad; --gold: #c8a96a; --ink: #181818; --paper: #fffdf8; --muted: #5b5b5b; --line: #d8d0c5;
@@ -556,6 +557,7 @@ function render() {
         if(d.locked) el.classList.add('locked');
         if(!d.visible) el.classList.add('hidden-editor');
         if(selectedId === d.id) el.classList.add('selected');
+        if((docV2.editorState.selectedElementIds || []).includes(d.id)) el.classList.add('multi-selected');
         
         if(d.type==='text') { 
             el.innerText = d.text; 
@@ -677,7 +679,28 @@ function attach(el) {
         // If locked or background role — completely ignore click, do not select
         if (!_itemData || _itemData.locked || (docV2.settings.backgroundLayerLocked && _itemData.layerRole === 'background')) return;
         
-        selectById(el.id);
+        docV2.editorState.selectedElementIds = docV2.editorState.selectedElementIds || [];
+        if (e.shiftKey) {
+            if (docV2.editorState.selectedElementIds.includes(el.id)) {
+                docV2.editorState.selectedElementIds = docV2.editorState.selectedElementIds.filter(id => id !== el.id);
+            } else {
+                if (selectedId && !docV2.editorState.selectedElementIds.includes(selectedId)) {
+                    docV2.editorState.selectedElementIds.push(selectedId);
+                }
+                docV2.editorState.selectedElementIds.push(el.id);
+            }
+            selectedId = null;
+            render();
+            updateSelectionBar();
+            return;
+        } else {
+            if (docV2.editorState.selectedElementIds.length > 1 && docV2.editorState.selectedElementIds.includes(el.id)) {
+                // Group drag initiated, keep array intact
+            } else {
+                docV2.editorState.selectedElementIds = [];
+                selectById(el.id);
+            }
+        }
 
         // Always init dimensions and inject resize handles for images
         if (_itemData.type === 'image') {
@@ -701,6 +724,25 @@ function attach(el) {
         let ox = (e.clientX - rect.left)/zoomScale - parseFloat(el.style.left);
         let oy = (e.clientY - rect.top)/zoomScale - parseFloat(el.style.top);
         
+        const groupStartMap = {};
+        if (docV2.editorState.selectedElementIds.length > 1) {
+            docV2.editorState.selectedElementIds.forEach(id => {
+                if (id === el.id) return;
+                const other = docV2.elements.find(i => i.id === id);
+                if (other && !other.locked) {
+                    const otherEl = document.getElementById(id);
+                    if(otherEl) {
+                        groupStartMap[id] = {
+                            startX: parseFloat(otherEl.style.left) || other.x,
+                            startY: parseFloat(otherEl.style.top) || other.y
+                        };
+                    }
+                }
+            });
+        }
+        const dragStartElX = parseFloat(el.style.left) || _itemData.x;
+        const dragStartElY = parseFloat(el.style.top) || _itemData.y;
+        
         const gcx = document.getElementById('guide-cx'), gcy = document.getElementById('guide-cy');
 
         document.onmousemove = (me) => {
@@ -712,6 +754,21 @@ function attach(el) {
             if(Math.abs(ny-cy)<15) { ny=cy; gcy.style.display='block'; } else gcy.style.display='none';
 
             el.style.left = nx + 'px'; el.style.top = ny + 'px';
+            
+            if (docV2.editorState.selectedElementIds.length > 1) {
+                const dx = parseFloat(el.style.left) - dragStartElX;
+                const dy = parseFloat(el.style.top) - dragStartElY;
+                docV2.editorState.selectedElementIds.forEach(id => {
+                    if (id === el.id) return;
+                    if (groupStartMap[id]) {
+                        const otherEl = document.getElementById(id);
+                        if (otherEl) {
+                            otherEl.style.left = (groupStartMap[id].startX + dx) + 'px';
+                            otherEl.style.top = (groupStartMap[id].startY + dy) + 'px';
+                        }
+                    }
+                });
+            }
         };
         document.onmouseup = () => { document.onmousemove = null; gcx.style.display='none'; gcy.style.display='none'; sync(); };
     };
@@ -749,6 +806,36 @@ function selectById(id) {
 }
 
 function updateSelectionBar() {
+    const multiIds = docV2.editorState.selectedElementIds || [];
+    if (multiIds.length > 1) {
+        console.log("Showing Multi-Select Bar");
+        selBar.classList.add('show');
+        
+        ['layer','design','arrange'].forEach(t => {
+            const target = document.getElementById('bar-tab-'+t);
+            if(target) target.style.display = 'none';
+        });
+        document.getElementById('text-style-ctrls').style.display = 'none';
+        document.getElementById('geo-style-ctrls').style.display = 'none';
+        
+        let msBlock = document.getElementById('multi-select-actions');
+        if (!msBlock) {
+            const div = document.createElement('div');
+            div.id = 'multi-select-actions';
+            div.style.cssText = 'display:flex; align-items:center; gap:10px; width:100%; justify-content:center; padding:5px 0;';
+            div.innerHTML = `<button class="ctrl-btn" style="background:#c0392b; width:auto; padding:0 15px;" onclick="var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; deleteEl();}); docV2.editorState.selectedElementIds=[]; deselect();">🗑️ Delete All (<span id="ms-del-count"></span>)</button><button class="ctrl-btn" style="background:#2980b9; width:auto; padding:0 15px;" onclick="var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl();}); docV2.editorState.selectedElementIds=[]; deselect();">📋 Duplicate All (<span id="ms-dup-count"></span>)</button>`;
+            document.getElementById('bar-content').appendChild(div);
+            msBlock = div;
+        }
+        document.getElementById('ms-del-count').innerText = multiIds.length;
+        document.getElementById('ms-dup-count').innerText = multiIds.length;
+        msBlock.style.display = 'flex';
+        return;
+    }
+    
+    const msBlock = document.getElementById('multi-select-actions');
+    if (msBlock) msBlock.style.display = 'none';
+
     console.log("UpdateSelectionBar. ID:", selectedId);
     if(!selectedId) return;
     
