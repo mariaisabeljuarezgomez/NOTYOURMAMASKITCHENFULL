@@ -299,7 +299,7 @@ body {{ margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-
         .help-popout {{ width: calc(100% - 48px); bottom: 24px; }}
     }}
 </style>
-<script src="export-utils.js"></script>
+<script src="export-utils.js" defer></script>
 </head>
 <body>
 <div id="toast-container"></div>
@@ -308,7 +308,7 @@ body {{ margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-
     <div id="header-title">MENU EDITOR PRO V2</div>
     <div class="header-actions">
         <button id="btn-header-manual" class="btn-ghost btn-header-manual" onclick="openManualModal('en')" data-help="Open the user manual for help and tips">📖 Manual</button>
-        <button id="btn-save-header" class="btn-ui" onclick="save()" data-help="Saves your current layout to the server and browser backup" style="background:#27ae60; border-color:#2ecc71; color:#fff;">💾 Save</button>
+        <button id="btn-save-header" class="btn-ui" onclick="save()" data-help="Saves your current layout to the server and browser backup" style="background:#1e8449; border-color:#2ecc71; color:#fff;">💾 Save</button>
         <button id="btn-undo" class="btn-ui" onclick="undo()" title="Undo Last Change" data-help="Reverses your last action (move, edit, delete, etc.)">↺ Undo Last Change</button>
         <button id="btn-lock-global" class="btn-ui primary" onclick="toggleGlobalLock()" data-help="When locked, elements cannot be moved or edited — click to unlock for editing">🔒 Layout Locked</button>
         <button id="btn-reload" class="btn-ui" onclick="location.reload()" data-help="Reloads the page to reset the session if needed.">↺ RELOAD</button>

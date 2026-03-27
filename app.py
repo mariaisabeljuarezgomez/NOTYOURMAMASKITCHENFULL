@@ -44,7 +44,9 @@ def validate_schema(data):
 def index():
     if not os.path.exists("index.html"):
         return "Critical Error: index.html not found. Please run build_app.py first.", 500
-    return send_from_directory(".", "index.html")
+    response = send_from_directory(".", "index.html")
+    response.headers["Cache-Control"] = "no-cache, must-revalidate"
+    return response
 
 @app.route("/api/menu", methods=["GET"])
 def get_menu():
@@ -97,7 +99,10 @@ def reset_menu():
 
 @app.route("/<path:path>")
 def static_proxy(path):
-    return send_from_directory(".", path)
+    response = send_from_directory(".", path)
+    if path.lower().endswith((".ttf", ".js", ".jpg", ".jpeg", ".png", ".webp")):
+        response.headers["Cache-Control"] = "max-age=604800, public"
+    return response
 
 # --- IMAGE PERSISTENCE (Phase 13) ---
 import base64
@@ -142,7 +147,9 @@ def list_images():
 
 @app.route("/user-images/<path:filename>")
 def serve_user_image(filename):
-    return send_from_directory(IMAGES_DIR, filename)
+    response = send_from_directory(IMAGES_DIR, filename)
+    response.headers["Cache-Control"] = "max-age=604800, public"
+    return response
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
