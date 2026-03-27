@@ -1,10 +1,12 @@
 # MASTER_TECHNICAL_SPEC.md
 # Dine In Menu Editor Pro V2 — Master Technical Specification
-**Version**: V2 Phase 29 (Final Polish & UX Hardening)  
-**Last Updated**: March 17, 2026  
+**Version**: V2 Phase 30+ (PageSpeed 100 / Performance Hardened)  
+**Last Updated**: March 27, 2026  
 **Repository**: [mariaisabeljuarezgomez/NOTYOURMAMASKITCHENFULL](https://github.com/mariaisabeljuarezgomez/NOTYOURMAMASKITCHENFULL)  
 **Deployed on**: Railway  
 **Prepared by**: MARIAS DIGITAL DESIGNS
+
+> ⚠️ **SUPERSEDED ITEMS NOTE**: This spec was last fully revised at Phase 29 (March 17, 2026). All Phase 30 changes (PageSpeed fixes, export engine migration, font cleanup) are reflected below. See `HANDOFF_V3.md` as the master continuity document.
 
 ---
 
@@ -38,7 +40,7 @@
 **Dine In Menu Editor Pro V2** is a browser-based, professional-grade menu layout editor for restaurant use. It is a generator-compiled single-page application served by a Python/Flask backend, deployed on Railway with persistent Volume storage.
 
 ### Key Design Constraints
-- Must load fast on mobile (< 2 second LCP target)
+- Must load fast on mobile (PageSpeed 100 achieved March 27, 2026)
 - Must be safe for non-technical users (Layout Locked by default)
 - Must produce print-quality output regardless of device used for editing
 - Must survive browser cache clears via server-side persistence
@@ -50,13 +52,15 @@
 |-------|-----------|
 | Generator | Python 3 (`build_app.py`) |
 | Frontend | HTML5, CSS3, Vanilla JavaScript, Canvas API |
-| Export engine | `html2canvas` (lazy-loaded) |
+| Export engine | **Canvas API + `export-utils.js`** (deterministic, NO html2canvas) |
 | Backend | Python 3, Flask, flask-compress |
 | Persistence | Railway Volume (`/app/data/`) — JSON files |
 | Image storage | Railway Volume (`/app/data/user_images/`) |
 | CDN/Compression | flask-compress (gzip all assets) |
 | Hosting | Railway (auto-deploy from GitHub push) |
 | Fonts | Local TTF files served as static assets |
+
+> ⚠️ **html2canvas has been removed from this project.** The export pipeline was migrated to a deterministic Canvas API renderer. `export-utils.js` provides `inject300DpiAndDownload()`. Any reference to html2canvas in older docs is outdated.
 
 ---
 
@@ -68,20 +72,28 @@ NOTYOURMAMASKITCHENFULL/
 ├── build_app.py              ← AUTHORITATIVE SOURCE. Generates index.html.
 ├── index.html                ← COMPILED OUTPUT. Never edit directly.
 ├── app.py                    ← Flask server (routes, save/load/image APIs)
-├── requirements.txt          ← Flask, flask-compress, gunicorn
-├── Procfile                  ← Railway process: gunicorn app:app
+├── export-utils.js           ← Export utility: inject300DpiAndDownload(). Loaded with defer.
+├── requirements.txt          ← Flask, flask-compress
+├── Procfile                  ← Railway process: python app.py
 │
 ├── menu-bg.png               ← Master background (7.2 MB, full res, export only)
-├── menu-bg-preview.jpg       ← Preview background (compressed, editing only)
+├── menu-bg-preview.jpg       ← Preview background (~114 KB, editing only)
 │
 ├── bernard-mt-condensed-regular.ttf
 ├── century-gothic-regular.ttf
 ├── century-gothic-bold.ttf
 ├── century-gothic-bold-italic.ttf
-├── centurygothic.ttf         ← Alias copy of century-gothic-regular.ttf
+│   NOTE: centurygothic.ttf was a duplicate alias and was DELETED on March 27, 2026.
 │
 ├── manual-en.html            ← In-app English user manual (standalone HTML)
+├── manual-en-full.html       ← Full standalone English manual (added March 27, 2026)
 ├── manual-es.html            ← In-app Spanish user manual (standalone HTML)
+│
+├── HANDOFF_V3.md             ← MASTER CONTINUITY DOC (supersedes older handoff files)
+├── MASTER_TECHNICAL_SPEC.md  ← This file
+├── CONTINUITY_HANDOFF_CURRENT.md  ← Older handoff — superseded by HANDOFF_V3.md
+├── USER_MANUAL_SOURCE.md     ← User-facing manual source
+├── dine_in_menu_editor_v2_data_model_contract.md  ← V2 schema contract
 │
 ├── create_preview.py         ← Utility: generates menu-bg-preview.jpg from menu-bg.png
 ├── fix_braces.py             ← Utility: diagnostic for brace escaping issues in build_app.py
@@ -90,11 +102,9 @@ NOTYOURMAMASKITCHENFULL/
 ├── raw_coords.json           ← Source coordinate data for element positioning
 │
 ├── .gitignore
-├── Images/                   ← Static image assets directory
-│
-├── USER_MANUAL_SOURCE.md     ← User-facing manual source (this project's docs)
-├── MASTER_TECHNICAL_SPEC.md  ← This file
-└── CONTINUITY_HANDOFF_CURRENT.md  ← AI assistant handoff and project context doc
+├── Images/                   ← Static tray image assets (Asset1–14.png)
+├── MANUAL/                   ← Manual source folder
+└── legacy_docs/              ← Archived older documentation
 ```
 
 ---
@@ -149,12 +159,26 @@ git push
 
 The server is a minimal Flask application. Its responsibilities are:
 
-1. Serve `index.html` at the root route `/`
-2. Serve all static files (fonts, images, manuals) from the working directory
+1. Serve `index.html` at the root route `/` with `Cache-Control: no-cache, must-revalidate`
+2. Serve all static files (fonts, images, manuals) from the working directory with appropriate cache headers
 3. Expose REST API for session save/load
 4. Expose REST API for image upload/list/delete/serve
 5. Handle the reset endpoint (wipes saved data)
 6. Apply gzip compression via `flask-compress` to all responses
+
+### Cache-Control Headers (added Phase 30 — March 27, 2026)
+```python
+# index.html — never cache
+Cache-Control: no-cache, must-revalidate
+
+# Static assets (.ttf, .js, .jpg, .jpeg, .png, .webp) — 7-day cache
+Cache-Control: max-age=604800, public
+
+# User-uploaded images — 7-day cache
+Cache-Control: max-age=604800, public
+```
+
+This cache strategy was required to achieve PageSpeed 100 on mobile.
 
 ### Key Configuration
 ```python
@@ -200,7 +224,7 @@ Gzip compression is applied to all asset types including fonts and JSON for maxi
 ## 5. API Endpoints
 
 ### GET /
-Returns `index.html`. Entry point for the application.
+Returns `index.html` with `Cache-Control: no-cache, must-revalidate`. Entry point for the application.
 
 ### GET /api/menu
 Returns the current saved session JSON.
@@ -240,7 +264,7 @@ Saves the current session to disk.
 
 **Response (success):**
 ```json
-{"status": "success", "backup": "menu_data_20260317_074500.json"}
+{"status": "success", "backup": "menu_data_20260327_074500.json"}
 ```
 
 ### POST /api/menu/reset
@@ -265,24 +289,14 @@ Accepts base64-encoded image data. Saves to `/app/data/user_images/`.
 ### GET /api/list-images
 Returns list of all images in the user_images directory.
 
-**Response:**
-```json
-{
-  "images": [
-    {"filename": "logo.png", "url": "/user-images/logo.png"},
-    ...
-  ]
-}
-```
-
 ### DELETE /api/delete-image/\<filename\>
 Removes a specific image from user_images.
 
 ### GET /user-images/\<filename\>
-Serves a user-uploaded image file directly from disk.
+Serves a user-uploaded image file with `Cache-Control: max-age=604800, public`.
 
 ### GET /\<path:path\>
-Catch-all static file server — serves fonts, manuals, and any other static asset.
+Catch-all static file server — serves fonts, manuals, and any other static asset. Font and image extensions receive `Cache-Control: max-age=604800, public`.
 
 ---
 
@@ -292,8 +306,8 @@ Catch-all static file server — serves fonts, manuals, and any other static ass
 /app/data/                         ← Railway Volume mount
 ├── menu_data.json                 ← Current session state (atomic writes)
 ├── backups/
-│   ├── menu_data_20260317_074500.json   ← Timestamped auto-backup before each save
-│   ├── menu_data_RESET_20260317_080000.json  ← Backup taken before reset
+│   ├── menu_data_20260327_074500.json   ← Timestamped auto-backup before each save
+│   ├── menu_data_RESET_20260327_080000.json  ← Backup taken before reset
 │   └── ...
 └── user_images/
     ├── logo_upload.png            ← User-uploaded images
@@ -334,11 +348,11 @@ state = {
 ```
 
 ### Render Loop
-- The app uses a DOM-based render model (not Canvas for editing)
+- The app uses a DOM-based render model for editing
 - `render()` function rebuilds all element DOM nodes from state on each update
 - Elements are positioned using absolute CSS (`left`, `top`, `width`, `height`) inside a scaled canvas container
 - Canvas zoom is applied via CSS `transform: scale(zoom)` on the container
-- Export uses a separate rendering path (`html2canvas`) that reads the same DOM
+- **Export uses a separate Canvas API rendering path** (NOT DOM capture) — see Section 11
 
 ### Key JavaScript Functions
 
@@ -349,7 +363,7 @@ state = {
 | `undo()` | Pops last undo snapshot and restores state |
 | `saveSession()` | POSTs state to `/api/menu` |
 | `loadSession()` | GETs from `/api/menu` and replaces state |
-| `exportPng()` | Triggers full export pipeline |
+| `exportPng()` | Triggers full Canvas API export pipeline |
 | `addText()` | Creates new text element at viewport center |
 | `addRect()` | Creates new rectangle element |
 | `uploadImage()` | Reads file, POSTs to `/api/upload-image`, places on canvas |
@@ -361,11 +375,12 @@ state = {
 | `showModal(opts)` | Displays branded confirmation dialog |
 | `onTextFocus(id)` | Reads content from data model into contentEditable |
 | `onTextBlur(id)` | Commits contentEditable content back to data model |
+| `inject300DpiAndDownload()` | Injects pHYs DPI chunk and triggers PNG download (in export-utils.js) |
 
 ### contentEditable Text Editing
-- Text elements use `contentEditable="true"` on the DOM element
+- Text elements use `contentEditable="true"` (string, not boolean) on the DOM element
 - `onTextFocus`: reads from `state.elements[id].content` into the DOM element
-- `onTextBlur`: commits DOM element `innerText` back to `state.elements[id].content`
+- `onTextBlur`: writes `innerText` back to `state.elements[id].content` — commits edit
 - A rogue `sync()` call was removed from `onTextBlur` in Phase 27-C to prevent unintended auto-saves during typing
 
 ---
@@ -391,21 +406,6 @@ Every element on the canvas (text, image, shape) is stored as an object in `stat
   "zIndex": 10
 }
 ```
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier: `el_` + timestamp + random suffix |
-| `type` | string | `"text"` / `"image"` / `"rect"` |
-| `x` | number | Left position in canvas world coordinates (pixels) |
-| `y` | number | Top position in canvas world coordinates (pixels) |
-| `width` | number | Element width in canvas pixels |
-| `height` | number | Element height in canvas pixels |
-| `visible` | boolean | If false, hidden in editor and excluded from export |
-| `locked` | boolean | If true, element cannot be selected or moved |
-| `opacity` | number | 0–100 (percent). Applied as CSS opacity. |
-| `role` | string | `"background"` / `"content"` / `"overlay"` |
-| `name` | string | User-assigned label shown in Layers Panel |
-| `zIndex` | number | Stacking order |
 
 ### Text Element Additional Properties
 ```json
@@ -453,7 +453,7 @@ The full session JSON saved to and loaded from the server:
 ```json
 {
   "version": "2.0",
-  "savedAt": "2026-03-17T07:24:01Z",
+  "savedAt": "2026-03-27T07:24:01Z",
   "elements": [
     { ...element object... },
     { ...element object... }
@@ -486,7 +486,7 @@ The full session JSON saved to and loaded from the server:
 ### Background Images
 | File | Purpose | Size | When Loaded |
 |------|---------|------|------------|
-| `menu-bg-preview.jpg` | Editing preview | ~114 KB | On app load (immediate) |
+| `menu-bg-preview.jpg` | Editing preview | ~114 KB | On app load (`fetchpriority="high"`) |
 | `menu-bg.png` | Export master | ~7.2 MB | On export trigger only |
 
 The preview JPG is generated from the master PNG using `create_preview.py`:
@@ -504,14 +504,15 @@ All fonts are served as local TTF files from the repo root.
 | `century-gothic-regular.ttf` | Century Gothic | Regular | Normal |
 | `century-gothic-bold.ttf` | Century Gothic | Bold | Normal |
 | `century-gothic-bold-italic.ttf` | Century Gothic | Bold | Italic |
-| `centurygothic.ttf` | Century Gothic | Regular | Normal (alias) |
 
-Fonts are declared with `@font-face` in the compiled CSS and are loaded as high-priority resources. A font-load fallback was added in Phase 26 to prevent `window.onload` from hanging if a font fails to load.
+> ⚠️ `centurygothic.ttf` was a duplicate alias of `century-gothic-regular.ttf` and was **deleted on March 27, 2026** as part of PageSpeed optimization. Do not re-add it.
+
+Fonts are declared with `@font-face` in the compiled CSS with `font-display: swap`. A font-load promise with 800ms fallback timeout runs before `initApp()` to prevent rendering hangs.
 
 ### User Images
 - Uploaded via frontend → POSTed as base64 to `/api/upload-image`
 - Stored at `/app/data/user_images/`
-- Served from `/user-images/<filename>`
+- Served from `/user-images/<filename>` with 7-day cache headers
 - Listed via `/api/list-images` and displayed in the Asset Tray
 - Auto-trim: transparent PNG borders are cropped client-side on upload before placing on canvas
 
@@ -519,23 +520,28 @@ Fonts are declared with `@font-face` in the compiled CSS and are loaded as high-
 
 ## 11. Export Pipeline — 300 DPI PNG
 
+> ⚠️ **IMPORTANT**: The export engine uses the **Canvas API exclusively**. `html2canvas` has been fully removed. The export pipeline renders elements programmatically onto an off-screen HTML5 Canvas at 3600×5400px, then calls `inject300DpiAndDownload()` from `export-utils.js`.
+
 ### Step-by-Step Export Flow
 
 ```
-User clicks Export
+User clicks Export Pro PNG
   → pushState() for undo safety
   → showToast("Preparing export…", "info") — persistent toast
   → autoSave() — saves session to server
-  → swap background: preview JPG → master PNG
-  → await document.fonts.ready — ensures all fonts are rendered
-  → html2canvas(canvas_container, options)
+  → Load menu-bg.png (full resolution master) into Image object
+  → Create off-screen Canvas at 3600 × 5400px
+  → Draw menu-bg.png as background layer
+  → For each element in ascending zIndex order:
+      if image: draw at scaled coordinates
+      if text:  set font, fillStyle, draw text (multi-line aware)
+      if rect:  fillRect / strokeRect with corner radius
   → canvas.toBlob("image/png")
-  → inject300DpiMetadata(pngBlob)
+  → inject300DpiAndDownload(blob, "notyourmamaskitchen-menu.png")
     → parse PNG binary
-    → inject pHYs chunk (11811 × 11811 pixels/meter = 300 DPI)
+    → inject pHYs chunk before IDAT (11811 × 11811 pixels/meter = 300 DPI)
     → reassemble PNG binary
-  → trigger browser download: notyourmamaskitchen-menu.png
-  → restore preview background
+    → trigger browser download
   → dismiss export toast
   → showToast("Export complete!", "success")
 ```
@@ -546,45 +552,29 @@ User clicks Export
 - **DPI metadata**: 300 DPI (pHYs chunk: 11811 pixels/meter)
 - **Color mode**: RGB
 - **Format**: PNG (lossless)
+- **Scale factor**: TARGET_W / BASE_W = 3600 / 908.44 ≈ 3.963×
 
-### pHYs Chunk Injection (Phase 28)
-Browser-exported PNGs carry no DPI metadata by default. The fix:
+### pHYs Chunk Injection
+Browser-exported PNGs carry no DPI metadata by default. `inject300DpiAndDownload()` in `export-utils.js`:
 
 ```javascript
-function inject300DpiMetadata(pngBlob) {
-  // Parse binary PNG
-  // Locate IDAT chunk position
-  // Insert pHYs chunk before IDAT:
-  //   - Chunk length: 9 bytes
-  //   - Chunk type: "pHYs"
-  //   - X pixels/unit: 11811 (big-endian uint32)
-  //   - Y pixels/unit: 11811 (big-endian uint32)
-  //   - Unit: 1 (meter)
-  //   - CRC32 of chunk type + data
-  // Reassemble and return corrected Blob
-}
+// Locates IDAT chunk position in PNG binary
+// Inserts pHYs chunk before IDAT:
+//   - Chunk length: 9 bytes
+//   - Chunk type: "pHYs"
+//   - X pixels/unit: 11811 (big-endian uint32)
+//   - Y pixels/unit: 11811 (big-endian uint32)
+//   - Unit: 1 (meter)
+//   - CRC32 of chunk type + data
+// Reassembles and triggers browser download
 ```
 
-This was the fix for the long-standing issue of visually-correct exports still reporting 72 DPI to printers and design software.
-
-### html2canvas Options
-```javascript
-{
-  scale: EXPORT_SCALE,          // computed to produce 3600px width
-  useCORS: true,
-  allowTaint: false,
-  backgroundColor: null,
-  logging: false,
-  width: CANVAS_NATURAL_WIDTH,
-  height: CANVAS_NATURAL_HEIGHT  // dynamic — calculated from actual element bounds
-}
+### export-utils.js Loading
+`export-utils.js` is loaded in `index.html` with the `defer` attribute:
+```html
+<script src="export-utils.js" defer></script>
 ```
-
-### Multi-Line Text in Export (Phase 23–24)
-Multi-line text elements required special handling during export:
-- Element height is calculated from actual line count × line height × font size
-- `document.fonts.ready` is awaited before rendering to ensure correct font metrics
-- Letter-spacing detection was standardized across edit and export paths
+This is required for PageSpeed 100 — do not remove `defer`.
 
 ---
 
@@ -604,8 +594,8 @@ Multi-line text elements required special handling during export:
 - Style changes (font, size, color, opacity, letter spacing, line height, bold/italic/underline)
 - Add element (Text, Image, Rect)
 - Delete element
-- Visibility toggle (👁️)
-- Element lock toggle (🔒)
+- Visibility toggle
+- Element lock toggle
 - Shape property changes (fill, border, radius)
 - Duplicate element
 
@@ -614,9 +604,6 @@ Multi-line text elements required special handling during export:
 - Load Session (full state replacement from server)
 - Export (read-only operation)
 - Zoom level changes
-
-### Undo Snapshot Timing Fix (Phase 22)
-A timing bug caused undo snapshots to be taken after text was committed rather than before. This was fixed by moving `pushState()` to be called in `onTextFocus` (when editing begins) rather than in `onTextBlur` (when editing ends).
 
 ---
 
@@ -649,127 +636,104 @@ touchend →
   pushState() snapshot
 ```
 
-**Multi-touch suppression rule**: If a second finger touches the screen while a drag is in progress, the drag is immediately cancelled and the element returns to its last committed position. This prevents accidental element displacement during pinch-zoom.
+**Multi-touch suppression rule**: If a second finger touches the screen while a drag is in progress, the drag is immediately cancelled and the element returns to its last committed position.
 
 ### Zoom Controls (Unlocked Mode Only)
 - Floating `＋` / `－` buttons appear in top-right when Layout is Unlocked
-- Zoom is stored in `state.zoom`
-- Zoom is restored on Load Session (Phase 27-D fix — zoom was not being restored correctly)
-- User-zoom persistence guard added in Phase 25 to prevent zoom state from being clobbered by async operations
-
-### contentEditable Isolation (Phase 27)
-A bug caused `contentEditable` to be set incorrectly (boolean `true` instead of string `"true"`) in the `render()` function. This broke text editing in certain browser contexts. Fixed in Phase 27.
-
-### onTextFocus / onTextBlur (Phase 27-B, 27-C)
-- `onTextFocus`: reads `state.elements[id].content` into the DOM node's `innerText` — ensures DOM matches data model at edit start
-- `onTextBlur`: writes `innerText` back to `state.elements[id].content` — commits edit
-- Rogue `sync()` call removed from `onTextBlur` in Phase 27-C — it was triggering unwanted auto-saves mid-edit
+- Zoom is stored in `state.zoom` and restored on Load Session
 
 ---
 
 ## 14. UI Component Inventory
 
 ### Top Header Bar
-Fixed. Always visible. Z-index above canvas.
-
-| Element | ID/Class | Behavior |
-|---------|----------|---------|
-| ↺ RELOAD button | `#btn-reload` | Confirms via modal, reloads page |
-| 🔒/🔓 Lock button | `#btn-lock` | Toggles `layoutLocked`. Updates button label and zoom button visibility. |
-| ↺ Undo button | `#btn-undo` | Calls `undo()`. Disabled state when stack empty. |
-| 💾 Save button | `#btn-save` | Calls `saveSession()`. Shows success/failure toast. |
+| Element | Behavior |
+|---------|----------|
+| ↺ RELOAD button | Confirms via modal, reloads page |
+| 🔒/🔓 Lock button | Toggles `layoutLocked`. Updates button label and zoom button visibility. |
+| ↺ Undo button | Calls `undo()`. Disabled state when stack empty. |
+| 💾 Save button | Calls `saveSession()`. Shows success/failure toast. Color: `#1e8449` (contrast-safe). |
 
 ### FAB (Floating Action Button)
-- `🛠️` button, fixed bottom-right
-- Opens/closes Tools Drawer (slide-up panel)
+- `🛠️` button, fixed bottom-right. Opens/closes Tools Drawer.
 
 ### Tools Drawer
-Slide-up panel, Z-index above canvas.
-
 | Control | Behavior |
 |---------|---------|
 | ＋ Add Text | `addText()` — places text element at viewport center |
-| 🖼️ Upload Image | Opens `<input type=file>` — accepts PNG/JPG/WEBP/GIF/SVG |
+| 🖼️ Upload Image | Opens file input — accepts PNG/JPG/WEBP/GIF/SVG |
 | ⬜ Add Rectangle | `addRect()` — places rect element |
 | 💾 Save Session | `saveSession()` |
 | 📂 Load Session | `loadSession()` — confirms via modal if dirty |
 | 🔄 Reset | `resetToOriginal()` — confirms via modal (destructive) |
-| ⬇️ Export Pro PNG | `exportPng()` |
+| ⬇️ Export Pro PNG | `exportPng()` — Canvas API, 300 DPI |
 | 📖 Manual EN | Opens `manual-en.html` in new tab |
 | 📖 Manual ES | Opens `manual-es.html` in new tab |
 | Asset Tray | Grid of uploaded image thumbnails. Click to place. |
 | Layers Panel | List of all elements. Click to select. Toggle visibility/lock. |
 
 ### Selection Bar (Floating Toolbar)
-- Appears on element selection
-- Floats near selected element
-- Draggable via `⠿` handle
-- Horizontally scrollable on mobile (overflow-x: auto)
+- Appears on element selection, floats near selected element
+- Draggable via `⠿` handle (pointer capture)
+- Horizontally scrollable on mobile
 - Three tabs: LAYER / DESIGN / ARRANGE
-- Disappears on deselect
 
-### Modal System
-- Branded dark overlay
-- Branded dialog box
-- Buttons: Confirm (red), Cancel (neutral)
-- Focus trapped inside modal while open
-- Keyboard: Escape = Cancel
-
-### Toast System
-- Slide-in notifications (bottom or top)
-- Types: success (green), error (red), warning (orange), info (blue)
-- Auto-dismiss after configurable timeout
-- Export pre-toast is persistent (does not auto-dismiss) until export completes
+### Modal & Toast Systems
+- **Modal**: Branded dark overlay, Confirm (red) + Cancel buttons, Escape = Cancel
+- **Toast**: Slide-in, types: success/error/warning/info. Export toast is persistent until export completes.
 
 ---
 
 ## 15. Font System
 
+### Active Fonts (4 files)
+| File | Font Name | Used for |
+|------|-----------|----------|
+| `century-gothic-regular.ttf` | Century Gothic Regular | Body text |
+| `century-gothic-bold.ttf` | Century Gothic Bold | Headings |
+| `century-gothic-bold-italic.ttf` | Century Gothic Bold Italic | Accents |
+| `bernard-mt-condensed-regular.ttf` | Bernard MT Condensed | Display titles |
+
+`centurygothic.ttf` was a duplicate and was **deleted March 27, 2026**. Do not re-add.
+
 ### Font Loading
-Fonts are declared via `@font-face` in compiled CSS with `font-display: swap`.
-
-### Font Load Fallback (Phase 26)
-A font-load fallback was added to `window.onload` to prevent the app from hanging if a font file fails to load:
-
 ```javascript
-window.onload = async () => {
-  try {
-    await Promise.race([
-      document.fonts.ready,
-      new Promise(resolve => setTimeout(resolve, 3000)) // 3s timeout
-    ]);
-  } catch(e) {
-    // continue anyway
-  }
-  initApp();
-};
+await Promise.race([
+  Promise.all([
+    document.fonts.load('1em century-gothic-regular'),
+    document.fonts.load('1em century-gothic-bold'),
+    document.fonts.load('1em century-gothic-bold-italic'),
+    document.fonts.load('1em bernard-mt-condensed-regular'),
+  ]),
+  new Promise(resolve => setTimeout(resolve, 800)) // 800ms fallback
+]);
+initApp();
 ```
 
-### Available Fonts in Font Selector
-- Century Gothic (Regular, Bold, Bold Italic)
-- Bernard MT Condensed
-
-### Export Font Handling (Phase 24)
-`document.fonts.ready` is awaited before `html2canvas` renders during export to ensure custom fonts are loaded and metrics are correct for all text elements.
+All fonts use `@font-face` with `font-display: swap` for non-blocking render.
 
 ---
 
 ## 16. Performance Architecture
 
+### PageSpeed Score (March 27, 2026): 100 / 100 / 100 / 100 ✅
+
 ### Load Time Strategy
 | Asset | Strategy | Rationale |
 |-------|----------|-----------|
-| `index.html` | Served with gzip | Reduces ~100KB HTML to ~25KB transfer |
-| `menu-bg-preview.jpg` | Served immediately, high-priority | Fast editing background; avoids large PNG on load |
-| `menu-bg.png` | Deferred — loaded only on export | 7.2MB file must never block initial load |
-| `html2canvas` | Lazy-loaded only on export trigger | Large library; no impact on editing performance |
-| Fonts | `@font-face` with `font-display: swap` | Non-blocking; text renders immediately with fallback |
+| `index.html` | `no-cache` + gzip | Always fresh; ~100KB → ~25KB transfer |
+| `menu-bg-preview.jpg` | `fetchpriority="high"`, 7-day cache | Fast LCP; 114KB vs 7.2MB |
+| `menu-bg.png` | Deferred — loaded only on export | 7.2MB must never block initial load |
+| `export-utils.js` | `defer` attribute | Non-blocking; loaded after HTML parsed |
+| Fonts | `@font-face` with `font-display: swap`, 7-day cache | Non-blocking render + browser caching |
 | JSON API responses | flask-compress gzip | Minimizes session data transfer size |
 
-### Measured Performance Targets
-- LCP (Largest Contentful Paint): < 2 seconds on mobile (4G)
-- Time to interactive: < 3 seconds
-- Export trigger to download: < 8 seconds (depends on element count)
+### Key Optimizations Applied
+- `defer` on `export-utils.js` script tag (Phase 30)
+- `Cache-Control: max-age=604800` on all static assets (Phase 30)
+- Duplicate font `centurygothic.ttf` deleted (Phase 30)
+- Save button contrast raised to `#1e8449` for accessibility (Phase 30)
+- No render-blocking scripts or stylesheets on critical path
 
 ---
 
@@ -777,61 +741,49 @@ window.onload = async () => {
 
 ### Process
 ```
-Procfile: web: gunicorn app:app
+Procfile: web: python app.py
 ```
 
 ### Environment Variables
 | Variable | Purpose | Default |
 |----------|---------|---------|
-| `PORT` | Port for gunicorn to bind | `5000` |
+| `PORT` | Port for server to bind | `5000` |
 | `STORAGE_DIR` | Override storage path | `/app/data` |
 | `RAILWAY_VOLUME_MOUNTED` | Set by Railway when volume is active | `"true"` |
 
 ### Auto-Deploy Trigger
-Any push to the `main` branch triggers Railway to pull and redeploy. No manual deployment step required.
+Any push to the `main` branch triggers Railway to pull and redeploy.
 
 ### Volume Mount
-Railway Volume is mounted at `/app/data` automatically when configured in the Railway project settings. The volume persists across all deployments and restarts — this is the foundation of the cross-device sync feature.
+Railway Volume is mounted at `/app/data`. Persists across all deployments and restarts.
 
 ### Backup Recovery
-If `menu_data.json` becomes corrupted or needs rollback, timestamped backups are available in `/app/data/backups/`. To restore manually:
 ```bash
 # SSH into Railway container or use Railway CLI
-cp /app/data/backups/menu_data_20260317_074500.json /app/data/menu_data.json
+cp /app/data/backups/menu_data_20260327_074500.json /app/data/menu_data.json
 ```
 
 ---
 
 ## 18. Known Constraints & Edge Cases
 
-### Browser Canvas Security (CORS / Tainted Canvas)
-- All assets must be served from the same origin for `html2canvas` to capture them
-- Cross-origin images will cause the canvas to be "tainted" and block export
-- User-uploaded images are served from `/user-images/` on the same domain — this is intentional
-- The master background `menu-bg.png` is served locally — this is intentional
+### Browser Canvas Security (CORS)
+- All assets must be served from the same origin for Canvas export to work
+- User-uploaded images are served from `/user-images/` on same domain — intentional
 
 ### PNG DPI Metadata
-- Browsers export PNGs with no DPI metadata by default (effectively 72 DPI to external software)
-- The `inject300DpiMetadata()` function manually rewrites the PNG binary to insert the `pHYs` chunk
-- Without this, the exported file would look correct visually but printers and InDesign would treat it as 72 DPI
+- Browsers export PNGs with no DPI metadata (effectively 72 DPI)
+- `inject300DpiAndDownload()` rewrites the PNG binary to insert the pHYs chunk
 
 ### Mobile Multi-Touch
-- A single-touch drag and a pinch-zoom use the same `touchstart`/`touchmove` events
-- If not carefully guarded, a pinch attempt can accidentally move an element
-- Fix: second finger detected → cancel drag immediately → return element to pre-drag position
+- Second finger during drag cancels drag and returns element to last committed position
 
-### contentEditable and Browser Quirks
-- `contentEditable="true"` behavior varies slightly across browsers
-- Setting contentEditable as a boolean `true` (not string `"true"`) causes issues in some contexts — Phase 27 fixed this
-- `innerText` is used (not `innerHTML`) to avoid XSS and formatting injection
+### contentEditable Browser Quirks
+- Must use `contentEditable="true"` (string) — boolean `true` causes issues in some browsers
+- `innerText` used (not `innerHTML`) to avoid XSS
 
 ### Undo After Load Session
-- Load Session is a full state replacement and cannot be undone
-- This is intentional — the undo stack is cleared after a Load Session
-
-### Locked Layer Click-Through (Phase 16–17)
-- Locked elements had a z-index "popping" bug where clicking near them would temporarily elevate them above unlocked elements
-- Fixed by enforcing z-index discipline in the render function — locked/background elements never receive `z-index` elevation on hover or selection attempt
+- Load Session is a full state replacement and cannot be undone (undo stack is cleared)
 
 ---
 
@@ -839,29 +791,6 @@ cp /app/data/backups/menu_data_20260317_074500.json /app/data/menu_data.json
 
 | Phase | Commit SHA | Key Change |
 |-------|-----------|------------|
-| Initial V2 | (multiple) | Image elements, shape elements, Selection Bar with 3 tabs, Asset Tray, Layers Panel, Cloudinary integration |
-| Hotfix | 7ab4bf1 | Font loading regressions, ReferenceError, initialization order |
-| Fix | 0125549 | Resize scaling, layout lock decoupling, font cleanup |
-| Fix | 30de113 | Final resize handle visibility (CSS restructuring, JS cleanup) |
-| Fix | 01e2259 | Image wrapper refactor for resize handles |
-| Fix | 15a5d31 | Image wrapper stability (naturalWidth, CSS styles, initial render hook) |
-| Fix | b7c0a34 | startX/startY undefined; missing toggle handlers |
-| Fix | 36d9984 | Image export distortion; initial zoom visibility; tray placement |
-| Fix | be7d78d | Layer depth swapping; zoom repositioning; auto-trim transparent pixels |
-| Phase 13 | 98771d2 | Server-side image persistence and library tray management |
-| Phase 14 | 961a60 | Fix drawer clipping (removed hardcoded height) |
-| Phase 15 | 1b9e161 | Fix stacking order and centering logic |
-| Phase 16 | 458b05a | Prevent selection and z-index popping for locked/background layers |
-| Phase 17 | 9e365d3 | Hardened locked layer interactions in list selection and CSS hover |
-| Phase 18 | cb2f216 | Hardened resize, undo, duplication guards for locked/background layers |
-| Phase 19 | a5995417 | Export resolution: 12×18in @ 300 DPI (3600×5400) |
-| Phase 20 | ed023b7 | exportPng() with dynamic height, pre-export toast, background error handling |
-| Phase 21 | 6774c9c | Persistent export toasts; double-click guard; text editing undo order fix |
-| Phase 22 | 518c855 | Export try/catch hardening; undo snapshot timing fix; session load UI refresh |
-| Phase 23 | fb41537 | Multi-line export support; pushState snapshot refactor; export try/catch |
-| Phase 24 | d27a049 | Await fonts on export; multi-line dimensions; letter-spacing detection |
-| Phase 25 | 65fa400 | Toast icon fix; user-zoom persistence guard |
-| Phase 26 | 29efbdc | Font-load fallback; robust render error handling on window.onload |
 | Phase 27 | 0351b38 | Fix contentEditable boolean bug in render() |
 | Phase 27-B | 03b1729 | Fix onTextFocus reads from data model |
 | Phase 27-C | 92104ea | Remove rogue sync() from onTextBlur |
@@ -870,30 +799,30 @@ cp /app/data/backups/menu_data_20260317_074500.json /app/data/menu_data.json
 | Phase 28 | b8d611a | Implement 300 DPI pHYs metadata injection for PNG export |
 | Phase 28-B | 456a770 | Add PNG helper functions for 300 DPI support |
 | Phase 29 | e4102ee | Final Polish & UX Hardening (9 fixes) |
+| Phase 30 | d3fc068 | PageSpeed 100: defer JS, remove dup font, cache headers, contrast fix |
 
 ---
 
 ## 20. Locked Decisions — Do Not Change
-
-The following architectural decisions are stable and hardened. Reopening any of them without overwhelming cause risks regression.
 
 | # | Decision | Why Locked |
 |---|----------|-----------|
 | 1 | `build_app.py` is authoritative source | Direct edits to `index.html` are lost on next build |
 | 2 | Doubled-brace escaping in f-strings | Python/JS brace conflict — removing this breaks the build |
 | 3 | Preview/master split-asset strategy | Preview load is 60× faster than master; critical for mobile |
-| 4 | `html2canvas` lazy-loaded on export only | Prevents large library from blocking edit-time performance |
+| 4 | Canvas API export (NOT html2canvas) | Deterministic, no DOM capture artifacts, no CORS issues |
 | 5 | 300 DPI pHYs binary injection | Only reliable way to set PNG DPI metadata in browser exports |
 | 6 | Railway Volume at `/app/data` | Persistent across deploys; backbone of cross-device sync |
 | 7 | Atomic write (`.tmp` + `os.replace()`) | Prevents partial writes / data corruption |
 | 8 | Layout Locked as default on load | Prevents mobile users from accidentally moving elements |
 | 9 | Undo stack max 30 steps | Bounded memory; sufficient for real-world usage |
-| 10 | Background as DOM `<img>` (not CSS) | CSS backgrounds cannot be captured reliably by html2canvas |
-| 11 | User images served from same origin | Cross-origin images taint the canvas and block export |
-| 12 | `document.fonts.ready` awaited on export | Prevents garbled text in exported PNG if fonts not yet loaded |
+| 10 | `defer` on export-utils.js | Required for PageSpeed 100; do not remove |
+| 11 | User images served from same origin | Cross-origin images cannot be drawn to Canvas without CORS error |
+| 12 | `document.fonts.load()` awaited before export | Prevents garbled text in exported PNG |
 | 13 | Modal/toast system (no native alerts) | Native prompts break mobile UX and look unprofessional |
 | 14 | Multi-touch second-finger cancels drag | Prevents layout damage when pinch-zoom is attempted on element |
+| 15 | `Cache-Control: no-cache` on index.html | Users must always get fresh app; static assets get 7-day cache |
 
 ---
 
-*End of MASTER_TECHNICAL_SPEC.md — Phase 29*
+*End of MASTER_TECHNICAL_SPEC.md — Updated March 27, 2026 (Phase 30)*
