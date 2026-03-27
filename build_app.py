@@ -1103,6 +1103,27 @@ async function importImg(input) {{
             }});
             const json = await res.json();
             if (json.url) {{
+                // Phase 2C: Register uploaded image into docV2.assets
+                const newAssetId = 'asset_user_' + Date.now();
+                const uploadedFilename = f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                docV2.assets = docV2.assets || [];
+                docV2.assets.push({{
+                    id: newAssetId,
+                    kind: 'image',
+                    name: uploadedFilename,
+                    storage: {{
+                        originalUrl: json.url,
+                        previewUrl: json.url,
+                        thumbnailUrl: null
+                    }},
+                    original: {{
+                        width: null,
+                        height: null,
+                        mimeType: f.type || 'image/png'
+                    }},
+                    tags: ['user-upload'],
+                    createdAt: new Date().toISOString()
+                }});
                 await loadUserImageTray();
                 await addFromTray(json.url);
                 showToast('Image saved to your library!');
