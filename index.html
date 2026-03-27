@@ -290,7 +290,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 <button id="fab" class="fab" onclick="this.classList.toggle('open'); openDrawer()" data-help="Open/Close Editing Tools">🛠️</button>
 
 <div id="bottom-drawer" class="closed">
-    <div class="asset-tray"><img data-src="Images/Asset1.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset1" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset10.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset10" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset11.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset11" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset12.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset12" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset13.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset13" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset14.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset14" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset2.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset2" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset3.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset3" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset4.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset4" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset6.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset6" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset7.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset7" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset8.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset8" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="Images/Asset9.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset9" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"></div>
+    <div class="asset-tray"><img data-src="/Images/Asset1.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset1" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="/Images/Asset10.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset10" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="/Images/Asset11.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset11" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="/Images/Asset12.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset12" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="/Images/Asset13.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset13" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="/Images/Asset14.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset14" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="/Images/Asset2.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset2" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="/Images/Asset3.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset3" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="/Images/Asset4.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset4" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="/Images/Asset6.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset6" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="/Images/Asset7.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset7" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="/Images/Asset8.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset8" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"><img data-src="/Images/Asset9.png" src="" class="tray-item" onclick="addFromTray(this.dataset.src)" title="Asset9" data-help="Click to add this image to your menu" loading="lazy" width="80" height="80"></div>
     <div class="btn-row">
         <button id="btn-manual-drawer" class="btn-ui" onclick="openManualModal('en')" data-help="Open the comprehensive step-by-step user manual">📖 MANUAL</button>
         <button id="btn-save" class="btn-ui primary" onclick="save()" data-help="Saves your current layout to the server AND to browser memory as a backup">💾 Save Session</button>
@@ -994,8 +994,24 @@ async function addFromTray(src) {
     const cy = (vpRect.top + vpRect.height / 2 - scalerRect.top) / zoomScale;
     const x = Math.max(50, Math.min(BASE_W - 400, cx - 200));
     const y = Math.max(50, Math.min(BASE_H - 400, cy - 200));
-    docV2.elements.push({id, type:'image', src: trimmedSrc, x, y, width:400, height:400, zIndex:20, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content'});
-    render(); selectById(id);
+
+    // Phase 2B: Resolve assetId from registry by matching originalUrl
+    const normalizedSrc = src.startsWith('/') ? src : '/' + src;
+    const matchedAsset = (docV2.assets || []).find(a => a.storage.originalUrl === normalizedSrc);
+
+    const newElement = {
+        id,
+        type: 'image',
+        src: trimmedSrc,
+        assetId: matchedAsset ? matchedAsset.id : null,
+        x, y,
+        width: 400, height: 400,
+        zIndex: 20, opacity: 1, rotation: 0,
+        visible: true, locked: false, layerRole: 'content'
+    };
+    docV2.elements.push(newElement);
+    render();
+    selectById(id);
 }
 
 async function importImg(input) {

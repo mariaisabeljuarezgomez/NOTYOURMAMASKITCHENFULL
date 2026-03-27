@@ -19,7 +19,7 @@ image_files = sorted(glob.glob("Images/*.png") + glob.glob("Images/*.jpg"))
 for fpath in image_files:
     fname = os.path.basename(fpath)
     asset_html.append(
-        f'<img data-src="Images/{fname}" src="" class="tray-item" '
+        f'<img data-src="/Images/{fname}" src="" class="tray-item" '
         f'onclick="addFromTray(this.dataset.src)" title="{fname.replace(".png","").replace(".jpg","")}" '
         f'data-help="Click to add this image to your menu" loading="lazy" width="80" height="80">'
     )
@@ -1068,8 +1068,24 @@ async function addFromTray(src) {{
     const cy = (vpRect.top + vpRect.height / 2 - scalerRect.top) / zoomScale;
     const x = Math.max(50, Math.min(BASE_W - 400, cx - 200));
     const y = Math.max(50, Math.min(BASE_H - 400, cy - 200));
-    docV2.elements.push({{id, type:'image', src: trimmedSrc, x, y, width:400, height:400, zIndex:20, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content'}});
-    render(); selectById(id);
+
+    // Phase 2B: Resolve assetId from registry by matching originalUrl
+    const normalizedSrc = src.startsWith('/') ? src : '/' + src;
+    const matchedAsset = (docV2.assets || []).find(a => a.storage.originalUrl === normalizedSrc);
+
+    const newElement = {{
+        id,
+        type: 'image',
+        src: trimmedSrc,
+        assetId: matchedAsset ? matchedAsset.id : null,
+        x, y,
+        width: 400, height: 400,
+        zIndex: 20, opacity: 1, rotation: 0,
+        visible: true, locked: false, layerRole: 'content'
+    }};
+    docV2.elements.push(newElement);
+    render();
+    selectById(id);
 }}
 
 async function importImg(input) {{
