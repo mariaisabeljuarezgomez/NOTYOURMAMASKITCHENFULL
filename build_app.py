@@ -1312,6 +1312,12 @@ async function load() {{
         let s = await r.json(); 
         if(s.elements && s.elements.length > 0) {{ 
             docV2 = {{ ...docV2, ...s }}; // Merge to ensure settings exist
+            
+            // Phase 2D: Merge assets — preserve static registry + add any user-uploaded entries
+            const staticIds = new Set((docV2.assets || []).map(a => a.id));
+            const incoming = s.assets || [];
+            const newAssets = incoming.filter(a => !staticIds.has(a.id));
+            docV2.assets = [...(docV2.assets || []), ...newAssets];
             layoutLocked = docV2.settings?.layoutLocked ?? true; 
             zoomScale = docV2.editorState?.zoom || 1;
             render(); 
@@ -1325,6 +1331,12 @@ async function load() {{
             let parsed = JSON.parse(l); 
             if(parsed.elements && parsed.elements.length > 0) {{
                 docV2 = {{ ...docV2, ...parsed }}; 
+                
+                // Phase 2D: Merge assets — preserve static registry + add any user-uploaded entries
+                const staticIds = new Set((docV2.assets || []).map(a => a.id));
+                const incoming = parsed.assets || [];
+                const newAssets = incoming.filter(a => !staticIds.has(a.id));
+                docV2.assets = [...(docV2.assets || []), ...newAssets];
                 layoutLocked = docV2.settings?.layoutLocked ?? true; 
                 zoomScale = docV2.editorState?.zoom || 1;
                 render(); 
@@ -1458,6 +1470,12 @@ window.onload = async () => {{
         const s = await r.json();
         if (s.elements && s.elements.length > 0) {{
             docV2 = {{ ...docV2, ...s }};
+            
+            // Phase 2D: Merge assets — preserve static registry + add any user-uploaded entries
+            const staticIds = new Set((docV2.assets || []).map(a => a.id));
+            const incoming = s.assets || [];
+            const newAssets = incoming.filter(a => !staticIds.has(a.id));
+            docV2.assets = [...(docV2.assets || []), ...newAssets];
             layoutLocked = docV2.settings?.layoutLocked ?? true;
             syncZoomControlsVisibility();
             zoomScale = docV2.editorState?.zoom || 1;
