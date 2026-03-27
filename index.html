@@ -354,8 +354,6 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         </div>
 
         <div id="bar-tab-arrange" style="display:none; align-items:center; gap:10px;">
-            <button class="ctrl-btn" onclick="duplicateSelected()" title="Duplicate" data-help="Creates an exact copy of the selected element, offset by 20px">📋</button>
-            <button class="ctrl-btn" style="background:#c0392b;" onclick="deleteSelected()" title="Delete Element" data-help="Permanently removes the selected element from the layout">🗑️</button>
             <button id="btn-center-h" class="btn-ui" style="padding:6px 12px; font-size:10px;" onclick="centerElement('h')" data-help="Snaps the element to the exact horizontal center of the menu">Center H</button>
             <button id="btn-center-v" class="btn-ui" style="padding:6px 12px; font-size:10px;" onclick="centerElement('v')" data-help="Snaps the element to the exact vertical center of the menu">Center V</button>
             <div class="ctrl-group">
@@ -820,34 +818,6 @@ function toggleVisibility() {
 
 function toggleVisById(e, id) { e.stopPropagation(); const item = docV2.elements.find(i=>i.id===id); if(item) { pushState(); item.visible = !item.visible; render(); } }
 function toggleLockById(e, id) { e.stopPropagation(); const item = docV2.elements.find(i=>i.id===id); if(item) { pushState(); item.locked = !item.locked; render(); } }
-
-function deleteSelected() {
-    if (!selectedId) return;
-    const el = document.getElementById(selectedId);
-    if (el) el.remove();
-    docV2.elements = docV2.elements.filter(e => e.id !== selectedId);
-    pushUndo();
-    selectedId = null;
-    document.getElementById('selection-bar').classList.remove('show');
-    updateLayersPanel();
-    showToast('🗑️ Element deleted');
-}
-
-function duplicateSelected() {
-    if (!selectedId) return;
-    const orig = docV2.elements.find(e => e.id === selectedId);
-    if (!orig) return;
-    const copy = JSON.parse(JSON.stringify(orig));
-    copy.id = orig.type + '_' + Date.now();
-    copy.x = (orig.x || 0) + 20;
-    copy.y = (orig.y || 0) + 20;
-    copy.zIndex = (orig.zIndex || 10) + 1;
-    docV2.elements.push(copy);
-    pushUndo();
-    render();
-    selectById(copy.id);
-    showToast('📋 Element duplicated');
-}
 
 function setBarTab(tab) {
     ['layer','design','arrange'].forEach(t => {
