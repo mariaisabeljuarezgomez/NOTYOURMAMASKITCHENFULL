@@ -40,6 +40,32 @@ for n, f in fonts.items():
     font_css_list.append(f"@font-face {{ font-family: '{n}'; src: url('{f}') format('truetype'); font-display: {disp}; }}")
 font_css = "\n".join(font_css_list)
 
+# --- Phase 2A: Asset Registry ---
+asset_registry = []
+for idx, fpath in enumerate(image_files, start=1):
+    fname = os.path.basename(fpath)
+    # asset_001, asset_002, etc. based on sorted order
+    asset_id = f"asset_{idx:03d}"
+    asset_registry.append({
+        "id": asset_id,
+        "kind": "image",
+        "name": fname.replace(".png", "").replace(".jpg", ""),
+        "storage": {
+            "originalUrl": f"/Images/{fname}",
+            "previewUrl": None,
+            "thumbnailUrl": None
+        },
+        "original": {
+            "width": None,
+            "height": None,
+            "mimeType": "image/png" if fname.lower().endswith(".png") else "image/jpeg"
+        },
+        "tags": [],
+        "createdAt": None
+    })
+
+asset_registry_json = json.dumps(asset_registry)
+
 html_start = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -433,10 +459,36 @@ html_footer = f"""</div></div></main>
 
 <script>
 let docV2 = {{ 
-    version:"2.0.0", 
+    version: "2.0.0",
+    documentId: "doc_001",
+    name: "Not Your Mama's Kitchen Menu",
+    canvas: {{
+      width: 3600,
+      height: 5400,
+      dpi: 300,
+      unit: "px",
+      backgroundColor: "#f3f3f3"
+    }},
+    settings: {{
+      layoutLocked: true,
+      backgroundLayerLocked: true,
+      legacyBgVisible: true,
+      snapEnabled: false,
+      gridEnabled: false
+    }},
+    editorState: {{
+      activeElementId: null,
+      selectedElementIds: [],
+      zoom: 1,
+      panX: 0,
+      panY: 0
+    }},
+    assets: {asset_registry_json},
     elements: {json.dumps(elements_json)}, 
-    settings:{{ legacyBgVisible:true, layoutLocked:true, backgroundLayerLocked:true }}, 
-    editorState:{{ zoom:1 }} 
+    meta: {{
+      sourceTemplate: "nymk-menu-v1",
+      migrationFrom: "1.x"
+    }}
 }};
 const BASE_W = 908.4429931640625;
 const BASE_H = 1336.02001953125;
@@ -554,7 +606,15 @@ function render() {{
             el.style.position = 'absolute';
             el.style.overflow = 'visible';
             imgEl = document.createElement('img');
-            imgEl.src = d.src;
+            
+            // --- Phase 2A: Resolve src from asset registry ---
+            let resolvedSrc = d.src || '';
+            if (d.assetId) {{
+                const asset = (docV2.assets || []).find(a => a.id === d.assetId);
+                if (asset) resolvedSrc = asset.storage.previewUrl || asset.storage.originalUrl;
+            }}
+            imgEl.src = resolvedSrc;
+            
             imgEl.style.width = '100%';
             imgEl.style.height = '100%';
             imgEl.style.display = 'block';
@@ -1313,7 +1373,15 @@ async function exportPng() {{
         }}
         else if(el.type==='image') {{ 
             let img = new Image();
-            img.src = el.src;
+            
+            // --- Phase 2A: Export always uses originalUrl ---
+            let exportSrc = el.src || '';
+            if (el.assetId) {{
+                const asset = (docV2.assets || []).find(a => a.id === el.assetId);
+                if (asset) exportSrc = asset.storage.originalUrl;
+            }}
+            img.src = exportSrc;
+            
             await new Promise(r => {{ img.onload = r; img.onerror = r; }});
             const natW = img.naturalWidth || W;
             const natH = img.naturalHeight || H;
