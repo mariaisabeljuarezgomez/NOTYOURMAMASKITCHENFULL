@@ -1246,7 +1246,19 @@ function addText() {
     render(); 
     selectById(id); 
 }
-function addRect() { pushState(); let id='rect_'+Date.now(); docV2.elements.push({id, type:'shape', x:600, y:400, width:300, height:200, zIndex:5, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fill:'#f1c40f'} }); render(); selectById(id); }
+function addRect() {
+    pushState();
+    let id = 'rect_' + Date.now();
+    const vpRect = viewport.getBoundingClientRect();
+    const scalerRect = scaler.getBoundingClientRect();
+    const cx = (vpRect.left + vpRect.width/2 - scalerRect.left) / zoomScale;
+    const cy = (vpRect.top + vpRect.height/2 - scalerRect.top) / zoomScale;
+    const x = Math.max(50, Math.min(BASE_W - 350, cx - 150));
+    const y = Math.max(50, Math.min(BASE_H - 250, cy - 100));
+    docV2.elements.push({id, type:'shape', x, y, width:300, height:200, zIndex:5, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fill:'#f1c40f'} });
+    render();
+    selectById(id);
+}
 async function trimTransparentPixels(src) {
     return new Promise((resolve) => {
         const img = new Image();
@@ -1731,7 +1743,17 @@ async function exportPng() {
         
         if(el.strokeWidth && el.type!=='text') {
             ctx.strokeStyle = el.strokeColor || '#000'; ctx.lineWidth = el.strokeWidth * S;
-            ctx.strokeRect(L, T, W, H);
+            if (el.cornerRadius) {
+                const R = el.cornerRadius * S;
+                ctx.beginPath();
+                ctx.moveTo(L+R, T); ctx.lineTo(L+W-R, T); ctx.quadraticCurveTo(L+W, T, L+W, T+R);
+                ctx.lineTo(L+W, T+H-R); ctx.quadraticCurveTo(L+W, T+H, L+W-R, T+H);
+                ctx.lineTo(L+R, T+H); ctx.quadraticCurveTo(L, T+H, L, T+H-R);
+                ctx.lineTo(L, T+R); ctx.quadraticCurveTo(L, T, L+R, T);
+                ctx.closePath(); ctx.stroke();
+            } else {
+                ctx.strokeRect(L, T, W, H);
+            }
         }
         ctx.restore();
     }
@@ -1840,6 +1862,7 @@ viewport.onwheel = (e) => { if(e.ctrlKey) { e.preventDefault(); applyZoom(e.delt
 
 window.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        if (isEditingText) return;
         e.preventDefault();
         undo();
         return;
