@@ -2005,23 +2005,38 @@ document.addEventListener('mouseup', function(e) {
     isLassoing = false;
     const box = document.getElementById('lasso-box');
     box.style.display = 'none';
-    const lx = parseInt(box.style.left);
-    const ly = parseInt(box.style.top);
     const lw = parseInt(box.style.width);
     const lh = parseInt(box.style.height);
     if (lw < 5 && lh < 5) return;
+
+    // Convert lasso box coords (viewport-relative) to scaler-wrapper-relative canvas coords
+    const area = document.getElementById('editor-viewport');
+    const scalerRect = document.getElementById('scaler-wrapper').getBoundingClientRect();
+    const areaRect = area.getBoundingClientRect();
+
+    // lasso box left/top are in viewport scroll space — convert to canvas element space
+    const lasso_vx = parseInt(box.style.left) + areaRect.left - area.scrollLeft;
+    const lasso_vy = parseInt(box.style.top) + areaRect.top - area.scrollTop;
+
+    // Now convert from screen pixels to canvas units using zoomScale
+    const lx1 = (lasso_vx - scalerRect.left) / zoomScale;
+    const ly1 = (lasso_vy - scalerRect.top) / zoomScale;
+    const lx2 = lx1 + lw / zoomScale;
+    const ly2 = ly1 + lh / zoomScale;
+
     const selected = [];
     docV2.elements.forEach(item => {
         if (item.hidden || item.locked) return;
+        if (docV2.settings.backgroundLayerLocked && item.layerRole === 'background') return;
         const el = document.getElementById(item.id);
         if (!el) return;
         const ew = item.width || el.offsetWidth;
         const eh = item.height || el.offsetHeight;
         if (
-            item.x < lx + lw &&
-            item.x + ew > lx &&
-            item.y < ly + lh &&
-            item.y + eh > ly
+            item.x < lx2 &&
+            item.x + ew > lx1 &&
+            item.y < ly2 &&
+            item.y + eh > ly1
         ) {
             selected.push(item.id);
         }
