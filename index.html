@@ -349,6 +349,17 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 <option value="century-gothic-regular">Century Gothic Regular</option>
 </select>
                 <input type="color" id="sel-color" onchange="updateStyle('color', this.value)">
+                <div class="ctrl-group">
+                  <label>Size</label>
+                  <input type="number" id="sel-font-size" min="4" max="400" step="1" style="width:52px"
+                    onchange="updateStyle('fontSize', parseFloat(this.value))">
+                </div>
+                <div class="ctrl-group">
+                  <label>Width</label>
+                  <input type="number" id="sel-text-width" min="0" max="900" step="10" style="width:52px"
+                    placeholder="auto"
+                    onchange="applyTextWidth(parseInt(this.value))">
+                </div>
                 <div class="ctrl-group"><label>L.H.</label><input type="number" id="sel-l-height" step="0.1" min="0.5" max="3" style="width:40px" onchange="updateStyle('lineHeight', parseFloat(this.value))"></div>
                 <div class="ctrl-group"><label>L.S.</label><input type="number" id="sel-l-spacing" min="-10" max="50" style="width:40px" onchange="updateStyle('letterSpacing', parseInt(this.value))"></div>
             </div>
@@ -591,7 +602,19 @@ function render() {
             if(d.style.letterSpacing) el.style.letterSpacing = d.style.letterSpacing + 'px';
             if(d.style.fill) el.style.backgroundColor = d.style.fill;
         }
-        if(d.width) el.style.width = d.width+'px'; if(d.height) el.style.height = d.height+'px';
+        if (d.type === 'text') {
+            if (d.width) {
+                el.style.width = d.width + 'px';
+                el.style.whiteSpace = 'pre-wrap';
+                el.style.wordBreak = 'break-word';
+            } else {
+                el.style.width = 'auto';
+                el.style.whiteSpace = 'pre';
+            }
+        } else {
+            if (d.width) el.style.width = d.width + 'px';
+            if (d.height) el.style.height = d.height + 'px';
+        }
         
         elementsLayer.appendChild(el); attach(el);
         if(selectedId === d.id && d.type === 'image') injectResizeHandles(el);
@@ -885,6 +908,12 @@ function updateSelectionBar() {
         document.getElementById('sel-color').value = item.style.color;
         document.getElementById('sel-l-height').value = item.style.lineHeight || 1.1;
         document.getElementById('sel-l-spacing').value = item.style.letterSpacing || 0;
+        
+        const fsInput = document.getElementById('sel-font-size');
+        if (fsInput) fsInput.value = Math.round(item.style.fontSize || 16);
+        
+        const twInput = document.getElementById('sel-text-width');
+        if (twInput) twInput.value = item.width ? Math.round(item.width) : '';
         // Default text elements to DESIGN tab if unlocked
         if(item.type === 'text') setBarTab('design');
     }
@@ -942,6 +971,19 @@ function sync() {
 
 function updateProp(k, v) { if(!selectedId) return; pushState(); let item = docV2.elements.find(e=>e.id===selectedId); if(item) { item[k]=v; render(); } }
 function updateStyle(k, v) { if(!selectedId) return; pushState(); let item = docV2.elements.find(e=>e.id===selectedId); if(item && item.style) { item.style[k]=v; render(); } }
+
+function applyTextWidth(w) {
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item) return;
+    if (!w || w < 10) {
+        delete item.width;
+    } else {
+        item.width = w;
+    }
+    render();
+}
 
 function toggleGlobalLock() {
     layoutLocked = !layoutLocked;
@@ -1066,7 +1108,7 @@ function addText() {
     const cy = (vpRect.top + vpRect.height/2 - scalerRect.top) / zoomScale;
     const x = Math.max(50, Math.min(BASE_W - 200, cx));
     const y = Math.max(50, Math.min(BASE_H - 100, cy));
-    docV2.elements.push({id, type:'text', text:'New Text', x, y, zIndex:51, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fontFamily:'century-gothic-bold', fontSize:40, color:'#000', lineHeight:1.1, letterSpacing:0} }); 
+    docV2.elements.push({id, type:'text', text:'New Text', x, y, zIndex:51, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fontFamily:'century-gothic-bold', fontSize:24, color:'#000', lineHeight:1.1, letterSpacing:0} }); 
     render(); 
     selectById(id); 
 }
