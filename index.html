@@ -492,14 +492,12 @@ function markClean() {
 function openDrawer() {
     const drawer = document.getElementById('bottom-drawer');
     loadUserImageTray();
-    // Lazy load tray images to prevent heavy initial load
     drawer.classList.toggle('closed');
-    if (!drawer.dataset.loaded) {
-        drawer.querySelectorAll('img[data-src]').forEach(img => {
+    drawer.querySelectorAll('img[data-src]').forEach(img => {
+        if (!img.src || img.src === window.location.href) {
             img.src = img.dataset.src;
-        });
-        drawer.dataset.loaded = 'true';
-    }
+        }
+    });
 }
 
 function undo() {
@@ -1821,7 +1819,21 @@ window.onload = async () => {
 
 function fitCanvasToScreen() {
     _isFitZoom = true;
-    console.log("fitCanvasToScreen: Using fixed 908px layout with natural scroll.");
+    const vw = viewport.clientWidth;
+    if (vw < BASE_W + 40) {
+        const targetScale = (vw - 40) / BASE_W;
+        zoomScale = Math.max(0.2, Math.min(1, targetScale));
+        const scalerWrapper = document.getElementById('scaler-wrapper');
+        const centeringWrapper = document.getElementById('centering-wrapper');
+        if (scalerWrapper) {
+            scalerWrapper.style.transform = `scale(${zoomScale})`;
+            scalerWrapper.style.transformOrigin = 'top center';
+        }
+        if (centeringWrapper) {
+            centeringWrapper.style.width = (BASE_W * zoomScale) + (PAD * 2) + 'px';
+            centeringWrapper.style.height = (BASE_H * zoomScale) + (PAD * 2) + 'px';
+        }
+    }
     _isFitZoom = false;
 }
 viewport.onwheel = (e) => { if(e.ctrlKey) { e.preventDefault(); applyZoom(e.deltaY > 0 ? 0.9 : 1.1); } };
@@ -1938,7 +1950,7 @@ window.addEventListener('keydown', (e) => {
 let textEditingOriginal = null;
 function onTextFocus(e) { 
     isEditingText = true;
-    textEditingOriginal = e.target.textContent; 
+    textEditingOriginal = e.target.innerText; 
 }
 function onTextBlur(e) {
     isEditingText = false;
@@ -1948,7 +1960,7 @@ function onTextBlur(e) {
         if(item) {
             item.text = textEditingOriginal;        // restore original first
             const snapshot = JSON.stringify(docV2.elements); // NOW snapshot
-            item.text = e.target.textContent;         // apply new value
+            item.text = e.target.innerText;         // apply new value
             pushState(snapshot);
             sync();
             markDirty();
