@@ -1202,11 +1202,11 @@ async function resetToOriginal() {
     hideResetModal();
     try {
         const r = await fetch('/api/menu/reset', {method:'POST'});
-        if(r.ok) {
-            location.reload();
-        }
-    } catch(e) {
+        if (!r.ok) throw new Error('Server reset failed');
+        localStorage.removeItem('menu_pro_draft_v2');
         location.reload();
+    } catch(e) {
+        showToast('❌ Reset failed — server unavailable. Your data is safe.');
     }
 }
 
@@ -1230,8 +1230,8 @@ function deleteEl(skipPush) {
     if (!skipPush) pushState();
     docV2.elements = docV2.elements.filter(e => e.id !== selectedId);
     selectedId = null;
-    render();
     deselect();
+    render();
 }
 
 function addText() { 
@@ -2142,8 +2142,8 @@ function finalizeLasso() {
     const ly2 = ly1 + lh;
 
     const scalerRect = document.getElementById('scaler-wrapper').getBoundingClientRect();
-
     const selected = [];
+    const scaleRatio = scalerRect.width / BASE_W;
     docV2.elements.forEach(item => {
         if (!item.visible || item.locked) return;
         if (docV2.settings.backgroundLayerLocked && item.layerRole === 'background') return;
@@ -2151,10 +2151,10 @@ function finalizeLasso() {
         if (!el) return;
         const ew = item.width || el.offsetWidth;
         const eh = item.height || el.offsetHeight;
-        const ex1 = scalerRect.left + item.x * (scalerRect.width / BASE_W);
-        const ey1 = scalerRect.top  + item.y * (scalerRect.height / BASE_H);
-        const ex2 = ex1 + ew * (scalerRect.width / BASE_W);
-        const ey2 = ey1 + eh * (scalerRect.height / BASE_H);
+        const ex1 = scalerRect.left + item.x * scaleRatio;
+        const ey1 = scalerRect.top  + item.y * scaleRatio;
+        const ex2 = ex1 + ew * scaleRatio;
+        const ey2 = ey1 + eh * scaleRatio;
         if (ex1 < lx2 && ex2 > lx1 && ey1 < ly2 && ey2 > ly1) {
             selected.push(item.id);
         }
