@@ -825,6 +825,7 @@ function attach(el) {
 
 
     el.ontouchstart = (e) => {
+        if (isLassoing) return; // don't interfere with lasso
         if(e.touches.length !== 1) return;
         const touch = e.touches[0];
         const fakeEvent = { clientX: touch.clientX, clientY: touch.clientY, stopPropagation: () => e.stopPropagation() };
@@ -2030,6 +2031,26 @@ document.getElementById('editor-viewport').addEventListener('mousedown', functio
     e.preventDefault();
 });
 
+document.getElementById('editor-viewport').addEventListener('touchstart', function(e) {
+    if (e.touches.length !== 1) return; // ignore pinch
+    const allowed = ['editor-viewport','centering-wrapper','menu-container','elements-layer'];
+    if (!allowed.includes(e.target.id)) return;
+    if (layoutLocked) return;
+
+    const touch = e.touches[0];
+    isLassoing = true;
+    lassoAnchorX = touch.clientX;
+    lassoAnchorY = touch.clientY;
+
+    const box = document.getElementById('lasso-box');
+    box.style.left   = touch.clientX + 'px';
+    box.style.top    = touch.clientY + 'px';
+    box.style.width  = '0px';
+    box.style.height = '0px';
+    box.style.display = 'block';
+    e.preventDefault();
+}, { passive: false });
+
 document.addEventListener('mousemove', function(e) {
     if (!isLassoing) return;
     const x = Math.min(e.clientX, lassoAnchorX);
@@ -2043,8 +2064,23 @@ document.addEventListener('mousemove', function(e) {
     box.style.height = h + 'px';
 });
 
-document.addEventListener('mouseup', function(e) {
+document.addEventListener('touchmove', function(e) {
     if (!isLassoing) return;
+    if (e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    const x = Math.min(touch.clientX, lassoAnchorX);
+    const y = Math.min(touch.clientY, lassoAnchorY);
+    const w = Math.abs(touch.clientX - lassoAnchorX);
+    const h = Math.abs(touch.clientY - lassoAnchorY);
+    const box = document.getElementById('lasso-box');
+    box.style.left   = x + 'px';
+    box.style.top    = y + 'px';
+    box.style.width  = w + 'px';
+    box.style.height = h + 'px';
+    e.preventDefault(); // prevent page scroll during lasso
+}, { passive: false });
+
+function finalizeLasso() {
     isLassoing = false;
     const box = document.getElementById('lasso-box');
     box.style.display = 'none';
@@ -2053,13 +2089,11 @@ document.addEventListener('mouseup', function(e) {
     const lh = parseFloat(box.style.height);
     if (lw < 5 && lh < 5) return;
 
-    // lasso box is fixed — coords are already in screen pixels
     const lx1 = parseFloat(box.style.left);
     const ly1 = parseFloat(box.style.top);
     const lx2 = lx1 + lw;
     const ly2 = ly1 + lh;
 
-    // convert each element's canvas position → screen pixels for comparison
     const scalerRect = document.getElementById('scaler-wrapper').getBoundingClientRect();
 
     const selected = [];
@@ -2070,28 +2104,37 @@ document.addEventListener('mouseup', function(e) {
         if (!el) return;
         const ew = item.width || el.offsetWidth;
         const eh = item.height || el.offsetHeight;
-
-        // item.x / item.y are in canvas px — scale to screen
-        const ex1 = scalerRect.left + item.x * zoomScale;
-        const ey1 = scalerRect.top  + item.y * zoomScale;
-        const ex2 = ex1 + ew * zoomScale;
-        const ey2 = ey1 + eh * zoomScale;
-
+        const ex1 = scalerRect.left + item.x * (scalerRect.width / BASE_W);
+        const ey1 = scalerRect.top  + item.y * (scalerRect.height / BASE_H);
+        const ex2 = ex1 + ew * (scalerRect.width / BASE_W);
+        const ey2 = ey1 + eh * (scalerRect.height / BASE_H);
         if (ex1 < lx2 && ex2 > lx1 && ey1 < ly2 && ey2 > ly1) {
             selected.push(item.id);
         }
     });
 
-    if (selected.length > 1) {
-        _lassoJustFired = true;
-        setTimeout(() => {
-            docV2.editorState.selectedElementIds = selected;
-            selectedId = null;
-            render();
-            updateSelectionBar();
-            _lassoJustFired = false;
-        }, 30);
+    if (selected.length === 0) { deselect(); return; }
+    if (selected.length === 1) { selectById(selected[0]); }
+    else {
+        selectedId = null;
+        docV2.editorState.selectedElementIds = selected;
+        render();
+        updateSelectionBar();
+        showToast(selected.length + ' elements selected');
     }
+
+    _lassoJustFired = true;
+    setTimeout(() => { _lassoJustFired = false; }, 50);
+}
+
+document.addEventListener('mouseup', function(e) {
+    if (!isLassoing) return;
+    finalizeLasso();
+});
+
+document.addEventListener('touchend', function(e) {
+    if (!isLassoing) return;
+    finalizeLasso();
 });
 // ===== END PHASE 7 LASSO =====
 </script>
