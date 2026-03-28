@@ -260,6 +260,10 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         .btn-header-manual { display: none; }
         .help-popout { width: calc(100% - 48px); bottom: 24px; }
     }
+    .selected-multi {
+        outline: 2px dashed #4a90e2;
+        outline-offset: 2px;
+    }
 </style>
 <script src="export-utils.js" defer></script>
 </head>
@@ -286,7 +290,16 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
                 <div id="guide-cx" class="guide guide-v" style="left:50%"></div>
                 <div id="guide-cy" class="guide guide-h" style="top:50%"></div>
             </div>
-</div></div></main>
+</div></div>
+<div id="lasso-box" style="
+  position:absolute;
+  border:2px dashed #4a90e2;
+  background:rgba(74,144,226,0.08);
+  pointer-events:none;
+  display:none;
+  z-index:9999;
+"></div>
+</main>
 
 <button id="fab" class="fab" onclick="this.classList.toggle('open'); openDrawer()" data-help="Open/Close Editing Tools">🛠️</button>
 
@@ -397,6 +410,9 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 
 <script>
 let isEditingText = false;
+let isLassoing = false;
+let lassoStartX = 0;
+let lassoStartY = 0;
 let docV2 = { 
     version: "2.0.0",
     documentId: "doc_001",
@@ -944,6 +960,7 @@ function deselect() {
     selectedId = null;
     docV2.editorState.selectedElementIds = [];
     document.querySelectorAll('.multi-selected').forEach(el => el.classList.remove('multi-selected'));
+    document.querySelectorAll('.selected-multi').forEach(el => el.classList.remove('selected-multi'));
     if (selBar) selBar.classList.remove('show');
     renderLayerList();
 }
@@ -1951,6 +1968,74 @@ function dismissHelpPopout() {
     localStorage.setItem('mde_help_shown', '1');
     setTimeout(() => { popout.style.display = 'none'; }, 300);
 }
+
+document.getElementById('editor-viewport').addEventListener('mousedown', function(e) {
+    if (e.target.id !== 'editor-viewport' && e.target.id !== 'centering-wrapper' && e.target.id !== 'menu-container' && e.target.id !== 'elements-layer') return;
+    isLassoing = true;
+    const rect = this.getBoundingClientRect();
+    lassoStartX = e.clientX - rect.left + this.scrollLeft;
+    lassoStartY = e.clientY - rect.top + this.scrollTop;
+    const box = document.getElementById('lasso-box');
+    box.style.left = lassoStartX + 'px';
+    box.style.top = lassoStartY + 'px';
+    box.style.width = '0px';
+    box.style.height = '0px';
+    box.style.display = 'block';
+});
+
+document.addEventListener('mousemove', function(e) {
+    if (!isLassoing) return;
+    const area = document.getElementById('editor-viewport');
+    const rect = area.getBoundingClientRect();
+    const curX = e.clientX - rect.left + area.scrollLeft;
+    const curY = e.clientY - rect.top + area.scrollTop;
+    const x = Math.min(curX, lassoStartX);
+    const y = Math.min(curY, lassoStartY);
+    const w = Math.abs(curX - lassoStartX);
+    const h = Math.abs(curY - lassoStartY);
+    const box = document.getElementById('lasso-box');
+    box.style.left = x + 'px';
+    box.style.top = y + 'px';
+    box.style.width = w + 'px';
+    box.style.height = h + 'px';
+});
+
+document.addEventListener('mouseup', function(e) {
+    if (!isLassoing) return;
+    isLassoing = false;
+    const box = document.getElementById('lasso-box');
+    box.style.display = 'none';
+    const lx = parseInt(box.style.left);
+    const ly = parseInt(box.style.top);
+    const lw = parseInt(box.style.width);
+    const lh = parseInt(box.style.height);
+    if (lw < 5 && lh < 5) return;
+    const selected = [];
+    docV2.elements.forEach(item => {
+        if (item.hidden || item.locked) return;
+        const el = document.getElementById(item.id);
+        if (!el) return;
+        const ew = item.width || el.offsetWidth;
+        const eh = item.height || el.offsetHeight;
+        if (
+            item.x < lx + lw &&
+            item.x + ew > lx &&
+            item.y < ly + lh &&
+            item.y + eh > ly
+        ) {
+            selected.push(item.id);
+        }
+    });
+    if (selected.length > 1) {
+        docV2.editorState.selectedElementIds = selected;
+        selectedId = null;
+        updateSelectionBar();
+        selected.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('selected-multi');
+        });
+    }
+});
 </script>
 
 <!-- Fix 5b - Floating Zoom Buttons (Mobile Repaired) -->
