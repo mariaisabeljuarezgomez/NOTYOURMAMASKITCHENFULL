@@ -898,12 +898,14 @@ function updateSelectionBar() {
 }
 
 function deselect() {
-    if(selectedId) {
+    if (selectedId) {
         const el = document.getElementById(selectedId);
-        if(el) el.classList.remove('selected');
+        if (el) el.classList.remove('selected');
     }
     selectedId = null;
-    if(selBar) selBar.classList.remove('show');
+    docV2.editorState.selectedElementIds = [];
+    document.querySelectorAll('.multi-selected').forEach(el => el.classList.remove('multi-selected'));
+    if (selBar) selBar.classList.remove('show');
     renderLayerList();
 }
 
@@ -976,6 +978,20 @@ function updateZ(dir) {
 }
 
 function nudge(dx, dy) {
+    const multiIds = docV2.editorState.selectedElementIds || [];
+    if (multiIds.length > 1) {
+        pushState();
+        multiIds.forEach(id => {
+            const item = docV2.elements.find(e => e.id === id);
+            if (!item || item.locked) return;
+            item.x += dx;
+            item.y += dy;
+            const domEl = document.getElementById(id);
+            if (domEl) { domEl.style.left = item.x + 'px'; domEl.style.top = item.y + 'px'; }
+        });
+        sync();
+        return;
+    }
     if (!selectedId) return;
     const item = docV2.elements.find(e => e.id === selectedId);
     if (!item) return;
@@ -983,7 +999,7 @@ function nudge(dx, dy) {
     item.x += dx;
     item.y += dy;
     const el = document.getElementById(selectedId);
-    if (el) { el.style.left = item.x+'px'; el.style.top = item.y+'px'; }
+    if (el) { el.style.left = item.x + 'px'; el.style.top = item.y + 'px'; }
     sync();
 }
 function toggleBg() { docV2.settings.legacyBgVisible = !docV2.settings.legacyBgVisible; render(); }
