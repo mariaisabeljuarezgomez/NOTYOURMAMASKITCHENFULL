@@ -412,6 +412,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 let isEditingText = false;
 let isLassoing = false;
 let _lassoJustFired = false;
+let _groupDragStatePushed = false;
 let docV2 = { 
     version: "2.0.0",
     documentId: "doc_001",
@@ -452,10 +453,8 @@ let layoutLocked = true, selectedId = null, zoomScale = 1, _isFitZoom = false;
 let historyStack = [];
 
 function pushState(snapshot) {
-    // Keep max 30 states for memory hygiene
-    if(historyStack.length >= 30) historyStack.shift();
     const state = snapshot || JSON.stringify(docV2.elements);
-    historyStack.push(state);
+    historyStack = [...historyStack.slice(-29), state];
     console.log("State Pushed. Stack Size:", historyStack.length);
 }
 
@@ -762,7 +761,14 @@ function attach(el) {
 
         if(layoutLocked) return;
         
-        pushState(); // Store state BEFORE move
+        if (docV2.editorState.selectedElementIds.length > 1) {
+            if (!_groupDragStatePushed) {
+                pushState(); // Store state BEFORE move
+                _groupDragStatePushed = true;
+            }
+        } else {
+            pushState(); // Store state BEFORE move
+        }
         
         let rect = elementsLayer.getBoundingClientRect();
         let ox = (e.clientX - rect.left)/zoomScale - parseFloat(el.style.left);
@@ -814,7 +820,7 @@ function attach(el) {
                 });
             }
         };
-        document.onmouseup = () => { document.onmousemove = null; gcx.style.display='none'; gcy.style.display='none'; sync(); };
+        document.onmouseup = () => { document.onmousemove = null; gcx.style.display='none'; gcy.style.display='none'; _groupDragStatePushed = false; sync(); };
     };
 
 
@@ -875,7 +881,7 @@ function updateSelectionBar() {
             const div = document.createElement('div');
             div.id = 'multi-select-actions';
             div.style.cssText = 'display:flex; align-items:center; gap:10px; width:100%; justify-content:center; padding:5px 0;';
-            div.innerHTML = `<button class="ctrl-btn" style="background:#c0392b; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; deleteEl(true);}); docV2.editorState.selectedElementIds=[]; deselect();">🗑️ Delete All (<span id="ms-del-count"></span>)</button><button class="ctrl-btn" style="background:#2980b9; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true);}); docV2.editorState.selectedElementIds=[]; deselect();">📋 Duplicate All (<span id="ms-dup-count"></span>)</button>
+            div.innerHTML = `<button class="ctrl-btn" style="background:#c0392b; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; deleteEl(true);}); docV2.editorState.selectedElementIds=[]; deselect();">🗑️ Delete All (<span id="ms-del-count"></span>)</button><button class="ctrl-btn" style="background:#2980b9; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); render(); showToast('Duplicated ' + ids.length + ' elements');">📋 Duplicate All (<span id="ms-dup-count"></span>)</button>
 <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:6px;">
   <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('left')"    title="Align Left Edges">⬛ Left</button>
   <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('right')"   title="Align Right Edges">⬛ Right</button>
@@ -1140,7 +1146,7 @@ function nudge(dx, dy) {
 }
 function toggleBg() { docV2.settings.legacyBgVisible = !docV2.settings.legacyBgVisible; render(); }
 
-function duplicateEl(skipPush) {
+function duplicateEl(skipPush, noRender) {
     if(!selectedId) return;
     if(!skipPush) pushState();
     let item = docV2.elements.find(e=>e.id===selectedId);
@@ -1150,9 +1156,12 @@ function duplicateEl(skipPush) {
     clone.x += 30; clone.y += 30;
     clone.zIndex = Math.max(...docV2.elements.map(e => e.zIndex || 10)) + 1;
     docV2.elements.push(clone);
-    render();
-    setTimeout(() => selectById(clone.id), 100);
-    showToast('Layer Cloned');
+    if (!noRender) {
+        render();
+        setTimeout(() => selectById(clone.id), 100);
+        showToast('Layer Cloned');
+    }
+    return clone.id;
 }
 
 function showResetModal() { document.getElementById('reset-modal').style.display='flex'; }
@@ -1828,9 +1837,11 @@ window.addEventListener('keydown', (e) => {
         if (multiIds.length > 1) {
             pushState();
             const ids = [...multiIds];
-            ids.forEach(id => { selectedId = id; duplicateEl(true); });
+            ids.forEach(id => { selectedId = id; duplicateEl(true, true); });
             docV2.editorState.selectedElementIds = [];
             deselect();
+            render();
+            showToast('Duplicated ' + ids.length + ' elements');
         } else if (selectedId) {
             duplicateEl();
         }
