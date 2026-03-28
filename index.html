@@ -1712,6 +1712,7 @@ async function exportPng() {
             img.src = exportSrc;
             
             await new Promise(r => { img.onload = r; img.onerror = r; });
+            if (!img.naturalWidth) { ctx.restore(); continue; }
             const natW = img.naturalWidth || W;
             const natH = img.naturalHeight || H;
             const scale = Math.min(W / natW, H / natH);
@@ -1835,10 +1836,8 @@ window.addEventListener('keydown', (e) => {
             if (e.key==='ArrowDown')  nudge(0,  step);
             if (e.key==='ArrowLeft')  nudge(-step, 0);
             if (e.key==='ArrowRight') nudge( step, 0);
-        }
-
         // Group nudge
-        if (multiIds.length > 0) {
+        } else if (multiIds.length > 0) {
             pushState();
             multiIds.forEach(id => {
                 const item = docV2.elements.find(el => el.id === id);
@@ -1930,7 +1929,7 @@ window.addEventListener('keydown', (e) => {
 let textEditingOriginal = null;
 function onTextFocus(e) { 
     isEditingText = true;
-    textEditingOriginal = e.target.innerText; 
+    textEditingOriginal = e.target.textContent; 
 }
 function onTextBlur(e) {
     isEditingText = false;
@@ -1940,9 +1939,10 @@ function onTextBlur(e) {
         if(item) {
             item.text = textEditingOriginal;        // restore original first
             const snapshot = JSON.stringify(docV2.elements); // NOW snapshot
-            item.text = e.target.innerText;         // apply new value
+            item.text = e.target.textContent;         // apply new value
             pushState(snapshot);
             sync();
+            markDirty();
         }
     }
     textEditingOriginal = null;
