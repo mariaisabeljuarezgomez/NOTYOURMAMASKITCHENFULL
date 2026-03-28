@@ -547,6 +547,7 @@ if(barHandle) {
                 isBarDragged = true;
                 selBar.style.transform = 'none';
                 selBar.style.margin = '0';
+                selBar.style.animation = 'none';
             }
             let nx = pe.clientX - offX;
             let ny = pe.clientY - offY;
@@ -1287,6 +1288,7 @@ async function trimTransparentPixels(src) {
 }
 
 async function addFromTray(src) {
+    pushState();
     const trimmedSrc = await trimTransparentPixels(src);
     let id = 'img_' + Date.now();
     const vpRect = viewport.getBoundingClientRect();
@@ -1440,6 +1442,11 @@ async function setSelectedAsBackground() {
             id: 'bg_upload_' + Date.now(),
             type: 'image',
             layerRole: 'background',
+            src: item.src,
+            x: 0, y: 0,
+            width: BASE_W, height: BASE_H,
+            opacity: 1, rotation: 0,
+            visible: true, locked: true,
             zIndex: minZ - 1
         };
         docV2.elements.push(bgLayer);
@@ -1751,6 +1758,8 @@ window.onload = async () => {
         const s = await r.json();
         if (s.elements && s.elements.length > 0) {
             _mergeLoadedDoc(s);
+        } else {
+            throw new Error('Empty server response');
         }
     } catch(e) {
         try {
