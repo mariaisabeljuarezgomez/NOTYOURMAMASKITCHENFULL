@@ -1545,6 +1545,40 @@ function crc32(data) {
   return (crc ^ 0xFFFFFFFF) >>> 0;
 }
 
+function drawTextWithSpacing(ctx, text, x, y, letterSpacing) {
+    if (!letterSpacing || letterSpacing === 0 || 'letterSpacing' in ctx) {
+        if ('letterSpacing' in ctx) ctx.letterSpacing = letterSpacing + 'px';
+        ctx.fillText(text, x, y);
+        return ctx.measureText(text).width + (text.length * (letterSpacing || 0));
+    }
+    let cursorX = x;
+    for (const char of text) {
+        ctx.fillText(char, cursorX, y);
+        cursorX += ctx.measureText(char).width + letterSpacing;
+    }
+    return cursorX - x;
+}
+
+function wrapLines(ctx, lines, maxWidth) {
+    if (!maxWidth) return lines;
+    const wrapped = [];
+    lines.forEach(line => {
+        const words = line.split(' ');
+        let current = '';
+        words.forEach(word => {
+            const test = current ? current + ' ' + word : word;
+            if (ctx.measureText(test).width <= maxWidth) {
+                current = test;
+            } else {
+                if (current) wrapped.push(current);
+                current = word;
+            }
+        });
+        if (current) wrapped.push(current);
+    });
+    return wrapped;
+}
+
 let _exportInProgress = false;
 async function exportPng() {
     if (_exportInProgress) { showToast('⏳ Export already in progress...'); return; }
@@ -1579,7 +1613,7 @@ async function exportPng() {
         let L = el.x * S, T = el.y * S, W = (el.width||0) * S, H = (el.height||0) * S;
         if(el.type==='text') { 
             ctx.font=`${el.style.fontSize*S}px "${el.style.fontFamily}"`; 
-            const _lines = el.text.split('\\n');
+            const _lines = el.text.split('\n');
             W = Math.max(..._lines.map(l => ctx.measureText(l).width));
             H = el.style.fontSize * S * (el.style.lineHeight || 1.1) * _lines.length;
         }
@@ -1597,13 +1631,11 @@ async function exportPng() {
         if(el.type==='text') { 
             ctx.font=`${el.style.fontSize*S}px "${el.style.fontFamily}"`; 
             ctx.fillStyle=el.style.color; ctx.textBaseline='top'; 
-            if('letterSpacing' in ctx) {
-                ctx.letterSpacing = (el.style.letterSpacing || 0) + 'px';
-            }
             const lineH = el.style.fontSize * S * (el.style.lineHeight || 1.1);
-            const lines = el.text.split('\\n');
-            lines.forEach((line, i) => {
-                ctx.fillText(line, L, T + i * lineH);
+            const lines = el.text.split('\n');
+            const wrappedLines = wrapLines(ctx, lines, el.width ? el.width * S : 0);
+            wrappedLines.forEach((line, i) => {
+                drawTextWithSpacing(ctx, line, L, T + i * lineH, el.style.letterSpacing || 0);
             });
         }
         else if(el.type==='image') { 
