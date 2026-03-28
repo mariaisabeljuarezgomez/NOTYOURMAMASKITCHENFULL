@@ -456,6 +456,37 @@ function pushState(snapshot) {
     const state = snapshot || JSON.stringify(docV2.elements);
     historyStack = [...historyStack.slice(-29), state];
     console.log("State Pushed. Stack Size:", historyStack.length);
+    markDirty();
+}
+
+function markDirty() {
+    const btn = document.getElementById('btn-save-header');
+    if (btn && !btn.dataset.dirty) {
+        btn.dataset.dirty = 'true';
+        btn.style.background = '#c0392b';
+        btn.style.borderColor = '#e74c3c';
+        btn.innerText = '💾 Save*';
+    }
+    const btn2 = document.getElementById('btn-save');
+    if (btn2 && !btn2.dataset.dirty) {
+        btn2.dataset.dirty = 'true';
+        btn2.innerText = '💾 Save Session*';
+    }
+}
+
+function markClean() {
+    const btn = document.getElementById('btn-save-header');
+    if (btn) {
+        delete btn.dataset.dirty;
+        btn.style.background = '#1e8449';
+        btn.style.borderColor = '#2ecc71';
+        btn.innerText = '💾 Save';
+    }
+    const btn2 = document.getElementById('btn-save');
+    if (btn2) {
+        delete btn2.dataset.dirty;
+        btn2.innerText = '💾 Save Session';
+    }
 }
 
 function openDrawer() {
@@ -1501,45 +1532,66 @@ function applyZoom(f) {
     }
 }
 
-async function save() { sync(); docV2.editorState.zoom = docV2.editorState._userZoom ?? zoomScale; docV2.settings.layoutLocked = layoutLocked; localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2)); await fetch('/api/menu', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(docV2)}); showToast('Project Saved Locally'); }
+function _mergeLoadedDoc(s) {
+    const staticIds = new Set((docV2.assets || []).map(a => a.id));
+    const incoming = s.assets || [];
+    const newAssets = incoming.filter(a => !staticIds.has(a.id));
+    docV2 = { ...docV2, ...s };
+    docV2.assets = [...(docV2.assets || []), ...newAssets];
+    layoutLocked = docV2.settings?.layoutLocked ?? true;
+    zoomScale = docV2.editorState?.zoom || 1;
+    syncZoomControlsVisibility();
+}
+
+async function save() {
+    sync();
+    docV2.editorState.zoom = docV2.editorState._userZoom ?? zoomScale;
+    docV2.settings.layoutLocked = layoutLocked;
+    localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2));
+    try {
+        const r = await fetch('/api/menu', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(docV2)
+        });
+        if (!r.ok) throw new Error('Server returned ' + r.status);
+        markClean();
+        showToast('✅ Saved to server');
+    } catch (e) {
+        markClean(); // still saved locally
+        showToast('⚠️ Server save failed — backed up locally');
+        console.error('Save error:', e);
+    }
+}
+
 async function load() {
-    try { 
-        let r = await fetch('/api/menu'); 
-        let s = await r.json(); 
-        if(s.elements && s.elements.length > 0) { 
-            docV2 = { ...docV2, ...s }; // Merge to ensure settings exist
-            
-            // Phase 2D: Merge assets — preserve static registry + add any user-uploaded entries
-            const staticIds = new Set((docV2.assets || []).map(a => a.id));
-            const incoming = s.assets || [];
-            const newAssets = incoming.filter(a => !staticIds.has(a.id));
-            docV2.assets = [...(docV2.assets || []), ...newAssets];
-            layoutLocked = docV2.settings?.layoutLocked ?? true; 
-            zoomScale = docV2.editorState?.zoom || 1;
-            render(); 
-            applyZoom(1); // reset visual size
-            syncZoomControlsVisibility();
-            showToast('Project Loaded');
+    try {
+        const r = await fetch('/api/menu');
+        if (!r.ok) throw new Error('Server error');
+        const s = await r.json();
+        if (s.elements && s.elements.length > 0) {
+            _mergeLoadedDoc(s);
+            render();
+            applyZoom(1);
+            showToast('✅ Project loaded from server');
+            return;
         }
-    } catch(e) { 
-        let l = localStorage.getItem('menu_pro_draft_v2'); 
-        if(l) { 
-            let parsed = JSON.parse(l); 
-            if(parsed.elements && parsed.elements.length > 0) {
-                docV2 = { ...docV2, ...parsed }; 
-                
-                // Phase 2D: Merge assets — preserve static registry + add any user-uploaded entries
-                const staticIds = new Set((docV2.assets || []).map(a => a.id));
-                const incoming = parsed.assets || [];
-                const newAssets = incoming.filter(a => !staticIds.has(a.id));
-                docV2.assets = [...(docV2.assets || []), ...newAssets];
-                layoutLocked = docV2.settings?.layoutLocked ?? true; 
-                zoomScale = docV2.editorState?.zoom || 1;
-                render(); 
-                applyZoom(1);
-                syncZoomControlsVisibility();
-            }
-        } 
+        throw new Error('Empty server response');
+    } catch (e) {
+        const l = localStorage.getItem('menu_pro_draft_v2');
+        if (l) {
+            try {
+                const parsed = JSON.parse(l);
+                if (parsed.elements && parsed.elements.length > 0) {
+                    _mergeLoadedDoc(parsed);
+                    render();
+                    applyZoom(1);
+                    showToast('⚠️ Loaded from local backup — server unavailable');
+                    return;
+                }
+            } catch (e2) {}
+        }
+        showToast('❌ No saved project found');
     }
 }
 
@@ -1697,16 +1749,7 @@ window.onload = async () => {
         const r = await fetch('/api/menu');
         const s = await r.json();
         if (s.elements && s.elements.length > 0) {
-            docV2 = { ...docV2, ...s };
-            
-            // Phase 2D: Merge assets — preserve static registry + add any user-uploaded entries
-            const staticIds = new Set((docV2.assets || []).map(a => a.id));
-            const incoming = s.assets || [];
-            const newAssets = incoming.filter(a => !staticIds.has(a.id));
-            docV2.assets = [...(docV2.assets || []), ...newAssets];
-            layoutLocked = docV2.settings?.layoutLocked ?? true;
-            syncZoomControlsVisibility();
-            zoomScale = docV2.editorState?.zoom || 1;
+            _mergeLoadedDoc(s);
         }
     } catch(e) {
         try {
@@ -1714,10 +1757,7 @@ window.onload = async () => {
             if (l) {
                 const parsed = JSON.parse(l);
                 if (parsed.elements && parsed.elements.length > 0) {
-                    docV2 = { ...docV2, ...parsed };
-                    layoutLocked = docV2.settings?.layoutLocked ?? true;
-                    syncZoomControlsVisibility();
-                    zoomScale = docV2.editorState?.zoom || 1;
+                    _mergeLoadedDoc(parsed);
                 }
             }
         } catch(e2) {}
@@ -1760,6 +1800,13 @@ window.onload = async () => {
     zoomScale = zoomScale || 1;
     applyZoom(1);
     maybeShowHelpPopout();
+
+    setInterval(() => {
+        try {
+            sync();
+            localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2));
+        } catch(e) {}
+    }, 30000);
 };
 
 function fitCanvasToScreen() {
