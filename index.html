@@ -411,6 +411,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 <script>
 let isEditingText = false;
 let isLassoing = false;
+let _lassoJustFired = false;
 let docV2 = { 
     version: "2.0.0",
     documentId: "doc_001",
@@ -963,8 +964,8 @@ function deselect() {
     renderLayerList();
 }
 
-function onCanvasClick(e) { if(e.target.id === 'menu-container' || e.target.id === 'elements-layer') deselect(); }
-function onViewportClick(e) { if(e.target.id === 'editor-viewport' || e.target.id === 'centering-wrapper') deselect(); }
+function onCanvasClick(e) { if(isLassoing || _lassoJustFired) return; if(e.target.id === 'menu-container' || e.target.id === 'elements-layer') deselect(); }
+function onViewportClick(e) { if(isLassoing || _lassoJustFired) return; if(e.target.id === 'editor-viewport' || e.target.id === 'centering-wrapper') deselect(); }
 
 function toggleItemLock() {
     if (selectedId) toggleLockById({ stopPropagation: () => {} }, selectedId);
@@ -2039,13 +2040,14 @@ document.addEventListener('mouseup', function(e) {
     });
 
     if (selected.length > 1) {
-        docV2.editorState.selectedElementIds = selected;
-        selectedId = null;
-        updateSelectionBar();
-        selected.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.classList.add('selected-multi');
-        });
+        _lassoJustFired = true;
+        setTimeout(() => {
+            docV2.editorState.selectedElementIds = selected;
+            selectedId = null;
+            render();
+            updateSelectionBar();
+            _lassoJustFired = false;
+        }, 30);
     }
 });
 // ===== END PHASE 7 LASSO =====
