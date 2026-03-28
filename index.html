@@ -379,12 +379,13 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     </div>
     <div style="display:flex; gap:10px; flex-shrink:0; margin-left:10px; border-left:1px solid #444; padding-left:10px;">
         <button id="btn-set-bg" class="ctrl-btn set-bg" onclick="setSelectedAsBackground()" title="Promote this image to full-page locked background" data-help="Sets the selected image as the full-page menu background">🖼️ BG</button>
-        <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9" onclick="if(docV2.editorState.selectedElementIds.length>1){var ids=[...docV2.editorState.selectedElementIds];ids.forEach(id=>{selectedId=id;duplicateEl();});docV2.editorState.selectedElementIds=[];deselect();}else{duplicateEl();}" title="Duplicate Layer" data-help="Makes an exact copy of the selected layer — text, image, or shape">📋</button>
-        <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c;" onclick="if(docV2.editorState.selectedElementIds.length>1){var ids=[...docV2.editorState.selectedElementIds];ids.forEach(id=>{selectedId=id;deleteEl();});docV2.editorState.selectedElementIds=[];deselect();}else{deleteEl();}" title="Delete Layer" data-help="Permanently removes the selected element from the menu">🗑</button>
+        <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds];ids.forEach(id=>{selectedId=id;duplicateEl(true);});docV2.editorState.selectedElementIds=[];deselect();}else{duplicateEl();}" title="Duplicate Layer" data-help="Makes an exact copy of the selected layer — text, image, or shape">📋</button>
+        <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c;" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds];ids.forEach(id=>{selectedId=id;deleteEl(true);});docV2.editorState.selectedElementIds=[];deselect();}else{deleteEl();}" title="Delete Layer" data-help="Permanently removes the selected element from the menu">🗑</button>
     </div>
 </div>
 
 <script>
+let isEditingText = false;
 let docV2 = { 
     version: "2.0.0",
     documentId: "doc_001",
@@ -829,7 +830,7 @@ function updateSelectionBar() {
             const div = document.createElement('div');
             div.id = 'multi-select-actions';
             div.style.cssText = 'display:flex; align-items:center; gap:10px; width:100%; justify-content:center; padding:5px 0;';
-            div.innerHTML = `<button class="ctrl-btn" style="background:#c0392b; width:auto; padding:0 15px;" onclick="var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; deleteEl();}); docV2.editorState.selectedElementIds=[]; deselect();">🗑️ Delete All (<span id="ms-del-count"></span>)</button><button class="ctrl-btn" style="background:#2980b9; width:auto; padding:0 15px;" onclick="var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl();}); docV2.editorState.selectedElementIds=[]; deselect();">📋 Duplicate All (<span id="ms-dup-count"></span>)</button>`;
+            div.innerHTML = `<button class="ctrl-btn" style="background:#c0392b; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; deleteEl(true);}); docV2.editorState.selectedElementIds=[]; deselect();">🗑️ Delete All (<span id="ms-del-count"></span>)</button><button class="ctrl-btn" style="background:#2980b9; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true);}); docV2.editorState.selectedElementIds=[]; deselect();">📋 Duplicate All (<span id="ms-dup-count"></span>)</button>`;
             document.getElementById('bar-content').appendChild(div);
             msBlock = div;
         }
@@ -980,9 +981,9 @@ function nudge(dx, dy) {
 }
 function toggleBg() { docV2.settings.legacyBgVisible = !docV2.settings.legacyBgVisible; render(); }
 
-function duplicateEl() {
+function duplicateEl(skipPush) {
     if(!selectedId) return;
-    pushState();
+    if(!skipPush) pushState();
     let item = docV2.elements.find(e=>e.id===selectedId);
     if(!item || item.locked) return;
     let clone = JSON.parse(JSON.stringify(item));
@@ -1024,7 +1025,14 @@ function centerElement(dir) {
     render();
     sync();
 }
-function deleteEl() { if(!selectedId) return; pushState(); docV2.elements = docV2.elements.filter(e => e.id !== selectedId); selectedId = null; render(); deselect(); }
+function deleteEl(skipPush) {
+    if (!selectedId) return;
+    if (!skipPush) pushState();
+    docV2.elements = docV2.elements.filter(e => e.id !== selectedId);
+    selectedId = null;
+    render();
+    deselect();
+}
 
 function addText() { 
     pushState(); 
@@ -1566,39 +1574,44 @@ window.addEventListener('keydown', (e) => {
         undo();
         return;
     }
-    if (selectedId && !layoutLocked && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+    const multiIds = docV2.editorState.selectedElementIds || [];
+    const hasSelection = selectedId || multiIds.length > 0;
+
+    if (hasSelection && !layoutLocked && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
         e.preventDefault();
         const step = e.shiftKey ? 10 : 2;
-        if (e.key==='ArrowUp')    nudge(0, -step);
-        if (e.key==='ArrowDown')  nudge(0,  step);
-        if (e.key==='ArrowLeft')  nudge(-step, 0);
-        if (e.key==='ArrowRight') nudge( step, 0);
-    }
-    
-    // Group nudge
-    const _groupNudgeIds = docV2.editorState.selectedElementIds || [];
-    if (_groupNudgeIds.length > 1 && !layoutLocked && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
-        e.preventDefault();
-        const step = e.shiftKey ? 10 : 2;
-        _groupNudgeIds.forEach(id => {
-            const item = docV2.elements.find(el => el.id === id);
-            if (!item || item.locked) return;
-            if (e.key === 'ArrowUp')    item.y -= step;
-            if (e.key === 'ArrowDown')  item.y += step;
-            if (e.key === 'ArrowLeft')  item.x -= step;
-            if (e.key === 'ArrowRight') item.x += step;
-            const domEl = document.getElementById(id);
-            if (domEl) { domEl.style.left = item.x + 'px'; domEl.style.top = item.y + 'px'; }
-        });
-        sync();
+
+        // Single element nudge
+        if (selectedId) {
+            if (e.key==='ArrowUp')    nudge(0, -step);
+            if (e.key==='ArrowDown')  nudge(0,  step);
+            if (e.key==='ArrowLeft')  nudge(-step, 0);
+            if (e.key==='ArrowRight') nudge( step, 0);
+        }
+
+        // Group nudge
+        if (multiIds.length > 1) {
+            pushState();
+            multiIds.forEach(id => {
+                const item = docV2.elements.find(el => el.id === id);
+                if (!item || item.locked) return;
+                if (e.key==='ArrowUp')    item.y -= step;
+                if (e.key==='ArrowDown')  item.y += step;
+                if (e.key==='ArrowLeft')  item.x -= step;
+                if (e.key==='ArrowRight') item.x += step;
+                const domEl = document.getElementById(id);
+                if (domEl) { domEl.style.left = item.x+'px'; domEl.style.top = item.y+'px'; }
+            });
+            sync();
+        }
     }
 
-    if ((e.key === 'Delete' || e.key === 'Backspace') && !e.target.isContentEditable) {
-        const multiIds = docV2.editorState.selectedElementIds || [];
+    if ((e.key === 'Delete' || e.key === 'Backspace') && !isEditingText) {
         if (multiIds.length > 1) {
             e.preventDefault();
+            pushState();
             const ids = [...multiIds];
-            ids.forEach(id => { selectedId = id; deleteEl(); });
+            ids.forEach(id => { selectedId = id; deleteEl(true); });
             docV2.editorState.selectedElementIds = [];
             deselect();
         } else if (selectedId) {
@@ -1610,17 +1623,21 @@ window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         const modal = document.getElementById('manual-modal-overlay');
         if (!modal || !modal.classList.contains('visible')) {
-            docV2.editorState.selectedElementIds = [];
-            deselect();
+            if (isEditingText) {
+                document.activeElement.blur();
+            } else {
+                docV2.editorState.selectedElementIds = [];
+                deselect();
+            }
         }
     }
 
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
         e.preventDefault();
-        const multiIds = docV2.editorState.selectedElementIds || [];
         if (multiIds.length > 1) {
+            pushState();
             const ids = [...multiIds];
-            ids.forEach(id => { selectedId = id; duplicateEl(); });
+            ids.forEach(id => { selectedId = id; duplicateEl(true); });
             docV2.editorState.selectedElementIds = [];
             deselect();
         } else if (selectedId) {
@@ -1661,8 +1678,12 @@ window.addEventListener('keydown', (e) => {
 
 // Text editing history tracking
 let textEditingOriginal = null;
-function onTextFocus(e) { textEditingOriginal = e.target.innerText; }
+function onTextFocus(e) { 
+    isEditingText = true;
+    textEditingOriginal = e.target.innerText; 
+}
 function onTextBlur(e) {
+    isEditingText = false;
     if(textEditingOriginal !== null && textEditingOriginal !== e.target.innerText) {
         const item = docV2.elements.find(i => i.id === e.target.id);
         if(item) {
