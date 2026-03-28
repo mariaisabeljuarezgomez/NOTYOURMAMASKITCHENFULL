@@ -1574,6 +1574,75 @@ window.addEventListener('keydown', (e) => {
         if (e.key==='ArrowLeft')  nudge(-step, 0);
         if (e.key==='ArrowRight') nudge( step, 0);
     }
+    
+    // Group nudge
+    const _groupNudgeIds = docV2.editorState.selectedElementIds || [];
+    if (_groupNudgeIds.length > 1 && !layoutLocked && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+        e.preventDefault();
+        const step = e.shiftKey ? 10 : 2;
+        _groupNudgeIds.forEach(id => {
+            const item = docV2.elements.find(el => el.id === id);
+            if (!item || item.locked) return;
+            if (e.key === 'ArrowUp')    item.y -= step;
+            if (e.key === 'ArrowDown')  item.y += step;
+            if (e.key === 'ArrowLeft')  item.x -= step;
+            if (e.key === 'ArrowRight') item.x += step;
+            const domEl = document.getElementById(id);
+            if (domEl) { domEl.style.left = item.x + 'px'; domEl.style.top = item.y + 'px'; }
+        });
+        sync();
+    }
+
+    if ((e.key === 'Delete' || e.key === 'Backspace') && !e.target.isContentEditable) {
+        const multiIds = docV2.editorState.selectedElementIds || [];
+        if (multiIds.length > 1) {
+            e.preventDefault();
+            const ids = [...multiIds];
+            ids.forEach(id => { selectedId = id; deleteEl(); });
+            docV2.editorState.selectedElementIds = [];
+            deselect();
+        } else if (selectedId) {
+            e.preventDefault();
+            deleteEl();
+        }
+    }
+
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('manual-modal-overlay');
+        if (!modal || !modal.classList.contains('visible')) {
+            docV2.editorState.selectedElementIds = [];
+            deselect();
+        }
+    }
+
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+        e.preventDefault();
+        const multiIds = docV2.editorState.selectedElementIds || [];
+        if (multiIds.length > 1) {
+            const ids = [...multiIds];
+            ids.forEach(id => { selectedId = id; duplicateEl(); });
+            docV2.editorState.selectedElementIds = [];
+            deselect();
+        } else if (selectedId) {
+            duplicateEl();
+        }
+    }
+
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
+        e.preventDefault();
+        const selectable = docV2.elements.filter(el =>
+            !el.locked &&
+            el.visible &&
+            !(docV2.settings.backgroundLayerLocked && el.layerRole === 'background')
+        );
+        if (selectable.length > 0) {
+            docV2.editorState.selectedElementIds = selectable.map(el => el.id);
+            selectedId = null;
+            render();
+            updateSelectionBar();
+            showToast('All ' + selectable.length + ' elements selected');
+        }
+    }
     // Manual Modal Esc and Trap
     const modal = document.getElementById('manual-modal-overlay');
     if (modal && modal.classList.contains('visible')) {
