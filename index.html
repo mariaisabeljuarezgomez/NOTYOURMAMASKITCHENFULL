@@ -404,7 +404,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     <div style="display:flex; gap:10px; flex-shrink:0; margin-left:10px; border-left:1px solid #444; padding-left:10px;">
         <button id="btn-set-bg" class="ctrl-btn set-bg" onclick="setSelectedAsBackground()" title="Promote this image to full-page locked background" data-help="Sets the selected image as the full-page menu background">🖼️ BG</button>
         <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); render(); showToast('Duplicated ' + ids.length + ' elements');}else{duplicateEl();}" title="Duplicate Layer" data-help="Makes an exact copy of the selected layer — text, image, or shape">📋</button>
-        <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c;" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds];ids.forEach(id=>{selectedId=id;deleteEl(true);});docV2.editorState.selectedElementIds=[];deselect();}else{deleteEl();}" title="Delete Layer" data-help="Permanently removes the selected element from the menu">🗑</button>
+        <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c;" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds];ids.forEach(id=>{selectedId=id;deleteEl(true,true);});docV2.editorState.selectedElementIds=[];deselect();render();}else{deleteEl();}" title="Delete Layer" data-help="Permanently removes the selected element from the menu">🗑</button>
     </div>
 </div>
 
@@ -912,7 +912,7 @@ function updateSelectionBar() {
             const div = document.createElement('div');
             div.id = 'multi-select-actions';
             div.style.cssText = 'display:flex; align-items:center; gap:10px; width:100%; justify-content:center; padding:5px 0;';
-            div.innerHTML = `<button class="ctrl-btn" style="background:#c0392b; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; deleteEl(true);}); docV2.editorState.selectedElementIds=[]; deselect();">🗑️ Delete All (<span id="ms-del-count"></span>)</button><button class="ctrl-btn" style="background:#2980b9; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); render(); showToast('Duplicated ' + ids.length + ' elements');">📋 Duplicate All (<span id="ms-dup-count"></span>)</button>
+            div.innerHTML = `<button class="ctrl-btn" style="background:#c0392b; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; deleteEl(true,true);}); docV2.editorState.selectedElementIds=[]; deselect(); render();">🗑️ Delete All (<span id="ms-del-count"></span>)</button><button class="ctrl-btn" style="background:#2980b9; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); render(); showToast('Duplicated ' + ids.length + ' elements');">📋 Duplicate All (<span id="ms-dup-count"></span>)</button>
 <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:6px;">
   <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('left')"    title="Align Left Edges">⬛ Left</button>
   <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('right')"   title="Align Right Edges">⬛ Right</button>
@@ -1224,13 +1224,15 @@ function centerElement(dir) {
     render();
     sync();
 }
-function deleteEl(skipPush) {
+function deleteEl(skipPush, noRender) {
     if (!selectedId) return;
     if (!skipPush) pushState();
     docV2.elements = docV2.elements.filter(e => e.id !== selectedId);
     selectedId = null;
-    deselect();
-    render();
+    if (!noRender) {
+        deselect();
+        render();
+    }
 }
 
 function addText() { 
@@ -1297,8 +1299,8 @@ async function trimTransparentPixels(src) {
     });
 }
 
-async function addFromTray(src) {
-    pushState();
+async function addFromTray(src, skipPush) {
+    if (!skipPush) pushState();
     const trimmedSrc = await trimTransparentPixels(src);
     let id = 'img_' + Date.now();
     const vpRect = viewport.getBoundingClientRect();
@@ -1364,12 +1366,12 @@ async function importImg(input) {
                     createdAt: new Date().toISOString()
                 });
                 await loadUserImageTray();
-                await addFromTray(json.url);
+                await addFromTray(json.url, true);
                 showToast('Image saved to your library!');
                 return;
             }
         } catch(e2) {}
-        await addFromTray(trimmedSrc);
+        await addFromTray(trimmedSrc, true);
     };
     r.readAsDataURL(f);
 }
@@ -1825,10 +1827,13 @@ window.onload = async () => {
     // Step 4: Init the rest
     initSmartTooltips();
     await loadUserImageTray();
-    fitCanvasToScreen();
+    const savedZoom = docV2.editorState?._userZoom;
+    if (savedZoom && savedZoom !== 1) {
+        applyZoom(savedZoom);
+    } else {
+        fitCanvasToScreen();
+    }
     window.addEventListener('resize', fitCanvasToScreen);
-    zoomScale = zoomScale || 1;
-    applyZoom(1);
     maybeShowHelpPopout();
 
     setInterval(() => {
@@ -1902,9 +1907,10 @@ window.addEventListener('keydown', (e) => {
             e.preventDefault();
             pushState();
             const ids = [...multiIds];
-            ids.forEach(id => { selectedId = id; deleteEl(true); });
+            ids.forEach(id => { selectedId = id; deleteEl(true, true); });
             docV2.editorState.selectedElementIds = [];
             deselect();
+            render();
         } else if (selectedId) {
             e.preventDefault();
             deleteEl();
