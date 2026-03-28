@@ -562,10 +562,17 @@ function render() {
         
         if(d.type==='text') { 
             el.innerText = d.text; 
-            el.contentEditable = (!d.locked && d.visible); 
+            el.contentEditable = false; 
             el.onfocus = onTextFocus;
             el.onblur = onTextBlur;
-            el.ondblclick = (e) => { if(!d.locked) el.focus(); e.stopPropagation(); };
+            el.ondblclick = (e) => {
+                if (!d.locked) {
+                    el.contentEditable = true;
+                    el.focus();
+                    isEditingText = true;
+                }
+                e.stopPropagation();
+            };
         }
         
         Object.assign(el.style, { 
@@ -1590,7 +1597,7 @@ window.addEventListener('keydown', (e) => {
         }
 
         // Group nudge
-        if (multiIds.length > 1) {
+        if (multiIds.length > 0) {
             pushState();
             multiIds.forEach(id => {
                 const item = docV2.elements.find(el => el.id === id);
@@ -1684,6 +1691,7 @@ function onTextFocus(e) {
 }
 function onTextBlur(e) {
     isEditingText = false;
+    e.target.contentEditable = false;
     if(textEditingOriginal !== null && textEditingOriginal !== e.target.innerText) {
         const item = docV2.elements.find(i => i.id === e.target.id);
         if(item) {
