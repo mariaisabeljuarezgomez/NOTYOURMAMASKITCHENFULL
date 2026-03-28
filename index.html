@@ -291,15 +291,15 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
                 <div id="guide-cy" class="guide guide-h" style="top:50%"></div>
             </div>
 </div></div>
+</main>
 <div id="lasso-box" style="
-  position:absolute;
+  position:fixed;
   border:2px dashed #4a90e2;
   background:rgba(74,144,226,0.08);
   pointer-events:none;
   display:none;
   z-index:9999;
 "></div>
-</main>
 
 <button id="fab" class="fab" onclick="this.classList.toggle('open'); openDrawer()" data-help="Open/Close Editing Tools">🛠️</button>
 
@@ -411,8 +411,6 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 <script>
 let isEditingText = false;
 let isLassoing = false;
-let lassoStartX = 0;
-let lassoStartY = 0;
 let docV2 = { 
     version: "2.0.0",
     documentId: "doc_001",
@@ -1967,36 +1965,37 @@ function dismissHelpPopout() {
     popout.classList.add('dismissing');
     localStorage.setItem('mde_help_shown', '1');
     setTimeout(() => { popout.style.display = 'none'; }, 300);
-}
+}// ===== PHASE 7 LASSO — FIXED =====
+let lassoAnchorX = 0, lassoAnchorY = 0;
 
 document.getElementById('editor-viewport').addEventListener('mousedown', function(e) {
-    if (e.target.id !== 'editor-viewport' && e.target.id !== 'centering-wrapper' && e.target.id !== 'menu-container' && e.target.id !== 'elements-layer') return;
+    const allowed = ['editor-viewport','centering-wrapper','menu-container','elements-layer'];
+    if (!allowed.includes(e.target.id)) return;
+    if (layoutLocked) return; // only lasso in edit mode
+
     isLassoing = true;
-    const rect = this.getBoundingClientRect();
-    lassoStartX = e.clientX - rect.left + this.scrollLeft;
-    lassoStartY = e.clientY - rect.top + this.scrollTop;
+    lassoAnchorX = e.clientX;
+    lassoAnchorY = e.clientY;
+
     const box = document.getElementById('lasso-box');
-    box.style.left = lassoStartX + 'px';
-    box.style.top = lassoStartY + 'px';
-    box.style.width = '0px';
+    box.style.left   = e.clientX + 'px';
+    box.style.top    = e.clientY + 'px';
+    box.style.width  = '0px';
     box.style.height = '0px';
     box.style.display = 'block';
+    e.preventDefault();
 });
 
 document.addEventListener('mousemove', function(e) {
     if (!isLassoing) return;
-    const area = document.getElementById('editor-viewport');
-    const rect = area.getBoundingClientRect();
-    const curX = e.clientX - rect.left + area.scrollLeft;
-    const curY = e.clientY - rect.top + area.scrollTop;
-    const x = Math.min(curX, lassoStartX);
-    const y = Math.min(curY, lassoStartY);
-    const w = Math.abs(curX - lassoStartX);
-    const h = Math.abs(curY - lassoStartY);
+    const x = Math.min(e.clientX, lassoAnchorX);
+    const y = Math.min(e.clientY, lassoAnchorY);
+    const w = Math.abs(e.clientX - lassoAnchorX);
+    const h = Math.abs(e.clientY - lassoAnchorY);
     const box = document.getElementById('lasso-box');
-    box.style.left = x + 'px';
-    box.style.top = y + 'px';
-    box.style.width = w + 'px';
+    box.style.left   = x + 'px';
+    box.style.top    = y + 'px';
+    box.style.width  = w + 'px';
     box.style.height = h + 'px';
 });
 
@@ -2005,42 +2004,40 @@ document.addEventListener('mouseup', function(e) {
     isLassoing = false;
     const box = document.getElementById('lasso-box');
     box.style.display = 'none';
-    const lw = parseInt(box.style.width);
-    const lh = parseInt(box.style.height);
+
+    const lw = parseFloat(box.style.width);
+    const lh = parseFloat(box.style.height);
     if (lw < 5 && lh < 5) return;
 
-    // Convert lasso box coords (viewport-relative) to scaler-wrapper-relative canvas coords
-    const area = document.getElementById('editor-viewport');
+    // lasso box is fixed — coords are already in screen pixels
+    const lx1 = parseFloat(box.style.left);
+    const ly1 = parseFloat(box.style.top);
+    const lx2 = lx1 + lw;
+    const ly2 = ly1 + lh;
+
+    // convert each element's canvas position → screen pixels for comparison
     const scalerRect = document.getElementById('scaler-wrapper').getBoundingClientRect();
-    const areaRect = area.getBoundingClientRect();
-
-    // lasso box left/top are in viewport scroll space — convert to canvas element space
-    const lasso_vx = parseInt(box.style.left) + areaRect.left - area.scrollLeft;
-    const lasso_vy = parseInt(box.style.top) + areaRect.top - area.scrollTop;
-
-    // Now convert from screen pixels to canvas units using zoomScale
-    const lx1 = (lasso_vx - scalerRect.left) / zoomScale;
-    const ly1 = (lasso_vy - scalerRect.top) / zoomScale;
-    const lx2 = lx1 + lw / zoomScale;
-    const ly2 = ly1 + lh / zoomScale;
 
     const selected = [];
     docV2.elements.forEach(item => {
-        if (item.hidden || item.locked) return;
+        if (!item.visible || item.locked) return;
         if (docV2.settings.backgroundLayerLocked && item.layerRole === 'background') return;
         const el = document.getElementById(item.id);
         if (!el) return;
         const ew = item.width || el.offsetWidth;
         const eh = item.height || el.offsetHeight;
-        if (
-            item.x < lx2 &&
-            item.x + ew > lx1 &&
-            item.y < ly2 &&
-            item.y + eh > ly1
-        ) {
+
+        // item.x / item.y are in canvas px — scale to screen
+        const ex1 = scalerRect.left + item.x * zoomScale;
+        const ey1 = scalerRect.top  + item.y * zoomScale;
+        const ex2 = ex1 + ew * zoomScale;
+        const ey2 = ey1 + eh * zoomScale;
+
+        if (ex1 < lx2 && ex2 > lx1 && ey1 < ly2 && ey2 > ly1) {
             selected.push(item.id);
         }
     });
+
     if (selected.length > 1) {
         docV2.editorState.selectedElementIds = selected;
         selectedId = null;
@@ -2051,6 +2048,7 @@ document.addEventListener('mouseup', function(e) {
         });
     }
 });
+// ===== END PHASE 7 LASSO =====
 </script>
 
 <!-- Fix 5b - Floating Zoom Buttons (Mobile Repaired) -->
