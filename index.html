@@ -379,8 +379,8 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     </div>
     <div style="display:flex; gap:10px; flex-shrink:0; margin-left:10px; border-left:1px solid #444; padding-left:10px;">
         <button id="btn-set-bg" class="ctrl-btn set-bg" onclick="setSelectedAsBackground()" title="Promote this image to full-page locked background" data-help="Sets the selected image as the full-page menu background">🖼️ BG</button>
-        <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9" onclick="duplicateEl()" title="Duplicate Layer" data-help="Makes an exact copy of the selected layer — text, image, or shape">📋</button>
-        <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c;" onclick="deleteEl()" title="Delete Layer" data-help="Permanently removes the selected element from the menu">🗑</button>
+        <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9" onclick="if(docV2.editorState.selectedElementIds.length>1){var ids=[...docV2.editorState.selectedElementIds];ids.forEach(id=>{selectedId=id;duplicateEl();});docV2.editorState.selectedElementIds=[];deselect();}else{duplicateEl();}" title="Duplicate Layer" data-help="Makes an exact copy of the selected layer — text, image, or shape">📋</button>
+        <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c;" onclick="if(docV2.editorState.selectedElementIds.length>1){var ids=[...docV2.editorState.selectedElementIds];ids.forEach(id=>{selectedId=id;deleteEl();});docV2.editorState.selectedElementIds=[];deselect();}else{deleteEl();}" title="Delete Layer" data-help="Permanently removes the selected element from the menu">🗑</button>
     </div>
 </div>
 
@@ -694,9 +694,7 @@ function attach(el) {
             updateSelectionBar();
             return;
         } else {
-            if (docV2.editorState.selectedElementIds.length > 1 && docV2.editorState.selectedElementIds.includes(el.id)) {
-                // Group drag initiated, keep array intact
-            } else {
+            if (!docV2.editorState.selectedElementIds.includes(el.id)) {
                 docV2.editorState.selectedElementIds = [];
                 selectById(el.id);
             }
@@ -808,15 +806,23 @@ function selectById(id) {
 function updateSelectionBar() {
     const multiIds = docV2.editorState.selectedElementIds || [];
     if (multiIds.length > 1) {
-        console.log("Showing Multi-Select Bar");
+        console.log("MULTI SELECT BAR ACTIVE, count:", multiIds.length);
         selBar.classList.add('show');
         
-        ['layer','design','arrange'].forEach(t => {
-            const target = document.getElementById('bar-tab-'+t);
-            if(target) target.style.display = 'none';
-        });
-        document.getElementById('text-style-ctrls').style.display = 'none';
-        document.getElementById('geo-style-ctrls').style.display = 'none';
+        const tabLayer = document.getElementById('bar-tab-layer');
+        if(tabLayer) tabLayer.style.display = 'none';
+        
+        const tabDesign = document.getElementById('bar-tab-design');
+        if(tabDesign) tabDesign.style.display = 'none';
+        
+        const tabArrange = document.getElementById('bar-tab-arrange');
+        if(tabArrange) tabArrange.style.display = 'none';
+
+        const textCtrls = document.getElementById('text-style-ctrls');
+        if(textCtrls) textCtrls.style.display = 'none';
+
+        const geoCtrls = document.getElementById('geo-style-ctrls');
+        if(geoCtrls) geoCtrls.style.display = 'none';
         
         let msBlock = document.getElementById('multi-select-actions');
         if (!msBlock) {
