@@ -7,6 +7,8 @@ It exists to prevent ad hoc implementation and to ensure the editor evolves from
 
 Antigravity should treat this file as the authoritative schema/design baseline for Phase 2A and future layered-editor work unless explicitly revised.
 
+> **Implementation Status (March 28, 2026):** Phase 2A through Phase 11 are **fully implemented** in `index.html`. All schemas below reflect the live implementation. `build_app.py` is frozen at Phase 30 and does NOT reflect these changes yet.
+
 ## Goals
 - Preserve accepted production-safe behavior.
 - Support a true layered document model.
@@ -139,6 +141,7 @@ Version 2 uses:
   "activeElementId": null,
   "selectedElementIds": [],
   "zoom": 1,
+  "_userZoom": null,
   "panX": 0,
   "panY": 0
 }
@@ -148,6 +151,7 @@ Version 2 uses:
 - This stores transient workspace state.
 - It may be persisted if useful, but core document fidelity must not depend on it.
 - Selection state should never be required for export.
+- `_userZoom`: stores the last manually-set zoom level. If present and non-1, it is restored on load instead of auto-fitting the canvas to the viewport. Set to `null` to allow auto-fit behavior.
 
 ## Asset Registry
 Assets are reusable source definitions.
@@ -494,3 +498,16 @@ This model is intentionally designed to support later additions such as:
 ## Final Implementation Directive
 Antigravity should use this file as the official V2 data model contract.
 If implementation requires deviation, the deviation must be documented and approved before coding proceeds.
+
+## Implemented Behaviors (March 28, 2026)
+All Phase 2A items listed in the scope section are implemented. Additionally:
+- `addFromTray(src, skipPush)` — second param prevents double pushState from upload path
+- `deleteEl(skipPush, noRender)` — second param prevents N renderings in bulk-delete loops
+- `_mergeLoadedDoc(s)` — asset registry merge is safe against server overwriting user-uploaded assets
+- `onTextBlur` / `onTextFocus` — use `innerText` consistently for text capture and commit
+- `sync()` — guarded with `contentEditable !== 'true'` to prevent text-in-edit overwrite
+- `finalizeLasso()` — unified X/Y scale ratio, touch + mouse events both handled
+- Export PNG — rounded stroke re-traces bezier path; image load guard skips broken images; multi-line `\n` split
+- `fitCanvasToScreen()` — functional viewport-width scaling, `_userZoom` checked before auto-fit
+- `resetToOriginal()` — clears localStorage on success, shows toast on failure without reloading
+- `addRect()` — places at viewport center (not hardcoded coordinates)

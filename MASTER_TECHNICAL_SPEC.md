@@ -1,12 +1,12 @@
 # MASTER_TECHNICAL_SPEC.md
 # Dine In Menu Editor Pro V2 — Master Technical Specification
-**Version**: V2 Phase 30+ (PageSpeed 100 / Performance Hardened)  
-**Last Updated**: March 27, 2026  
+**Version**: V2 Phase 30+ Fully Hardened  
+**Last Updated**: March 28, 2026  
 **Repository**: [mariaisabeljuarezgomez/NOTYOURMAMASKITCHENFULL](https://github.com/mariaisabeljuarezgomez/NOTYOURMAMASKITCHENFULL)  
 **Deployed on**: Railway  
 **Prepared by**: MARIAS DIGITAL DESIGNS
 
-> ⚠️ **SUPERSEDED ITEMS NOTE**: This spec was last fully revised at Phase 29 (March 17, 2026). All Phase 30 changes (PageSpeed fixes, export engine migration, font cleanup) are reflected below. See `HANDOFF_V3.md` as the master continuity document.
+> ⚠️ **GENERATOR FROZEN**: As of March 28, 2026, all Phases 2A–11 and Bug Fix Batches 1–8 (21 bugs) were applied **directly to `index.html`**. `build_app.py` has NOT been updated and is frozen at Phase 30. Treat `index.html` as the live source of truth. Do NOT run `python build_app.py` until all patches have been reconciled into the generator. See `HANDOFF_V3.md` for the complete patch history.
 
 ---
 
@@ -800,6 +800,26 @@ cp /app/data/backups/menu_data_20260327_074500.json /app/data/menu_data.json
 | Phase 28-B | 456a770 | Add PNG helper functions for 300 DPI support |
 | Phase 29 | e4102ee | Final Polish & UX Hardening (9 fixes) |
 | Phase 30 | d3fc068 | PageSpeed 100: defer JS, remove dup font, cache headers, contrast fix |
+| Phase 2A | 6c030a5 | V2 schema migration + asset registry (direct index.html) |
+| Phase 2B | 2fed811 | Asset-linked image placement via assetId |
+| Phase 2C | bcaa8fa | User upload persisted to asset registry |
+| Phase 2D | 75358d0 | Asset registry round-trip save/restore |
+| Phase 3 | c64e8f0 | Multi-select shift+click, group move/delete/dup |
+| Phase 4 | c7a235a | Keyboard shortcuts (Delete, Ctrl+D/A/Z, Arrow nudge) |
+| Phase 5 | 6bc7af5 | Font size control + text block width wrapping |
+| Phase 6 | eb37fab | 8-way alignment and distribution tools |
+| Phase 7 | d3e0136 | Lasso drag-box multi-select (mouse + touch) |
+| Phase 8 | 65ca724 | Export PNG text rendering fix |
+| Phase 9 | fe2d5ce | Undo history integrity (group drag, memory cap) |
+| Phase 10 | 4b0cb1d | Mobile lasso & touch multi-select |
+| Phase 11 | c378d90 | Save/Load hardening (dirty state, auto-save, error UI) |
+| Bug Batch 1 | 600009a | Asset merge fix, sync() guard, header dup noRender |
+| Bug Batch 2 | da85954 | Arrow nudge else-if, textContent→innerText, export img guard |
+| Bug Batch 3 | 9664b41 | deleteEl order, resetToOriginal localStorage, lasso scale |
+| Bug Batch 4 | d4f71fb | addFromTray pushState, onload fallback, bgLayer fix, toolbar anim |
+| Bug Batch 5 | e210f58 | innerText consistency, fitCanvasToScreen, openDrawer retry |
+| Bug Batch 6 | 939a940 | Ctrl+Z text guard, export rounded stroke, addRect viewport pos |
+| Bug Batch 7 | 6bc7fe4 | deleteEl noRender, addFromTray skipPush, fitCanvas zoom persistence |
 
 ---
 
@@ -825,4 +845,4 @@ cp /app/data/backups/menu_data_20260327_074500.json /app/data/menu_data.json
 
 ---
 
-*End of MASTER_TECHNICAL_SPEC.md — Updated March 27, 2026 (Phase 30)*
+*End of MASTER_TECHNICAL_SPEC.md — Updated March 28, 2026 (Phase 30 + Phases 2A–11 + Bug Fix Batches 1–8)*

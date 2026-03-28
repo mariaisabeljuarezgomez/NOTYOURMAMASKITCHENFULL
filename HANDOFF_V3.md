@@ -1,16 +1,18 @@
 # Dine In Menu Editor Pro — Master Continuity & Handoff File v3.0
-**Last Updated:** March 27, 2026  
+**Last Updated:** March 28, 2026  
 **Thread Status:** CLOSING — begin new thread from this file  
 **PageSpeed Score (Mar 27, 2026):** 100 / 100 / 100 / 100 ✅  
 **Live URL:** https://web-production-3e17d.up.railway.app/  
 **GitHub Repo:** https://github.com/mariaisabeljuarezgomez/NOTYOURMAMASKITCHENFULL  
 **Deployment:** Railway (auto-deploys from GitHub `main` branch)
+**Latest SHA:** `6bc7fe4` — Batch 8 bug fixes (bulk delete, upload history, zoom persistence)
+
 
 ---
 
 ## CRITICAL RULES FOR ANY AI ASSISTANT READING THIS FILE
 
-1. **This is a generator-based app.** `build_app.py` is the source. `index.html` is compiled output. NEVER patch `index.html` directly as if it were the source — always edit `build_app.py` first, then regenerate.
+1. **`build_app.py` is the generator source — but `index.html` has been manually patched.** As of March 28, 2026, all Phases 2A–11 and Bug Fix Batches 1–8 (21 bugs) were applied **directly to `index.html`**. `build_app.py` has NOT been updated. Before any regeneration of `index.html` from `build_app.py`, all manual patches must first be reconciled into the generator. Until that reconciliation, treat `index.html` as the **live source of truth** and do not run `python build_app.py`.
 2. **Do not reopen locked architecture** (persistence, export pipeline, split-asset strategy) without overwhelming justification.
 3. **Always push to GitHub after every change.** Railway deploys from GitHub, not local files. A task is NOT done until the commit SHA is visible on GitHub.
 4. **Keep changes small and single-purpose.** One fix per commit. No mixing feature work with bug fixes.
@@ -78,7 +80,7 @@
 
 ---
 
-## 3. Current Production State (as of Mar 27, 2026)
+## 3. Current Production State (as of March 28, 2026)
 
 ### PageSpeed Scores (Mobile) — PERFECT
 - Performance: **100** ✅
@@ -86,19 +88,36 @@
 - Best Practices: **100** ✅
 - SEO: **100** ✅
 
-### Last Commit
-- SHA: `d3fc068a0623274d9ef30a8b8d1618eb0e6440a2`
-- Message: `perf: PageSpeed fixes - defer JS, remove dup font, cache headers, contrast fix`
-- Date: March 27, 2026 at 18:52 UTC
+### Latest Commit
+- SHA: `6bc7fe4`
+- Message: `fix: Batch 8 - bulk delete N-render, double pushState on upload, fitCanvas zoom persistence`
+- Date: March 28, 2026
 
-### What that commit contains (verified in GitHub)
-| Fix | File | Status |
-|-----|------|--------|
-| `defer` on export-utils.js script tag | `index.html` | ✅ Confirmed |
-| `defer` in generator template | `build_app.py` | ✅ Confirmed |
-| Removed duplicate font `centurygothic.ttf` | deleted | ✅ Confirmed absent |
-| Cache-Control headers on all 3 static routes | `app.py` | ✅ Confirmed |
-| Save button contrast `#27ae60` → `#1e8449` | `index.html` + `build_app.py` | ✅ Confirmed |
+### All Features Implemented (verified on `main`)
+
+| Phase | Feature | SHA |
+|-------|---------|-----|
+| 2A | V2 schema migration + asset registry | `6c030a5` |
+| 2B | Asset-linked image placement (`assetId`) | `2fed811` |
+| 2C | User upload persisted to asset registry | `bcaa8fa` |
+| 2D | Asset registry round-trip save/restore | `75358d0` |
+| 3 | Multi-select shift+click, group move/delete/dup | `c64e8f0` |
+| 4 | Keyboard shortcuts (Delete, Ctrl+D/A/Z, Arrow nudge) | `c7a235a` |
+| 5 | Font size control + text block width wrapping | `6bc7af5` |
+| 6 | Alignment & distribution tools (8 buttons) | `eb37fab` |
+| 7 | Lasso drag-box multi-select (mouse + touch) | `d3e0136` |
+| 8 | Export PNG text rendering fix | `65ca724` |
+| 9 | Undo history integrity (group drag, memory cap) | `fe2d5ce` |
+| 10 | Mobile lasso & touch multi-select | `4b0cb1d` |
+| 11 | Save/Load hardening (dirty state, auto-save, error UI) | `c378d90` |
+| Bug Batch 1 | Asset merge fix, sync() guard, header dup noRender | `600009a` |
+| Bug Batch 2 | Arrow nudge else-if, textContent→innerText, export image guard | `da85954` |
+| Bug Batch 3 | deleteEl order, resetToOriginal, lasso scale ratio | `9664b41` |
+| Bug Batch 4 | addFromTray pushState, onload fallback, bgLayer fix, toolbar anim | `d4f71fb` |
+| Bug Batch 5 | innerText consistency, fitCanvasToScreen, openDrawer retry | `e210f58` |
+| Bug Batch 6 | Ctrl+Z text guard, export stroke path, addRect viewport pos | `939a940` |
+| Bug Batch 7 | deleteEl noRender param, addFromTray skipPush, fitCanvas zoom | `6bc7fe4` |
+
 
 ---
 
@@ -352,98 +371,33 @@ This is the authoritative schema for all future layered editor work. Antigravity
 
 ## 10. Phase Roadmap
 
-### ✅ COMPLETED — Phase 1: Stabilization (through Mar 27, 2026)
-- [x] Generator-based build system
-- [x] Split-asset load (preview vs export)
-- [x] Deterministic Canvas API export at 300 DPI
-- [x] PNG pHYs metadata injection
-- [x] Railway Volume persistence (atomic writes, backup rotation)
-- [x] localStorage fallback
-- [x] V2 layered document model (docV2 object)
-- [x] layerRole system (background / content / overlay)
-- [x] Per-element lock/unlock
-- [x] Global layout lock (default on)
-- [x] backgroundLayerLocked flag
-- [x] Undo (30-state stack, Ctrl+Z)
-- [x] Reset to Original (separate from Undo)
-- [x] Branded modal and toast system
-- [x] Smart tooltips (data-help, once per session)
-- [x] Bilingual in-app manual (EN + ES)
-- [x] Moveable toolbar (drag handle)
-- [x] Floating zoom controls (unlocked only)
-- [x] Multi-touch drag suppression
-- [x] Viewport-centered Add Text
-- [x] User image upload + library (server-persisted)
-- [x] Transparent pixel auto-trim on upload
-- [x] Image resize handles (4-corner, aspect-ratio locked)
-- [x] Layer panel with visibility + lock toggles
-- [x] Selection bar with tab system (LAYER / DESIGN / ARRANGE)
-- [x] Nudge controls (arrow keys + directional buttons)
-- [x] Center H / Center V alignment
-- [x] Z-order controls (up/down/front/back)
-- [x] Font selector (4 fonts)
-- [x] Color picker for text and shapes
-- [x] Line height and letter spacing controls
-- [x] Corner radius and stroke for shapes
-- [x] Flask-compress (gzip for all assets)
-- [x] **PageSpeed 100/100/100/100** ✅ (achieved Mar 27, 2026)
-- [x] defer on export-utils.js
-- [x] Cache-Control headers (7-day for static assets, no-cache for index.html)
-- [x] Duplicate font removed (centurygothic.ttf)
-- [x] Save button contrast fix (#1e8449)
+### ✅ ALL PHASES COMPLETE (as of March 28, 2026)
+
+#### Phases 1–11 + Bug Fix Batches 1–8
+See Section 3 for the full table of commits and SHAs.
+
+**Key capabilities now fully implemented and hardened:**
+- Multi-select (shift+click, lasso, touch lasso)
+- 8-way alignment + distribution tools
+- Keyboard shortcuts (Delete, Ctrl+Z/D/A, Arrow nudge, Escape)
+- Undo: 30-state stack, group drag guard, text blur snapshot, Ctrl+Z text guard
+- Export: 300 DPI Canvas API, rounded stroke fix, image load guard, multi-line text
+- Save/Load: dirty state button, 30s auto-save, error toasts, localStorage fallback
+- Mobile: touch lasso, fitCanvasToScreen auto-fit, touch drag
+- Asset registry: round-trip persistence, user upload registry, addFromTray undo
+- Bulk operations: N→1 render on multi-delete and multi-duplicate
 
 ---
 
-### 🔜 NEXT — Phase 2A: V2 Schema Migration + Asset Registry
+### 🔜 NEXT PRIORITIES (not yet started)
 
-**Goal:** Migrate the live docV2 object to the full V2 contract schema (Section 9) and initialize the asset registry with the 14 existing Images/ folder assets.
+1. **Reconcile `build_app.py` with `index.html`** — All phases 2A–11 and bug fix batches 1–8 were applied directly to `index.html`. `build_app.py` is frozen at Phase 30 (PageSpeed 100). Before any automated rebuild, all patches must be migrated back into `build_app.py`.
 
-**Scope (do these, nothing more):**
-- [ ] Migrate docV2 top-level shape to match V2 contract (add canvas, assets[], meta fields)
-- [ ] Initialize asset registry with 14 Assets from /Images folder (Asset1–14.png)
-- [ ] Update image elements to use `assetId` references instead of inline `src`
-- [ ] Update export renderer to resolve assetId → storage.originalUrl for image elements
-- [ ] Update editor preview to use storage.previewUrl if available, else fall back to originalUrl
-- [ ] Verify save/load still works with new schema (backwards compat or migration function)
-- [ ] Verify Export Pro PNG still produces correct 300 DPI output
+2. **Phase 2B (original scope) — Behavior verification matrix** — Full manual test coverage: edit mode, lock states, undo ordering, save/load cross-device, style persistence.
 
-**Do NOT include in Phase 2A:**
-- Cloudinary upload flow
-- Advanced asset management UI
-- Complex layer panel redesign
-- Non-rectangle shapes
-- Mobile editing expansion
-- Visibility panel UI (unless trivial)
+3. **Read-Only Viewer** — Separate route for customer-facing menu display without editor controls.
 
----
-
-### 🔮 Phase 2B: Editor Product Hardening (after 2A)
-
-- Full behavior verification matrix (edit mode, lock states, undo ordering, save/load cross-device)
-- State continuity tests (positions, styles, zoom, lock state survive save/load)
-- Documentation reconciliation (USER_MANUAL_SOURCE.md vs actual behavior)
-- UX copy polish (standardize all microcopy to official vocabulary)
-- Final reliability audit (timing assumptions, race conditions, duplicate logic paths)
-
----
-
-### 🔮 Phase 3: Minimal Read-Only Viewer (after 2B)
-
-- Separate route or page
-- Read-only: no drag, no edit, no export controls
-- Reuses same rendering/state model, interaction removed
-- Does NOT modify editor core
-
----
-
-### 🔮 Phase 4+: Future Extensions (not yet scoped)
-- Cloudinary preview delivery
-- Thumbnail generation for media picker
-- Advanced layer panel with visibility toggles
-- Alignment/snap tools
-- Template library
-- Multi-page documents
-- Multi-restaurant framework
+4. **Future extensions** — Cloudinary delivery, thumbnail picker, multi-page, template library.
 
 ---
 

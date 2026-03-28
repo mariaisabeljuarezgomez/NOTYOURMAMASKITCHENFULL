@@ -113,14 +113,24 @@ See Section 9 of this document and HANDOFF_V3.md Section 5.
 
 **⛔ Use HANDOFF_V3.md as the starting document for any new thread.**
 
-Current state as of March 27, 2026:
+Current state as of **March 28, 2026**:
 - Phase 30 complete (PageSpeed 100/100/100/100)
-- Export engine: Canvas API (html2canvas removed)
-- Duplicate font deleted (centurygothic.ttf)
-- Cache-Control headers added to all static routes
-- Save button contrast fixed (#1e8449)
-- V2 data model contract documented in `dine_in_menu_editor_v2_data_model_contract.md`
-- Next phase: Phase 2A — V2 Schema Migration & Asset Registry
+- Phases 2A–11 complete (all applied directly to `index.html`)
+- Bug Fix Batches 1–8 complete (21 bugs fixed in `index.html`)
+- Latest SHA: `6bc7fe4` on `main`
+- **`build_app.py` is frozen at Phase 30** — do NOT regenerate `index.html` until generator patches are reconciled
+
+**What was fixed in this session (not in original Phase 29 docs):**
+- Asset registry corruption on load (`_mergeLoadedDoc`)
+- Text newlines preserved through sync, blur, and undo (`innerText` consistency)
+- Undo history: group drag, arrow nudge, Ctrl+Z during text editing, addFromTray, double pushState on upload
+- Export PNG: rounded stroke rendering, image load guard, multi-line text split
+- Bulk delete: N→1 render via `noRender` param on `deleteEl`
+- Mobile: lasso touch events, real `fitCanvasToScreen`, zoom persistence (`_userZoom`)
+- `resetToOriginal`: no reload on failure, clears localStorage on success
+- `addRect`: places at viewport center instead of hardcoded position
+- `setSelectedAsBackground`: full object constructed before `push()`
+- `openDrawer`: failed images retry correctly without stale guard
 
 ---
 
