@@ -76,6 +76,33 @@
         .dish-overlay {
             position: absolute;
             z-index: 10;
+            pointer-events: none; /* Only video overlays will set this to auto */
+        }
+
+        /* Video Popup Backdrop */
+        #video-popup-backdrop {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.75);
+            z-index: 9998;
+            display: none;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Mobile Tap Badge */
+        .video-badge {
+            position: absolute;
+            bottom: 4px; right: 4px;
+            background: rgba(0,0,0,0.8);
+            color: #c8a96a;
+            border: 1px solid #c8a96a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: bold;
+            pointer-events: none;
+            display: none; /* Shown only on mobile via JS */
         }
 
         /* Video Popup Styles */
@@ -165,10 +192,11 @@
             <div id="overlay-container"></div>
         </div>
 
-        <!-- Shared Video Popup -->
+        <!-- Shared Video Popup & Backdrop -->
+        <div id="video-popup-backdrop" onclick="hideVideoPopup()"></div>
         <div id="video-popup">
             <button id="video-popup-close" onclick="hideVideoPopup()">✕</button>
-            <video id="popup-video" autoplay muted loop playsinline></video>
+            <video id="popup-video" muted loop playsinline></video>
             <div id="video-popup-label"></div>
         </div>
     </main>
@@ -323,33 +351,40 @@
                     }
                 }
 
-                // 5. Create Overlays (for both text and images)
-                const overlay = document.createElement('div');
-                overlay.className = 'dish-overlay';
-                overlay.dataset.elementId = el.id;
-                
-                // Element text or id for the label
-                const labelText = el.content || el.text || el.id;
-
-                Object.assign(overlay.style, {
-                    left: (el.x * scale) + 'px',
-                    top: (el.y * scale) + 'px',
-                    width: ((el.width || 100) * scale) + 'px',
-                    height: ((el.height || (el.style?.fontSize || 20) * 1.5) * scale) + 'px',
-                    pointerEvents: 'auto'
-                });
-
-                // Phase 2: Attach Video Events if videoUrl exists
+                // 5. Create Overlays (ONLY for items with videoUrl)
                 if (el.videoUrl) {
-                    overlay.style.cursor = 'pointer';
+                    const overlay = document.createElement('div');
+                    overlay.className = 'dish-overlay';
+                    overlay.dataset.elementId = el.id;
+                    
+                    // Priority: dishName > label > text > id
+                    const labelText = el.dishName || el.label || el.text || el.id;
+
+                    Object.assign(overlay.style, {
+                        left: (el.x * scale) + 'px',
+                        top: (el.y * scale) + 'px',
+                        width: ((el.width || 100) * scale) + 'px',
+                        height: ((el.height || (el.style?.fontSize || 20) * 1.5) * scale) + 'px',
+                        pointerEvents: 'auto',
+                        cursor: 'pointer'
+                    });
+
                     overlay.dataset.videoUrl = el.videoUrl;
                     overlay.dataset.content = labelText;
 
                     if (isMobile()) {
-                        overlay.addEventListener('click', (e) => {
+                        // Add "TAP" Badge for clarity on mobile
+                        const badge = document.createElement('div');
+                        badge.className = 'video-badge';
+                        badge.style.display = 'block';
+                        badge.innerText = '▶ TAP';
+                        overlay.appendChild(badge);
+
+                        overlay.addEventListener('touchend', (e) => {
+                            e.preventDefault();
                             e.stopPropagation();
                             showVideoPopup(el.videoUrl, labelText, 0, 0);
-                        });
+                        }, { passive: false });
                     } else {
                         overlay.addEventListener('mouseenter', (e) => {
                             showVideoPopup(el.videoUrl, labelText, e.clientX, e.clientY);
@@ -361,39 +396,53 @@
                             setTimeout(hideVideoPopup, 300);
                         });
                     }
+                    overlayContainer.appendChild(overlay);
                 }
-
-                overlayContainer.appendChild(overlay);
             });
         }
 
         // Phase 2: Popup Logic
-        const isMobile = () => window.matchMedia('(hover: none)').matches;
+        const isMobile = () => window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 
         function showVideoPopup(videoUrl, elementContent, mouseX, mouseY) {
             const video = document.getElementById('popup-video');
             const popup = document.getElementById('video-popup');
+            const backdrop = document.getElementById('video-popup-backdrop');
             const label = document.getElementById('video-popup-label');
+            
+            // iOS Compatibility: Set attributes before src
+            video.setAttribute('playsinline', '');
+            video.setAttribute('webkit-playsinline', '');
             
             if (video.src !== videoUrl) {
                 video.src = videoUrl;
                 video.load();
             }
             
-            video.play().catch(() => {}); // ignore autoplay policy errors
+            // Delay play() slightly for iOS/Safari stability
+            setTimeout(() => {
+                video.play().catch(() => {});
+            }, 100);
+
             label.textContent = elementContent || '';
             
             popup.classList.add('visible');
+            if (isMobile()) backdrop.style.display = 'block';
+            
             requestAnimationFrame(() => positionPopup(popup, mouseX, mouseY));
         }
 
         function hideVideoPopup() {
             const popup = document.getElementById('video-popup');
             const video = document.getElementById('popup-video');
+            const backdrop = document.getElementById('video-popup-backdrop');
+            
             popup.classList.remove('visible');
+            backdrop.style.display = 'none';
+            
             video.pause();
-            // We don't wipe src immediately on leave for smoother hover-over-multiple-items
-            // but we can release it if needed. 
+            video.removeAttribute('src'); // Completely free the resource
+            video.load();
         }
 
         function positionPopup(popup, mouseX, mouseY) {
