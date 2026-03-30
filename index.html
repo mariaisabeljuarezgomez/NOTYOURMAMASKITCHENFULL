@@ -320,6 +320,54 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         .video-url-group { min-width: 100%; margin-top: 10px; padding-top: 10px; border-top: 1px solid #333; border-left: none !important; padding-left: 0 !important; }
         #sel-video-url { font-size: 13px; padding: 10px; }
     }
+
+    /* Distribution Bar */
+    #distribute-bar {
+        position: fixed;
+        bottom: 195px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.85);
+        backdrop-filter: blur(10px);
+        border: 1px solid #c8a96a;
+        border-radius: 50px;
+        padding: 10px 18px;
+        display: none;
+        align-items: center;
+        gap: 12px;
+        z-index: 2100;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        max-width: 90vw;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+    #distribute-bar::-webkit-scrollbar { display: none; }
+    #distribute-bar input {
+        background: #111;
+        border: 1px solid #444;
+        color: #c8a96a;
+        border-radius: 4px;
+        padding: 4px 6px;
+        font-size: 11px;
+        outline: none;
+        text-align: center;
+    }
+    #distribute-bar input:focus { border-color: #c8a96a; background: #000; }
+    #distribute-bar .sep { width: 1px; height: 20px; background: #444; margin: 0 4px; }
+    #distribute-bar .label { font-size: 9px; color: #888; font-weight: 800; text-transform: uppercase; margin-right: -4px; }
+
+    @media (max-width: 768px) {
+        #distribute-bar {
+            left: 2vw !important;
+            right: 2vw !important;
+            transform: none !important;
+            width: 96vw;
+            bottom: 175px;
+            border-radius: 16px;
+            padding: 8px 12px;
+            gap: 8px;
+        }
+    }
 </style>
 <script src="export-utils.js" defer></script>
 </head>
@@ -388,6 +436,26 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         </div>
     </div>
 </div>
+
+<div id="distribute-bar">
+    <button class="btn-ui" style="padding:4px 10px; font-size:10px" onclick="distributeVertically()" title="Distribute Vertically">↕ Dist V</button>
+    <button class="btn-ui" style="padding:4px 8px; font-size:10px" onclick="adjustGap('v', -5)">−</button>
+    <div class="label">Gap</div>
+    <input type="number" id="gap-v-input" style="width:52px" data-help="Vertical distance between elements in px">
+    <button class="btn-ui" style="padding:4px 8px; font-size:10px" onclick="adjustGap('v', 5)">+</button>
+    
+    <div class="sep"></div>
+    
+    <button class="btn-ui" style="padding:4px 10px; font-size:10px" onclick="distributeHorizontally()" title="Distribute Horizontally">↔ Dist H</button>
+    <button class="btn-ui" style="padding:4px 8px; font-size:10px" onclick="adjustGap('h', -5)">−</button>
+    <div class="label">Gap</div>
+    <input type="number" id="gap-h-input" style="width:52px" data-help="Horizontal distance between elements in px">
+    <button class="btn-ui" style="padding:4px 8px; font-size:10px" onclick="adjustGap('h', 5)">+</button>
+</div>
+<script>
+    document.getElementById('gap-v-input').addEventListener('keydown', e => { if (e.key === 'Enter') setGap('v', e.target.value); });
+    document.getElementById('gap-h-input').addEventListener('keydown', e => { if (e.key === 'Enter') setGap('h', e.target.value); });
+</script>
 
 <div id="selection-bar">
     <div id="bar-handle" style="cursor:grab; padding:4px 8px; color:#666; font-size:18px; flex-shrink:0; touch-action:none;" title="Drag to move toolbar">⠿</div>
@@ -734,6 +802,7 @@ function render() {
     });
     renderLayerList();
     if(selectedId) updateSelectionBar();
+    updateDistributeBar();
 }
 
 function renderLayerList() {
@@ -836,6 +905,7 @@ function attach(el) {
             selectedId = null;
             render();
             updateSelectionBar();
+            updateDistributeBar();
             return;
         } else {
             if (!docV2.editorState.selectedElementIds.includes(el.id)) {
@@ -953,6 +1023,109 @@ function selectById(id) {
     if(newEl) newEl.classList.add('selected');
     updateSelectionBar();
     renderLayerList();
+}
+
+function getElHeight(el) {
+  if (el.type === 'image') return el.height || 50;
+  const fs = el.style?.fontSize || 14;
+  const lh = el.style?.lineHeight || 1.2;
+  const lines = (el.text || '').split('\n').length;
+  return fs * lh * lines;
+}
+
+function getElWidth(el) {
+  if (el.type === 'image') return el.width || 50;
+  return el.width || (el.style?.fontSize || 14) * (el.text?.length || 4) * 0.6;
+}
+
+function distributeVertically() {
+  const ids = docV2.editorState.selectedElementIds;
+  if (ids.length < 2) return;
+  pushState();
+  const els = ids.map(id => docV2.elements.find(e => e.id === id)).filter(Boolean);
+  els.sort((a, b) => a.y - b.y);
+  const top = els[0].y;
+  const bottom = els[els.length - 1].y + getElHeight(els[els.length - 1]);
+  const totalH = els.reduce((s, e) => s + getElHeight(e), 0);
+  const gap = (bottom - top - totalH) / (els.length - 1);
+  let cursor = top;
+  els.forEach(el => { el.y = cursor; cursor += getElHeight(el) + gap; });
+  render(); updateDistributeBar(); showToast('↕ Distributed Vertically');
+}
+
+function distributeHorizontally() {
+  const ids = docV2.editorState.selectedElementIds;
+  if (ids.length < 2) return;
+  pushState();
+  const els = ids.map(id => docV2.elements.find(e => e.id === id)).filter(Boolean);
+  els.sort((a, b) => a.x - b.x);
+  const left = els[0].x;
+  const right = els[els.length - 1].x + getElWidth(els[els.length - 1]);
+  const totalW = els.reduce((s, e) => s + getElWidth(e), 0);
+  const gap = (right - left - totalW) / (els.length - 1);
+  let cursor = left;
+  els.forEach(el => { el.x = cursor; cursor += getElWidth(el) + gap; });
+  render(); updateDistributeBar(); showToast('↔ Distributed Horizontally');
+}
+
+function adjustGap(axis, delta) {
+  const ids = docV2.editorState.selectedElementIds;
+  if (ids.length < 2) return;
+  pushState();
+  const els = ids.map(id => docV2.elements.find(e => e.id === id)).filter(Boolean);
+  if (axis === 'v') {
+    els.sort((a, b) => a.y - b.y);
+    for (let i = 1; i < els.length; i++) {
+      els[i].y += delta * i;
+    }
+  } else {
+    els.sort((a, b) => a.x - b.x);
+    for (let i = 1; i < els.length; i++) {
+      els[i].x += delta * i;
+    }
+  }
+  render(); updateDistributeBar();
+}
+
+function setGap(axis, value) {
+  const ids = docV2.editorState.selectedElementIds;
+  if (ids.length < 2) return;
+  pushState();
+  const els = ids.map(id => docV2.elements.find(e => e.id === id)).filter(Boolean);
+  if (axis === 'v') {
+    els.sort((a, b) => a.y - b.y);
+    let cursor = els[0].y;
+    els.forEach(el => { el.y = cursor; cursor += getElHeight(el) + parseFloat(value); });
+  } else {
+    els.sort((a, b) => a.x - b.x);
+    let cursor = els[0].x;
+    els.forEach(el => { el.x = cursor; cursor += getElWidth(el) + parseFloat(value); });
+  }
+  render(); updateDistributeBar(); showToast('Gap set');
+}
+
+function updateDistributeBar() {
+  const bar = document.getElementById('distribute-bar');
+  const ids = docV2.editorState.selectedElementIds || [];
+  if (!bar) return;
+  if (ids.length < 2) { 
+      bar.style.display = 'none'; 
+      return; 
+  }
+  bar.style.display = 'flex';
+  
+  const els = ids.map(id => docV2.elements.find(e => e.id === id)).filter(Boolean);
+  if (els.length >= 2) {
+    const vSorted = [...els].sort((a, b) => a.y - b.y);
+    let vGap = 0;
+    for (let i = 1; i < vSorted.length; i++) vGap += vSorted[i].y - (vSorted[i-1].y + getElHeight(vSorted[i-1]));
+    document.getElementById('gap-v-input').value = Math.round(vGap / (vSorted.length - 1));
+    
+    const hSorted = [...els].sort((a, b) => a.x - b.x);
+    let hGap = 0;
+    for (let i = 1; i < hSorted.length; i++) hGap += hSorted[i].x - (hSorted[i-1].x + getElWidth(hSorted[i-1]));
+    document.getElementById('gap-h-input').value = Math.round(hGap / (hSorted.length - 1));
+  }
 }
 
 function updateSelectionBar() {
@@ -2026,6 +2199,7 @@ window.addEventListener('keydown', (e) => {
             selectedId = null;
             render();
             updateSelectionBar();
+            updateDistributeBar();
             showToast('All ' + selectable.length + ' elements selected');
         }
     }
@@ -2287,6 +2461,7 @@ function finalizeLasso() {
         docV2.editorState.selectedElementIds = selected;
         render();
         updateSelectionBar();
+        updateDistributeBar();
         showToast(selected.length + ' elements selected');
     }
 
