@@ -153,7 +153,9 @@ def serve_user_image(filename):
 
 @app.route('/menu')
 def customer_viewer():
-    return send_from_directory('.', 'viewer.html', cache_timeout=0)
+    response = send_from_directory('.', 'viewer.html')
+    response.headers['Cache-Control'] = 'no-cache, must-revalidate'
+    return response
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
