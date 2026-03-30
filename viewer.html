@@ -334,8 +334,9 @@
                 Object.assign(overlay.style, {
                     left: (el.x * scale) + 'px',
                     top: (el.y * scale) + 'px',
-                    width: (el.width * scale) + 'px',
-                    height: ((el.height || (el.style?.fontSize || 20) * 1.5) * scale) + 'px'
+                    width: ((el.width || 100) * scale) + 'px',
+                    height: ((el.height || (el.style?.fontSize || 20) * 1.5) * scale) + 'px',
+                    pointerEvents: 'auto'
                 });
 
                 // Phase 2: Attach Video Events if videoUrl exists
