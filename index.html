@@ -688,6 +688,7 @@ function render() {
             el.contentEditable = false; 
             el.onfocus = onTextFocus;
             el.onblur = onTextBlur;
+            el.onkeydown = (e) => { if(e.key !== 'Escape') e.stopPropagation(); };
             el.ondblclick = (e) => {
                 if (!d.locked) {
                     el.contentEditable = true;
@@ -1944,7 +1945,7 @@ window.addEventListener('keydown', (e) => {
     const multiIds = docV2.editorState.selectedElementIds || [];
     const hasSelection = selectedId || multiIds.length > 0;
 
-    if (hasSelection && !layoutLocked && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+    if (hasSelection && !layoutLocked && !isEditingText && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
         e.preventDefault();
         const step = e.shiftKey ? 10 : 2;
 
