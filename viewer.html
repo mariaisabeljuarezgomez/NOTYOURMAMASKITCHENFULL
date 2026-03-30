@@ -77,6 +77,7 @@
             position: absolute;
             z-index: 10;
             pointer-events: none; /* Only video overlays will set this to auto */
+            background: transparent !important;
         }
 
         /* Video Popup Backdrop */
@@ -93,15 +94,23 @@
         /* Mobile Tap Badge */
         .video-badge {
             position: absolute;
-            bottom: 4px; right: 4px;
-            background: rgba(0,0,0,0.8);
+            top: 2px;
+            right: 2px;
+            bottom: auto;
+            left: auto;
+            background: rgba(0,0,0,0.75);
             color: #c8a96a;
             border: 1px solid #c8a96a;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 9px;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-size: 8px;
             font-weight: bold;
             pointer-events: none;
+            width: fit-content;
+            max-width: 40px;
+            white-space: nowrap;
+            line-height: 1.4;
+            z-index: 25;
             display: none; /* Shown only on mobile via JS */
         }
 
