@@ -211,19 +211,24 @@
             ]);
 
             // 2. Setup Dimensions
-            const scale = window.innerWidth / BASE_W;
-            // Use Math.min to prevent canvas being larger than 800px on high-res desktops for standard viewing, 
-            // but for mobile we want innerWidth. Let's cap at 1000px centered.
+            const dpr = window.devicePixelRatio || 1;
             const displayWidth = Math.min(window.innerWidth, 1000);
-            const actualScale = displayWidth / BASE_W;
-            
-            canvas.width = displayWidth;
-            canvas.height = BASE_H * actualScale;
+            const scale = displayWidth / BASE_W;
+            const displayHeight = BASE_H * scale;
+
+            // Set canvas physical pixel size (sharp on retina/mobile)
+            canvas.width = displayWidth * dpr;
+            canvas.height = displayHeight * dpr;
+            // Set canvas CSS display size
+            canvas.style.width = displayWidth + 'px';
+            canvas.style.height = displayHeight + 'px';
+            // Scale context to match DPR + menu scale
+            ctx.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
 
             // 3. Clear and Draw Background
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, BASE_W, BASE_H);
             if (bgImg) {
-                ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+                ctx.drawImage(bgImg, 0, 0, BASE_W, BASE_H);
             }
 
             // 4. Draw Elements in order
@@ -234,7 +239,6 @@
             overlayContainer.innerHTML = ''; // Clear overlays
 
             elements.forEach(el => {
-                const s = actualScale;
                 const style = el.style || {};
 
                 if (el.type === 'text') {
@@ -242,10 +246,9 @@
                     const weight = style.fontWeight || 'normal';
                     const family = style.fontFamily || 'Century Gothic';
                     
-                    // Helper to translate editor family names to our @font-face names
-                    let fontStack = `${weight} ${fontSize * s}px "${family}"`;
-                    if (family.toLowerCase().includes('condensed')) fontStack = `${fontSize * s}px "bernard-mt-condensed-regular"`;
-                    if (family.toLowerCase().includes('century')) fontStack = `${weight} ${fontSize * s}px "Century Gothic"`;
+                    let fontStack = `${weight} ${fontSize}px "${family}"`;
+                    if (family.toLowerCase().includes('condensed')) fontStack = `${fontSize}px "bernard-mt-condensed-regular"`;
+                    if (family.toLowerCase().includes('century')) fontStack = `${weight} ${fontSize}px "Century Gothic"`;
 
                     ctx.font = fontStack;
                     ctx.fillStyle = style.color || '#000000';
@@ -253,21 +256,21 @@
                     ctx.textBaseline = 'top';
 
                     const lines = (el.text || '').split('\n');
-                    const lineHeight = (style.lineHeight || 1.1) * (fontSize * s);
+                    const lineHeight = (style.lineHeight || 1.1) * fontSize;
                     
                     lines.forEach((line, idx) => {
-                        ctx.fillText(line, el.x * s, (el.y * s) + (idx * lineHeight));
+                        ctx.fillText(line, el.x, el.y + (idx * lineHeight));
                     });
 
-                    // 5. Create Overlays
+                    // 5. Create Overlays (Use CSS pixels = scale only)
                     const overlay = document.createElement('div');
                     overlay.className = 'dish-overlay';
                     overlay.dataset.elementId = el.id;
                     Object.assign(overlay.style, {
-                        left: (el.x * s) + 'px',
-                        top: (el.y * s) + 'px',
-                        width: (el.width ? el.width * s : 100) + 'px',
-                        height: (el.height ? el.height * s : fontSize * s) + 'px'
+                        left: (el.x * scale) + 'px',
+                        top: (el.y * scale) + 'px',
+                        width: (el.width * scale) + 'px',
+                        height: (el.height * scale) + 'px'
                     });
                     overlayContainer.appendChild(overlay);
 
@@ -275,14 +278,13 @@
                     const src = el.src || (el.assetId ? `/Images/${el.assetId}.png` : '');
                     if (cachedImages[src]) {
                         ctx.save();
-                        // Round corners if specified
                         if (el.cornerRadius) {
-                            const rad = el.cornerRadius * s;
+                            const rad = el.cornerRadius;
                             ctx.beginPath();
-                            ctx.roundRect(el.x * s, el.y * s, el.width * s, el.height * s, rad);
+                            ctx.roundRect(el.x, el.y, el.width, el.height, rad);
                             ctx.clip();
                         }
-                        ctx.drawImage(cachedImages[src], el.x * s, el.y * s, el.width * s, el.height * s);
+                        ctx.drawImage(cachedImages[src], el.x, el.y, el.width, el.height);
                         ctx.restore();
                     }
                 }
