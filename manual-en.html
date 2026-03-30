@@ -762,6 +762,8 @@
     <h3>👁️ Toggle Original BG</h3>
     <p>Shows or hides the original scanned menu background. Hiding it lets you see only your added elements — useful for
       checking alignment. This setting is saved with your session.</p>
+    <h3>🖼️ Replace Background</h3>
+    <p>If you select an image element on the canvas, the drawer will show a "Replace Background" button. Clicking this promotes your selected image to become the new, locked master background for the menu.</p>
     <h3>⬇️ Export Pro PNG</h3>
     <p>Generates a print-ready PNG at full resolution. Auto-saves first, then renders every visible element and
       downloads the file. A progress toast appears during export. Covered in full in Section 19.</p>
@@ -1187,10 +1189,10 @@
     <h3>Line Height</h3>
     <p>Use − and + to adjust spacing between lines of text. A multiplier of 1.4 means line spacing is 1.4× the font
       size. Increase for more breathing room in longer descriptions.</p>
-        <h3>Underline</h3>
-    <p>Adds underline formatting to selected text.</p>
+    <h3>Underline</h3>
+    <p>Adds a solid line beneath the selected text. Useful for defining section category headers or emphasizing special items without changing the font size.</p>
     <h3>Text Shadow</h3>
-    <p>Adds a subtle drop shadow behind the text for readability on complex backgrounds.</p>
+    <p>Applies a soft, dark drop shadow behind the text. Use this when placing light text over a busy or low-contrast background image to ensure it remains perfectly readable.</p>
     <h3>Text Alignment</h3>
     <p>Left, Center, Right alignment buttons control how text sits within its element box. Center is standard for titles
       and prices. Left is standard for descriptions.</p>
@@ -1498,6 +1500,7 @@
         elements.</li>
       <li><strong>－ Zoom Out:</strong> Shrinks the canvas view. Useful for seeing the whole menu at once.</li>
     </ul>
+    <p><strong>Zoom Memory:</strong> The editor remembers your exact zoom level automatically. If you reload the page, your last zoom level is fully restored.</p>
 
     <h3>Pinch Zoom on Mobile</h3>
     <p>On touchscreen devices, use a two-finger pinch gesture to zoom in and out on the canvas. Pinch zoom only works
@@ -1523,7 +1526,7 @@
 
     <h3>How to See a Tooltip</h3>
     <p>On desktop: hover your mouse cursor over any button and hold still for about one second. A small dark label
-      appears below or beside the button. Move away to dismiss it.</p>
+      appears below or beside the button. Move away to dismiss it. <em>Note: Each toolbar tooltip is only shown once per session so they don't become annoying. If you have already seen a tooltip, it won't appear again until the next session.</em></p>
     <p>On mobile: tooltips are not shown (touch devices do not support hover). Refer to this manual for mobile button
       descriptions.</p>
 
