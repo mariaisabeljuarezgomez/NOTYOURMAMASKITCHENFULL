@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Viewer | Not Your Mama's Kitchen</title>
+    <style>
+        /* Fonts - Referencing existing server routes */
+        @font-face { font-family: 'bernard-mt-condensed-regular'; src: url('/bernard-mt-condensed-regular.ttf') format('truetype'); font-display: swap; }
+        @font-face { font-family: 'century-gothic-bold-italic'; src: url('/century-gothic-bold-italic.ttf') format('truetype'); font-display: swap; }
+        @font-face { font-family: 'century-gothic-bold'; src: url('/century-gothic-bold.ttf') format('truetype'); font-display: swap; }
+        @font-face { font-family: 'century-gothic-regular'; src: url('/century-gothic-regular.ttf') format('truetype'); font-display: swap; }
+
+        :root {
+            --brand-red: #95201d;
+            --brand-gold: #c8a96a;
+            --dark-bg: #0d0d0d;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(200, 169, 106, 0.2);
+            --text-main: #ffffff;
+            --text-muted: #aaaaaa;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--dark-bg);
+            color: var(--text-main);
+            font-family: 'century-gothic-regular', 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Hero Section */
+        header {
+            width: 100%;
+            padding: 40px 20px;
+            text-align: center;
+            background: linear-gradient(to bottom, #1a1a1a, var(--dark-bg));
+            position: relative;
+        }
+
+        .brand-bar {
+            height: 6px;
+            width: 120px;
+            background: linear-gradient(90deg, var(--brand-red), var(--brand-gold));
+            margin: 0 auto 20px;
+            border-radius: 3px;
+        }
+
+        h1 {
+            font-family: 'bernard-mt-condensed-regular', serif;
+            font-size: 2.5rem;
+            margin: 0;
+            letter-spacing: 2px;
+            color: var(--text-main);
+            text-transform: uppercase;
+        }
+
+        .tagline {
+            font-size: 1rem;
+            color: var(--brand-gold);
+            margin-top: 10px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        /* Main Container */
+        #menu-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        /* Glassmorphism Cards */
+        .menu-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 30px;
+            animation: fadeIn 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            font-family: 'century-gothic-bold', sans-serif;
+            font-size: 1.8rem;
+            color: var(--brand-gold);
+            margin: 0 0 20px 0;
+            border-bottom: 2px solid var(--brand-red);
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+
+        .menu-item {
+            margin-bottom: 12px;
+            transition: opacity 0.2s;
+        }
+
+        .menu-item img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            margin: 10px 0;
+            display: block;
+        }
+
+        /* States */
+        #loading, #error {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--glass-bg);
+            border-top: 4px solid var(--brand-gold);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #error { color: var(--brand-red); }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--glass-border);
+            margin-top: 40px;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 480px) {
+            h1 { font-size: 1.8rem; }
+            .section-title { font-size: 1.4rem; }
+            .menu-section { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand-bar"></div>
+        <h1>Not Your Mama's Kitchen</h1>
+        <p class="tagline">Authentic Southern Soul Food</p>
+    </header>
+
+    <main id="menu-container">
+        <!-- Dynamic Content Injected Here -->
+        <div id="loading">
+            <div class="spinner"></div>
+            <p>Loading the latest specials...</p>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Not Your Mama's Kitchen &mdash; Menu updated live</p>
+        <p id="last-updated"></p>
+    </footer>
+
+    <script>
+        const CONFIG = {
+            API_URL: '/api/menu',
+            POLL_INTERVAL: 30000,
+            HEADER_FONT_THRESHOLD: 28 // fontSize in px
+        };
+
+        let lastDataHash = null;
+
+        async function fetchMenu() {
+            try {
+                const response = await fetch(`${CONFIG.API_URL}?t=${Date.now()}`);
+                if (!response.ok) throw new Error('API Unavailable');
+                
+                const data = await response.json();
+                const currentHash = JSON.stringify(data.elements || []);
+                
+                if (currentHash === lastDataHash) return; // No change
+                
+                lastDataHash = currentHash;
+                renderMenu(data);
+                
+                if (data.status && data.status.last_saved) {
+                    document.getElementById('last-updated').textContent = `Last Sync: ${data.status.last_saved}`;
+                }
+            } catch (err) {
+                console.error('Fetch Error:', err);
+                if (!lastDataHash) { // Only show error if no data was ever loaded
+                    showError();
+                }
+            }
+        }
+
+        function renderMenu(data) {
+            const container = document.getElementById('menu-container');
+            const elements = (data.elements || [])
+                .filter(el => el.visible !== false)
+                .sort((a, b) => (a.y || 0) - (b.y || 0));
+
+            if (elements.length === 0) {
+                container.innerHTML = '<div class="menu-section" style="text-align:center">No active menu items at the moment. Check back soon!</div>';
+                return;
+            }
+
+            container.innerHTML = ''; // Clear loading/existing
+            
+            let currentSection = null;
+
+            elements.forEach(el => {
+                // Determine if this element starts a new section (header)
+                const style = el.style || {};
+                const isHeader = el.type === 'text' && (style.fontSize >= CONFIG.HEADER_FONT_THRESHOLD);
+
+                if (isHeader || !currentSection) {
+                    // Start a new card
+                    currentSection = document.createElement('section');
+                    currentSection.className = 'menu-section';
+                    container.appendChild(currentSection);
+
+                    if (isHeader) {
+                        const h2 = document.createElement('h2');
+                        h2.className = 'section-title';
+                        applyStyles(h2, el);
+                        h2.textContent = el.text || '';
+                        currentSection.appendChild(h2);
+                        return; // Done with this element as header
+                    }
+                }
+
+                // Normal element in current card
+                const wrapper = document.createElement('div');
+                wrapper.className = 'menu-item';
+
+                if (el.type === 'text') {
+                    const p = document.createElement('p');
+                    applyStyles(p, el);
+                    p.innerHTML = (el.text || '').replace(/\n/g, '<br>');
+                    wrapper.appendChild(p);
+                } else if (el.type === 'image') {
+                    const img = document.createElement('img');
+                    img.src = el.src || (el.assetId ? `/Images/${el.assetId}.png` : ''); // Fallback logic
+                    img.alt = 'Menu graphic';
+                    wrapper.appendChild(img);
+                }
+
+                currentSection.appendChild(wrapper);
+            });
+        }
+
+        function applyStyles(domEl, elementData) {
+            const style = elementData.style || {};
+            if (style.fontFamily) domEl.style.fontFamily = style.fontFamily;
+            if (style.fontSize) domEl.style.fontSize = Math.max(14, style.fontSize * 0.8) + 'px'; // Slight scale down for mobile-friendly cards
+            if (style.color) domEl.style.color = style.color;
+            if (style.fontWeight) domEl.style.fontWeight = style.fontWeight;
+            if (style.textAlign) domEl.style.textAlign = style.textAlign;
+            if (style.letterSpacing) domEl.style.letterSpacing = style.letterSpacing + 'px';
+            if (style.lineHeight) domEl.style.lineHeight = style.lineHeight;
+            
+            // Special brand color override if color was white in editor but we want visibility on light cards or themed
+            if (style.color === '#ffffff' || style.color === '#fff') {
+                domEl.style.color = '#fff';
+            }
+        }
+
+        function showError() {
+            const container = document.getElementById('menu-container');
+            container.innerHTML = `
+                <div id="error">
+                    <h3>Menu temporarily unavailable</h3>
+                    <p>We're polishing the specials! Please refresh in a moment.</p>
+                </div>
+            `;
+        }
+
+        // Initialize
+        fetchMenu();
+        setInterval(fetchMenu, CONFIG.POLL_INTERVAL);
+    </script>
+</body>
+</html>

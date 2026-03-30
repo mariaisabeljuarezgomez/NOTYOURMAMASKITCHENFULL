@@ -151,6 +151,10 @@ def serve_user_image(filename):
     response.headers["Cache-Control"] = "max-age=604800, public"
     return response
 
+@app.route('/menu')
+def customer_viewer():
+    return send_from_directory('.', 'viewer.html', cache_timeout=0)
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
