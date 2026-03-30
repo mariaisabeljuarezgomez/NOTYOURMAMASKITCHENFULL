@@ -329,13 +329,13 @@
                 overlay.dataset.elementId = el.id;
                 
                 // Element text or id for the label
-                const labelText = el.text || el.id;
+                const labelText = el.content || el.text || el.id;
 
                 Object.assign(overlay.style, {
                     left: (el.x * scale) + 'px',
                     top: (el.y * scale) + 'px',
                     width: (el.width * scale) + 'px',
-                    height: (el.height * scale) + 'px'
+                    height: ((el.height || (el.style?.fontSize || 20) * 1.5) * scale) + 'px'
                 });
 
                 // Phase 2: Attach Video Events if videoUrl exists
@@ -383,7 +383,7 @@
             label.textContent = elementContent || '';
             
             popup.classList.add('visible');
-            positionPopup(popup, mouseX, mouseY);
+            requestAnimationFrame(() => positionPopup(popup, mouseX, mouseY));
         }
 
         function hideVideoPopup() {
