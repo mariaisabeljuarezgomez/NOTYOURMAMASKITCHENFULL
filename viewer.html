@@ -385,6 +385,12 @@
                             e.stopPropagation();
                             showVideoPopup(el.videoUrl, labelText, 0, 0);
                         }, { passive: false });
+
+                        // Fallback for Android Chrome
+                        overlay.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            showVideoPopup(el.videoUrl, labelText, 0, 0);
+                        });
                     } else {
                         overlay.addEventListener('mouseenter', (e) => {
                             showVideoPopup(el.videoUrl, labelText, e.clientX, e.clientY);
