@@ -264,6 +264,62 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         outline: 2px dashed #4a90e2;
         outline-offset: 2px;
     }
+    
+    /* Video URL Field Styling */
+    .video-url-group {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 2px !important;
+        min-width: 220px;
+        transition: 0.2s;
+    }
+    .video-url-group label {
+        font-size: 9px;
+        color: #aaa;
+        font-weight: 800;
+        text-transform: uppercase;
+        margin-left: 2px;
+    }
+    .video-url-input-wrap {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        width: 100%;
+    }
+    #sel-video-url {
+        flex-grow: 1;
+        background: #111;
+        border: 1px solid #444;
+        color: var(--accent);
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-family: inherit;
+        outline: none;
+    }
+    #sel-video-url:focus { border-color: var(--accent); background: #000; }
+    .video-url-clear {
+        width: 28px;
+        height: 28px;
+        background: #333;
+        border: 1px solid #444;
+        color: #888;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        transition: 0.2s;
+    }
+    .video-url-clear:hover { background: #c0392b; color: #fff; border-color: transparent; }
+    .video-url-hint { font-size: 8px; color: #666; margin-left: 4px; font-weight: 600; }
+
+    @media (max-width: 768px) {
+        .video-url-group { min-width: 100%; margin-top: 10px; padding-top: 10px; border-top: 1px solid #333; border-left: none !important; padding-left: 0 !important; }
+        #sel-video-url { font-size: 13px; padding: 10px; }
+    }
 </style>
 <script src="export-utils.js" defer></script>
 </head>
@@ -375,6 +431,18 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
                 </div>
                 <div class="ctrl-group"><label>L.H.</label><input type="number" id="sel-l-height" step="0.1" min="0.5" max="3" style="width:40px" onchange="updateStyle('lineHeight', parseFloat(this.value))"></div>
                 <div class="ctrl-group"><label>L.S.</label><input type="number" id="sel-l-spacing" min="-10" max="50" style="width:40px" onchange="updateStyle('letterSpacing', parseInt(this.value))"></div>
+            </div>
+            
+            <!-- Video URL Field (Phase 2 Precursor) -->
+            <div class="ctrl-group video-url-group">
+                <label>🎬 Video URL (optional)</label>
+                <div class="video-url-input-wrap">
+                    <input type="text" id="sel-video-url" placeholder="https://res.cloudinary.com/..." 
+                        oninput="updateProp('videoUrl', this.value)">
+                    <button class="video-url-clear" title="Clear URL" 
+                        onclick="document.getElementById('sel-video-url').value=''; updateProp('videoUrl', '');">✕</button>
+                </div>
+                <span class="video-url-hint">Paste Cloudinary URL to show video preview on customer menu hover</span>
             </div>
         </div>
 
@@ -964,6 +1032,7 @@ function updateSelectionBar() {
     document.getElementById('ctrl-visible').innerText = item.visible ? '👁️' : '🙈';
     document.getElementById('ctrl-visible').classList.toggle('active', !item.visible);
     document.getElementById('sel-role').value = item.layerRole || 'content';
+    document.getElementById('sel-video-url').value = item.videoUrl || '';
     
     if(item.type==='text') {
         document.getElementById('sel-font').value = item.style.fontFamily.replace(/['"]/g, '');
