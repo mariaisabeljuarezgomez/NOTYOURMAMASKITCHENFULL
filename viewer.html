@@ -181,17 +181,118 @@
             color: #666;
             border-top: 1px solid #222;
         }
+        /* ===== HERO SECTION ===== */
+        #hero-section {
+          position: relative; width: 100%; min-height: 420px;
+          display: flex; align-items: center; justify-content: center;
+          overflow: hidden; background: #0a0a0a;
+        }
+        #hero-video-wrap { position: absolute; inset: 0; z-index: 0; }
+        #hero-video { width: 100%; height: 100%; object-fit: cover; opacity: 0.45; display: none; }
+        #hero-video.has-src { display: block; }
+        #hero-video-overlay {
+          position: absolute; inset: 0;
+          background: linear-gradient(to bottom, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.7) 100%);
+        }
+        .side-marquee {
+          position: absolute; top: 0; bottom: 0; width: 44px;
+          overflow: hidden; z-index: 2; display: none; writing-mode: vertical-rl;
+        }
+        .side-left { left: 0; background: rgba(149,32,29,0.15); border-right: 1px solid rgba(200,169,106,0.2); }
+        .side-right { right: 0; background: rgba(149,32,29,0.15); border-left: 1px solid rgba(200,169,106,0.2); transform: rotate(180deg); }
+        .marquee-inner {
+          display: flex; flex-direction: column;
+          animation: marqueeScroll 18s linear infinite;
+          color: #c8a96a; font-size: 10px; font-weight: 800; letter-spacing: 2px; white-space: nowrap;
+        }
+        @keyframes marqueeScroll { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
+        #hero-content { position: relative; z-index: 3; text-align: center; padding: 60px 20px; }
+        #hero-title-line1 {
+          font-family: 'bernard-mt-condensed-regular', serif;
+          font-size: clamp(32px, 6vw, 72px); color: #fff; letter-spacing: 4px; line-height: 1;
+          opacity: 0; transform: translateY(30px);
+          animation: heroFadeUp 0.9s ease forwards; animation-delay: 0.1s;
+        }
+        #hero-title-line2 {
+          font-family: 'bernard-mt-condensed-regular', serif;
+          font-size: clamp(48px, 10vw, 120px); color: #c8a96a; letter-spacing: 6px; line-height: 1;
+          opacity: 0; transform: translateY(30px);
+          animation: heroFadeUp 0.9s ease forwards; animation-delay: 0.3s;
+          text-shadow: 0 0 40px rgba(200,169,106,0.4);
+        }
+        #hero-subtitle {
+          font-size: clamp(12px, 2vw, 18px); color: rgba(255,255,255,0.7);
+          letter-spacing: 3px; text-transform: uppercase; margin-top: 10px;
+          opacity: 0; transform: translateY(30px);
+          animation: heroFadeUp 0.9s ease forwards; animation-delay: 0.5s;
+        }
+        @keyframes heroFadeUp { to { opacity: 1; transform: translateY(0); } }
+        #hero-badge-wrap { margin-top: 20px; opacity: 0; animation: heroFadeUp 0.9s ease forwards; animation-delay: 0.7s; }
+        #hero-badge {
+          display: inline-block; background: rgba(149,32,29,0.85); color: #f8f4ad;
+          padding: 8px 24px; border-radius: 999px; font-size: 13px; font-weight: 700;
+          letter-spacing: 2px; border: 1px solid rgba(200,169,106,0.4);
+        }
+        #hero-cta {
+          display: inline-block; margin-top: 28px; padding: 12px 36px;
+          background: #95201d; color: #f8f4ad; font-weight: 800; font-size: 14px;
+          letter-spacing: 2px; border-radius: 999px; text-decoration: none;
+          border: 2px solid #c8a96a; opacity: 0;
+          animation: heroFadeUp 0.9s ease forwards; animation-delay: 0.9s;
+          transition: background 0.2s, transform 0.2s;
+        }
+        #hero-cta:hover { background: #c8a96a; color: #000; transform: scale(1.05); }
+        #hero-dish {
+          position: absolute; right: 80px; bottom: -10px;
+          width: clamp(140px, 18vw, 260px); z-index: 4;
+          animation: dishFloat 3.5s ease-in-out infinite;
+          filter: drop-shadow(0 20px 30px rgba(0,0,0,0.6));
+          display: none; pointer-events: none;
+        }
+        @keyframes dishFloat { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-14px); } }
+        @media (min-width: 1000px) {
+          .side-marquee { display: block; }
+          #hero-dish { display: block; }
+          #hero-section { min-height: 520px; }
+        }
+        @media (max-width: 768px) {
+          #hero-section { min-height: 300px; }
+          #hero-content { padding: 36px 16px; }
+        }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="brand-bar"></div>
-        <h1>Not Your Mama's Kitchen</h1>
-        <p class="tagline">Authentic Southern Soul Food</p>
-    </header>
+    <section id="hero-section">
+      <div id="hero-video-wrap">
+        <video id="hero-video" autoplay muted loop playsinline></video>
+        <div id="hero-video-overlay"></div>
+      </div>
+      <div class="side-marquee side-left" aria-hidden="true">
+        <div class="marquee-inner">
+          <span>SOUL FOOD&nbsp;•&nbsp;DINE IN&nbsp;•&nbsp;CATFISH&nbsp;•&nbsp;WAFFLES&nbsp;•&nbsp;OXTAILS&nbsp;•&nbsp;CHICKEN&nbsp;•&nbsp;SHRIMP&nbsp;•&nbsp;</span>
+          <span>SOUL FOOD&nbsp;•&nbsp;DINE IN&nbsp;•&nbsp;CATFISH&nbsp;•&nbsp;WAFFLES&nbsp;•&nbsp;OXTAILS&nbsp;•&nbsp;CHICKEN&nbsp;•&nbsp;SHRIMP&nbsp;•&nbsp;</span>
+        </div>
+      </div>
+      <div class="side-marquee side-right" aria-hidden="true">
+        <div class="marquee-inner">
+          <span>NOT YOUR MAMA'S&nbsp;•&nbsp;AUTHENTIC&nbsp;•&nbsp;SOUTHERN&nbsp;•&nbsp;HOMESTYLE&nbsp;•&nbsp;FRESH&nbsp;•&nbsp;DAILY&nbsp;•&nbsp;</span>
+          <span>NOT YOUR MAMA'S&nbsp;•&nbsp;AUTHENTIC&nbsp;•&nbsp;SOUTHERN&nbsp;•&nbsp;HOMESTYLE&nbsp;•&nbsp;FRESH&nbsp;•&nbsp;DAILY&nbsp;•&nbsp;</span>
+        </div>
+      </div>
+      <div id="hero-content">
+        <div id="hero-title-line1">NOT YOUR MAMA'S</div>
+        <div id="hero-title-line2">KITCHEN</div>
+        <div id="hero-subtitle">Authentic Southern Soul Food</div>
+        <div id="hero-badge-wrap">
+          <span id="hero-badge">🍗 Dine In &nbsp;|&nbsp; To Go &nbsp;|&nbsp; Catering</span>
+        </div>
+        <a href="#viewer-main" id="hero-cta">View Our Menu ↓</a>
+      </div>
+      <img id="hero-dish" src="/Images/Asset1.png" alt="" aria-hidden="true">
+    </section>
 
-    <main id="viewport">
+    <main id="viewer-main">
         <div id="loading">
             <div class="spinner"></div>
             <p>Loading the Menu...</p>
@@ -271,6 +372,7 @@
                 }
 
                 await draw(data);
+                loadHeroVideo(data);
                 
                 loading.style.display = 'none';
                 wrapper.style.display = 'inline-block';
@@ -502,6 +604,17 @@
                 img.onerror = reject;
                 img.src = url;
             });
+        }
+
+        function loadHeroVideo(data) {
+            const url = data.heroVideoUrl || '';
+            if (url) {
+                const v = document.getElementById('hero-video');
+                if (v && v.src !== url) {
+                    v.src = url;
+                    v.classList.add('has-src');
+                }
+            }
         }
 
         // Run
