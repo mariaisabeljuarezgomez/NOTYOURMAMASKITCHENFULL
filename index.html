@@ -422,15 +422,43 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         <button id="btn-reset" class="btn-ui" style="background:#444" onclick="showResetModal()" data-help="Wipes all edits and restores the original template">🔄 Reset to Original</button>
     </div>
     <div style="margin-top:14px; padding-top:14px; border-top:1px solid #444;">
-      <div style="font-size:10px; color:#aaa; font-weight:800; text-transform:uppercase; margin-bottom:8px; letter-spacing:1px;">🎬 Hero Section Video</div>
-      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-        <input type="text" id="hero-video-url-input"
-          placeholder="Direct .mp4 or .webm URL — autoplays muted in hero section"
-          style="flex:1; min-width:220px; background:#111; border:1px solid #444; color:#f1c40f; padding:8px 12px; border-radius:8px; font-size:12px; outline:none;">
-        <button onclick="saveHeroVideoUrl()" class="btn-ui primary" style="flex-shrink:0;">💾 Save Hero Video</button>
-        <button onclick="clearHeroVideoUrl()" class="btn-ui" style="flex-shrink:0; background:#444;">✕ Clear</button>
+      <div style="font-size:10px; color:#aaa; font-weight:800; text-transform:uppercase; margin-bottom:12px; letter-spacing:1px;">🌍 Global Viewer Settings</div>
+      
+      <!-- Hero Video -->
+      <div style="margin-bottom: 15px;">
+        <label style="font-size: 10px; color: #666; display: block; margin-bottom: 4px;">Hero Section Video URL</label>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input type="text" id="hero-video-url-input"
+            placeholder="Direct .mp4 or .webm URL"
+            style="flex:1; background:#111; border:1px solid #444; color:#f1c40f; padding:8px 12px; border-radius:8px; font-size:12px; outline:none;">
+          <button onclick="document.getElementById('hero-video-url-input').value=''" class="btn-ui" style="flex-shrink:0; background:#444; width:36px; height:36px; padding:0;">✕</button>
+        </div>
       </div>
-      <div style="font-size:9px; color:#666; margin-top:4px;">Direct .mp4 or .webm only. Will autoplay muted + looped above the public menu.</div>
+
+      <!-- Side Panels -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <!-- Left Panel -->
+        <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; border: 1px solid #333;">
+          <div style="font-size: 9px; color: #888; font-weight: 800; margin-bottom: 8px;">LEFT SIDE PANEL</div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <input type="text" id="side-panel-left-url" placeholder="Video URL (.mp4)" style="background:#000; border:1px solid #444; color:#fff; padding:6px 10px; border-radius:6px; font-size:11px;">
+            <input type="text" id="side-panel-left-label" placeholder="Panel Label" style="background:#000; border:1px solid #444; color:#fff; padding:6px 10px; border-radius:6px; font-size:11px;">
+          </div>
+        </div>
+        <!-- Right Panel -->
+        <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; border: 1px solid #333;">
+          <div style="font-size: 9px; color: #888; font-weight: 800; margin-bottom: 8px;">RIGHT SIDE PANEL</div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <input type="text" id="side-panel-right-url" placeholder="Video URL (.mp4)" style="background:#000; border:1px solid #444; color:#fff; padding:6px 10px; border-radius:6px; font-size:11px;">
+            <input type="text" id="side-panel-right-label" placeholder="Panel Label" style="background:#000; border:1px solid #444; color:#fff; padding:6px 10px; border-radius:6px; font-size:11px;">
+          </div>
+        </div>
+      </div>
+
+      <button onclick="saveGlobalSettings()" class="btn-ui primary" style="margin-top: 15px; width: 100%; justify-content: center; height: 40px;">
+        💾 UPDATE ALL VIEWER SETTINGS
+      </button>
+      <div style="font-size:9px; color:#666; margin-top:8px; text-align: center;">Hero and Side Panel settings are applied immediately to the public viewer.</div>
     </div>
     <div id="layers-panel"></div>
     <input type="file" id="in-img" style="display:none" accept="image/*" onchange="importImg(this)">
@@ -646,7 +674,7 @@ function openDrawer() {
             img.src = img.dataset.src;
         }
     });
-    loadHeroVideoUrlField();
+    loadGlobalSettings();
 }
 
 function undo() {
@@ -1874,29 +1902,53 @@ async function save() {
     }
 }
 
-function saveHeroVideoUrl() {
-    const url = (document.getElementById('hero-video-url-input').value || '').trim();
-    const payload = Object.assign({}, docV2, { heroVideoUrl: url });
+function saveGlobalSettings() {
+    const heroUrl = (document.getElementById('hero-video-url-input').value || '').trim();
+    const lUrl = (document.getElementById('side-panel-left-url').value || '').trim();
+    const lLabel = (document.getElementById('side-panel-left-label').value || '').trim();
+    const rUrl = (document.getElementById('side-panel-right-url').value || '').trim();
+    const rLabel = (document.getElementById('side-panel-right-label').value || '').trim();
+
+    // Prepare updated doc
+    const updatedDoc = {
+        ...docV2,
+        heroVideoUrl: heroUrl,
+        sidePanelLeft: { videoUrl: lUrl, label: lLabel },
+        sidePanelRight: { videoUrl: rUrl, label: rLabel }
+    };
+
     fetch('/api/menu', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    }).then(r => r.json()).then(() => {
-        showToast('🎬 Hero video URL saved!');
-    }).catch(() => showToast('❌ Failed to save hero video URL'));
+        body: JSON.stringify(updatedDoc)
+    })
+    .then(r => {
+        if (!r.ok) throw new Error('Server error');
+        return r.json();
+    })
+    .then(() => {
+        showToast('⚙️ Global Settings updated!');
+        // Keep local doc in sync
+        docV2.heroVideoUrl = heroUrl;
+        docV2.sidePanelLeft = { videoUrl: lUrl, label: lLabel };
+        docV2.sidePanelRight = { videoUrl: rUrl, label: rLabel };
+    })
+    .catch(() => showToast('❌ Failed to save global settings'));
 }
 
-function clearHeroVideoUrl() {
-    document.getElementById('hero-video-url-input').value = '';
-    saveHeroVideoUrl();
-}
-
-function loadHeroVideoUrlField() {
+function loadGlobalSettings() {
     fetch('/api/menu?t=' + Date.now())
         .then(r => r.json())
         .then(data => {
-            const input = document.getElementById('hero-video-url-input');
-            if (input && data.heroVideoUrl) input.value = data.heroVideoUrl;
+            if (data.heroVideoUrl !== undefined) document.getElementById('hero-video-url-input').value = data.heroVideoUrl || '';
+            if (data.sidePanelLeft) {
+                document.getElementById('side-panel-left-url').value = data.sidePanelLeft.videoUrl || '';
+                document.getElementById('side-panel-left-label').value = data.sidePanelLeft.label || '';
+            }
+            if (data.sidePanelRight) {
+                document.getElementById('side-panel-right-url').value = data.sidePanelRight.videoUrl || '';
+                document.getElementById('side-panel-right-label').value = data.sidePanelRight.label || '';
+            }
         }).catch(() => {});
 }
 

@@ -317,8 +317,11 @@
         const vLeft      = document.getElementById('side-video-left');
         const vRight     = document.getElementById('side-video-right');
 
-        vLeft.src  = 'https://res.cloudinary.com/dtp1z8lne/video/upload/q_auto,vc_h264/v1775240373/shrimppoboy916_lztgxk.mp4';
-        vRight.src = 'https://res.cloudinary.com/dtp1z8lne/video/upload/q_auto,vc_h264/v1775240373/catfishpoboy916_haykeo.mp4';
+        // These will be populated from the API
+        const DEFAULT_LEFT_VIDEO  = 'https://res.cloudinary.com/dtp1z8lne/video/upload/q_auto,vc_h264/v1775240373/shrimppoboy916_lztgxk.mp4';
+        const DEFAULT_RIGHT_VIDEO = 'https://res.cloudinary.com/dtp1z8lne/video/upload/q_auto,vc_h264/v1775240373/catfishpoboy916_haykeo.mp4';
+        const DEFAULT_LEFT_LABEL  = "Shrimp Po' Boy";
+        const DEFAULT_RIGHT_LABEL = "Catfish Po' Boy";
 
         function applyPanels() {
             const vw = window.innerWidth;
@@ -385,6 +388,7 @@
                 for (const s of imgs) if (s && !cachedImages[s]) cachedImages[s] = await preloadImage(s);
                 await draw(data);
                 loadHeroVideo(data);
+                loadSidePanelSettings(data);
                 loading.style.display = 'none';
                 wrapper.style.display = 'inline-block';
                 if (data.status?.last_saved) document.getElementById('last-updated').textContent = `Last Sync: ${data.status.last_saved}`;
@@ -482,6 +486,39 @@
         function loadHeroVideo(data) {
             const url=data.heroVideoUrl||'';
             if(url){ const v=document.getElementById('hero-video'); if(v&&v.src!==url){v.src=url;v.classList.add('has-src');} }
+        }
+
+        function loadSidePanelSettings(data) {
+            const lSettings = data.sidePanelLeft || {};
+                const rSettings = data.sidePanelRight || {};
+
+            const lUrl = lSettings.videoUrl || DEFAULT_LEFT_VIDEO;
+            const rUrl = rSettings.videoUrl || DEFAULT_RIGHT_VIDEO;
+            const lLabel = lSettings.label || DEFAULT_LEFT_LABEL;
+            const rLabel = rSettings.label || DEFAULT_RIGHT_LABEL;
+
+            // Update Left Video
+            if (vLeft.src !== lUrl) {
+                vLeft.src = lUrl;
+                vLeft.load();
+            }
+            // Update Right Video
+            if (vRight.src !== rUrl) {
+                vRight.src = rUrl;
+                vRight.load();
+            }
+
+            // Update Labels
+            const lLabelEl = panelLeft.querySelector('.panel-label');
+            const rLabelEl = panelRight.querySelector('.panel-label');
+            if (lLabelEl) lLabelEl.textContent = lLabel;
+            if (rLabelEl) rLabelEl.textContent = rLabel;
+
+            // Restart videos if visible
+            if (panelLeft.style.display !== 'none') {
+                vLeft.play().catch(()=>{});
+                vRight.play().catch(()=>{});
+            }
         }
 
         init();
