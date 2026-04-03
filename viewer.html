@@ -259,6 +259,58 @@
           #hero-section { min-height: 380px; overflow: hidden; }
           #hero-content { padding: 36px 16px; }
         }
+
+        /* ===== SCROLL STAGE ===== */
+        #scroll-stage {
+          display: flex;
+          align-items: flex-start;
+          width: 100%;
+          background: #0a0a0a;
+        }
+        #scroll-center {
+          flex: 1;
+          min-width: 0;
+        }
+        .scroll-panel {
+          width: clamp(120px, 12vw, 220px);
+          flex-shrink: 0;
+          background: #0a0a0a;
+          position: sticky;
+          top: 0;
+          height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          opacity: 0;
+          transition: opacity 0.8s ease;
+          position: relative;
+        }
+        .scroll-panel.ready {
+          opacity: 1;
+        }
+        .scroll-panel video {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+        .panel-label {
+          position: absolute;
+          bottom: 16px;
+          left: 0; right: 0;
+          text-align: center;
+          color: #c8a96a;
+          font-family: 'bernard-mt-condensed-regular', serif;
+          font-size: clamp(10px, 1vw, 13px);
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          opacity: 0.85;
+          pointer-events: none;
+        }
+        @media (max-width: 1099px) {
+          .scroll-panel { display: none; }
+        }
     </style>
 </head>
 <body>
@@ -292,24 +344,36 @@
       <img id="hero-dish" src="/Images/Asset1.png" alt="" aria-hidden="true">
     </section>
 
-    <main id="viewer-main">
-        <div id="loading">
-            <div class="spinner"></div>
-            <p>Loading the Menu...</p>
-        </div>
-        <div id="canvas-wrapper" style="display:none">
-            <canvas id="menu-canvas"></canvas>
-            <div id="overlay-container"></div>
-        </div>
+    <div id="scroll-stage">
+      <div id="scroll-left" class="scroll-panel" aria-hidden="true">
+        <video id="scroll-video-left" muted playsinline preload="auto"></video>
+        <div class="panel-label">Shrimp Po' Boy</div>
+      </div>
+      <div id="scroll-center">
+        <main id="viewer-main">
+            <div id="loading">
+                <div class="spinner"></div>
+                <p>Loading the Menu...</p>
+            </div>
+            <div id="canvas-wrapper" style="display:none">
+                <canvas id="menu-canvas"></canvas>
+                <div id="overlay-container"></div>
+            </div>
 
-        <!-- Shared Video Popup & Backdrop -->
-        <div id="video-popup-backdrop" onclick="hideVideoPopup()"></div>
-        <div id="video-popup">
-            <button id="video-popup-close" onclick="hideVideoPopup()">✕</button>
-            <video id="popup-video" muted loop playsinline></video>
-            <div id="video-popup-label"></div>
-        </div>
-    </main>
+            <!-- Shared Video Popup & Backdrop -->
+            <div id="video-popup-backdrop" onclick="hideVideoPopup()"></div>
+            <div id="video-popup">
+                <button id="video-popup-close" onclick="hideVideoPopup()">✕</button>
+                <video id="popup-video" muted loop playsinline></video>
+                <div id="video-popup-label"></div>
+            </div>
+        </main>
+      </div>
+      <div id="scroll-right" class="scroll-panel" aria-hidden="true">
+        <video id="scroll-video-right" muted playsinline preload="auto"></video>
+        <div class="panel-label">Catfish Po' Boy</div>
+      </div>
+    </div>
 
     <footer>
         <p>&copy; 2026 Not Your Mama's Kitchen &mdash; Menu updated live</p>
@@ -398,7 +462,8 @@
 
             // 2. Setup Dimensions
             const dpr = window.devicePixelRatio || 1;
-            const displayWidth = Math.min(window.innerWidth, 1000);
+            const centerCol = document.getElementById('scroll-center');
+            const displayWidth = Math.min(centerCol ? centerCol.clientWidth : window.innerWidth, 1000);
             const scale = displayWidth / BASE_W;
             const displayHeight = BASE_H * scale;
 
@@ -619,6 +684,55 @@
 
         // Run
         init();
+    </script>
+    <script>
+    (function() {
+      const VIDEO_DURATION = 6;
+      const leftVideo  = document.getElementById('scroll-video-left');
+      const rightVideo = document.getElementById('scroll-video-right');
+
+      leftVideo.src  = 'https://res.cloudinary.com/dtp1z8lne/video/upload/q_auto/f_auto/v1775240373/shrimppoboy916_lztgxk.mp4';
+      rightVideo.src = 'https://res.cloudinary.com/dtp1z8lne/video/upload/q_auto/f_auto/v1775240373/catfishpoboy916_haykeo.mp4';
+
+      [leftVideo, rightVideo].forEach(v => {
+        v.load();
+        v.addEventListener('loadedmetadata', () => { v.pause(); v.currentTime = 0; });
+      });
+
+      // Addition 1: Fade-in panels on load
+      Promise.all([
+        new Promise(r => leftVideo.addEventListener('loadedmetadata', r, {once:true})),
+        new Promise(r => rightVideo.addEventListener('loadedmetadata', r, {once:true}))
+      ]).then(() => {
+        document.getElementById('scroll-left').classList.add('ready');
+        document.getElementById('scroll-right').classList.add('ready');
+      });
+
+      let ticking = false;
+
+      function updateVideos() {
+        if (window.innerWidth < 1100) return;
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        if (maxScroll <= 0) return;
+        const progress = Math.min(Math.max(scrollTop / maxScroll, 0), 1);
+        const targetTime = progress * VIDEO_DURATION;
+        if (Math.abs(leftVideo.currentTime - targetTime) > 0.04) {
+          leftVideo.currentTime  = targetTime;
+          rightVideo.currentTime = targetTime;
+        }
+        ticking = false;
+      }
+
+      window.addEventListener('scroll', () => {
+        if (!ticking) { requestAnimationFrame(updateVideos); ticking = true; }
+      }, { passive: true });
+
+      window.addEventListener('load', () => {
+        leftVideo.currentTime = 0;
+        rightVideo.currentTime = 0;
+      });
+    })();
     </script>
 </body>
 </html>
