@@ -20,8 +20,7 @@
         * { box-sizing: border-box; }
 
         body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             background-color: var(--dark-bg);
             color: var(--text-main);
             font-family: 'Century Gothic', Arial, sans-serif;
@@ -29,8 +28,7 @@
             overflow-x: hidden;
         }
 
-        /* ===== FLOATING SIDE VIDEO PANELS ===== */
-        /* Width and position are set dynamically by JS */
+        /* ===== SIDE VIDEO PANELS ===== */
         .side-video-panel {
             display: none;
             position: fixed;
@@ -44,39 +42,42 @@
             transition: opacity 1s ease;
         }
         .side-video-panel.ready { opacity: 1; }
-
         #side-panel-left  { left: 0; }
         #side-panel-right { right: 0; }
 
-        /* Inner-edge fade: left panel fades on RIGHT side, right panel fades on LEFT side */
+        /* Fade inner edge toward menu */
         #side-panel-left {
-            -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0.3) 90%, rgba(0,0,0,0) 100%);
-            mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0.3) 90%, rgba(0,0,0,0) 100%);
+            -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 75%, rgba(0,0,0,0.2) 95%, rgba(0,0,0,0) 100%);
+            mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 75%, rgba(0,0,0,0.2) 95%, rgba(0,0,0,0) 100%);
         }
         #side-panel-right {
-            -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0.3) 90%, rgba(0,0,0,0) 100%);
-            mask-image: linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0.3) 90%, rgba(0,0,0,0) 100%);
+            -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 75%, rgba(0,0,0,0.2) 95%, rgba(0,0,0,0) 100%);
+            mask-image: linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 75%, rgba(0,0,0,0.2) 95%, rgba(0,0,0,0) 100%);
         }
 
+        /* VIDEO: contain so the full sandwich is always visible, never cropped */
         .side-video-panel video {
             position: absolute;
-            top: 0; left: 0;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /* Use contain so the full frame is shown — no cropping */
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
             object-position: center center;
         }
 
-        /* Top + bottom gradient vignette */
+        /* Top + bottom vignette */
         .side-video-panel::after {
             content: '';
             position: absolute;
             inset: 0;
             background: linear-gradient(to bottom,
-                rgba(0,0,0,0.55) 0%,
-                rgba(0,0,0,0.0) 20%,
-                rgba(0,0,0,0.0) 70%,
-                rgba(0,0,0,0.65) 100%);
+                rgba(0,0,0,0.5) 0%,
+                rgba(0,0,0,0.0) 18%,
+                rgba(0,0,0,0.0) 72%,
+                rgba(0,0,0,0.6) 100%);
             pointer-events: none;
             z-index: 1;
         }
@@ -103,16 +104,13 @@
             box-shadow: 0 10px 50px rgba(0,0,0,0.5);
             background: #000;
         }
-
         canvas { display: block; }
-
         .dish-overlay {
             position: absolute;
             z-index: 10;
             pointer-events: none;
             background: transparent !important;
         }
-
         #video-popup-backdrop {
             position: fixed;
             top: 0; left: 0;
@@ -122,7 +120,6 @@
             display: none;
             backdrop-filter: blur(4px);
         }
-
         .video-badge {
             position: absolute;
             top: 2px; right: 2px;
@@ -141,7 +138,6 @@
             z-index: 25;
             display: none;
         }
-
         #video-popup {
             position: fixed;
             z-index: 9999;
@@ -159,35 +155,17 @@
             pointer-events: auto;
         }
         #video-popup.visible { display: flex; }
-        #popup-video {
-            width: 256px;
-            height: 256px;
-            object-fit: cover;
-            border-radius: 10px;
-        }
+        #popup-video { width: 256px; height: 256px; object-fit: cover; border-radius: 10px; }
         #video-popup-close {
-            position: absolute;
-            top: 8px; right: 10px;
-            background: none;
-            border: none;
-            color: #c8a96a;
-            font-size: 18px;
-            cursor: pointer;
-            line-height: 1;
+            position: absolute; top: 8px; right: 10px;
+            background: none; border: none; color: #c8a96a;
+            font-size: 18px; cursor: pointer; line-height: 1;
         }
         #video-popup-label {
-            color: #c8a96a;
-            font-family: 'Century Gothic', sans-serif;
-            font-size: 13px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
+            color: #c8a96a; font-family: 'Century Gothic', sans-serif;
+            font-size: 13px; letter-spacing: 1px; text-transform: uppercase;
         }
-
-        #loading {
-            padding: 100px 20px;
-            font-size: 1.1rem;
-            color: var(--brand-gold);
-        }
+        #loading { padding: 100px 20px; font-size: 1.1rem; color: var(--brand-gold); }
         .spinner {
             width: 40px; height: 40px;
             border: 3px solid rgba(200,169,106,0.1);
@@ -197,13 +175,7 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        footer {
-            padding: 30px 20px;
-            font-size: 0.8rem;
-            color: #666;
-            border-top: 1px solid #222;
-        }
+        footer { padding: 30px 20px; font-size: 0.8rem; color: #666; border-top: 1px solid #222; }
 
         /* ===== HERO ===== */
         #hero-section {
@@ -274,15 +246,8 @@
             display: none; pointer-events: none;
         }
         @keyframes dishFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
-        @media (min-width: 1000px) {
-            .side-marquee { display: block; }
-            #hero-dish { display: block; }
-            #hero-section { min-height: 620px; }
-        }
-        @media (max-width: 768px) {
-            #hero-section { min-height: 380px; overflow: hidden; }
-            #hero-content { padding: 36px 16px; }
-        }
+        @media (min-width: 1000px) { .side-marquee { display: block; } #hero-dish { display: block; } #hero-section { min-height: 620px; } }
+        @media (max-width: 768px) { #hero-section { min-height: 380px; overflow: hidden; } #hero-content { padding: 36px 16px; } }
     </style>
 </head>
 <body>
@@ -317,19 +282,14 @@
             <div id="hero-title-line1">NOT YOUR MAMA'S</div>
             <div id="hero-title-line2">KITCHEN</div>
             <div id="hero-subtitle">Authentic Southern Soul Food</div>
-            <div id="hero-badge-wrap">
-                <span id="hero-badge">🍗 Dine In &nbsp;|&nbsp; To Go &nbsp;|&nbsp; Catering</span>
-            </div>
+            <div id="hero-badge-wrap"><span id="hero-badge">🍗 Dine In &nbsp;|&nbsp; To Go &nbsp;|&nbsp; Catering</span></div>
             <a href="#viewer-main" id="hero-cta">View Our Menu ↓</a>
         </div>
         <img id="hero-dish" src="/Images/Asset1.png" alt="" aria-hidden="true">
     </section>
 
     <main id="viewer-main">
-        <div id="loading">
-            <div class="spinner"></div>
-            <p>Loading the Menu...</p>
-        </div>
+        <div id="loading"><div class="spinner"></div><p>Loading the Menu...</p></div>
         <div id="canvas-wrapper" style="display:none">
             <canvas id="menu-canvas"></canvas>
             <div id="overlay-container"></div>
@@ -348,9 +308,8 @@
     </footer>
 
     <script>
-        // ===== DYNAMIC SIDE PANELS =====
-        const MENU_MAX_W = 780; // must match draw() below
-        const MIN_PANEL_W = 180; // don't show panels if too narrow
+        const MENU_MAX_W = 780;
+        const MIN_PANEL_W = 160;
         const PANEL_BREAKPOINT = 1100;
 
         const panelLeft  = document.getElementById('side-panel-left');
@@ -379,9 +338,8 @@
             }
         }
 
-        // Fade in once videos have data
         Promise.all([
-            new Promise(r => { vLeft.addEventListener('loadeddata', r, {once:true}); setTimeout(r, 3000); }),
+            new Promise(r => { vLeft.addEventListener('loadeddata',  r, {once:true}); setTimeout(r, 3000); }),
             new Promise(r => { vRight.addEventListener('loadeddata', r, {once:true}); setTimeout(r, 3000); })
         ]).then(() => {
             panelLeft.classList.add('ready');
@@ -404,10 +362,7 @@
         const overlayContainer = document.getElementById('overlay-container');
         const loading = document.getElementById('loading');
 
-        let lastDataHash = null;
-        let menuData = null;
-        let bgImg = null;
-        let cachedImages = {};
+        let lastDataHash = null, menuData = null, bgImg = null, cachedImages = {};
 
         async function init() {
             try {
@@ -415,203 +370,118 @@
                 await fetchAndDraw();
                 setInterval(fetchAndDraw, POLL_INTERVAL);
                 window.addEventListener('resize', () => { if (menuData) draw(menuData); });
-            } catch (err) {
-                console.error('Initialization failed:', err);
-            }
+            } catch(e) { console.error(e); }
         }
 
         async function fetchAndDraw() {
             try {
-                const response = await fetch(`${API_URL}?t=${Date.now()}`);
-                if (!response.ok) return;
-                const data = await response.json();
-                const currentHash = JSON.stringify(data.elements || []);
-                if (currentHash === lastDataHash) return;
-                lastDataHash = currentHash;
-                menuData = data;
-
-                const uniqueImages = [...new Set((data.elements || [])
-                    .filter(el => el.type === 'image')
-                    .map(el => el.src || (el.assetId ? `/Images/${el.assetId}.png` : '')))];
-
-                for (const src of uniqueImages) {
-                    if (src && !cachedImages[src]) cachedImages[src] = await preloadImage(src);
-                }
-
+                const res = await fetch(`${API_URL}?t=${Date.now()}`);
+                if (!res.ok) return;
+                const data = await res.json();
+                const hash = JSON.stringify(data.elements || []);
+                if (hash === lastDataHash) return;
+                lastDataHash = hash; menuData = data;
+                const imgs = [...new Set((data.elements||[]).filter(e=>e.type==='image').map(e=>e.src||(e.assetId?`/Images/${e.assetId}.png`:'')))];
+                for (const s of imgs) if (s && !cachedImages[s]) cachedImages[s] = await preloadImage(s);
                 await draw(data);
                 loadHeroVideo(data);
                 loading.style.display = 'none';
                 wrapper.style.display = 'inline-block';
-
-                if (data.status && data.status.last_saved)
-                    document.getElementById('last-updated').textContent = `Last Sync: ${data.status.last_saved}`;
-            } catch (err) {
-                console.error('Menu update failed:', err);
-            }
+                if (data.status?.last_saved) document.getElementById('last-updated').textContent = `Last Sync: ${data.status.last_saved}`;
+            } catch(e) { console.error(e); }
         }
 
         async function draw(data) {
             await Promise.race([
-                Promise.all([
-                    document.fonts.load('1em Century Gothic'),
-                    document.fonts.load('bold 1em Century Gothic'),
-                    document.fonts.load('1em bernard-mt-condensed-regular')
-                ]),
+                Promise.all([document.fonts.load('1em Century Gothic'), document.fonts.load('bold 1em Century Gothic'), document.fonts.load('1em bernard-mt-condensed-regular')]),
                 new Promise(r => setTimeout(r, 800))
             ]);
-
             const dpr = window.devicePixelRatio || 1;
-            // Cap menu at MENU_MAX_W — this is what creates space for the panels
             const displayWidth = Math.min(document.getElementById('viewer-main').clientWidth, MENU_MAX_W);
             const scale = displayWidth / BASE_W;
             const displayHeight = BASE_H * scale;
-
             canvas.width  = displayWidth * dpr;
             canvas.height = displayHeight * dpr;
             canvas.style.width  = displayWidth + 'px';
             canvas.style.height = displayHeight + 'px';
             ctx.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
-
             ctx.clearRect(0, 0, BASE_W, BASE_H);
             if (bgImg) ctx.drawImage(bgImg, 0, 0, BASE_W, BASE_H);
-
-            const elements = (data.elements || [])
-                .filter(el => el.visible !== false)
-                .sort((a, b) => (a.zIndex || 10) - (b.zIndex || 10));
-
+            const elements = (data.elements||[]).filter(el=>el.visible!==false).sort((a,b)=>(a.zIndex||10)-(b.zIndex||10));
             overlayContainer.innerHTML = '';
-
             elements.forEach(el => {
-                const style = el.style || {};
-
+                const s = el.style || {};
                 if (el.type === 'text') {
-                    const fontSize = style.fontSize || 16;
-                    const weight   = style.fontWeight || 'normal';
-                    const family   = style.fontFamily || 'Century Gothic';
-                    let fontStack  = `${weight} ${fontSize}px "${family}"`;
-                    if (family.toLowerCase().includes('condensed')) fontStack = `${fontSize}px "bernard-mt-condensed-regular"`;
-                    if (family.toLowerCase().includes('century'))   fontStack = `${weight} ${fontSize}px "Century Gothic"`;
-                    ctx.font         = fontStack;
-                    ctx.fillStyle    = style.color || '#000000';
-                    ctx.textAlign    = style.textAlign || 'left';
-                    ctx.textBaseline = 'top';
-                    const lines      = (el.text || '').split('\n');
-                    const lineHeight = (style.lineHeight || 1.1) * fontSize;
-                    lines.forEach((line, idx) => ctx.fillText(line, el.x, el.y + idx * lineHeight));
-
+                    const fs = s.fontSize||16, w = s.fontWeight||'normal', fam = s.fontFamily||'Century Gothic';
+                    let font = `${w} ${fs}px "${fam}"`;
+                    if (fam.toLowerCase().includes('condensed')) font = `${fs}px "bernard-mt-condensed-regular"`;
+                    if (fam.toLowerCase().includes('century'))   font = `${w} ${fs}px "Century Gothic"`;
+                    ctx.font = font; ctx.fillStyle = s.color||'#000'; ctx.textAlign = s.textAlign||'left'; ctx.textBaseline = 'top';
+                    (el.text||'').split('\n').forEach((line,i) => ctx.fillText(line, el.x, el.y + i*(s.lineHeight||1.1)*fs));
                 } else if (el.type === 'image') {
-                    const src = el.src || (el.assetId ? `/Images/${el.assetId}.png` : '');
+                    const src = el.src||(el.assetId?`/Images/${el.assetId}.png`:'');
                     if (cachedImages[src]) {
                         ctx.save();
-                        if (el.cornerRadius) {
-                            ctx.beginPath();
-                            ctx.roundRect(el.x, el.y, el.width, el.height, el.cornerRadius);
-                            ctx.clip();
-                        }
+                        if (el.cornerRadius) { ctx.beginPath(); ctx.roundRect(el.x,el.y,el.width,el.height,el.cornerRadius); ctx.clip(); }
                         ctx.drawImage(cachedImages[src], el.x, el.y, el.width, el.height);
                         ctx.restore();
                     }
                 }
-
                 if (el.videoUrl) {
-                    const overlay = document.createElement('div');
-                    overlay.className = 'dish-overlay';
-                    overlay.dataset.elementId = el.id;
-                    const labelText = el.dishName || el.label || el.text || el.id;
-                    Object.assign(overlay.style, {
-                        left:   (el.x * scale) + 'px',
-                        top:    (el.y * scale) + 'px',
-                        width:  ((el.width  || 100) * scale) + 'px',
-                        height: ((el.height || (el.style?.fontSize || 20) * 1.5) * scale) + 'px',
-                        pointerEvents: 'auto',
-                        cursor: 'pointer'
-                    });
-                    overlay.dataset.videoUrl = el.videoUrl;
-                    overlay.dataset.content  = labelText;
-
+                    const ov = document.createElement('div');
+                    ov.className = 'dish-overlay';
+                    ov.dataset.elementId = el.id;
+                    const label = el.dishName||el.label||el.text||el.id;
+                    Object.assign(ov.style, { left:(el.x*scale)+'px', top:(el.y*scale)+'px', width:((el.width||100)*scale)+'px', height:((el.height||(s.fontSize||20)*1.5)*scale)+'px', pointerEvents:'auto', cursor:'pointer' });
+                    ov.dataset.videoUrl = el.videoUrl; ov.dataset.content = label;
                     if (isMobile()) {
-                        const badge = document.createElement('div');
-                        badge.className     = 'video-badge';
-                        badge.style.display = 'block';
-                        badge.innerText     = '▶ TAP';
-                        overlay.appendChild(badge);
-                        overlay.addEventListener('touchend', e => { e.preventDefault(); e.stopPropagation(); showVideoPopup(el.videoUrl, labelText, 0, 0); }, { passive: false });
-                        overlay.addEventListener('click',    e => { e.stopPropagation(); showVideoPopup(el.videoUrl, labelText, 0, 0); });
+                        const b = document.createElement('div'); b.className='video-badge'; b.style.display='block'; b.innerText='▶ TAP'; ov.appendChild(b);
+                        ov.addEventListener('touchend', e=>{e.preventDefault();e.stopPropagation();showVideoPopup(el.videoUrl,label,0,0);},{passive:false});
+                        ov.addEventListener('click',    e=>{e.stopPropagation();showVideoPopup(el.videoUrl,label,0,0);});
                     } else {
-                        overlay.addEventListener('mouseenter', e  => showVideoPopup(el.videoUrl, labelText, e.clientX, e.clientY));
-                        overlay.addEventListener('mousemove',  e  => positionPopup(document.getElementById('video-popup'), e.clientX, e.clientY));
-                        overlay.addEventListener('mouseleave', () => setTimeout(hideVideoPopup, 300));
+                        ov.addEventListener('mouseenter', e=>showVideoPopup(el.videoUrl,label,e.clientX,e.clientY));
+                        ov.addEventListener('mousemove',  e=>positionPopup(document.getElementById('video-popup'),e.clientX,e.clientY));
+                        ov.addEventListener('mouseleave', ()=>setTimeout(hideVideoPopup,300));
                     }
-                    overlayContainer.appendChild(overlay);
+                    overlayContainer.appendChild(ov);
                 }
             });
         }
 
         const isMobile = () => window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 
-        function showVideoPopup(videoUrl, elementContent, mouseX, mouseY) {
-            const video    = document.getElementById('popup-video');
-            const popup    = document.getElementById('video-popup');
-            const backdrop = document.getElementById('video-popup-backdrop');
-            const label    = document.getElementById('video-popup-label');
-            video.setAttribute('playsinline', '');
-            video.setAttribute('webkit-playsinline', '');
-            if (video.src !== videoUrl) { video.src = videoUrl; video.load(); }
-            setTimeout(() => video.play().catch(()=>{}), 100);
-            label.textContent = elementContent || '';
-            popup.classList.add('visible');
-            if (isMobile()) backdrop.style.display = 'block';
-            requestAnimationFrame(() => positionPopup(popup, mouseX, mouseY));
+        function showVideoPopup(videoUrl, label, mx, my) {
+            const v=document.getElementById('popup-video'), p=document.getElementById('video-popup'), bd=document.getElementById('video-popup-backdrop'), lb=document.getElementById('video-popup-label');
+            v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
+            if (v.src !== videoUrl) { v.src=videoUrl; v.load(); }
+            setTimeout(()=>v.play().catch(()=>{}),100);
+            lb.textContent = label||''; p.classList.add('visible');
+            if (isMobile()) bd.style.display='block';
+            requestAnimationFrame(()=>positionPopup(p,mx,my));
         }
 
         function hideVideoPopup() {
-            const popup    = document.getElementById('video-popup');
-            const video    = document.getElementById('popup-video');
-            const backdrop = document.getElementById('video-popup-backdrop');
-            popup.classList.remove('visible');
-            backdrop.style.display = 'none';
-            video.pause();
-            video.removeAttribute('src');
-            video.load();
+            const p=document.getElementById('video-popup'),v=document.getElementById('popup-video'),bd=document.getElementById('video-popup-backdrop');
+            p.classList.remove('visible'); bd.style.display='none'; v.pause(); v.removeAttribute('src'); v.load();
         }
 
-        function positionPopup(popup, mouseX, mouseY) {
-            if (isMobile()) {
-                popup.style.left      = '50%';
-                popup.style.top       = '50%';
-                popup.style.transform = 'translate(-50%, -50%)';
-                return;
-            }
-            const offset = 20;
-            let x = mouseX + offset;
-            let y = mouseY - popup.offsetHeight - offset;
-            if (x + popup.offsetWidth > window.innerWidth) x = mouseX - popup.offsetWidth - offset;
-            if (y < 0) y = mouseY + offset;
-            popup.style.left      = x + 'px';
-            popup.style.top       = y + 'px';
-            popup.style.transform = 'none';
+        function positionPopup(popup, mx, my) {
+            if (isMobile()) { popup.style.left='50%'; popup.style.top='50%'; popup.style.transform='translate(-50%,-50%)'; return; }
+            const off=20; let x=mx+off, y=my-popup.offsetHeight-off;
+            if (x+popup.offsetWidth>window.innerWidth) x=mx-popup.offsetWidth-off;
+            if (y<0) y=my+off;
+            popup.style.left=x+'px'; popup.style.top=y+'px'; popup.style.transform='none';
         }
 
-        window.addEventListener('click', e => {
-            const popup = document.getElementById('video-popup');
-            if (popup.classList.contains('visible') && !popup.contains(e.target)) hideVideoPopup();
-        });
+        window.addEventListener('click', e=>{ const p=document.getElementById('video-popup'); if(p.classList.contains('visible')&&!p.contains(e.target)) hideVideoPopup(); });
 
         function preloadImage(url) {
-            return new Promise((resolve, reject) => {
-                const img = new Image();
-                img.onload  = () => resolve(img);
-                img.onerror = reject;
-                img.src = url;
-            });
+            return new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url; });
         }
 
         function loadHeroVideo(data) {
-            const url = data.heroVideoUrl || '';
-            if (url) {
-                const v = document.getElementById('hero-video');
-                if (v && v.src !== url) { v.src = url; v.classList.add('has-src'); }
-            }
+            const url=data.heroVideoUrl||'';
+            if(url){ const v=document.getElementById('hero-video'); if(v&&v.src!==url){v.src=url;v.classList.add('has-src');} }
         }
 
         init();
