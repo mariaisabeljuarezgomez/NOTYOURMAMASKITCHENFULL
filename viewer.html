@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Menu Viewer | Not Your Mama's Kitchen</title>
     <style>
-        /* Typography - Exact brand fonts referenced from root */
         @font-face { font-family: 'Century Gothic'; src: url('/century-gothic-regular.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
         @font-face { font-family: 'Century Gothic'; src: url('/century-gothic-bold.ttf') format('truetype'); font-weight: bold; font-style: normal; font-display: swap; }
         @font-face { font-family: 'bernard-mt-condensed-regular'; src: url('/bernard-mt-condensed-regular.ttf') format('truetype'); font-display: swap; }
@@ -15,7 +14,10 @@
             --brand-gold: #c8a96a;
             --dark-bg: #0d0d0d;
             --text-main: #ffffff;
+            --panel-w: 160px;
         }
+
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
@@ -27,41 +29,64 @@
             overflow-x: hidden;
         }
 
-        header {
-            padding: 30px 20px;
-            background: linear-gradient(to bottom, #1a1a1a, var(--dark-bg));
+        /* ===== FIXED SIDE VIDEO PANELS ===== */
+        .side-video-panel {
+            display: none; /* shown by JS on desktop */
+            position: fixed;
+            top: 0;
+            width: var(--panel-w);
+            height: 100vh;
+            z-index: 50;
+            overflow: hidden;
+            background: #000;
+        }
+        #side-panel-left  { left: 0;  border-right: 1px solid rgba(200,169,106,0.3); }
+        #side-panel-right { right: 0; border-left:  1px solid rgba(200,169,106,0.3); }
+
+        .side-video-panel video {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
-        .brand-bar {
-            height: 4px;
-            width: 80px;
-            background: linear-gradient(90deg, var(--brand-red), var(--brand-gold));
-            margin: 0 auto 15px;
-            border-radius: 2px;
-        }
-
-        h1 {
+        .side-video-panel .panel-label {
+            position: absolute;
+            bottom: 20px;
+            left: 0; right: 0;
+            text-align: center;
+            color: #c8a96a;
             font-family: 'bernard-mt-condensed-regular', serif;
-            font-size: 2.2rem;
-            margin: 0;
+            font-size: 11px;
+            letter-spacing: 3px;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            z-index: 2;
+            pointer-events: none;
+            text-shadow: 0 1px 6px rgba(0,0,0,0.8);
         }
 
-        .tagline {
-            font-size: 0.9rem;
-            color: var(--brand-gold);
-            margin-top: 5px;
-            letter-spacing: 1px;
+        /* Gradient overlay on panels for readability */
+        .side-video-panel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom,
+                rgba(0,0,0,0.35) 0%,
+                rgba(0,0,0,0.0) 40%,
+                rgba(0,0,0,0.0) 70%,
+                rgba(0,0,0,0.5) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ===== PAGE LAYOUT — push content away from fixed panels ===== */
+        body.panels-active {
+            padding-left: var(--panel-w);
+            padding-right: var(--panel-w);
         }
 
         /* Canvas & Overlays */
-        #viewport {
-            display: flex;
-            justify-content: center;
-            padding-bottom: 40px;
-        }
-
         #canvas-wrapper {
             position: relative;
             display: inline-block;
@@ -69,14 +94,12 @@
             background: #000;
         }
 
-        canvas {
-            display: block;
-        }
+        canvas { display: block; }
 
         .dish-overlay {
             position: absolute;
             z-index: 10;
-            pointer-events: none; /* Only video overlays will set this to auto */
+            pointer-events: none;
             background: transparent !important;
         }
 
@@ -94,10 +117,7 @@
         /* Mobile Tap Badge */
         .video-badge {
             position: absolute;
-            top: 2px;
-            right: 2px;
-            bottom: auto;
-            left: auto;
+            top: 2px; right: 2px;
             background: rgba(0,0,0,0.75);
             color: #c8a96a;
             border: 1px solid #c8a96a;
@@ -111,10 +131,10 @@
             white-space: nowrap;
             line-height: 1.4;
             z-index: 25;
-            display: none; /* Shown only on mobile via JS */
+            display: none;
         }
 
-        /* Video Popup Styles */
+        /* Video Popup */
         #video-popup {
             position: fixed;
             z-index: 9999;
@@ -156,24 +176,21 @@
             text-transform: uppercase;
         }
 
-        /* States */
+        /* Loading */
         #loading {
             padding: 100px 20px;
             font-size: 1.1rem;
             color: var(--brand-gold);
         }
-
         .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(200, 169, 106, 0.1);
+            width: 40px; height: 40px;
+            border: 3px solid rgba(200,169,106,0.1);
             border-top: 3px solid var(--brand-gold);
             border-radius: 50%;
             margin: 0 auto 20px;
             animation: spin 1s linear infinite;
         }
-
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         footer {
             padding: 30px 20px;
@@ -181,197 +198,145 @@
             color: #666;
             border-top: 1px solid #222;
         }
-        /* ===== HERO SECTION ===== */
+
+        /* ===== HERO ===== */
         #hero-section {
-          position: relative; width: 100%; min-height: 560px;
-          display: flex; align-items: center; justify-content: center;
-          overflow: visible; background: #0a0a0a;
+            position: relative; width: 100%; min-height: 560px;
+            display: flex; align-items: center; justify-content: center;
+            overflow: visible; background: #0a0a0a;
         }
         #hero-video-wrap { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
         #hero-video { width: 100%; height: 100%; object-fit: cover; opacity: 0.65; display: none; }
         #hero-video.has-src { display: block; }
         #hero-video-overlay {
-          position: absolute; inset: 0;
-          background: linear-gradient(to bottom, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.7) 100%);
+            position: absolute; inset: 0;
+            background: linear-gradient(to bottom, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.7) 100%);
         }
         .side-marquee {
-          position: absolute; top: 0; bottom: 0; width: 44px;
-          overflow: hidden; z-index: 2; display: none; writing-mode: vertical-rl;
+            position: absolute; top: 0; bottom: 0; width: 44px;
+            overflow: hidden; z-index: 2; display: none; writing-mode: vertical-rl;
         }
-        .side-left { left: 0; background: rgba(149,32,29,0.15); border-right: 1px solid rgba(200,169,106,0.2); }
-        .side-right { right: 0; background: rgba(149,32,29,0.15); border-left: 1px solid rgba(200,169,106,0.2); transform: rotate(180deg); }
+        .side-left  { left: 0;  background: rgba(149,32,29,0.15); border-right: 1px solid rgba(200,169,106,0.2); }
+        .side-right { right: 0; background: rgba(149,32,29,0.15); border-left:  1px solid rgba(200,169,106,0.2); transform: rotate(180deg); }
         .marquee-inner {
-          display: flex; flex-direction: column;
-          animation: marqueeScroll 18s linear infinite;
-          color: #c8a96a; font-size: 10px; font-weight: 800; letter-spacing: 2px; white-space: nowrap;
+            display: flex; flex-direction: column;
+            animation: marqueeScroll 18s linear infinite;
+            color: #c8a96a; font-size: 10px; font-weight: 800; letter-spacing: 2px; white-space: nowrap;
         }
-        @keyframes marqueeScroll { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
+        @keyframes marqueeScroll { to { transform: translateY(-50%); } }
         #hero-content { position: relative; z-index: 3; text-align: center; padding: 60px 20px; }
         #hero-title-line1 {
-          font-family: 'bernard-mt-condensed-regular', serif;
-          font-size: clamp(32px, 6vw, 72px); color: #fff; letter-spacing: 4px; line-height: 1;
-          opacity: 0; transform: translateY(30px);
-          animation: heroFadeUp 0.9s ease forwards; animation-delay: 0.1s;
+            font-family: 'bernard-mt-condensed-regular', serif;
+            font-size: clamp(32px,6vw,72px); color: #fff; letter-spacing: 4px; line-height: 1;
+            opacity: 0; transform: translateY(30px);
+            animation: heroFadeUp 0.9s ease forwards 0.1s;
         }
         #hero-title-line2 {
-          font-family: 'bernard-mt-condensed-regular', serif;
-          font-size: clamp(48px, 10vw, 120px); color: #c8a96a; letter-spacing: 6px; line-height: 1;
-          opacity: 0; transform: translateY(30px);
-          animation: heroFadeUp 0.9s ease forwards; animation-delay: 0.3s;
-          text-shadow: 0 0 40px rgba(200,169,106,0.4);
+            font-family: 'bernard-mt-condensed-regular', serif;
+            font-size: clamp(48px,10vw,120px); color: #c8a96a; letter-spacing: 6px; line-height: 1;
+            opacity: 0; transform: translateY(30px);
+            animation: heroFadeUp 0.9s ease forwards 0.3s;
+            text-shadow: 0 0 40px rgba(200,169,106,0.4);
         }
         #hero-subtitle {
-          font-size: clamp(12px, 2vw, 18px); color: rgba(255,255,255,0.7);
-          letter-spacing: 3px; text-transform: uppercase; margin-top: 10px;
-          opacity: 0; transform: translateY(30px);
-          animation: heroFadeUp 0.9s ease forwards; animation-delay: 0.5s;
+            font-size: clamp(12px,2vw,18px); color: rgba(255,255,255,0.7);
+            letter-spacing: 3px; text-transform: uppercase; margin-top: 10px;
+            opacity: 0; transform: translateY(30px);
+            animation: heroFadeUp 0.9s ease forwards 0.5s;
         }
         @keyframes heroFadeUp { to { opacity: 1; transform: translateY(0); } }
-        #hero-badge-wrap { margin-top: 20px; opacity: 0; animation: heroFadeUp 0.9s ease forwards; animation-delay: 0.7s; }
+        #hero-badge-wrap { margin-top: 20px; opacity: 0; animation: heroFadeUp 0.9s ease forwards 0.7s; }
         #hero-badge {
-          display: inline-block; background: rgba(149,32,29,0.85); color: #f8f4ad;
-          padding: 8px 24px; border-radius: 999px; font-size: 13px; font-weight: 700;
-          letter-spacing: 2px; border: 1px solid rgba(200,169,106,0.4);
+            display: inline-block; background: rgba(149,32,29,0.85); color: #f8f4ad;
+            padding: 8px 24px; border-radius: 999px; font-size: 13px; font-weight: 700;
+            letter-spacing: 2px; border: 1px solid rgba(200,169,106,0.4);
         }
         #hero-cta {
-          display: inline-block; margin-top: 28px; padding: 12px 36px;
-          background: #95201d; color: #f8f4ad; font-weight: 800; font-size: 14px;
-          letter-spacing: 2px; border-radius: 999px; text-decoration: none;
-          border: 2px solid #c8a96a; opacity: 0;
-          animation: heroFadeUp 0.9s ease forwards; animation-delay: 0.9s;
-          transition: background 0.2s, transform 0.2s;
+            display: inline-block; margin-top: 28px; padding: 12px 36px;
+            background: #95201d; color: #f8f4ad; font-weight: 800; font-size: 14px;
+            letter-spacing: 2px; border-radius: 999px; text-decoration: none;
+            border: 2px solid #c8a96a; opacity: 0;
+            animation: heroFadeUp 0.9s ease forwards 0.9s;
+            transition: background 0.2s, transform 0.2s;
         }
         #hero-cta:hover { background: #c8a96a; color: #000; transform: scale(1.05); }
         #hero-dish {
-          position: absolute; right: 80px; bottom: 0px;
-          width: clamp(140px, 18vw, 260px); z-index: 4;
-          animation: dishFloat 3.5s ease-in-out infinite;
-          filter: drop-shadow(0 20px 30px rgba(0,0,0,0.6));
-          display: none; pointer-events: none;
+            position: absolute; right: 80px; bottom: 0;
+            width: clamp(140px,18vw,260px); z-index: 4;
+            animation: dishFloat 3.5s ease-in-out infinite;
+            filter: drop-shadow(0 20px 30px rgba(0,0,0,0.6));
+            display: none; pointer-events: none;
         }
-        @keyframes dishFloat { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-14px); } }
+        @keyframes dishFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
         @media (min-width: 1000px) {
-          .side-marquee { display: block; }
-          #hero-dish { display: block; }
-          #hero-section { min-height: 620px; }
+            .side-marquee { display: block; }
+            #hero-dish { display: block; }
+            #hero-section { min-height: 620px; }
         }
         @media (max-width: 768px) {
-          #hero-section { min-height: 380px; overflow: hidden; }
-          #hero-content { padding: 36px 16px; }
-        }
-
-        /* ===== SCROLL STAGE ===== */
-        #scroll-stage {
-          display: flex;
-          align-items: flex-start;
-          width: 100%;
-          background: #0a0a0a;
-        }
-        #scroll-center {
-          flex: 1;
-          min-width: 0;
-        }
-        .scroll-panel {
-          width: clamp(80px, 8vw, 140px);
-          flex-shrink: 0;
-          background: #0a0a0a;
-          position: sticky;
-          top: 0;
-          height: 100vh;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          overflow: hidden;
-        }
-        .scroll-panel video {
-          position: absolute;
-          top: 0; left: 0;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-        }
-        .panel-label {
-          position: absolute;
-          bottom: 16px;
-          left: 0; right: 0;
-          text-align: center;
-          color: #c8a96a;
-          font-family: 'bernard-mt-condensed-regular', serif;
-          font-size: clamp(10px, 1vw, 13px);
-          letter-spacing: 2px;
-          text-transform: uppercase;
-          opacity: 0.85;
-          pointer-events: none;
-          z-index: 2;
-        }
-        @media (max-width: 1099px) {
-          .scroll-panel { display: none; }
+            #hero-section { min-height: 380px; overflow: hidden; }
+            #hero-content { padding: 36px 16px; }
         }
     </style>
 </head>
 <body>
 
+    <!-- Fixed side video panels (desktop only, shown via JS) -->
+    <div id="side-panel-left" class="side-video-panel" aria-hidden="true">
+        <video id="side-video-left" autoplay muted loop playsinline></video>
+        <div class="panel-label">Shrimp Po' Boy</div>
+    </div>
+    <div id="side-panel-right" class="side-video-panel" aria-hidden="true">
+        <video id="side-video-right" autoplay muted loop playsinline></video>
+        <div class="panel-label">Catfish Po' Boy</div>
+    </div>
+
     <section id="hero-section">
-      <div id="hero-video-wrap">
-        <video id="hero-video" autoplay muted loop playsinline></video>
-        <div id="hero-video-overlay"></div>
-      </div>
-      <div class="side-marquee side-left" aria-hidden="true">
-        <div class="marquee-inner">
-          <span>SOUL FOOD&nbsp;•&nbsp;DINE IN&nbsp;•&nbsp;CATFISH&nbsp;•&nbsp;WAFFLES&nbsp;•&nbsp;OXTAILS&nbsp;•&nbsp;CHICKEN&nbsp;•&nbsp;SHRIMP&nbsp;•&nbsp;</span>
-          <span>SOUL FOOD&nbsp;•&nbsp;DINE IN&nbsp;•&nbsp;CATFISH&nbsp;•&nbsp;WAFFLES&nbsp;•&nbsp;OXTAILS&nbsp;•&nbsp;CHICKEN&nbsp;•&nbsp;SHRIMP&nbsp;•&nbsp;</span>
+        <div id="hero-video-wrap">
+            <video id="hero-video" autoplay muted loop playsinline></video>
+            <div id="hero-video-overlay"></div>
         </div>
-      </div>
-      <div class="side-marquee side-right" aria-hidden="true">
-        <div class="marquee-inner">
-          <span>NOT YOUR MAMA'S&nbsp;•&nbsp;AUTHENTIC&nbsp;•&nbsp;SOUTHERN&nbsp;•&nbsp;HOMESTYLE&nbsp;•&nbsp;FRESH&nbsp;•&nbsp;DAILY&nbsp;•&nbsp;</span>
-          <span>NOT YOUR MAMA'S&nbsp;•&nbsp;AUTHENTIC&nbsp;•&nbsp;SOUTHERN&nbsp;•&nbsp;HOMESTYLE&nbsp;•&nbsp;FRESH&nbsp;•&nbsp;DAILY&nbsp;•&nbsp;</span>
+        <div class="side-marquee side-left" aria-hidden="true">
+            <div class="marquee-inner">
+                <span>SOUL FOOD&nbsp;•&nbsp;DINE IN&nbsp;•&nbsp;CATFISH&nbsp;•&nbsp;WAFFLES&nbsp;•&nbsp;OXTAILS&nbsp;•&nbsp;CHICKEN&nbsp;•&nbsp;SHRIMP&nbsp;•&nbsp;</span>
+                <span>SOUL FOOD&nbsp;•&nbsp;DINE IN&nbsp;•&nbsp;CATFISH&nbsp;•&nbsp;WAFFLES&nbsp;•&nbsp;OXTAILS&nbsp;•&nbsp;CHICKEN&nbsp;•&nbsp;SHRIMP&nbsp;•&nbsp;</span>
+            </div>
         </div>
-      </div>
-      <div id="hero-content">
-        <div id="hero-title-line1">NOT YOUR MAMA'S</div>
-        <div id="hero-title-line2">KITCHEN</div>
-        <div id="hero-subtitle">Authentic Southern Soul Food</div>
-        <div id="hero-badge-wrap">
-          <span id="hero-badge">🍗 Dine In &nbsp;|&nbsp; To Go &nbsp;|&nbsp; Catering</span>
+        <div class="side-marquee side-right" aria-hidden="true">
+            <div class="marquee-inner">
+                <span>NOT YOUR MAMA'S&nbsp;•&nbsp;AUTHENTIC&nbsp;•&nbsp;SOUTHERN&nbsp;•&nbsp;HOMESTYLE&nbsp;•&nbsp;FRESH&nbsp;•&nbsp;DAILY&nbsp;•&nbsp;</span>
+                <span>NOT YOUR MAMA'S&nbsp;•&nbsp;AUTHENTIC&nbsp;•&nbsp;SOUTHERN&nbsp;•&nbsp;HOMESTYLE&nbsp;•&nbsp;FRESH&nbsp;•&nbsp;DAILY&nbsp;•&nbsp;</span>
+            </div>
         </div>
-        <a href="#viewer-main" id="hero-cta">View Our Menu ↓</a>
-      </div>
-      <img id="hero-dish" src="/Images/Asset1.png" alt="" aria-hidden="true">
+        <div id="hero-content">
+            <div id="hero-title-line1">NOT YOUR MAMA'S</div>
+            <div id="hero-title-line2">KITCHEN</div>
+            <div id="hero-subtitle">Authentic Southern Soul Food</div>
+            <div id="hero-badge-wrap">
+                <span id="hero-badge">🍗 Dine In &nbsp;|&nbsp; To Go &nbsp;|&nbsp; Catering</span>
+            </div>
+            <a href="#viewer-main" id="hero-cta">View Our Menu ↓</a>
+        </div>
+        <img id="hero-dish" src="/Images/Asset1.png" alt="" aria-hidden="true">
     </section>
 
-    <div id="scroll-stage">
-      <div id="scroll-left" class="scroll-panel" aria-hidden="true">
-        <video id="scroll-video-left" muted playsinline preload="auto"></video>
-        <div class="panel-label">Shrimp Po' Boy</div>
-      </div>
-      <div id="scroll-center">
-        <main id="viewer-main">
-            <div id="loading">
-                <div class="spinner"></div>
-                <p>Loading the Menu...</p>
-            </div>
-            <div id="canvas-wrapper" style="display:none">
-                <canvas id="menu-canvas"></canvas>
-                <div id="overlay-container"></div>
-            </div>
+    <main id="viewer-main">
+        <div id="loading">
+            <div class="spinner"></div>
+            <p>Loading the Menu...</p>
+        </div>
+        <div id="canvas-wrapper" style="display:none">
+            <canvas id="menu-canvas"></canvas>
+            <div id="overlay-container"></div>
+        </div>
 
-            <!-- Shared Video Popup & Backdrop -->
-            <div id="video-popup-backdrop" onclick="hideVideoPopup()"></div>
-            <div id="video-popup">
-                <button id="video-popup-close" onclick="hideVideoPopup()">✕</button>
-                <video id="popup-video" muted loop playsinline></video>
-                <div id="video-popup-label"></div>
-            </div>
-        </main>
-      </div>
-      <div id="scroll-right" class="scroll-panel" aria-hidden="true">
-        <video id="scroll-video-right" muted playsinline preload="auto"></video>
-        <div class="panel-label">Catfish Po' Boy</div>
-      </div>
-    </div>
+        <div id="video-popup-backdrop" onclick="hideVideoPopup()"></div>
+        <div id="video-popup">
+            <button id="video-popup-close" onclick="hideVideoPopup()">✕</button>
+            <video id="popup-video" muted loop playsinline></video>
+            <div id="video-popup-label"></div>
+        </div>
+    </main>
 
     <footer>
         <p>&copy; 2026 Not Your Mama's Kitchen &mdash; Menu updated live</p>
@@ -379,6 +344,32 @@
     </footer>
 
     <script>
+        // ===== SIDE PANELS: activate on desktop =====
+        (function() {
+            const PANEL_W = 160;
+            const left  = document.getElementById('side-panel-left');
+            const right = document.getElementById('side-panel-right');
+            const vLeft  = document.getElementById('side-video-left');
+            const vRight = document.getElementById('side-video-right');
+
+            vLeft.src  = 'https://res.cloudinary.com/dtp1z8lne/video/upload/q_auto,vc_h264/v1775240373/shrimppoboy916_lztgxk.mp4';
+            vRight.src = 'https://res.cloudinary.com/dtp1z8lne/video/upload/q_auto,vc_h264/v1775240373/catfishpoboy916_haykeo.mp4';
+
+            function applyPanels() {
+                const wide = window.innerWidth >= 1100;
+                left.style.display  = wide ? 'block' : 'none';
+                right.style.display = wide ? 'block' : 'none';
+                document.body.classList.toggle('panels-active', wide);
+                if (wide) {
+                    vLeft.play().catch(()=>{});
+                    vRight.play().catch(()=>{});
+                }
+            }
+            applyPanels();
+            window.addEventListener('resize', applyPanels);
+        })();
+
+        // ===== MENU VIEWER =====
         const BASE_W = 908.44;
         const BASE_H = 1336.02;
         const API_URL = '/api/menu';
@@ -398,15 +389,12 @@
 
         async function init() {
             try {
-                // Preload Background
                 bgImg = await preloadImage(BG_PATH);
                 await fetchAndDraw();
-                
-                // Polling
                 setInterval(fetchAndDraw, POLL_INTERVAL);
-                window.addEventListener('resize', () => { if(menuData) draw(menuData); });
+                window.addEventListener('resize', () => { if (menuData) draw(menuData); });
             } catch (err) {
-                console.error("Initialization failed:", err);
+                console.error('Initialization failed:', err);
             }
         }
 
@@ -415,18 +403,16 @@
                 const response = await fetch(`${API_URL}?t=${Date.now()}`);
                 if (!response.ok) return;
                 const data = await response.json();
-                
+
                 const currentHash = JSON.stringify(data.elements || []);
                 if (currentHash === lastDataHash) return;
-                
                 lastDataHash = currentHash;
                 menuData = data;
-                
-                // Preload all unique images in the menu
+
                 const uniqueImages = [...new Set((data.elements || [])
                     .filter(el => el.type === 'image')
                     .map(el => el.src || (el.assetId ? `/Images/${el.assetId}.png` : '')))];
-                
+
                 for (const src of uniqueImages) {
                     if (src && !cachedImages[src]) {
                         cachedImages[src] = await preloadImage(src);
@@ -435,89 +421,73 @@
 
                 await draw(data);
                 loadHeroVideo(data);
-                
+
                 loading.style.display = 'none';
                 wrapper.style.display = 'inline-block';
-                
+
                 if (data.status && data.status.last_saved) {
                     document.getElementById('last-updated').textContent = `Last Sync: ${data.status.last_saved}`;
                 }
             } catch (err) {
-                console.error("Menu update failed:", err);
+                console.error('Menu update failed:', err);
             }
         }
 
         async function draw(data) {
-            // 1. Font Preload Confirmation
             await Promise.race([
                 Promise.all([
                     document.fonts.load('1em Century Gothic'),
                     document.fonts.load('bold 1em Century Gothic'),
                     document.fonts.load('1em bernard-mt-condensed-regular')
                 ]),
-                new Promise(resolve => setTimeout(resolve, 800))
+                new Promise(r => setTimeout(r, 800))
             ]);
 
-            // 2. Setup Dimensions
             const dpr = window.devicePixelRatio || 1;
-            const centerCol = document.getElementById('scroll-center');
-            const displayWidth = Math.min(centerCol ? centerCol.clientWidth : window.innerWidth, 1000);
+            const displayWidth = Math.min(document.getElementById('viewer-main').clientWidth, 1000);
             const scale = displayWidth / BASE_W;
             const displayHeight = BASE_H * scale;
 
-            // Set canvas physical pixel size (sharp on retina/mobile)
-            canvas.width = displayWidth * dpr;
+            canvas.width  = displayWidth * dpr;
             canvas.height = displayHeight * dpr;
-            // Set canvas CSS display size
-            canvas.style.width = displayWidth + 'px';
+            canvas.style.width  = displayWidth + 'px';
             canvas.style.height = displayHeight + 'px';
-            // Scale context to match DPR + menu scale
             ctx.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
 
-            // 3. Clear and Draw Background
             ctx.clearRect(0, 0, BASE_W, BASE_H);
-            if (bgImg) {
-                ctx.drawImage(bgImg, 0, 0, BASE_W, BASE_H);
-            }
+            if (bgImg) ctx.drawImage(bgImg, 0, 0, BASE_W, BASE_H);
 
-            // 4. Draw Elements in order
             const elements = (data.elements || [])
                 .filter(el => el.visible !== false)
                 .sort((a, b) => (a.zIndex || 10) - (b.zIndex || 10));
 
-            overlayContainer.innerHTML = ''; // Clear overlays
+            overlayContainer.innerHTML = '';
 
             elements.forEach(el => {
                 const style = el.style || {};
 
                 if (el.type === 'text') {
-                    const fontSize = (style.fontSize || 16);
-                    const weight = style.fontWeight || 'normal';
-                    const family = style.fontFamily || 'Century Gothic';
-                    
-                    let fontStack = `${weight} ${fontSize}px "${family}"`;
+                    const fontSize = style.fontSize || 16;
+                    const weight   = style.fontWeight || 'normal';
+                    const family   = style.fontFamily || 'Century Gothic';
+                    let fontStack  = `${weight} ${fontSize}px "${family}"`;
                     if (family.toLowerCase().includes('condensed')) fontStack = `${fontSize}px "bernard-mt-condensed-regular"`;
-                    if (family.toLowerCase().includes('century')) fontStack = `${weight} ${fontSize}px "Century Gothic"`;
-
-                    ctx.font = fontStack;
-                    ctx.fillStyle = style.color || '#000000';
-                    ctx.textAlign = style.textAlign || 'left';
+                    if (family.toLowerCase().includes('century'))   fontStack = `${weight} ${fontSize}px "Century Gothic"`;
+                    ctx.font         = fontStack;
+                    ctx.fillStyle    = style.color || '#000000';
+                    ctx.textAlign    = style.textAlign || 'left';
                     ctx.textBaseline = 'top';
-
-                    const lines = (el.text || '').split('\n');
+                    const lines      = (el.text || '').split('\n');
                     const lineHeight = (style.lineHeight || 1.1) * fontSize;
-                    
-                    lines.forEach((line, idx) => {
-                        ctx.fillText(line, el.x, el.y + (idx * lineHeight));
-                    });
+                    lines.forEach((line, idx) => ctx.fillText(line, el.x, el.y + idx * lineHeight));
+
                 } else if (el.type === 'image') {
                     const src = el.src || (el.assetId ? `/Images/${el.assetId}.png` : '');
                     if (cachedImages[src]) {
                         ctx.save();
                         if (el.cornerRadius) {
-                            const rad = el.cornerRadius;
                             ctx.beginPath();
-                            ctx.roundRect(el.x, el.y, el.width, el.height, rad);
+                            ctx.roundRect(el.x, el.y, el.width, el.height, el.cornerRadius);
                             ctx.clip();
                         }
                         ctx.drawImage(cachedImages[src], el.x, el.y, el.width, el.height);
@@ -525,145 +495,94 @@
                     }
                 }
 
-                // 5. Create Overlays (ONLY for items with videoUrl)
                 if (el.videoUrl) {
                     const overlay = document.createElement('div');
                     overlay.className = 'dish-overlay';
                     overlay.dataset.elementId = el.id;
-                    
-                    // Priority: dishName > label > text > id
                     const labelText = el.dishName || el.label || el.text || el.id;
-
                     Object.assign(overlay.style, {
-                        left: (el.x * scale) + 'px',
-                        top: (el.y * scale) + 'px',
-                        width: ((el.width || 100) * scale) + 'px',
+                        left:   (el.x * scale) + 'px',
+                        top:    (el.y * scale) + 'px',
+                        width:  ((el.width  || 100) * scale) + 'px',
                         height: ((el.height || (el.style?.fontSize || 20) * 1.5) * scale) + 'px',
                         pointerEvents: 'auto',
                         cursor: 'pointer'
                     });
-
                     overlay.dataset.videoUrl = el.videoUrl;
-                    overlay.dataset.content = labelText;
+                    overlay.dataset.content  = labelText;
 
                     if (isMobile()) {
-                        // Add "TAP" Badge for clarity on mobile
                         const badge = document.createElement('div');
-                        badge.className = 'video-badge';
+                        badge.className    = 'video-badge';
                         badge.style.display = 'block';
-                        badge.innerText = '▶ TAP';
+                        badge.innerText    = '▶ TAP';
                         overlay.appendChild(badge);
-
-                        overlay.addEventListener('touchend', (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            showVideoPopup(el.videoUrl, labelText, 0, 0);
-                        }, { passive: false });
-
-                        // Fallback for Android Chrome
-                        overlay.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            showVideoPopup(el.videoUrl, labelText, 0, 0);
-                        });
+                        overlay.addEventListener('touchend', e => { e.preventDefault(); e.stopPropagation(); showVideoPopup(el.videoUrl, labelText, 0, 0); }, { passive: false });
+                        overlay.addEventListener('click',    e => { e.stopPropagation(); showVideoPopup(el.videoUrl, labelText, 0, 0); });
                     } else {
-                        overlay.addEventListener('mouseenter', (e) => {
-                            showVideoPopup(el.videoUrl, labelText, e.clientX, e.clientY);
-                        });
-                        overlay.addEventListener('mousemove', (e) => {
-                            positionPopup(document.getElementById('video-popup'), e.clientX, e.clientY);
-                        });
-                        overlay.addEventListener('mouseleave', () => {
-                            setTimeout(hideVideoPopup, 300);
-                        });
+                        overlay.addEventListener('mouseenter', e  => showVideoPopup(el.videoUrl, labelText, e.clientX, e.clientY));
+                        overlay.addEventListener('mousemove',  e  => positionPopup(document.getElementById('video-popup'), e.clientX, e.clientY));
+                        overlay.addEventListener('mouseleave', () => setTimeout(hideVideoPopup, 300));
                     }
                     overlayContainer.appendChild(overlay);
                 }
             });
         }
 
-        // Phase 2: Popup Logic
         const isMobile = () => window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 
         function showVideoPopup(videoUrl, elementContent, mouseX, mouseY) {
-            const video = document.getElementById('popup-video');
-            const popup = document.getElementById('video-popup');
+            const video    = document.getElementById('popup-video');
+            const popup    = document.getElementById('video-popup');
             const backdrop = document.getElementById('video-popup-backdrop');
-            const label = document.getElementById('video-popup-label');
-            
-            // iOS Compatibility: Set attributes before src
+            const label    = document.getElementById('video-popup-label');
             video.setAttribute('playsinline', '');
             video.setAttribute('webkit-playsinline', '');
-            
-            if (video.src !== videoUrl) {
-                video.src = videoUrl;
-                video.load();
-            }
-            
-            // Delay play() slightly for iOS/Safari stability
-            setTimeout(() => {
-                video.play().catch(() => {});
-            }, 100);
-
+            if (video.src !== videoUrl) { video.src = videoUrl; video.load(); }
+            setTimeout(() => video.play().catch(()=>{}), 100);
             label.textContent = elementContent || '';
-            
             popup.classList.add('visible');
             if (isMobile()) backdrop.style.display = 'block';
-            
             requestAnimationFrame(() => positionPopup(popup, mouseX, mouseY));
         }
 
         function hideVideoPopup() {
-            const popup = document.getElementById('video-popup');
-            const video = document.getElementById('popup-video');
+            const popup    = document.getElementById('video-popup');
+            const video    = document.getElementById('popup-video');
             const backdrop = document.getElementById('video-popup-backdrop');
-            
             popup.classList.remove('visible');
             backdrop.style.display = 'none';
-            
             video.pause();
-            video.removeAttribute('src'); // Completely free the resource
+            video.removeAttribute('src');
             video.load();
         }
 
         function positionPopup(popup, mouseX, mouseY) {
             if (isMobile()) {
-                // Centered for mobile
-                popup.style.left = '50%';
-                popup.style.top = '50%';
+                popup.style.left      = '50%';
+                popup.style.top       = '50%';
                 popup.style.transform = 'translate(-50%, -50%)';
                 return;
             }
-
             const offset = 20;
             let x = mouseX + offset;
             let y = mouseY - popup.offsetHeight - offset;
-
-            // Flip if off-screen (Right)
-            if (x + popup.offsetWidth > window.innerWidth) {
-                x = mouseX - popup.offsetWidth - offset;
-            }
-            // Flip if off-screen (Top)
-            if (y < 0) {
-                y = mouseY + offset;
-            }
-
-            popup.style.left = x + 'px';
-            popup.style.top = y + 'px';
+            if (x + popup.offsetWidth > window.innerWidth) x = mouseX - popup.offsetWidth - offset;
+            if (y < 0) y = mouseY + offset;
+            popup.style.left      = x + 'px';
+            popup.style.top       = y + 'px';
             popup.style.transform = 'none';
         }
 
-        // Global Close on Background Click
-        window.addEventListener('click', (e) => {
+        window.addEventListener('click', e => {
             const popup = document.getElementById('video-popup');
-            if (popup.classList.contains('visible') && !popup.contains(e.target)) {
-                hideVideoPopup();
-            }
+            if (popup.classList.contains('visible') && !popup.contains(e.target)) hideVideoPopup();
         });
 
         function preloadImage(url) {
             return new Promise((resolve, reject) => {
                 const img = new Image();
-                img.onload = () => resolve(img);
+                img.onload  = () => resolve(img);
                 img.onerror = reject;
                 img.src = url;
             });
@@ -673,55 +592,11 @@
             const url = data.heroVideoUrl || '';
             if (url) {
                 const v = document.getElementById('hero-video');
-                if (v && v.src !== url) {
-                    v.src = url;
-                    v.classList.add('has-src');
-                }
+                if (v && v.src !== url) { v.src = url; v.classList.add('has-src'); }
             }
         }
 
-        // Run
         init();
-    </script>
-    <script>
-    (function() {
-      const VIDEO_DURATION = 6;
-      const leftVideo  = document.getElementById('scroll-video-left');
-      const rightVideo = document.getElementById('scroll-video-right');
-
-      leftVideo.src  = 'https://res.cloudinary.com/dtp1z8lne/video/upload/q_auto,vc_h264/v1775240373/shrimppoboy916_lztgxk.mp4';
-      rightVideo.src = 'https://res.cloudinary.com/dtp1z8lne/video/upload/q_auto,vc_h264/v1775240373/catfishpoboy916_haykeo.mp4';
-
-      [leftVideo, rightVideo].forEach(v => {
-        v.load();
-        v.addEventListener('loadedmetadata', () => { v.pause(); v.currentTime = 0; });
-      });
-
-      let ticking = false;
-
-      function updateVideos() {
-        if (window.innerWidth < 1100) return;
-        const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-        if (maxScroll <= 0) return;
-        const progress = Math.min(Math.max(scrollTop / maxScroll, 0), 1);
-        const targetTime = progress * VIDEO_DURATION;
-        if (Math.abs(leftVideo.currentTime - targetTime) > 0.04) {
-          leftVideo.currentTime  = targetTime;
-          rightVideo.currentTime = targetTime;
-        }
-        ticking = false;
-      }
-
-      window.addEventListener('scroll', () => {
-        if (!ticking) { requestAnimationFrame(updateVideos); ticking = true; }
-      }, { passive: true });
-
-      window.addEventListener('load', () => {
-        leftVideo.currentTime = 0;
-        rightVideo.currentTime = 0;
-      });
-    })();
     </script>
 </body>
 </html>
