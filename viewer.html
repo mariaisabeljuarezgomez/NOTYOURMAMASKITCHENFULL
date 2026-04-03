@@ -40,8 +40,8 @@
             overflow: hidden;
             background: #000;
         }
-        #side-panel-left  { left: 0;  border-right: 1px solid rgba(200,169,106,0.3); }
-        #side-panel-right { right: 0; border-left:  1px solid rgba(200,169,106,0.3); }
+        #side-panel-left  { left: 0; }
+        #side-panel-right { right: 0; }
 
         .side-video-panel video {
             position: absolute;
@@ -84,6 +84,11 @@
         body.panels-active {
             padding-left: var(--panel-w);
             padding-right: var(--panel-w);
+        }
+        body.panels-active #hero-section {
+            margin-left: calc(-1 * var(--panel-w));
+            margin-right: calc(-1 * var(--panel-w));
+            width: 100vw;
         }
 
         /* Canvas & Overlays */
