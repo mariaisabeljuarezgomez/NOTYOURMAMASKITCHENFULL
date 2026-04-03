@@ -120,23 +120,14 @@
             display: none;
             backdrop-filter: blur(4px);
         }
-        .video-badge {
-            position: absolute;
-            top: 2px; right: 2px;
-            background: rgba(0,0,0,0.75);
-            color: #c8a96a;
-            border: 1px solid #c8a96a;
-            padding: 1px 4px;
-            border-radius: 3px;
-            font-size: 8px;
-            font-weight: bold;
-            pointer-events: none;
-            width: fit-content;
-            max-width: 40px;
-            white-space: nowrap;
-            line-height: 1.4;
-            z-index: 25;
-            display: none;
+        @keyframes goldPulse {
+          0%, 100% { box-shadow: 0 0 0px 0px rgba(200,169,106,0); border-color: rgba(200,169,106,0.5); }
+          50%       { box-shadow: 0 0 8px 3px rgba(200,169,106,0.45); border-color: rgba(200,169,106,0.95); }
+        }
+        .video-tap-glow {
+          border: 1.5px solid rgba(200,169,106,0.5);
+          border-radius: 3px;
+          animation: goldPulse 2s ease-in-out infinite;
         }
         #video-popup {
             position: fixed;
@@ -439,7 +430,7 @@
                     Object.assign(ov.style, { left:(el.x*scale)+'px', top:(el.y*scale)+'px', width:((el.width||100)*scale)+'px', height:((el.height||(s.fontSize||20)*1.5)*scale)+'px', pointerEvents:'auto', cursor:'pointer' });
                     ov.dataset.videoUrl = el.videoUrl; ov.dataset.content = label;
                     if (isMobile()) {
-                        const b = document.createElement('div'); b.className='video-badge'; b.style.display='block'; b.innerText='▶ TAP'; ov.appendChild(b);
+                        ov.classList.add('video-tap-glow');
                         ov.addEventListener('touchend', e=>{e.preventDefault();e.stopPropagation();showVideoPopup(el.videoUrl,label,0,0);},{passive:false});
                         ov.addEventListener('click',    e=>{e.stopPropagation();showVideoPopup(el.videoUrl,label,0,0);});
                     } else {
@@ -522,6 +513,17 @@
         }
 
         init();
+
+        setTimeout(() => {
+          if (isMobile() && !window._videoHintShown) {
+            window._videoHintShown = true;
+            const hint = document.createElement('div');
+            hint.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.82);color:#c8a96a;border:1px solid rgba(200,169,106,0.4);padding:8px 18px;border-radius:999px;font-size:12px;letter-spacing:1px;z-index:9999;pointer-events:none;transition:opacity 1s ease;white-space:nowrap;';
+            hint.textContent = '✨ Tap glowing items to watch a video preview';
+            document.body.appendChild(hint);
+            setTimeout(() => { hint.style.opacity = '0'; setTimeout(() => hint.remove(), 1000); }, 4000);
+          }
+        }, 2000);
     </script>
 </body>
 </html>
