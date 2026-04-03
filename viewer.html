@@ -31,7 +31,7 @@
 
         /* ===== FIXED SIDE VIDEO PANELS ===== */
         .side-video-panel {
-            display: none; /* shown by JS on desktop */
+            display: none;
             position: fixed;
             top: 0;
             width: var(--panel-w);
@@ -40,6 +40,7 @@
             overflow: hidden;
             background: #000;
         }
+        /* NO border seams */
         #side-panel-left  { left: 0; }
         #side-panel-right { right: 0; }
 
@@ -66,7 +67,7 @@
             text-shadow: 0 1px 6px rgba(0,0,0,0.8);
         }
 
-        /* Gradient overlay on panels for readability */
+        /* Gradient overlay on panels */
         .side-video-panel::after {
             content: '';
             position: absolute;
@@ -80,11 +81,13 @@
             z-index: 1;
         }
 
-        /* ===== PAGE LAYOUT — push content away from fixed panels ===== */
+        /* ===== PAGE LAYOUT ===== */
         body.panels-active {
             padding-left: var(--panel-w);
             padding-right: var(--panel-w);
         }
+
+        /* Hero bleeds full viewport width — cancels body padding */
         body.panels-active #hero-section {
             margin-left: calc(-1 * var(--panel-w));
             margin-right: calc(-1 * var(--panel-w));
@@ -108,7 +111,6 @@
             background: transparent !important;
         }
 
-        /* Video Popup Backdrop */
         #video-popup-backdrop {
             position: fixed;
             top: 0; left: 0;
@@ -119,7 +121,6 @@
             backdrop-filter: blur(4px);
         }
 
-        /* Mobile Tap Badge */
         .video-badge {
             position: absolute;
             top: 2px; right: 2px;
@@ -139,7 +140,6 @@
             display: none;
         }
 
-        /* Video Popup */
         #video-popup {
             position: fixed;
             z-index: 9999;
@@ -181,7 +181,6 @@
             text-transform: uppercase;
         }
 
-        /* Loading */
         #loading {
             padding: 100px 20px;
             font-size: 1.1rem;
@@ -208,7 +207,7 @@
         #hero-section {
             position: relative; width: 100%; min-height: 560px;
             display: flex; align-items: center; justify-content: center;
-            overflow: visible; background: #0a0a0a;
+            overflow: hidden; background: #0a0a0a;
         }
         #hero-video-wrap { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
         #hero-video { width: 100%; height: 100%; object-fit: cover; opacity: 0.65; display: none; }
@@ -286,7 +285,6 @@
 </head>
 <body>
 
-    <!-- Fixed side video panels (desktop only, shown via JS) -->
     <div id="side-panel-left" class="side-video-panel" aria-hidden="true">
         <video id="side-video-left" autoplay muted loop playsinline></video>
         <div class="panel-label">Shrimp Po' Boy</div>
@@ -334,7 +332,6 @@
             <canvas id="menu-canvas"></canvas>
             <div id="overlay-container"></div>
         </div>
-
         <div id="video-popup-backdrop" onclick="hideVideoPopup()"></div>
         <div id="video-popup">
             <button id="video-popup-close" onclick="hideVideoPopup()">✕</button>
@@ -349,9 +346,7 @@
     </footer>
 
     <script>
-        // ===== SIDE PANELS: activate on desktop =====
         (function() {
-            const PANEL_W = 160;
             const left  = document.getElementById('side-panel-left');
             const right = document.getElementById('side-panel-right');
             const vLeft  = document.getElementById('side-video-left');
@@ -374,7 +369,6 @@
             window.addEventListener('resize', applyPanels);
         })();
 
-        // ===== MENU VIEWER =====
         const BASE_W = 908.44;
         const BASE_H = 1336.02;
         const API_URL = '/api/menu';
@@ -518,9 +512,9 @@
 
                     if (isMobile()) {
                         const badge = document.createElement('div');
-                        badge.className    = 'video-badge';
+                        badge.className     = 'video-badge';
                         badge.style.display = 'block';
-                        badge.innerText    = '▶ TAP';
+                        badge.innerText     = '▶ TAP';
                         overlay.appendChild(badge);
                         overlay.addEventListener('touchend', e => { e.preventDefault(); e.stopPropagation(); showVideoPopup(el.videoUrl, labelText, 0, 0); }, { passive: false });
                         overlay.addEventListener('click',    e => { e.stopPropagation(); showVideoPopup(el.videoUrl, labelText, 0, 0); });
