@@ -272,19 +272,19 @@
           min-width: 0;
         }
         .scroll-panel {
-          width: clamp(120px, 12vw, 220px);
+          width: clamp(80px, 8vw, 140px);
           flex-shrink: 0;
           background: #0a0a0a;
           position: sticky;
           top: 0;
           height: 100vh;
           display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
           overflow: hidden;
           opacity: 0;
           transition: opacity 0.8s ease;
-          position: relative;
         }
         .scroll-panel.ready {
           opacity: 1;
@@ -691,8 +691,8 @@
       const leftVideo  = document.getElementById('scroll-video-left');
       const rightVideo = document.getElementById('scroll-video-right');
 
-      leftVideo.src  = 'https://res.cloudinary.com/dtp1z8lne/video/upload/q_auto/f_auto/v1775240373/shrimppoboy916_lztgxk.mp4';
-      rightVideo.src = 'https://res.cloudinary.com/dtp1z8lne/video/upload/q_auto/f_auto/v1775240373/catfishpoboy916_haykeo.mp4';
+      leftVideo.src  = 'https://res.cloudinary.com/dtp1z8lne/video/upload/q_auto,vc_h264/v1775240373/shrimppoboy916_lztgxk.mp4';
+      rightVideo.src = 'https://res.cloudinary.com/dtp1z8lne/video/upload/q_auto,vc_h264/v1775240373/catfishpoboy916_haykeo.mp4';
 
       [leftVideo, rightVideo].forEach(v => {
         v.load();
