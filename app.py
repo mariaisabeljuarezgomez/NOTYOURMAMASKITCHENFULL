@@ -1,4 +1,4 @@
-# Triggering redeployment to verify volume persistence (v1.1.2)
+# Triggering redeployment to verify volume persistence (v1.1.3)
 from flask import Flask, send_from_directory, abort, request, jsonify
 from flask_compress import Compress
 import os
@@ -86,7 +86,6 @@ def reset_menu():
     """Wipe the saved menu_data.json so stale/poisoned data never loads again."""
     try:
         if os.path.exists(DATA_FILE):
-            # Back it up first before wiping
             if not os.path.exists(BACKUP_DIR):
                 os.makedirs(BACKUP_DIR)
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
