@@ -14,12 +14,7 @@
             --brand-gold: #c8a96a;
             --dark-bg: #0d0d0d;
             --text-main: #ffffff;
-            /* Full panel width — portion bleeds off screen */
-            --panel-full-w: 280px;
-            /* How much of the panel is VISIBLE on screen */
-            --panel-visible: 200px;
-            /* How far the panel is pushed off-screen (panel-full-w - panel-visible) */
-            --panel-bleed: 80px;
+            --menu-max-w: 780px;
         }
 
         * { box-sizing: border-box; }
@@ -35,32 +30,32 @@
         }
 
         /* ===== FLOATING SIDE VIDEO PANELS ===== */
-        /* These float ON TOP of the page — do NOT push content */
+        /* Width and position are set dynamically by JS */
         .side-video-panel {
             display: none;
             position: fixed;
             top: 0;
-            width: var(--panel-full-w);
             height: 100vh;
             z-index: 50;
             overflow: hidden;
             background: #000;
             pointer-events: none;
+            opacity: 0;
+            transition: opacity 1s ease;
         }
+        .side-video-panel.ready { opacity: 1; }
 
-        /* Left panel: bleeds off the LEFT edge */
+        #side-panel-left  { left: 0; }
+        #side-panel-right { right: 0; }
+
+        /* Inner-edge fade: left panel fades on RIGHT side, right panel fades on LEFT side */
         #side-panel-left {
-            left: calc(-1 * var(--panel-bleed));
-            /* Soft inner edge — fades to transparent toward menu */
-            -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,1) 60%, rgba(0,0,0,1) 100%);
-            mask-image: linear-gradient(to right, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,1) 60%, rgba(0,0,0,1) 100%);
+            -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0.3) 90%, rgba(0,0,0,0) 100%);
+            mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0.3) 90%, rgba(0,0,0,0) 100%);
         }
-
-        /* Right panel: bleeds off the RIGHT edge */
         #side-panel-right {
-            right: calc(-1 * var(--panel-bleed));
-            -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,1) 60%, rgba(0,0,0,1) 100%);
-            mask-image: linear-gradient(to left, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,1) 60%, rgba(0,0,0,1) 100%);
+            -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0.3) 90%, rgba(0,0,0,0) 100%);
+            mask-image: linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0.3) 90%, rgba(0,0,0,0) 100%);
         }
 
         .side-video-panel video {
@@ -72,6 +67,20 @@
             object-position: center center;
         }
 
+        /* Top + bottom gradient vignette */
+        .side-video-panel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom,
+                rgba(0,0,0,0.55) 0%,
+                rgba(0,0,0,0.0) 20%,
+                rgba(0,0,0,0.0) 70%,
+                rgba(0,0,0,0.65) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
         .side-video-panel .panel-label {
             position: absolute;
             bottom: 24px;
@@ -79,7 +88,7 @@
             text-align: center;
             color: #c8a96a;
             font-family: 'bernard-mt-condensed-regular', serif;
-            font-size: 12px;
+            font-size: 13px;
             letter-spacing: 3px;
             text-transform: uppercase;
             z-index: 2;
@@ -87,30 +96,6 @@
             text-shadow: 0 1px 8px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.9);
         }
 
-        /* Top + bottom gradient vignette on each panel */
-        .side-video-panel::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to bottom,
-                rgba(0,0,0,0.5) 0%,
-                rgba(0,0,0,0.0) 25%,
-                rgba(0,0,0,0.0) 65%,
-                rgba(0,0,0,0.6) 100%);
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        /* Fade-in on load */
-        .side-video-panel {
-            opacity: 0;
-            transition: opacity 1s ease;
-        }
-        .side-video-panel.ready {
-            opacity: 1;
-        }
-
-        /* ===== PAGE LAYOUT — panels do NOT affect this ===== */
         /* Canvas & Overlays */
         #canvas-wrapper {
             position: relative;
@@ -302,7 +287,6 @@
 </head>
 <body>
 
-    <!-- Side panels float ON TOP of the page — they don't push the menu -->
     <div id="side-panel-left" class="side-video-panel" aria-hidden="true">
         <video id="side-video-left" autoplay muted loop playsinline></video>
         <div class="panel-label">Shrimp Po' Boy</div>
@@ -364,42 +348,50 @@
     </footer>
 
     <script>
-        // ===== FLOATING SIDE PANELS =====
-        (function() {
-            const left   = document.getElementById('side-panel-left');
-            const right  = document.getElementById('side-panel-right');
-            const vLeft  = document.getElementById('side-video-left');
-            const vRight = document.getElementById('side-video-right');
+        // ===== DYNAMIC SIDE PANELS =====
+        const MENU_MAX_W = 780; // must match draw() below
+        const MIN_PANEL_W = 180; // don't show panels if too narrow
+        const PANEL_BREAKPOINT = 1100;
 
-            vLeft.src  = 'https://res.cloudinary.com/dtp1z8lne/video/upload/q_auto,vc_h264/v1775240373/shrimppoboy916_lztgxk.mp4';
-            vRight.src = 'https://res.cloudinary.com/dtp1z8lne/video/upload/q_auto,vc_h264/v1775240373/catfishpoboy916_haykeo.mp4';
+        const panelLeft  = document.getElementById('side-panel-left');
+        const panelRight = document.getElementById('side-panel-right');
+        const vLeft      = document.getElementById('side-video-left');
+        const vRight     = document.getElementById('side-video-right');
 
-            function applyPanels() {
-                const wide = window.innerWidth >= 1100;
-                if (wide) {
-                    left.style.display  = 'block';
-                    right.style.display = 'block';
-                    vLeft.play().catch(()=>{});
-                    vRight.play().catch(()=>{});
-                } else {
-                    left.style.display  = 'none';
-                    right.style.display = 'none';
-                }
+        vLeft.src  = 'https://res.cloudinary.com/dtp1z8lne/video/upload/q_auto,vc_h264/v1775240373/shrimppoboy916_lztgxk.mp4';
+        vRight.src = 'https://res.cloudinary.com/dtp1z8lne/video/upload/q_auto,vc_h264/v1775240373/catfishpoboy916_haykeo.mp4';
+
+        function applyPanels() {
+            const vw = window.innerWidth;
+            const panelW = Math.floor((vw - MENU_MAX_W) / 2);
+            const show = vw >= PANEL_BREAKPOINT && panelW >= MIN_PANEL_W;
+
+            if (show) {
+                panelLeft.style.display  = 'block';
+                panelRight.style.display = 'block';
+                panelLeft.style.width    = panelW + 'px';
+                panelRight.style.width   = panelW + 'px';
+                vLeft.play().catch(()=>{});
+                vRight.play().catch(()=>{});
+            } else {
+                panelLeft.style.display  = 'none';
+                panelRight.style.display = 'none';
             }
+        }
 
-            // Fade in once videos are ready
-            Promise.all([
-                new Promise(r => { vLeft.addEventListener('loadeddata', r, {once:true}); setTimeout(r, 3000); }),
-                new Promise(r => { vRight.addEventListener('loadeddata', r, {once:true}); setTimeout(r, 3000); })
-            ]).then(() => {
-                left.classList.add('ready');
-                right.classList.add('ready');
-            });
+        // Fade in once videos have data
+        Promise.all([
+            new Promise(r => { vLeft.addEventListener('loadeddata', r, {once:true}); setTimeout(r, 3000); }),
+            new Promise(r => { vRight.addEventListener('loadeddata', r, {once:true}); setTimeout(r, 3000); })
+        ]).then(() => {
+            panelLeft.classList.add('ready');
+            panelRight.classList.add('ready');
+        });
 
-            applyPanels();
-            window.addEventListener('resize', applyPanels);
-        })();
+        applyPanels();
+        window.addEventListener('resize', applyPanels);
 
+        // ===== MENU CANVAS =====
         const BASE_W = 908.44;
         const BASE_H = 1336.02;
         const API_URL = '/api/menu';
@@ -433,7 +425,6 @@
                 const response = await fetch(`${API_URL}?t=${Date.now()}`);
                 if (!response.ok) return;
                 const data = await response.json();
-
                 const currentHash = JSON.stringify(data.elements || []);
                 if (currentHash === lastDataHash) return;
                 lastDataHash = currentHash;
@@ -444,20 +435,16 @@
                     .map(el => el.src || (el.assetId ? `/Images/${el.assetId}.png` : '')))];
 
                 for (const src of uniqueImages) {
-                    if (src && !cachedImages[src]) {
-                        cachedImages[src] = await preloadImage(src);
-                    }
+                    if (src && !cachedImages[src]) cachedImages[src] = await preloadImage(src);
                 }
 
                 await draw(data);
                 loadHeroVideo(data);
-
                 loading.style.display = 'none';
                 wrapper.style.display = 'inline-block';
 
-                if (data.status && data.status.last_saved) {
+                if (data.status && data.status.last_saved)
                     document.getElementById('last-updated').textContent = `Last Sync: ${data.status.last_saved}`;
-                }
             } catch (err) {
                 console.error('Menu update failed:', err);
             }
@@ -474,7 +461,8 @@
             ]);
 
             const dpr = window.devicePixelRatio || 1;
-            const displayWidth = Math.min(document.getElementById('viewer-main').clientWidth, 1000);
+            // Cap menu at MENU_MAX_W — this is what creates space for the panels
+            const displayWidth = Math.min(document.getElementById('viewer-main').clientWidth, MENU_MAX_W);
             const scale = displayWidth / BASE_W;
             const displayHeight = BASE_H * scale;
 
