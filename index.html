@@ -468,7 +468,9 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     <div class="ls-section-title">Create Elements</div>
     <button class="ls-action-btn" onclick="addText()"><span class="ls-btn-icon">T</span><span class="ls-btn-label">Add Text</span></button>
     <button class="ls-action-btn" onclick="addRect()"><span class="ls-btn-icon">⬜</span><span class="ls-btn-label">Add Rectangle</span></button>
-    <button class="ls-action-btn" onclick="addLine()"><span class="ls-btn-icon">—</span><span class="ls-btn-label">Add Line</span></button>
+    <button class="ls-action-btn" onclick="addCircle()"><span class="ls-btn-icon">⭕</span><span class="ls-btn-label">Add Circle</span></button>
+    <button class="ls-action-btn" onclick="addStar()"><span class="ls-btn-icon">⭐</span><span class="ls-btn-label">Add Star</span></button>
+    <button class="ls-action-btn" onclick="addLine()"><span class="ls-btn-icon">╱</span><span class="ls-btn-label">Add Line</span></button>
     <button class="ls-action-btn" onclick="document.getElementById('in-img').click()"><span class="ls-btn-icon">📷</span><span class="ls-btn-label">Upload Image</span></button>
     <button class="ls-action-btn" onclick="document.getElementById('in-bg').click()"><span class="ls-btn-icon">🖼️</span><span class="ls-btn-label">Replace Background</span></button>
     <button class="ls-action-btn" onclick="toggleBg()"><span class="ls-btn-icon">👁️</span><span class="ls-btn-label">Toggle Original BG</span></button>
@@ -585,10 +587,27 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 
         <div id="bar-tab-design" style="display:none; align-items:center; gap:10px;">
             <div id="geo-style-ctrls" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                <div class="ctrl-group"><label>Fill</label><input type="color" id="sel-fill-color" onchange="updateShapeFill(this.value)"></div>
-                <div class="ctrl-group"><label>Rad</label><input type="range" id="sel-radius" min="0" max="200" style="width:40px" oninput="updateProp('cornerRadius', parseInt(this.value))"></div>
-                <div class="ctrl-group"><label>Stroke</label><input type="number" id="sel-stroke-w" min="0" max="50" style="width:40px" onchange="updateProp('strokeWidth', parseInt(this.value))"><input type="color" id="sel-stroke-c" onchange="updateProp('strokeColor', this.value)"></div>
-                <div class="ctrl-group"><button id="btn-outline-toggle" class="ctrl-btn" style="font-size:10px; padding:4px 10px; white-space:nowrap; width:auto;" onclick="toggleOutlineOnly()">Outline Only</button></div>
+                <div class="ctrl-group" id="ctrl-grp-fill"><label>Fill</label><input type="color" id="sel-fill-color" onchange="updateShapeFill(this.value)"></div>
+                <div class="ctrl-group" id="ctrl-grp-radius"><label>Rad</label><input type="range" id="sel-radius" min="0" max="200" style="width:40px" oninput="updateProp('cornerRadius', parseInt(this.value))"></div>
+                <div class="ctrl-group"><label id="stroke-label">Stroke</label><input type="number" id="sel-stroke-w" min="0" max="50" style="width:40px" onchange="updateProp('strokeWidth', parseInt(this.value))"><input type="color" id="sel-stroke-c" onchange="updateProp('strokeColor', this.value)"></div>
+                <div class="ctrl-group" id="ctrl-grp-outline"><button id="btn-outline-toggle" class="ctrl-btn" style="font-size:10px; padding:4px 10px; white-space:nowrap; width:auto;" onclick="toggleOutlineOnly()">Outline Only</button></div>
+                <div id="line-width-presets" class="ctrl-group" style="display:none;">
+                  <label style="font-size:9px; color:#777; font-weight:700;">Width</label>
+                  <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(0.25)">0.25</button>
+                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(0.5)">0.5</button>
+                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(1)">1</button>
+                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(1.25)">1.25</button>
+                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(1.5)">1.5</button>
+                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(2)">2</button>
+                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(3)">3</button>
+                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(4)">4</button>
+                  </div>
+                  <input type="number" id="sel-line-width-custom" min="0.1" max="50" step="0.25"
+                    style="width:50px; background:#111; border:1px solid #444; color:var(--accent); border-radius:6px; padding:4px 6px; font-size:11px; outline:none;"
+                    placeholder="px"
+                    onchange="setLineWidth(parseFloat(this.value))">
+                </div>
             </div>
             <div id="text-style-ctrls" style="display:none; align-items:center; gap:10px;">
                 <select id="sel-font" style="max-width:100px" onchange="updateStyle('fontFamily', this.value)"><option value="bernard-mt-condensed-regular">Bernard Mt Condensed Regular</option>
@@ -626,6 +645,24 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         </div>
 
         <div id="bar-tab-arrange" style="display:none; align-items:center; gap:10px;">
+            <div class="ctrl-group" style="flex-direction:column; gap:4px; align-items:flex-start;">
+              <div style="display:flex; gap:6px; align-items:center;">
+                <label style="font-size:9px;color:#777;font-weight:700;width:12px;">X</label>
+                <input type="number" id="pos-x-input" style="width:58px; background:#111; border:1px solid #444; color:var(--accent); border-radius:6px; padding:4px 6px; font-size:11px; outline:none;"
+                  onchange="setPosFromInput('x', parseFloat(this.value))">
+                <label style="font-size:9px;color:#777;font-weight:700;width:12px;">Y</label>
+                <input type="number" id="pos-y-input" style="width:58px; background:#111; border:1px solid #444; color:var(--accent); border-radius:6px; padding:4px 6px; font-size:11px; outline:none;"
+                  onchange="setPosFromInput('y', parseFloat(this.value))">
+              </div>
+              <div style="display:flex; gap:6px; align-items:center;" id="wh-inputs">
+                <label style="font-size:9px;color:#777;font-weight:700;width:12px;">W</label>
+                <input type="number" id="pos-w-input" min="1" style="width:58px; background:#111; border:1px solid #444; color:var(--accent); border-radius:6px; padding:4px 6px; font-size:11px; outline:none;"
+                  onchange="setSizeFromInput('width', parseFloat(this.value))">
+                <label style="font-size:9px;color:#777;font-weight:700;width:12px;">H</label>
+                <input type="number" id="pos-h-input" min="1" style="width:58px; background:#111; border:1px solid #444; color:var(--accent); border-radius:6px; padding:4px 6px; font-size:11px; outline:none;"
+                  onchange="setSizeFromInput('height', parseFloat(this.value))">
+              </div>
+            </div>
             <button id="btn-center-h" class="btn-ui" style="padding:6px 12px; font-size:10px;" onclick="centerElement('h')" data-help="Snaps the element to the exact horizontal center of the menu">Center H</button>
             <button id="btn-center-v" class="btn-ui" style="padding:6px 12px; font-size:10px;" onclick="centerElement('v')" data-help="Snaps the element to the exact vertical center of the menu">Center V</button>
             <div class="ctrl-group">
@@ -887,6 +924,34 @@ function render() {
             imgEl.style.objectFit = 'contain';
             imgEl.style.pointerEvents = 'none';
             el.appendChild(imgEl);
+        } else if (d.type === 'line') {
+            // SVG line wrapper
+            el = document.createElement('div');
+            el.id = d.id;
+            el.className = 'editable-element';
+            const svgW = Math.max(Math.abs((d.x2||0) - (d.x1||0)), d.strokeWidth || 1, 20);
+            const svgH = Math.max(Math.abs((d.y2||0) - (d.y1||0)), d.strokeWidth || 1, 20);
+            el.style.width = svgW + 'px';
+            el.style.height = svgH + 'px';
+            el.style.background = 'transparent';
+            el.style.border = 'none';
+            el.style.overflow = 'visible';
+            const ns = 'http://www.w3.org/2000/svg';
+            const svg = document.createElementNS(ns, 'svg');
+            svg.setAttribute('width', '100%');
+            svg.setAttribute('height', '100%');
+            svg.setAttribute('overflow', 'visible');
+            svg.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;overflow:visible;';
+            const lineEl = document.createElementNS(ns, 'line');
+            lineEl.setAttribute('x1', d.x1 || 0);
+            lineEl.setAttribute('y1', (d.y1 || 0) + (d.strokeWidth || 1) / 2);
+            lineEl.setAttribute('x2', d.x2 || svgW);
+            lineEl.setAttribute('y2', (d.y2 || 0) + (d.strokeWidth || 1) / 2);
+            lineEl.setAttribute('stroke', d.strokeColor || '#c8a96a');
+            lineEl.setAttribute('stroke-width', d.strokeWidth || 1);
+            lineEl.setAttribute('stroke-linecap', 'round');
+            svg.appendChild(lineEl);
+            el.appendChild(svg);
         } else {
             el = document.createElement('div');
             el.id = d.id;
@@ -918,8 +983,8 @@ function render() {
             left:d.x+'px', top:d.y+'px', zIndex:d.zIndex||10, 
             opacity: d.opacity ?? 1,
             transform: `rotate(${d.rotation||0}deg)`,
-            borderRadius: (d.cornerRadius||0)+'px',
-            border: (d.strokeWidth||0) > 0 ? `${d.strokeWidth}px solid ${d.strokeColor||'#000'}` : 'none'
+            borderRadius: d.type === 'line' ? '0' : (d.cornerRadius||0)+'px',
+            border: d.type === 'line' ? 'none' : ((d.strokeWidth||0) > 0 ? `${d.strokeWidth}px solid ${d.strokeColor||'#000'}` : 'none')
         });
         
         if(d.style) {
@@ -939,13 +1004,29 @@ function render() {
                 el.style.width = 'auto';
                 el.style.whiteSpace = 'pre';
             }
+        } else if (d.type === 'line') {
+            // line sizing handled in SVG creation block above; do not override
         } else {
             if (d.width) el.style.width = d.width + 'px';
             if (d.height) el.style.height = d.height + 'px';
         }
         
+        // Shape-type overrides after base styles applied
+        if (d.type === 'shape' && d.shapeType === 'circle') {
+            el.style.borderRadius = '50%';
+        } else if (d.type === 'shape' && d.shapeType === 'star') {
+            el.style.backgroundColor = (d.style && d.style.fill) ? d.style.fill : '#c8a96a';
+            el.style.border = 'none';
+            el.style.borderRadius = '0';
+            el.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
+        } else if (d.type === 'line') {
+            // Ensure line wrapper stays transparent
+            el.style.backgroundColor = 'transparent';
+            el.style.border = 'none';
+        }
+        
         elementsLayer.appendChild(el); attach(el);
-        if(selectedId === d.id && (d.type === 'image' || d.type === 'shape')) injectResizeHandles(el);
+        if(selectedId === d.id && (d.type === 'image' || d.type === 'shape' || d.type === 'line')) injectResizeHandles(el);
     });
     renderLayerList();
     if(selectedId) updateSelectionBar();
@@ -964,7 +1045,12 @@ function renderLayerList() {
             selectById(item.id); 
         };
         
-        const icon = item.type==='text' ? 'T' : (item.type==='image' ? '🖼️' : ((item.height||0) <= 8 ? '—' : '⬜'));
+        const icon = item.type==='text' ? 'T'
+            : item.type==='image' ? '🖼️'
+            : item.type==='line' ? '╱'
+            : item.shapeType==='circle' ? '⭕'
+            : item.shapeType==='star' ? '⭐'
+            : '⬜';
         const name = item.text || item.id;
         
         const roleTag = `<span style="font-size:8px; padding:2px 4px; border-radius:3px; background:#444; color:#aaa; text-transform:uppercase; margin-right:4px;">${item.layerRole || 'content'}</span>`;
@@ -989,8 +1075,57 @@ function renderLayerList() {
 
 function injectResizeHandles(el) {
     el.querySelectorAll('.resize-handle').forEach(h => h.remove());
-    const itemForType = docV2.elements.find(i => i.id === el.id);
-    const isShape = itemForType && itemForType.type === 'shape';
+    const item = docV2.elements.find(i => i.id === el.id);
+    if (!item) return;
+
+    // === LINES: 2 endpoint handles ===
+    if (item.type === 'line') {
+        const scalerWrap = document.getElementById('scaler-wrapper');
+        [{ key: 'A', xProp: 'x1', yProp: 'y1' }, { key: 'B', xProp: 'x2', yProp: 'y2' }].forEach(ep => {
+            const h = document.createElement('div');
+            h.className = 'resize-handle';
+            h.style.cursor = 'move';
+            h.style.position = 'absolute';
+            h.style.left = (item[ep.xProp] || 0) - 10 + 'px';
+            h.style.top  = (item[ep.yProp] || 0) - 10 + 'px';
+            h.style.zIndex = '10000';
+            h.onpointerdown = (e) => {
+                e.stopPropagation(); e.preventDefault();
+                h.setPointerCapture(e.pointerId);
+                if (item.locked || (docV2.settings.backgroundLayerLocked && item.layerRole === 'background')) return;
+                pushState();
+                const startMX = e.clientX, startMY = e.clientY;
+                const startPX = item[ep.xProp] || 0, startPY = item[ep.yProp] || 0;
+                h.onpointermove = (pe) => {
+                    const sRect = scalerWrap.getBoundingClientRect();
+                    const scale = sRect.width / BASE_W;
+                    const dx = (pe.clientX - startMX) / scale;
+                    const dy = (pe.clientY - startMY) / scale;
+                    item[ep.xProp] = startPX + dx;
+                    item[ep.yProp] = startPY + dy;
+                    // Recalculate bounding box so item stays at same absolute position
+                    const minX = Math.min(item.x1||0, item.x2||0);
+                    const minY = Math.min(item.y1||0, item.y2||0);
+                    const newAbsX = item.x + minX;
+                    const newAbsY = item.y + minY;
+                    item.x2 = Math.abs((item.x2||0) - (item.x1||0));
+                    item.y2 = Math.abs((item.y2||0) - (item.y1||0));
+                    item.x1 = 0; item.y1 = 0;
+                    item.x = newAbsX; item.y = newAbsY;
+                    item.width = Math.max(item.x2, item.strokeWidth || 1, 20);
+                    item.height = Math.max(item.y2, item.strokeWidth || 1, 20);
+                    render();
+                };
+                h.onpointerup = () => { h.onpointermove=null; h.onpointerup=null; sync(); };
+            };
+            el.appendChild(h);
+        });
+        return;
+    }
+
+    // === SHAPES & IMAGES: 4 corner handles ===
+    const isShape = item.type === 'shape';
+    const isCircle = isShape && item.shapeType === 'circle';
     ['nw','ne','sw','se'].forEach(corner => {
         const h = document.createElement('div');
         h.className = 'resize-handle';
@@ -1003,7 +1138,6 @@ function injectResizeHandles(el) {
         h.onpointerdown = (e) => {
             e.stopPropagation(); e.preventDefault();
             h.setPointerCapture(e.pointerId);
-            const item = docV2.elements.find(i => i.id === el.id);
             if (!item || item.locked || (docV2.settings.backgroundLayerLocked && item.layerRole === 'background')) return;
             pushState();
             const startX = e.clientX, startY = e.clientY;
@@ -1011,7 +1145,6 @@ function injectResizeHandles(el) {
             const startH = item.height || el.offsetHeight || 100;
             const startLeft=item.x, startTop=item.y;
             if (isShape) {
-                // Free resize — no aspect ratio lock
                 h.onpointermove = (pe) => {
                     const scalerRect = document.getElementById('scaler-wrapper').getBoundingClientRect();
                     const currentScale = scalerRect.width / BASE_W;
@@ -1022,15 +1155,16 @@ function injectResizeHandles(el) {
                     else if(corner==='sw') { nW=Math.max(10,startW-dx); nH=Math.max(10,startH+dy); nX=startLeft+(startW-nW); }
                     else if(corner==='ne') { nW=Math.max(10,startW+dx); nH=Math.max(10,startH-dy); nY=startTop+(startH-nH); }
                     else                   { nW=Math.max(10,startW-dx); nH=Math.max(10,startH-dy); nX=startLeft+(startW-nW); nY=startTop+(startH-nH); }
+                    // Circle: lock nH = nW for perfect circle
+                    if (isCircle) nH = nW;
                     item.width=nW; item.height=nH; item.x=nX; item.y=nY;
+                    if (isCircle && item.cornerRadius !== undefined) item.cornerRadius = nW / 2;
                     el.style.width=nW+'px'; el.style.height=nH+'px';
                     el.style.left=nX+'px'; el.style.top=nY+'px';
+                    if (isCircle) el.style.borderRadius = '50%';
                 };
             } else {
                 // Image resize — aspect ratio locked
-                const imgChild = el.querySelector('img');
-                const naturalW = imgChild?.naturalWidth || 400;
-                const naturalH = imgChild?.naturalHeight || 400;
                 const ar = startW/startH;
                 h.onpointermove = (pe) => {
                     const scalerRect = document.getElementById('scaler-wrapper').getBoundingClientRect();
@@ -1083,8 +1217,8 @@ function attach(el) {
             }
         }
 
-        // Always init dimensions and inject resize handles for images and shapes
-        if (_itemData.type === 'image' || _itemData.type === 'shape') {
+        // Always init dimensions and inject resize handles for images, shapes, and lines
+        if (_itemData.type === 'image' || _itemData.type === 'shape' || _itemData.type === 'line') {
             if (_itemData.type === 'image') {
                 if (!_itemData.width || !_itemData.height) {
                     const initImg = document.getElementById(_itemData.id)?.querySelector('img');
@@ -1095,11 +1229,12 @@ function attach(el) {
                         _itemData.width = 400; _itemData.height = 400;
                     }
                 }
-            } else {
+            } else if (_itemData.type === 'shape') {
                 // Shape: ensure dimensions are set
                 if (!_itemData.width) _itemData.width = el.offsetWidth || 100;
                 if (!_itemData.height) _itemData.height = el.offsetHeight || 100;
             }
+            // Line: x1/y1/x2/y2 already set from data model; no init needed
             injectResizeHandles(el);
         }
 
@@ -1372,15 +1507,41 @@ function updateSelectionBar() {
     document.getElementById('sel-opacity').value = (item.opacity ?? 1) * 100;
     document.getElementById('sel-rotate').value = item.rotation || 0;
     if(item.type!=='text') {
-        document.getElementById('sel-radius').value = item.cornerRadius || 0;
+        // Fill/radius/outline controls visibility
+        const isLine = item.type === 'line';
+        const isStar = item.type === 'shape' && item.shapeType === 'star';
+        const fillGrp = document.getElementById('ctrl-grp-fill');
+        const radGrp = document.getElementById('ctrl-grp-radius');
+        const outlineGrp = document.getElementById('ctrl-grp-outline');
+        const linePresets = document.getElementById('line-width-presets');
+        const strokeLabel = document.getElementById('stroke-label');
+        if (fillGrp) fillGrp.style.display = (isLine || isStar) ? 'none' : '';
+        if (radGrp) radGrp.style.display = (isLine || isStar) ? 'none' : '';
+        if (outlineGrp) outlineGrp.style.display = (isLine || isStar) ? 'none' : '';
+        if (linePresets) linePresets.style.display = isLine ? '' : 'none';
+        if (strokeLabel) strokeLabel.textContent = isLine ? 'Color' : 'Stroke';
+        if (!isLine && !isStar) {
+            document.getElementById('sel-radius').value = item.cornerRadius || 0;
+        }
         document.getElementById('sel-stroke-w').value = item.strokeWidth || 0;
-        document.getElementById('sel-stroke-c').value = item.strokeColor || '#000000';
+        document.getElementById('sel-stroke-c').value = item.strokeColor || '#c8a96a';
         // Sync fill color picker
         const fillInput = document.getElementById('sel-fill-color');
         if (fillInput) fillInput.value = (item.style && item.style.fill && item.style.fill !== 'transparent') ? item.style.fill : '#333333';
         // Sync outline-only toggle
         const outlineBtn = document.getElementById('btn-outline-toggle');
         if (outlineBtn) outlineBtn.style.background = (item.style && (item.style.fill === 'transparent' || item.style.fill === 'none' || !item.style.fill)) ? 'var(--primary)' : '#333';
+        // Line-specific: set width custom input and highlight matching preset
+        if (isLine) {
+            const lwCustom = document.getElementById('sel-line-width-custom');
+            if (lwCustom) lwCustom.value = item.strokeWidth || 1;
+            // Highlight matching preset button
+            if (linePresets) {
+                linePresets.querySelectorAll('.ctrl-btn').forEach(btn => {
+                    btn.classList.toggle('active', parseFloat(btn.textContent) === (item.strokeWidth || 1));
+                });
+            }
+        }
     }
     document.getElementById('ctrl-lock').innerText = item.locked ? '🔒' : '🔓';
     document.getElementById('ctrl-lock').classList.toggle('active', item.locked);
@@ -1408,6 +1569,25 @@ function updateSelectionBar() {
     if (btnSetBg) {
         btnSetBg.style.display = (item?.type === 'image') ? 'block' : 'none';
     }
+
+    // X/Y/W/H position + size inputs (Arrange tab)
+    const xIn = document.getElementById('pos-x-input');
+    const yIn = document.getElementById('pos-y-input');
+    const wIn = document.getElementById('pos-w-input');
+    const hIn = document.getElementById('pos-h-input');
+    const whRow = document.getElementById('wh-inputs');
+    if (xIn) xIn.value = Math.round(item.x);
+    if (yIn) yIn.value = Math.round(item.y);
+    // Only show W/H for shapes, images, and lines — not text
+    if (whRow) whRow.style.display = (item.type === 'text') ? 'none' : 'flex';
+    if (item.type !== 'text') {
+        const el = document.getElementById(selectedId);
+        if (wIn) wIn.value = Math.round(item.width || (el ? el.offsetWidth : 0));
+        if (hIn) hIn.value = Math.round(item.height || (el ? el.offsetHeight : 0));
+    }
+
+    // Auto-open Design tab for shapes and lines
+    if (item.type === 'shape' || item.type === 'line') setBarTab('design');
 
     renderLayerList();
 }
@@ -1753,12 +1933,88 @@ function addLine() {
     const scalerRect = scaler.getBoundingClientRect();
     const cx = (vpRect.left + vpRect.width/2 - scalerRect.left) / zoomScale;
     const cy = (vpRect.top + vpRect.height/2 - scalerRect.top) / zoomScale;
-    const x = Math.max(50, Math.min(BASE_W - 250, cx - 100));
+    const maxZ = docV2.elements.reduce((m, e) => Math.max(m, e.zIndex || 0), 0);
+    const x = Math.max(50, Math.min(BASE_W - 350, cx - 150));
     const y = Math.max(50, Math.min(BASE_H - 50, cy));
-    docV2.elements.push({id, type:'shape', x, y, width:200, height:4, zIndex:50, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fill:'#c8a96a'} });
+    docV2.elements.push({
+        id, type: 'line',
+        x, y,
+        x1: 0, y1: 0,
+        x2: 300, y2: 0,
+        width: 300, height: 1,
+        strokeColor: '#c8a96a', strokeWidth: 1,
+        zIndex: maxZ + 1, opacity: 1, rotation: 0,
+        visible: true, locked: false, layerRole: 'content'
+    });
     render();
-    selectById(id);
-    showToast('Line added — resize with handles, rotate in LAYER tab');
+    setTimeout(() => { selectById(id); setBarTab('design'); }, 50);
+    showToast('\u2571 Line added \u2014 set width in Design tab');
+}
+
+function addCircle() {
+    pushState();
+    const id = 'circle_' + Date.now();
+    const maxZ = docV2.elements.reduce((m, e) => Math.max(m, e.zIndex || 0), 0);
+    docV2.elements.push({
+        id, type: 'shape', shapeType: 'circle',
+        x: 300, y: 300, width: 150, height: 150,
+        zIndex: maxZ + 1, opacity: 1, rotation: 0,
+        visible: true, locked: false, layerRole: 'content',
+        strokeWidth: 0, strokeColor: '#c8a96a', cornerRadius: 75,
+        style: { fill: '#c8a96a' }
+    });
+    render();
+    setTimeout(() => { selectById(id); setBarTab('design'); }, 50);
+    showToast('\u2b55 Circle added');
+}
+
+function addStar() {
+    pushState();
+    const id = 'star_' + Date.now();
+    const maxZ = docV2.elements.reduce((m, e) => Math.max(m, e.zIndex || 0), 0);
+    docV2.elements.push({
+        id, type: 'shape', shapeType: 'star',
+        x: 300, y: 300, width: 150, height: 150,
+        zIndex: maxZ + 1, opacity: 1, rotation: 0,
+        visible: true, locked: false, layerRole: 'content',
+        strokeWidth: 0, strokeColor: '#c8a96a', cornerRadius: 0,
+        style: { fill: '#c8a96a' }
+    });
+    render();
+    setTimeout(() => { selectById(id); setBarTab('design'); }, 50);
+    showToast('\u2b50 Star added');
+}
+
+function setLineWidth(w) {
+    if (!selectedId) return;
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item || item.type !== 'line') return;
+    pushState();
+    item.strokeWidth = w;
+    item.height = Math.max(w, 1);
+    const lwCustom = document.getElementById('sel-line-width-custom');
+    if (lwCustom) lwCustom.value = w;
+    render();
+}
+
+function setPosFromInput(axis, val) {
+    if (!selectedId || isNaN(val)) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item) return;
+    item[axis] = val;
+    render();
+}
+
+function setSizeFromInput(dim, val) {
+    if (!selectedId || isNaN(val) || val < 1) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item) return;
+    item[dim] = val;
+    // For lines, keep strokeWidth synced to height if dim==='height'
+    if (item.type === 'line' && dim === 'height') item.strokeWidth = val;
+    render();
 }
 
 function updateShapeFill(v) {
@@ -2320,9 +2576,36 @@ async function exportPng() {
             const offsetY = T + (H - drawH) / 2;
             ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
         }
-        else if(el.type==='shape') { ctx.fillStyle=el.style.fill; ctx.fillRect(L, T, W, H); }
+        else if(el.type==='line') {
+            // SVG line rendered via Canvas lineTo
+            ctx.strokeStyle = el.strokeColor || '#c8a96a';
+            ctx.lineWidth = (el.strokeWidth || 1) * S;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(L + (el.x1||0)*S, T + ((el.y1||0)+(el.strokeWidth||1)/2)*S);
+            ctx.lineTo(L + (el.x2||(el.width||300))*S, T + ((el.y2||0)+(el.strokeWidth||1)/2)*S);
+            ctx.stroke();
+        }
+        else if(el.type==='shape' && el.shapeType==='circle') {
+            ctx.fillStyle = (el.style && el.style.fill) ? el.style.fill : '#c8a96a';
+            ctx.beginPath();
+            ctx.ellipse(L+W/2, T+H/2, W/2, H/2, 0, 0, 2*Math.PI);
+            ctx.fill();
+        }
+        else if(el.type==='shape' && el.shapeType==='star') {
+            ctx.fillStyle = (el.style && el.style.fill) ? el.style.fill : '#c8a96a';
+            // Star polygon (5-point, same as CSS clip-path)
+            const pts = [[50,0],[61,35],[98,35],[68,57],[79,91],[50,70],[21,91],[32,57],[2,35],[39,35]];
+            ctx.beginPath();
+            pts.forEach(([px,py], i) => {
+                const sx = L + (px/100)*W, sy = T + (py/100)*H;
+                i===0 ? ctx.moveTo(sx,sy) : ctx.lineTo(sx,sy);
+            });
+            ctx.closePath(); ctx.fill();
+        }
+        else if(el.type==='shape') { ctx.fillStyle = (el.style && el.style.fill) ? el.style.fill : 'transparent'; if(el.style && el.style.fill && el.style.fill !== 'transparent') ctx.fillRect(L, T, W, H); }
         
-        if(el.strokeWidth && el.type!=='text') {
+        if(el.strokeWidth && el.type!=='text' && el.type!=='line' && el.shapeType!=='star') {
             ctx.strokeStyle = el.strokeColor || '#000'; ctx.lineWidth = el.strokeWidth * S;
             if (el.cornerRadius) {
                 const R = el.cornerRadius * S;
