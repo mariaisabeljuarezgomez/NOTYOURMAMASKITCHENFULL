@@ -918,7 +918,11 @@ function render() {
             const svgH = Math.max(Math.abs((d.y2||0) - (d.y1||0)), d.strokeWidth || 1, 20);
             el.style.width = svgW + 'px';
             el.style.height = svgH + 'px';
+            // BUG 3 FIX: Selection hit area
+            el.style.minWidth = '400px';
+            el.style.minHeight = '20px';
             el.style.background = 'transparent';
+            el.style.pointerEvents = 'all';
             el.style.border = 'none';
             el.style.overflow = 'visible';
             const ns = 'http://www.w3.org/2000/svg';
@@ -941,6 +945,15 @@ function render() {
             el = document.createElement('div');
             el.id = d.id;
             el.className = 'editable-element ' + (d.type==='text'?'editable-text':'shape-object');
+            // BUG 1 FIX: Inner container for clipping protection
+            if (d.type === 'shape') {
+                const inner = document.createElement('div');
+                inner.className = 'shape-inner';
+                inner.style.width = '100%';
+                inner.style.height = '100%';
+                inner.style.pointerEvents = 'none';
+                el.appendChild(inner);
+            }
         }
 
         if(d.locked) el.classList.add('locked');
@@ -978,7 +991,11 @@ function render() {
             if(d.style.color) el.style.color = d.style.color;
             if(d.style.lineHeight) el.style.lineHeight = d.style.lineHeight;
             if(d.style.letterSpacing) el.style.letterSpacing = d.style.letterSpacing + 'px';
-            if(d.style.fill) el.style.backgroundColor = d.style.fill;
+            if(d.style.fill) {
+                const target = el.querySelector('.shape-inner') || el;
+                target.style.backgroundColor = d.style.fill;
+                if (d.type === 'shape') el.style.backgroundColor = 'transparent';
+            }
         }
         if (d.type === 'text') {
             if (d.width) {
@@ -998,16 +1015,19 @@ function render() {
         
         // Shape-type overrides after base styles applied
         if (d.type === 'shape' && d.shapeType === 'circle') {
-            el.style.borderRadius = '50%';
-        } else if (d.type === 'shape' && d.shapeType === 'star') {
-            el.style.backgroundColor = (d.style && d.style.fill && d.style.fill !== 'transparent') ? d.style.fill : 'transparent';
-            el.style.border = 'none';
+            el.querySelector('.shape-inner').style.borderRadius = '50%';
             el.style.borderRadius = '0';
-            el.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
+        } else if (d.type === 'shape' && d.shapeType === 'star') {
+            const inner = el.querySelector('.shape-inner');
+            inner.style.backgroundColor = (d.style && d.style.fill) ? d.style.fill : 'transparent';
+            inner.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
+            el.style.backgroundColor = 'transparent';
+            el.style.clipPath = 'none'; // BUG 1 FIX: Handles stay visible
+            el.style.borderRadius = '0';
             if ((d.strokeWidth || 0) > 0) {
-                el.style.boxShadow = `inset 0 0 0 ${d.strokeWidth}px ${d.strokeColor || '#c8a96a'}`;
+                inner.style.boxShadow = `inset 0 0 0 ${d.strokeWidth}px ${d.strokeColor || '#c8a96a'}`;
             } else {
-                el.style.boxShadow = 'none';
+                inner.style.boxShadow = 'none';
             }
         } else if (d.type === 'line') {
             // Ensure line wrapper stays transparent
@@ -1944,8 +1964,8 @@ function addLine() {
         x, y,
         x1: 0, y1: 0,
         x2: 400, y2: 0,
-        width: 400, height: 4,
-        strokeColor: '#c8a96a', strokeWidth: 4, lineCap: 'butt',
+        width: 400, height: 4, // BUG 3 FIX: Visibility
+        strokeColor: '#c8a96a', strokeWidth: 4, lineCap: 'butt', // BUG 3 FIX: Visibility
         zIndex: maxZ + 1, opacity: 1, rotation: 0,
         visible: true, locked: false, layerRole: 'content'
     });
@@ -2026,18 +2046,23 @@ function updateShapeFill(v) {
     const item = docV2.elements.find(e => e.id === selectedId);
     if (item) {
         if (!item.style) item.style = {};
-        item.style.fillColor = v; // Per Prompt 3
+        item.style.fillColor = v; 
         item.style.fill = v;
-        
-        // Instant DOM apply
+        if (item.type === 'line') item.strokeColor = v; // BUG 2 FIX
+
         const domNode = document.getElementById(selectedId);
         if (domNode) {
-            const svgShape = domNode.querySelector('rect, circle, ellipse, polygon, path');
-            if (svgShape) svgShape.setAttribute('fill', v);
+            if (item.type === 'line') {
+                const innerLine = domNode.querySelector('line');
+                if (innerLine) innerLine.setAttribute('stroke', v);
+            } else {
+                const inner = domNode.querySelector('.shape-inner');
+                if (inner) inner.style.backgroundColor = v;
+                else domNode.style.backgroundColor = v;
+            }
         }
-        
-        render();
-        selectById(selectedId);
+        // NO render() here — direct DOM update above is instant
+        // render() would rebuild the DOM and cause a flash
         sync();
     }
 }
