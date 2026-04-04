@@ -468,6 +468,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     <div class="ls-section-title">Create Elements</div>
     <button class="ls-action-btn" onclick="addText()"><span class="ls-btn-icon">T</span><span class="ls-btn-label">Add Text</span></button>
     <button class="ls-action-btn" onclick="addRect()"><span class="ls-btn-icon">⬜</span><span class="ls-btn-label">Add Rectangle</span></button>
+    <button class="ls-action-btn" onclick="addLine()"><span class="ls-btn-icon">—</span><span class="ls-btn-label">Add Line</span></button>
     <button class="ls-action-btn" onclick="document.getElementById('in-img').click()"><span class="ls-btn-icon">📷</span><span class="ls-btn-label">Upload Image</span></button>
     <button class="ls-action-btn" onclick="document.getElementById('in-bg').click()"><span class="ls-btn-icon">🖼️</span><span class="ls-btn-label">Replace Background</span></button>
     <button class="ls-action-btn" onclick="toggleBg()"><span class="ls-btn-icon">👁️</span><span class="ls-btn-label">Toggle Original BG</span></button>
@@ -583,9 +584,11 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         </div>
 
         <div id="bar-tab-design" style="display:none; align-items:center; gap:10px;">
-            <div id="geo-style-ctrls" style="display:flex; align-items:center; gap:10px;">
+            <div id="geo-style-ctrls" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <div class="ctrl-group"><label>Fill</label><input type="color" id="sel-fill-color" onchange="updateShapeFill(this.value)"></div>
                 <div class="ctrl-group"><label>Rad</label><input type="range" id="sel-radius" min="0" max="200" style="width:40px" oninput="updateProp('cornerRadius', parseInt(this.value))"></div>
                 <div class="ctrl-group"><label>Stroke</label><input type="number" id="sel-stroke-w" min="0" max="50" style="width:40px" onchange="updateProp('strokeWidth', parseInt(this.value))"><input type="color" id="sel-stroke-c" onchange="updateProp('strokeColor', this.value)"></div>
+                <div class="ctrl-group"><button id="btn-outline-toggle" class="ctrl-btn" style="font-size:10px; padding:4px 10px; white-space:nowrap; width:auto;" onclick="toggleOutlineOnly()">Outline Only</button></div>
             </div>
             <div id="text-style-ctrls" style="display:none; align-items:center; gap:10px;">
                 <select id="sel-font" style="max-width:100px" onchange="updateStyle('fontFamily', this.value)"><option value="bernard-mt-condensed-regular">Bernard Mt Condensed Regular</option>
@@ -942,7 +945,7 @@ function render() {
         }
         
         elementsLayer.appendChild(el); attach(el);
-        if(selectedId === d.id && d.type === 'image') injectResizeHandles(el);
+        if(selectedId === d.id && (d.type === 'image' || d.type === 'shape')) injectResizeHandles(el);
     });
     renderLayerList();
     if(selectedId) updateSelectionBar();
@@ -961,7 +964,7 @@ function renderLayerList() {
             selectById(item.id); 
         };
         
-        const icon = item.type==='text'?'T':(item.type==='image'?'🖼️':'⬜');
+        const icon = item.type==='text' ? 'T' : (item.type==='image' ? '🖼️' : ((item.height||0) <= 8 ? '—' : '⬜'));
         const name = item.text || item.id;
         
         const roleTag = `<span style="font-size:8px; padding:2px 4px; border-radius:3px; background:#444; color:#aaa; text-transform:uppercase; margin-right:4px;">${item.layerRole || 'content'}</span>`;
@@ -986,6 +989,8 @@ function renderLayerList() {
 
 function injectResizeHandles(el) {
     el.querySelectorAll('.resize-handle').forEach(h => h.remove());
+    const itemForType = docV2.elements.find(i => i.id === el.id);
+    const isShape = itemForType && itemForType.type === 'shape';
     ['nw','ne','sw','se'].forEach(corner => {
         const h = document.createElement('div');
         h.className = 'resize-handle';
@@ -1002,27 +1007,46 @@ function injectResizeHandles(el) {
             if (!item || item.locked || (docV2.settings.backgroundLayerLocked && item.layerRole === 'background')) return;
             pushState();
             const startX = e.clientX, startY = e.clientY;
-            const imgChild = el.querySelector('img');
-            const naturalW = imgChild?.naturalWidth || 400;
-            const naturalH = imgChild?.naturalHeight || 400;
-            const startW = item.width || el.offsetWidth || naturalW;
-            const startH = item.height || el.offsetHeight || naturalH;
+            const startW = item.width || el.offsetWidth || 100;
+            const startH = item.height || el.offsetHeight || 100;
             const startLeft=item.x, startTop=item.y;
-            const ar = startW/startH;
-            h.onpointermove = (pe) => {
-                const scalerRect = document.getElementById('scaler-wrapper').getBoundingClientRect();
-                const currentScale = scalerRect.width / BASE_W;
-                const dx = (pe.clientX - startX) / currentScale;
-                const dy = (pe.clientY - startY) / currentScale;
-                let nW,nH,nX=startLeft,nY=startTop;
-                if(corner==='se'){ nW=Math.max(40,startW+dx); nH=nW/ar; }
-                else if(corner==='sw'){ nW=Math.max(40,startW-dx); nH=nW/ar; nX=startLeft+(startW-nW); }
-                else if(corner==='ne'){ nW=Math.max(40,startW+dx); nH=nW/ar; nY=startTop+(startH-nH); }
-                else{ nW=Math.max(40,startW-dx); nH=nW/ar; nX=startLeft+(startW-nW); nY=startTop+(startH-nH); }
-                item.width=nW; item.height=nH; item.x=nX; item.y=nY;
-                el.style.width=nW+'px'; el.style.height=nH+'px';
-                el.style.left=nX+'px'; el.style.top=nY+'px';
-            };
+            if (isShape) {
+                // Free resize — no aspect ratio lock
+                h.onpointermove = (pe) => {
+                    const scalerRect = document.getElementById('scaler-wrapper').getBoundingClientRect();
+                    const currentScale = scalerRect.width / BASE_W;
+                    const dx = (pe.clientX - startX) / currentScale;
+                    const dy = (pe.clientY - startY) / currentScale;
+                    let nW, nH, nX=startLeft, nY=startTop;
+                    if(corner==='se')      { nW=Math.max(10,startW+dx); nH=Math.max(10,startH+dy); }
+                    else if(corner==='sw') { nW=Math.max(10,startW-dx); nH=Math.max(10,startH+dy); nX=startLeft+(startW-nW); }
+                    else if(corner==='ne') { nW=Math.max(10,startW+dx); nH=Math.max(10,startH-dy); nY=startTop+(startH-nH); }
+                    else                   { nW=Math.max(10,startW-dx); nH=Math.max(10,startH-dy); nX=startLeft+(startW-nW); nY=startTop+(startH-nH); }
+                    item.width=nW; item.height=nH; item.x=nX; item.y=nY;
+                    el.style.width=nW+'px'; el.style.height=nH+'px';
+                    el.style.left=nX+'px'; el.style.top=nY+'px';
+                };
+            } else {
+                // Image resize — aspect ratio locked
+                const imgChild = el.querySelector('img');
+                const naturalW = imgChild?.naturalWidth || 400;
+                const naturalH = imgChild?.naturalHeight || 400;
+                const ar = startW/startH;
+                h.onpointermove = (pe) => {
+                    const scalerRect = document.getElementById('scaler-wrapper').getBoundingClientRect();
+                    const currentScale = scalerRect.width / BASE_W;
+                    const dx = (pe.clientX - startX) / currentScale;
+                    const dy = (pe.clientY - startY) / currentScale;
+                    let nW,nH,nX=startLeft,nY=startTop;
+                    if(corner==='se'){ nW=Math.max(40,startW+dx); nH=nW/ar; }
+                    else if(corner==='sw'){ nW=Math.max(40,startW-dx); nH=nW/ar; nX=startLeft+(startW-nW); }
+                    else if(corner==='ne'){ nW=Math.max(40,startW+dx); nH=nW/ar; nY=startTop+(startH-nH); }
+                    else{ nW=Math.max(40,startW-dx); nH=nW/ar; nX=startLeft+(startW-nW); nY=startTop+(startH-nH); }
+                    item.width=nW; item.height=nH; item.x=nX; item.y=nY;
+                    el.style.width=nW+'px'; el.style.height=nH+'px';
+                    el.style.left=nX+'px'; el.style.top=nY+'px';
+                };
+            }
             h.onpointerup = () => { h.onpointermove=null; h.onpointerup=null; sync(); };
         };
         el.appendChild(h);
@@ -1059,16 +1083,22 @@ function attach(el) {
             }
         }
 
-        // Always init dimensions and inject resize handles for images
-        if (_itemData.type === 'image') {
-            if (!_itemData.width || !_itemData.height) {
-                const initImg = document.getElementById(_itemData.id)?.querySelector('img');
-                if (initImg && initImg.naturalWidth) {
-                    _itemData.width = initImg.naturalWidth > 800 ? 400 : initImg.naturalWidth;
-                    _itemData.height = initImg.naturalHeight > 800 ? 400 : initImg.naturalHeight;
-                } else {
-                    _itemData.width = 400; _itemData.height = 400;
+        // Always init dimensions and inject resize handles for images and shapes
+        if (_itemData.type === 'image' || _itemData.type === 'shape') {
+            if (_itemData.type === 'image') {
+                if (!_itemData.width || !_itemData.height) {
+                    const initImg = document.getElementById(_itemData.id)?.querySelector('img');
+                    if (initImg && initImg.naturalWidth) {
+                        _itemData.width = initImg.naturalWidth > 800 ? 400 : initImg.naturalWidth;
+                        _itemData.height = initImg.naturalHeight > 800 ? 400 : initImg.naturalHeight;
+                    } else {
+                        _itemData.width = 400; _itemData.height = 400;
+                    }
                 }
+            } else {
+                // Shape: ensure dimensions are set
+                if (!_itemData.width) _itemData.width = el.offsetWidth || 100;
+                if (!_itemData.height) _itemData.height = el.offsetHeight || 100;
             }
             injectResizeHandles(el);
         }
@@ -1345,6 +1375,12 @@ function updateSelectionBar() {
         document.getElementById('sel-radius').value = item.cornerRadius || 0;
         document.getElementById('sel-stroke-w').value = item.strokeWidth || 0;
         document.getElementById('sel-stroke-c').value = item.strokeColor || '#000000';
+        // Sync fill color picker
+        const fillInput = document.getElementById('sel-fill-color');
+        if (fillInput) fillInput.value = (item.style && item.style.fill && item.style.fill !== 'transparent') ? item.style.fill : '#333333';
+        // Sync outline-only toggle
+        const outlineBtn = document.getElementById('btn-outline-toggle');
+        if (outlineBtn) outlineBtn.style.background = (item.style && (item.style.fill === 'transparent' || item.style.fill === 'none' || !item.style.fill)) ? 'var(--primary)' : '#333';
     }
     document.getElementById('ctrl-lock').innerText = item.locked ? '🔒' : '🔓';
     document.getElementById('ctrl-lock').classList.toggle('active', item.locked);
@@ -1637,17 +1673,122 @@ function addText() {
     selectById(id); 
 }
 function addRect() {
+    window._drawMode = 'rect';
+    const mc = document.getElementById('menu-container');
+    if (mc) mc.style.cursor = 'crosshair';
+    showToast('Click and drag on the menu to draw a rectangle');
+
+    let preview = null;
+    let drawStartX = 0, drawStartY = 0;
+
+    function _drawPointerDown(e) {
+        if (window._drawMode !== 'rect') return;
+        if (e.target.classList.contains('resize-handle')) return;
+        e.stopPropagation();
+        const scalerRect = scaler.getBoundingClientRect();
+        drawStartX = (e.clientX - scalerRect.left) / zoomScale;
+        drawStartY = (e.clientY - scalerRect.top) / zoomScale;
+
+        preview = document.createElement('div');
+        preview.id = 'draw-preview';
+        preview.style.cssText = 'position:absolute; border:2px dashed #f1c40f; background:rgba(241,196,15,0.15); pointer-events:none; z-index:9998;';
+        preview.style.left = drawStartX + 'px';
+        preview.style.top = drawStartY + 'px';
+        preview.style.width = '0px';
+        preview.style.height = '0px';
+        document.getElementById('elements-layer').appendChild(preview);
+
+        mc.addEventListener('pointermove', _drawPointerMove);
+        mc.addEventListener('pointerup', _drawPointerUp, { once: true });
+    }
+
+    function _drawPointerMove(e) {
+        if (!preview) return;
+        const scalerRect = scaler.getBoundingClientRect();
+        const curX = (e.clientX - scalerRect.left) / zoomScale;
+        const curY = (e.clientY - scalerRect.top) / zoomScale;
+        const x = Math.min(curX, drawStartX);
+        const y = Math.min(curY, drawStartY);
+        const w = Math.abs(curX - drawStartX);
+        const h = Math.abs(curY - drawStartY);
+        preview.style.left = x + 'px';
+        preview.style.top = y + 'px';
+        preview.style.width = w + 'px';
+        preview.style.height = h + 'px';
+    }
+
+    function _drawPointerUp(e) {
+        mc.removeEventListener('pointermove', _drawPointerMove);
+        mc.removeEventListener('pointerdown', _drawPointerDown);
+        window._drawMode = null;
+        if (mc) mc.style.cursor = 'default';
+
+        if (!preview) return;
+        const finW = parseFloat(preview.style.width);
+        const finH = parseFloat(preview.style.height);
+        const finX = parseFloat(preview.style.left);
+        const finY = parseFloat(preview.style.top);
+        preview.remove();
+        preview = null;
+
+        if (finW < 10 || finH < 10) {
+            showToast('Draw cancelled — drag a larger area', 'warning');
+            return;
+        }
+
+        pushState();
+        const id = 'rect_' + Date.now();
+        docV2.elements.push({id, type:'shape', x:finX, y:finY, width:finW, height:finH, zIndex:5, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fill:'#333333'} });
+        render();
+        selectById(id);
+    }
+
+    mc.addEventListener('pointerdown', _drawPointerDown);
+}
+
+function addLine() {
     pushState();
-    let id = 'rect_' + Date.now();
+    const id = 'line_' + Date.now();
     const vpRect = viewport.getBoundingClientRect();
     const scalerRect = scaler.getBoundingClientRect();
     const cx = (vpRect.left + vpRect.width/2 - scalerRect.left) / zoomScale;
     const cy = (vpRect.top + vpRect.height/2 - scalerRect.top) / zoomScale;
-    const x = Math.max(50, Math.min(BASE_W - 350, cx - 150));
-    const y = Math.max(50, Math.min(BASE_H - 250, cy - 100));
-    docV2.elements.push({id, type:'shape', x, y, width:300, height:200, zIndex:5, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fill:'#f1c40f'} });
+    const x = Math.max(50, Math.min(BASE_W - 250, cx - 100));
+    const y = Math.max(50, Math.min(BASE_H - 50, cy));
+    docV2.elements.push({id, type:'shape', x, y, width:200, height:4, zIndex:50, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fill:'#c8a96a'} });
     render();
     selectById(id);
+    showToast('Line added — resize with handles, rotate in LAYER tab');
+}
+
+function updateShapeFill(v) {
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (item) {
+        if (!item.style) item.style = {};
+        item.style.fill = v;
+        render();
+    }
+}
+
+function toggleOutlineOnly() {
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item) return;
+    if (!item.style) item.style = {};
+    const currentFill = item.style.fill;
+    if (!currentFill || currentFill === 'transparent' || currentFill === 'none') {
+        // Restore fill
+        item.style.fill = '#333333';
+    } else {
+        // Set to outline-only
+        item.style.fill = 'transparent';
+        if (!item.strokeWidth || item.strokeWidth < 2) item.strokeWidth = 2;
+        if (!item.strokeColor) item.strokeColor = '#c8a96a';
+    }
+    render();
 }
 async function trimTransparentPixels(src) {
     return new Promise((resolve) => {
