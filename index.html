@@ -954,6 +954,7 @@ function renderLayerList() {
     [...docV2.elements].sort((a,b)=> (b.zIndex||10)-(a.zIndex||10)).forEach(item => {
         const div = document.createElement('div');
         div.className = 'layer-item' + (selectedId === item.id ? ' active' : '');
+        div.setAttribute('title', item.text || item.type + ' — ' + item.id);
         div.onclick = (e) => { 
             e.stopPropagation(); 
             if (item.locked || (docV2.settings?.backgroundLayerLocked && item.layerRole === 'background')) return;
@@ -2675,11 +2676,7 @@ document.addEventListener('touchend', function(e) {
 // ===== END PHASE 7 LASSO =====
 </script>
 
-<!-- Fix 5b - Floating Zoom Buttons (Mobile Repaired) -->
-<div id="zoom-controls" style="position:fixed; right:20px; top:70px; display:none; flex-direction:column; gap:8px; z-index:9999; padding:6px; background:rgba(0,0,0,0.85); border:1px solid #444; border-radius:12px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);">
-    <button onclick="applyZoom(1.2)" style="width:52px;height:52px;border-radius:50%;background:rgba(20,20,20,0.95);color:#fff;border:1px solid #666;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow: 0 4px 12px rgba(0,0,0,0.3);">＋</button>
-    <button onclick="applyZoom(0.833)" style="width:52px;height:52px;border-radius:50%;background:rgba(20,20,20,0.95);color:#fff;border:1px solid #666;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow: 0 4px 12px rgba(0,0,0,0.3);">－</button>
-</div>
+<!-- Fix 5b - Floating Zoom Buttons (Mobile Repaired) - REMOVED -->
 
 <div id="manual-modal-overlay" class="manual-modal-overlay">
     <div class="manual-modal">
