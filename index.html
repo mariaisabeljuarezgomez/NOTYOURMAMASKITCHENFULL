@@ -68,7 +68,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 .editable-text { white-space: pre-wrap; padding: 2px; }
 .image-wrapper { overflow: visible; }
 .image-wrapper img { width:100%; height:100%; object-fit:contain; pointer-events:none; display:block; }
-.shape-object { overflow: hidden; }
+.shape-object { overflow: visible; position: absolute; box-sizing: border-box; }
 
 .resize-handle {
     display: none;
@@ -573,7 +573,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 
         <div id="bar-tab-design" style="display:none; align-items:center; gap:10px;">
             <div id="geo-style-ctrls" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                <div class="ctrl-group" id="ctrl-grp-fill"><label>Fill</label><input type="color" id="sel-fill-color" onchange="updateShapeFill(this.value)"></div>
+                <div class="ctrl-group" id="ctrl-grp-fill"><label>Fill</label><input type="color" id="sel-fill-color" oninput="updateShapeFill(this.value)"></div>
                 <div class="ctrl-group" id="ctrl-grp-radius"><label>Rad</label><input type="range" id="sel-radius" min="0" max="200" style="width:40px" oninput="updateProp('cornerRadius', parseInt(this.value))"></div>
                 <div class="ctrl-group"><label id="stroke-label">Stroke</label><input type="number" id="sel-stroke-w" min="0" max="50" style="width:40px" onchange="updateProp('strokeWidth', parseInt(this.value))"><input type="color" id="sel-stroke-c" onchange="updateProp('strokeColor', this.value)"></div>
                 <div class="ctrl-group" id="ctrl-grp-outline"><button id="btn-outline-toggle" class="ctrl-btn" style="font-size:10px; padding:4px 10px; white-space:nowrap; width:auto;" onclick="toggleOutlineOnly()">Outline Only</button></div>
@@ -1075,10 +1075,9 @@ function injectResizeHandles(el) {
             const h = document.createElement('div');
             h.className = 'resize-handle';
             h.style.position = 'absolute';
-            h.style.width = '14px';
-            h.style.height = '14px';
-            h.style.borderRadius = '3px';
-            h.style.transform = 'rotate(45deg)';
+            h.style.width = '20px';
+            h.style.height = '20px';
+            h.style.borderRadius = '50%';
             h.style.background = '#f1c40f';
             h.style.border = '2px solid #000';
             h.style.cursor = 'crosshair';
@@ -1128,6 +1127,9 @@ function injectResizeHandles(el) {
         h.className = 'resize-handle';
         const isN = corner.includes('n'), isW = corner.includes('w');
         Object.assign(h.style, {
+            display: 'block', position: 'absolute', width: '20px', height: '20px',
+            background: '#f1c40f', border: '2px solid #000', borderRadius: '50%',
+            zIndex: '9999', boxSizing: 'border-box',
             cursor: corner+'-resize',
             top: isN ? '-10px' : 'auto', bottom: isN ? 'auto' : '-10px',
             left: isW ? '-10px' : 'auto', right: isW ? 'auto' : '-10px',
@@ -1941,9 +1943,9 @@ function addLine() {
         id, type: 'line',
         x, y,
         x1: 0, y1: 0,
-        x2: 300, y2: 0,
-        width: 300, height: 1,
-        strokeColor: '#c8a96a', strokeWidth: 1, lineCap: 'butt',
+        x2: 400, y2: 0,
+        width: 400, height: 4,
+        strokeColor: '#c8a96a', strokeWidth: 4, lineCap: 'butt',
         zIndex: maxZ + 1, opacity: 1, rotation: 0,
         visible: true, locked: false, layerRole: 'content'
     });
@@ -2024,8 +2026,18 @@ function updateShapeFill(v) {
     const item = docV2.elements.find(e => e.id === selectedId);
     if (item) {
         if (!item.style) item.style = {};
+        item.style.fillColor = v; // Per Prompt 3
         item.style.fill = v;
+        
+        // Instant DOM apply
+        const domNode = document.getElementById(selectedId);
+        if (domNode) {
+            const svgShape = domNode.querySelector('rect, circle, ellipse, polygon, path');
+            if (svgShape) svgShape.setAttribute('fill', v);
+        }
+        
         render();
+        selectById(selectedId);
         sync();
     }
 }
