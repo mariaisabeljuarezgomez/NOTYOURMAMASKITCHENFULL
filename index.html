@@ -766,15 +766,8 @@ function markClean() {
 }
 
 function openDrawer() {
-    const drawer = document.getElementById('bottom-drawer');
-    loadUserImageTray();
-    drawer.classList.toggle('closed');
-    drawer.querySelectorAll('img[data-src]').forEach(img => {
-        if (!img.src || img.src === window.location.href) {
-            img.src = img.dataset.src;
-        }
-    });
-    loadGlobalSettings();
+    // Bottom drawer retired — use left sidebar tabs instead
+    setLsTab('assets');
 }
 
 function undo() {
@@ -1011,6 +1004,11 @@ function render() {
             el.style.border = 'none';
             el.style.borderRadius = '0';
             el.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
+            if ((d.strokeWidth || 0) > 0) {
+                el.style.boxShadow = `inset 0 0 0 ${d.strokeWidth}px ${d.strokeColor || '#c8a96a'}`;
+            } else {
+                el.style.boxShadow = 'none';
+            }
         } else if (d.type === 'line') {
             // Ensure line wrapper stays transparent
             el.style.backgroundColor = 'transparent';
@@ -2311,9 +2309,9 @@ async function loadUserImages() {
                     });
                 }
             });
-            renderAssetPanel();
         }
     } catch(e) { console.error('Failed to load user images', e); }
+    renderAssetPanel();
 }
 
 async function addFromAsset(assetId, src) {
@@ -3192,7 +3190,7 @@ function setLsTab(tab) {
     document.getElementById('ls-panel-' + t).style.display = t === tab ? 'block' : 'none';
   });
   if (tab === 'assets') {
-    if (typeof renderAssetPanel === 'function') renderAssetPanel();
+    renderAssetPanel();
   }
   if (tab === 'layers') {
     if (typeof renderLayersPanel === 'function') renderLayersPanel();
