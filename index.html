@@ -482,21 +482,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
   <!-- TAB: ASSETS -->
   <div class="ls-panel" id="ls-panel-assets" style="display:none;">
     <div class="ls-section-title">Click to Add</div>
-    <div class="ls-asset-grid">
-      <img data-src="/Images/Asset1.png"  src="" class="ls-asset-item" onclick="addFromTray(this.dataset.src)" title="Asset 1"  loading="lazy" width="80" height="80">
-      <img data-src="/Images/Asset2.png"  src="" class="ls-asset-item" onclick="addFromTray(this.dataset.src)" title="Asset 2"  loading="lazy" width="80" height="80">
-      <img data-src="/Images/Asset3.png"  src="" class="ls-asset-item" onclick="addFromTray(this.dataset.src)" title="Asset 3"  loading="lazy" width="80" height="80">
-      <img data-src="/Images/Asset4.png"  src="" class="ls-asset-item" onclick="addFromTray(this.dataset.src)" title="Asset 4"  loading="lazy" width="80" height="80">
-      <img data-src="/Images/Asset6.png"  src="" class="ls-asset-item" onclick="addFromTray(this.dataset.src)" title="Asset 6"  loading="lazy" width="80" height="80">
-      <img data-src="/Images/Asset7.png"  src="" class="ls-asset-item" onclick="addFromTray(this.dataset.src)" title="Asset 7"  loading="lazy" width="80" height="80">
-      <img data-src="/Images/Asset8.png"  src="" class="ls-asset-item" onclick="addFromTray(this.dataset.src)" title="Asset 8"  loading="lazy" width="80" height="80">
-      <img data-src="/Images/Asset9.png"  src="" class="ls-asset-item" onclick="addFromTray(this.dataset.src)" title="Asset 9"  loading="lazy" width="80" height="80">
-      <img data-src="/Images/Asset10.png" src="" class="ls-asset-item" onclick="addFromTray(this.dataset.src)" title="Asset 10" loading="lazy" width="80" height="80">
-      <img data-src="/Images/Asset11.png" src="" class="ls-asset-item" onclick="addFromTray(this.dataset.src)" title="Asset 11" loading="lazy" width="80" height="80">
-      <img data-src="/Images/Asset12.png" src="" class="ls-asset-item" onclick="addFromTray(this.dataset.src)" title="Asset 12" loading="lazy" width="80" height="80">
-      <img data-src="/Images/Asset13.png" src="" class="ls-asset-item" onclick="addFromTray(this.dataset.src)" title="Asset 13" loading="lazy" width="80" height="80">
-      <img data-src="/Images/Asset14.png" src="" class="ls-asset-item" onclick="addFromTray(this.dataset.src)" title="Asset 14" loading="lazy" width="80" height="80">
-    </div>
+    <div class="ls-asset-grid"></div>
   </div>
   <!-- TAB: LAYERS -->
   <div class="ls-panel" id="ls-panel-layers" style="display:none;">
@@ -602,6 +588,12 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
                     <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(2)">2</button>
                     <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(3)">3</button>
                     <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(4)">4</button>
+                  </div>
+                  <div style="display:flex; gap:6px; align-items:center; margin-top:4px;">
+                    <label style="font-size:9px;color:#777;font-weight:700;">Ends</label>
+                    <button id="btn-cap-butt"   class="ctrl-btn" style="width:auto;padding:2px 10px;font-size:10px;" onclick="setLineCap('butt')">Flat</button>
+                    <button id="btn-cap-round"  class="ctrl-btn" style="width:auto;padding:2px 10px;font-size:10px;" onclick="setLineCap('round')">Round</button>
+                    <button id="btn-cap-square" class="ctrl-btn" style="width:auto;padding:2px 10px;font-size:10px;" onclick="setLineCap('square')">Square</button>
                   </div>
                   <input type="number" id="sel-line-width-custom" min="0.1" max="50" step="0.25"
                     style="width:50px; background:#111; border:1px solid #444; color:var(--accent); border-radius:6px; padding:4px 6px; font-size:11px; outline:none;"
@@ -949,7 +941,7 @@ function render() {
             lineEl.setAttribute('y2', (d.y2 || 0) + (d.strokeWidth || 1) / 2);
             lineEl.setAttribute('stroke', d.strokeColor || '#c8a96a');
             lineEl.setAttribute('stroke-width', d.strokeWidth || 1);
-            lineEl.setAttribute('stroke-linecap', 'round');
+            lineEl.setAttribute('stroke-linecap', d.lineCap || 'butt');
             svg.appendChild(lineEl);
             el.appendChild(svg);
         } else {
@@ -1015,7 +1007,7 @@ function render() {
         if (d.type === 'shape' && d.shapeType === 'circle') {
             el.style.borderRadius = '50%';
         } else if (d.type === 'shape' && d.shapeType === 'star') {
-            el.style.backgroundColor = (d.style && d.style.fill) ? d.style.fill : '#c8a96a';
+            el.style.backgroundColor = (d.style && d.style.fill && d.style.fill !== 'transparent') ? d.style.fill : 'transparent';
             el.style.border = 'none';
             el.style.borderRadius = '0';
             el.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
@@ -1084,10 +1076,17 @@ function injectResizeHandles(el) {
         [{ key: 'A', xProp: 'x1', yProp: 'y1' }, { key: 'B', xProp: 'x2', yProp: 'y2' }].forEach(ep => {
             const h = document.createElement('div');
             h.className = 'resize-handle';
-            h.style.cursor = 'move';
             h.style.position = 'absolute';
-            h.style.left = (item[ep.xProp] || 0) - 10 + 'px';
-            h.style.top  = (item[ep.yProp] || 0) - 10 + 'px';
+            h.style.width = '14px';
+            h.style.height = '14px';
+            h.style.borderRadius = '3px';
+            h.style.transform = 'rotate(45deg)';
+            h.style.background = '#f1c40f';
+            h.style.border = '2px solid #000';
+            h.style.cursor = 'crosshair';
+            h.title = ep.key === 'A' ? 'Drag endpoint A' : 'Drag endpoint B';
+            h.style.left = (item[ep.xProp] || 0) - 7 + 'px';
+            h.style.top  = (item[ep.yProp] || 0) - 7 + 'px';
             h.style.zIndex = '10000';
             h.onpointerdown = (e) => {
                 e.stopPropagation(); e.preventDefault();
@@ -1515,9 +1514,9 @@ function updateSelectionBar() {
         const outlineGrp = document.getElementById('ctrl-grp-outline');
         const linePresets = document.getElementById('line-width-presets');
         const strokeLabel = document.getElementById('stroke-label');
-        if (fillGrp) fillGrp.style.display = (isLine || isStar) ? 'none' : '';
+        if (fillGrp) fillGrp.style.display = isLine ? 'none' : '';
         if (radGrp) radGrp.style.display = (isLine || isStar) ? 'none' : '';
-        if (outlineGrp) outlineGrp.style.display = (isLine || isStar) ? 'none' : '';
+        if (outlineGrp) outlineGrp.style.display = isLine ? 'none' : '';
         if (linePresets) linePresets.style.display = isLine ? '' : 'none';
         if (strokeLabel) strokeLabel.textContent = isLine ? 'Color' : 'Stroke';
         if (!isLine && !isStar) {
@@ -1541,6 +1540,10 @@ function updateSelectionBar() {
                     btn.classList.toggle('active', parseFloat(btn.textContent) === (item.strokeWidth || 1));
                 });
             }
+            ['butt','round','square'].forEach(cap => {
+                const btn = document.getElementById('btn-cap-' + cap);
+                if (btn) btn.classList.toggle('active', (item.lineCap || 'butt') === cap);
+            });
         }
     }
     document.getElementById('ctrl-lock').innerText = item.locked ? '🔒' : '🔓';
@@ -1942,7 +1945,7 @@ function addLine() {
         x1: 0, y1: 0,
         x2: 300, y2: 0,
         width: 300, height: 1,
-        strokeColor: '#c8a96a', strokeWidth: 1,
+        strokeColor: '#c8a96a', strokeWidth: 1, lineCap: 'butt',
         zIndex: maxZ + 1, opacity: 1, rotation: 0,
         visible: true, locked: false, layerRole: 'content'
     });
@@ -2025,6 +2028,7 @@ function updateShapeFill(v) {
         if (!item.style) item.style = {};
         item.style.fill = v;
         render();
+        sync();
     }
 }
 
@@ -2045,6 +2049,17 @@ function toggleOutlineOnly() {
         if (!item.strokeColor) item.strokeColor = '#c8a96a';
     }
     render();
+    sync();
+}
+
+function setLineCap(cap) {
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item || item.type !== 'line') return;
+    item.lineCap = cap;
+    render();
+    sync();
 }
 async function trimTransparentPixels(src) {
     return new Promise((resolve) => {
@@ -2119,44 +2134,33 @@ async function importImg(input) {
     if (!f) return;
     let r = new FileReader();
     r.onload = async (e) => {
-        const trimmedSrc = await trimTransparentPixels(e.target.result);
-        const filename = f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const base64Data = await trimTransparentPixels(e.target.result);
         try {
             const res = await fetch('/api/upload-image', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ filename, data: trimmedSrc })
+                body: JSON.stringify({ image: base64Data, filename: f.name, mimeType: f.type })
             });
             const json = await res.json();
             if (json.url) {
-                // Phase 2C: Register uploaded image into docV2.assets
-                const newAssetId = 'asset_user_' + Date.now();
-                const uploadedFilename = f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
                 docV2.assets = docV2.assets || [];
+                const newAssetId = 'asset_user_' + Date.now();
                 docV2.assets.push({
                     id: newAssetId,
                     kind: 'image',
-                    name: uploadedFilename,
-                    storage: {
-                        originalUrl: json.url,
-                        previewUrl: json.url,
-                        thumbnailUrl: null
-                    },
-                    original: {
-                        width: null,
-                        height: null,
-                        mimeType: f.type || 'image/png'
-                    },
+                    name: f.name,
+                    storage: { originalUrl: json.url, previewUrl: json.url, thumbnailUrl: null },
+                    original: { width: null, height: null, mimeType: f.type || 'image/png' },
                     tags: ['user-upload'],
                     createdAt: new Date().toISOString()
                 });
-                await loadUserImageTray();
-                await addFromTray(json.url, true);
+                renderAssetPanel();
+                addFromAsset(newAssetId, json.url);
                 showToast('Image saved to your library!');
                 return;
             }
-        } catch(e2) {}
-        await addFromTray(trimmedSrc, true);
+        } catch(err) { console.error(err); }
+        addFromAsset(null, base64Data);
     };
     r.readAsDataURL(f);
 }
@@ -2267,37 +2271,69 @@ async function setSelectedAsBackground() {
     showToast("✅ Selected image promoted to background (locked)");
 }
 
-async function loadUserImageTray() {
+async function renderAssetPanel() {
+    const grid = document.querySelector('#ls-panel-assets .ls-asset-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    (docV2.assets || []).forEach(asset => {
+        if (asset.kind === 'image') {
+            const img = document.createElement('img');
+            img.src = asset.storage?.previewUrl || asset.storage?.originalUrl;
+            img.className = 'ls-asset-item';
+            img.setAttribute('loading', 'lazy');
+            img.width = 80;
+            img.height = 80;
+            img.onclick = () => addFromAsset(asset.id, asset.storage?.originalUrl);
+            grid.appendChild(img);
+        }
+    });
+}
+
+async function loadUserImages() {
     try {
         const res = await fetch('/api/list-images');
         const json = await res.json();
-        const tray = document.querySelector('.asset-tray');
-        tray.querySelectorAll('.user-upload-item').forEach(el => el.remove());
-        json.images.forEach(img => {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'user-upload-item';
-            wrapper.style.cssText = 'position:relative; display:inline-block; flex-shrink:0;';
-            const imgEl = document.createElement('img');
-            imgEl.src = img.url;
-            imgEl.className = 'tray-item';
-            imgEl.style.cssText = 'height:80px; width:auto; border-radius:6px; cursor:pointer; border:2px solid transparent;';
-            imgEl.title = img.filename;
-            imgEl.onclick = () => addFromTray(img.url);
-            const delBtn = document.createElement('button');
-            delBtn.innerText = '✕';
-            delBtn.title = 'Remove from library';
-            delBtn.style.cssText = 'position:absolute; top:-6px; right:-6px; width:18px; height:18px; border-radius:50%; background:#c0392b; color:#fff; border:none; font-size:10px; cursor:pointer; z-index:10; display:flex; align-items:center; justify-content:center; padding:0;';
-            delBtn.onclick = async (e) => {
-                e.stopPropagation();
-                await fetch(`/api/delete-image/${img.filename}`, { method: 'DELETE' });
-                wrapper.remove();
-                showToast('Image removed from library');
-            };
-            wrapper.appendChild(imgEl);
-            wrapper.appendChild(delBtn);
-            tray.appendChild(wrapper);
-        });
-    } catch(e) {}
+        if (json.images) {
+            docV2.assets = docV2.assets || [];
+            // Migrate legacy tray format to docV2.assets
+            json.images.forEach(fn => {
+                const filename = fn.filename || fn;
+                const url = fn.url || '/api/images/' + filename;
+                if (!docV2.assets.find(a => a.storage?.originalUrl === url)) {
+                    docV2.assets.push({
+                        id: 'asset_user_' + Date.now() + Math.random().toString(36).substring(7),
+                        kind: 'image',
+                        name: filename,
+                        storage: { originalUrl: url, previewUrl: url, thumbnailUrl: null },
+                        original: { width: null, height: null, mimeType: 'image/png' },
+                        tags: ['user-upload'],
+                        createdAt: new Date().toISOString()
+                    });
+                }
+            });
+            renderAssetPanel();
+        }
+    } catch(e) { console.error('Failed to load user images', e); }
+}
+
+async function addFromAsset(assetId, src) {
+    pushState();
+    const id = 'img_' + Date.now();
+    const vpRect = viewport.getBoundingClientRect();
+    const scalerRect = scaler.getBoundingClientRect();
+    const cx = (vpRect.left + vpRect.width / 2 - scalerRect.left) / zoomScale;
+    const cy = (vpRect.top + vpRect.height / 2 - scalerRect.top) / zoomScale;
+    const x = Math.max(50, Math.min(BASE_W - 400, cx - 200));
+    const y = Math.max(50, Math.min(BASE_H - 400, cy - 200));
+
+    const newElement = {
+        id, type: 'image', src, assetId,
+        x, y, width: 400, height: 400,
+        zIndex: 20, opacity: 1, rotation: 0,
+        visible: true, locked: false, layerRole: 'content'
+    };
+    docV2.elements.push(newElement);
+    render(); selectById(id);
 }
 
 // Fix 5c - Pinch-vs-drag suppression
@@ -2688,7 +2724,7 @@ window.onload = async () => {
 
     // Step 4: Init the rest
     initSmartTooltips();
-    await loadUserImageTray();
+    await loadUserImages();
     const savedZoom = docV2.editorState?._userZoom;
     if (savedZoom && savedZoom !== 1) {
         applyZoom(savedZoom);
@@ -3156,9 +3192,7 @@ function setLsTab(tab) {
     document.getElementById('ls-panel-' + t).style.display = t === tab ? 'block' : 'none';
   });
   if (tab === 'assets') {
-    document.querySelectorAll('.ls-asset-item[data-src]').forEach(img => {
-      if (!img.src || img.src === window.location.href) img.src = img.dataset.src;
-    });
+    if (typeof renderAssetPanel === 'function') renderAssetPanel();
   }
   if (tab === 'layers') {
     if (typeof renderLayersPanel === 'function') renderLayersPanel();
