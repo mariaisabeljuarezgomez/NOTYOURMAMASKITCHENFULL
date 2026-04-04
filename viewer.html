@@ -45,7 +45,6 @@
         #side-panel-left  { left: 0; }
         #side-panel-right { right: 0; }
 
-        /* Fade inner edge toward menu */
         #side-panel-left {
             -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 75%, rgba(0,0,0,0.2) 95%, rgba(0,0,0,0) 100%);
             mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 75%, rgba(0,0,0,0.2) 95%, rgba(0,0,0,0) 100%);
@@ -55,20 +54,17 @@
             mask-image: linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 75%, rgba(0,0,0,0.2) 95%, rgba(0,0,0,0) 100%);
         }
 
-        /* VIDEO: contain so the full sandwich is always visible, never cropped */
         .side-video-panel video {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            /* Use contain so the full frame is shown — no cropping */
             width: 100%;
             height: 100%;
             object-fit: contain;
             object-position: center center;
         }
 
-        /* Top + bottom vignette */
         .side-video-panel::after {
             content: '';
             position: absolute;
@@ -97,7 +93,6 @@
             text-shadow: 0 1px 8px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.9);
         }
 
-        /* Canvas & Overlays */
         #canvas-wrapper {
             position: relative;
             display: inline-block;
@@ -259,22 +254,22 @@
         </div>
         <div class="side-marquee side-left" aria-hidden="true">
             <div class="marquee-inner">
-                <span>SOUL FOOD&nbsp;•&nbsp;DINE IN&nbsp;•&nbsp;CATFISH&nbsp;•&nbsp;WAFFLES&nbsp;•&nbsp;OXTAILS&nbsp;•&nbsp;CHICKEN&nbsp;•&nbsp;SHRIMP&nbsp;•&nbsp;</span>
-                <span>SOUL FOOD&nbsp;•&nbsp;DINE IN&nbsp;•&nbsp;CATFISH&nbsp;•&nbsp;WAFFLES&nbsp;•&nbsp;OXTAILS&nbsp;•&nbsp;CHICKEN&nbsp;•&nbsp;SHRIMP&nbsp;•&nbsp;</span>
+                <span>SOUL FOOD&nbsp;&bull;&nbsp;DINE IN&nbsp;&bull;&nbsp;CATFISH&nbsp;&bull;&nbsp;WAFFLES&nbsp;&bull;&nbsp;OXTAILS&nbsp;&bull;&nbsp;CHICKEN&nbsp;&bull;&nbsp;SHRIMP&nbsp;&bull;&nbsp;</span>
+                <span>SOUL FOOD&nbsp;&bull;&nbsp;DINE IN&nbsp;&bull;&nbsp;CATFISH&nbsp;&bull;&nbsp;WAFFLES&nbsp;&bull;&nbsp;OXTAILS&nbsp;&bull;&nbsp;CHICKEN&nbsp;&bull;&nbsp;SHRIMP&nbsp;&bull;&nbsp;</span>
             </div>
         </div>
         <div class="side-marquee side-right" aria-hidden="true">
             <div class="marquee-inner">
-                <span>NOT YOUR MAMA'S&nbsp;•&nbsp;AUTHENTIC&nbsp;•&nbsp;SOUTHERN&nbsp;•&nbsp;HOMESTYLE&nbsp;•&nbsp;FRESH&nbsp;•&nbsp;DAILY&nbsp;•&nbsp;</span>
-                <span>NOT YOUR MAMA'S&nbsp;•&nbsp;AUTHENTIC&nbsp;•&nbsp;SOUTHERN&nbsp;•&nbsp;HOMESTYLE&nbsp;•&nbsp;FRESH&nbsp;•&nbsp;DAILY&nbsp;•&nbsp;</span>
+                <span>NOT YOUR MAMA'S&nbsp;&bull;&nbsp;AUTHENTIC&nbsp;&bull;&nbsp;SOUTHERN&nbsp;&bull;&nbsp;HOMESTYLE&nbsp;&bull;&nbsp;FRESH&nbsp;&bull;&nbsp;DAILY&nbsp;&bull;&nbsp;</span>
+                <span>NOT YOUR MAMA'S&nbsp;&bull;&nbsp;AUTHENTIC&nbsp;&bull;&nbsp;SOUTHERN&nbsp;&bull;&nbsp;HOMESTYLE&nbsp;&bull;&nbsp;FRESH&nbsp;&bull;&nbsp;DAILY&nbsp;&bull;&nbsp;</span>
             </div>
         </div>
         <div id="hero-content">
             <div id="hero-title-line1">NOT YOUR MAMA'S</div>
             <div id="hero-title-line2">KITCHEN</div>
             <div id="hero-subtitle">Authentic Southern Soul Food</div>
-            <div id="hero-badge-wrap"><span id="hero-badge">🍗 Dine In &nbsp;|&nbsp; To Go &nbsp;|&nbsp; Catering</span></div>
-            <a href="#viewer-main" id="hero-cta">View Our Menu ↓</a>
+            <div id="hero-badge-wrap"><span id="hero-badge">&#127831; Dine In &nbsp;|&nbsp; To Go &nbsp;|&nbsp; Catering</span></div>
+            <a href="#viewer-main" id="hero-cta">View Our Menu &#8595;</a>
         </div>
         <img id="hero-dish" src="/Images/Asset1.png" alt="" aria-hidden="true">
     </section>
@@ -287,7 +282,7 @@
         </div>
         <div id="video-popup-backdrop" onclick="hideVideoPopup()"></div>
         <div id="video-popup">
-            <button id="video-popup-close" onclick="hideVideoPopup()">✕</button>
+            <button id="video-popup-close" onclick="hideVideoPopup()">&#10005;</button>
             <video id="popup-video" muted loop playsinline></video>
             <div id="video-popup-label"></div>
         </div>
@@ -308,7 +303,6 @@
         const vLeft      = document.getElementById('side-video-left');
         const vRight     = document.getElementById('side-video-right');
 
-        // These will be populated from the API
         const DEFAULT_LEFT_VIDEO  = 'https://res.cloudinary.com/dtp1z8lne/video/upload/q_auto,vc_h264/v1775240373/shrimppoboy916_lztgxk.mp4';
         const DEFAULT_RIGHT_VIDEO = 'https://res.cloudinary.com/dtp1z8lne/video/upload/q_auto,vc_h264/v1775240373/catfishpoboy916_haykeo.mp4';
         const DEFAULT_LEFT_LABEL  = "Shrimp Po' Boy";
@@ -318,7 +312,6 @@
             const vw = window.innerWidth;
             const panelW = Math.floor((vw - MENU_MAX_W) / 2);
             const show = vw >= PANEL_BREAKPOINT && panelW >= MIN_PANEL_W;
-
             if (show) {
                 panelLeft.style.display  = 'block';
                 panelRight.style.display = 'block';
@@ -386,57 +379,200 @@
             } catch(e) { console.error(e); }
         }
 
+        // ─── SHAPE HELPERS ──────────────────────────────────────────────────────
+        function _drawRoundRect(ctx, x, y, w, h, r) {
+            r = Math.min(r, w / 2, h / 2);
+            ctx.beginPath();
+            if (ctx.roundRect) {
+                ctx.roundRect(x, y, w, h, r);
+            } else {
+                // fallback for older browsers
+                ctx.moveTo(x + r, y);
+                ctx.lineTo(x + w - r, y);
+                ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+                ctx.lineTo(x + w, y + h - r);
+                ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                ctx.lineTo(x + r, y + h);
+                ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+                ctx.lineTo(x, y + r);
+                ctx.quadraticCurveTo(x, y, x + r, y);
+                ctx.closePath();
+            }
+        }
+
+        function _drawStar(ctx, cx, cy, outerR, innerR, points) {
+            ctx.beginPath();
+            for (let i = 0; i < points * 2; i++) {
+                const r = (i % 2 === 0) ? outerR : innerR;
+                const angle = (i * Math.PI) / points - Math.PI / 2;
+                if (i === 0) ctx.moveTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle));
+                else ctx.lineTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle));
+            }
+            ctx.closePath();
+        }
+
+        function _applyShapeStyle(ctx, el) {
+            const s = el.style || {};
+            const fill   = s.fill   || el.fill   || 'transparent';
+            const sw     = el.strokeWidth  || s.strokeWidth  || 0;
+            const sc     = el.strokeColor  || s.strokeColor  || '#c8a96a';
+            const op     = (el.opacity !== undefined) ? el.opacity : 1;
+            ctx.save();
+            ctx.globalAlpha = op;
+            if (fill !== 'transparent' && fill !== 'none') {
+                ctx.fillStyle = fill;
+                ctx.fill();
+            }
+            if (sw > 0) {
+                ctx.strokeStyle = sc;
+                ctx.lineWidth   = sw;
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+        // ────────────────────────────────────────────────────────────────────────
+
         async function draw(data) {
             await Promise.race([
-                Promise.all([document.fonts.load('1em Century Gothic'), document.fonts.load('bold 1em Century Gothic'), document.fonts.load('1em bernard-mt-condensed-regular')]),
+                Promise.all([
+                    document.fonts.load('1em Century Gothic'),
+                    document.fonts.load('bold 1em Century Gothic'),
+                    document.fonts.load('1em bernard-mt-condensed-regular')
+                ]),
                 new Promise(r => setTimeout(r, 800))
             ]);
+
             const dpr = window.devicePixelRatio || 1;
-            const displayWidth = Math.min(document.getElementById('viewer-main').clientWidth, MENU_MAX_W);
-            const scale = displayWidth / BASE_W;
+            const displayWidth  = Math.min(document.getElementById('viewer-main').clientWidth, MENU_MAX_W);
+            const scale         = displayWidth / BASE_W;
             const displayHeight = BASE_H * scale;
-            canvas.width  = displayWidth * dpr;
+
+            canvas.width  = displayWidth  * dpr;
             canvas.height = displayHeight * dpr;
-            canvas.style.width  = displayWidth + 'px';
+            canvas.style.width  = displayWidth  + 'px';
             canvas.style.height = displayHeight + 'px';
             ctx.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
             ctx.clearRect(0, 0, BASE_W, BASE_H);
             if (bgImg) ctx.drawImage(bgImg, 0, 0, BASE_W, BASE_H);
-            const elements = (data.elements||[]).filter(el=>el.visible!==false).sort((a,b)=>(a.zIndex||10)-(b.zIndex||10));
+
+            const elements = (data.elements || [])
+                .filter(el => el.visible !== false)
+                .sort((a, b) => (a.zIndex || 10) - (b.zIndex || 10));
+
             overlayContainer.innerHTML = '';
+
             elements.forEach(el => {
-                const s = el.style || {};
+                const s  = el.style || {};
+                const op = (el.opacity !== undefined) ? el.opacity : 1;
+
+                // ── TEXT ────────────────────────────────────────────────────────
                 if (el.type === 'text') {
-                    const fs = s.fontSize||16, w = s.fontWeight||'normal', fam = s.fontFamily||'Century Gothic';
-                    let font = `${w} ${fs}px "${fam}"`;
+                    const fs  = s.fontSize || 16;
+                    const w   = s.fontWeight || 'normal';
+                    const fam = s.fontFamily || 'Century Gothic';
+                    let font  = `${w} ${fs}px "${fam}"`;
                     if (fam.toLowerCase().includes('condensed')) font = `${fs}px "bernard-mt-condensed-regular"`;
                     if (fam.toLowerCase().includes('century'))   font = `${w} ${fs}px "Century Gothic"`;
-                    ctx.font = font; ctx.fillStyle = s.color||'#000'; ctx.textAlign = s.textAlign||'left'; ctx.textBaseline = 'top';
-                    (el.text||'').split('\n').forEach((line,i) => ctx.fillText(line, el.x, el.y + i*(s.lineHeight||1.1)*fs));
+                    ctx.save();
+                    ctx.globalAlpha   = op;
+                    ctx.font          = font;
+                    ctx.fillStyle     = s.color || '#000';
+                    ctx.textAlign     = s.textAlign || 'left';
+                    ctx.textBaseline  = 'top';
+                    (el.text || '').split('\n').forEach((line, i) =>
+                        ctx.fillText(line, el.x, el.y + i * (s.lineHeight || 1.1) * fs)
+                    );
+                    ctx.restore();
+
+                // ── IMAGE ───────────────────────────────────────────────────────
                 } else if (el.type === 'image') {
-                    const src = el.src||(el.assetId?`/Images/${el.assetId}.png`:'');
+                    const src = el.src || (el.assetId ? `/Images/${el.assetId}.png` : '');
                     if (cachedImages[src]) {
                         ctx.save();
-                        if (el.cornerRadius) { ctx.beginPath(); ctx.roundRect(el.x,el.y,el.width,el.height,el.cornerRadius); ctx.clip(); }
+                        ctx.globalAlpha = op;
+                        if (el.cornerRadius) {
+                            ctx.beginPath();
+                            ctx.roundRect(el.x, el.y, el.width, el.height, el.cornerRadius);
+                            ctx.clip();
+                        }
                         ctx.drawImage(cachedImages[src], el.x, el.y, el.width, el.height);
                         ctx.restore();
                     }
+
+                // ── SHAPE ───────────────────────────────────────────────────────
+                } else if (el.type === 'shape') {
+                    const x  = el.x;
+                    const y  = el.y;
+                    const w  = el.width  || 100;
+                    const h  = el.height || 100;
+                    const cr = el.cornerRadius || s.cornerRadius || 0;
+                    // Detect line: height <= 8 treated as a line
+                    const isLine = h <= 8;
+
+                    ctx.save();
+                    ctx.globalAlpha = op;
+
+                    if (isLine) {
+                        // ── LINE ──────────────────────────────────────────────
+                        const sw = el.strokeWidth || s.strokeWidth || h || 2;
+                        const sc = el.strokeColor || s.strokeColor || s.fill || '#c8a96a';
+                        const cap = el.lineCap || 'butt';
+                        ctx.beginPath();
+                        ctx.moveTo(x, y + h / 2);
+                        ctx.lineTo(x + w, y + h / 2);
+                        ctx.strokeStyle = sc;
+                        ctx.lineWidth   = sw;
+                        ctx.lineCap     = cap;
+                        ctx.stroke();
+
+                    } else if (el.shapeType === 'circle') {
+                        // ── CIRCLE ───────────────────────────────────────────
+                        const rx = w / 2;
+                        const ry = h / 2;
+                        ctx.beginPath();
+                        ctx.ellipse(x + rx, y + ry, rx, ry, 0, 0, Math.PI * 2);
+                        _applyShapeStyle(ctx, el);
+
+                    } else if (el.shapeType === 'star') {
+                        // ── STAR ─────────────────────────────────────────────
+                        const outerR = Math.min(w, h) / 2;
+                        const innerR = outerR * 0.4;
+                        _drawStar(ctx, x + w / 2, y + h / 2, outerR, innerR, 5);
+                        _applyShapeStyle(ctx, el);
+
+                    } else {
+                        // ── RECT (default, with optional corner radius) ───────
+                        _drawRoundRect(ctx, x, y, w, h, cr);
+                        _applyShapeStyle(ctx, el);
+                    }
+
+                    ctx.restore();
                 }
+
+                // ── VIDEO OVERLAY (all types) ────────────────────────────────
                 if (el.videoUrl) {
-                    const ov = document.createElement('div');
+                    const ov     = document.createElement('div');
                     ov.className = 'dish-overlay';
                     ov.dataset.elementId = el.id;
-                    const label = el.dishName||el.label||el.text||el.id;
-                    Object.assign(ov.style, { left:(el.x*scale)+'px', top:(el.y*scale)+'px', width:((el.width||100)*scale)+'px', height:((el.height||(s.fontSize||20)*1.5)*scale)+'px', pointerEvents:'auto', cursor:'pointer' });
-                    ov.dataset.videoUrl = el.videoUrl; ov.dataset.content = label;
+                    const label  = el.dishName || el.label || el.text || el.id;
+                    Object.assign(ov.style, {
+                        left:   (el.x * scale) + 'px',
+                        top:    (el.y * scale) + 'px',
+                        width:  ((el.width  || 100) * scale) + 'px',
+                        height: ((el.height || (s.fontSize || 20) * 1.5) * scale) + 'px',
+                        pointerEvents: 'auto',
+                        cursor: 'pointer'
+                    });
+                    ov.dataset.videoUrl = el.videoUrl;
+                    ov.dataset.content  = label;
                     if (isMobile()) {
                         ov.classList.add('video-tap-glow');
-                        ov.addEventListener('touchend', e=>{e.preventDefault();e.stopPropagation();showVideoPopup(el.videoUrl,label,0,0);},{passive:false});
-                        ov.addEventListener('click',    e=>{e.stopPropagation();showVideoPopup(el.videoUrl,label,0,0);});
+                        ov.addEventListener('touchend', e => { e.preventDefault(); e.stopPropagation(); showVideoPopup(el.videoUrl, label, 0, 0); }, { passive: false });
+                        ov.addEventListener('click',    e => { e.stopPropagation(); showVideoPopup(el.videoUrl, label, 0, 0); });
                     } else {
-                        ov.addEventListener('mouseenter', e=>showVideoPopup(el.videoUrl,label,e.clientX,e.clientY));
-                        ov.addEventListener('mousemove',  e=>positionPopup(document.getElementById('video-popup'),e.clientX,e.clientY));
-                        ov.addEventListener('mouseleave', ()=>setTimeout(hideVideoPopup,300));
+                        ov.addEventListener('mouseenter', e  => showVideoPopup(el.videoUrl, label, e.clientX, e.clientY));
+                        ov.addEventListener('mousemove',  e  => positionPopup(document.getElementById('video-popup'), e.clientX, e.clientY));
+                        ov.addEventListener('mouseleave', () => setTimeout(hideVideoPopup, 300));
                     }
                     overlayContainer.appendChild(ov);
                 }
@@ -446,66 +582,85 @@
         const isMobile = () => window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 
         function showVideoPopup(videoUrl, label, mx, my) {
-            const v=document.getElementById('popup-video'), p=document.getElementById('video-popup'), bd=document.getElementById('video-popup-backdrop'), lb=document.getElementById('video-popup-label');
-            v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
-            if (v.src !== videoUrl) { v.src=videoUrl; v.load(); }
-            setTimeout(()=>v.play().catch(()=>{}),100);
-            lb.textContent = label||''; p.classList.add('visible');
-            if (isMobile()) bd.style.display='block';
-            requestAnimationFrame(()=>positionPopup(p,mx,my));
+            const v  = document.getElementById('popup-video');
+            const p  = document.getElementById('video-popup');
+            const bd = document.getElementById('video-popup-backdrop');
+            const lb = document.getElementById('video-popup-label');
+            v.setAttribute('playsinline', '');
+            v.setAttribute('webkit-playsinline', '');
+            if (v.src !== videoUrl) { v.src = videoUrl; v.load(); }
+            setTimeout(() => v.play().catch(() => {}), 100);
+            lb.textContent = label || '';
+            p.classList.add('visible');
+            if (isMobile()) bd.style.display = 'block';
+            requestAnimationFrame(() => positionPopup(p, mx, my));
         }
 
         function hideVideoPopup() {
-            const p=document.getElementById('video-popup'),v=document.getElementById('popup-video'),bd=document.getElementById('video-popup-backdrop');
-            p.classList.remove('visible'); bd.style.display='none'; v.pause(); v.removeAttribute('src'); v.load();
+            const p  = document.getElementById('video-popup');
+            const v  = document.getElementById('popup-video');
+            const bd = document.getElementById('video-popup-backdrop');
+            p.classList.remove('visible');
+            bd.style.display = 'none';
+            v.pause();
+            v.removeAttribute('src');
+            v.load();
         }
 
         function positionPopup(popup, mx, my) {
-            if (isMobile()) { popup.style.left='50%'; popup.style.top='50%'; popup.style.transform='translate(-50%,-50%)'; return; }
-            const off=20; let x=mx+off, y=my-popup.offsetHeight-off;
-            if (x+popup.offsetWidth>window.innerWidth) x=mx-popup.offsetWidth-off;
-            if (y<0) y=my+off;
-            popup.style.left=x+'px'; popup.style.top=y+'px'; popup.style.transform='none';
+            if (isMobile()) {
+                popup.style.left = '50%'; popup.style.top = '50%';
+                popup.style.transform = 'translate(-50%,-50%)';
+                return;
+            }
+            const off = 20;
+            let x = mx + off, y = my - popup.offsetHeight - off;
+            if (x + popup.offsetWidth > window.innerWidth) x = mx - popup.offsetWidth - off;
+            if (y < 0) y = my + off;
+            popup.style.left = x + 'px'; popup.style.top = y + 'px'; popup.style.transform = 'none';
         }
 
-        window.addEventListener('click', e=>{ const p=document.getElementById('video-popup'); if(p.classList.contains('visible')&&!p.contains(e.target)) hideVideoPopup(); });
+        window.addEventListener('click', e => {
+            const p = document.getElementById('video-popup');
+            if (p.classList.contains('visible') && !p.contains(e.target)) hideVideoPopup();
+        });
 
         function preloadImage(url) {
-            return new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url; });
+            return new Promise((res, rej) => {
+                const i = new Image();
+                i.onload  = () => res(i);
+                i.onerror = rej;
+                i.src     = url;
+            });
         }
 
         function loadHeroVideo(data) {
-            const url=data.heroVideoUrl||'';
-            if(url){ const v=document.getElementById('hero-video'); if(v&&v.src!==url){v.src=url;v.classList.add('has-src');} }
+            const url = data.heroVideoUrl || (data.settings && data.settings.viewer && data.settings.viewer.heroVideoUrl) || '';
+            if (url) {
+                const v = document.getElementById('hero-video');
+                if (v && v.src !== url) { v.src = url; v.classList.add('has-src'); }
+            }
         }
 
         function loadSidePanelSettings(data) {
-            const lSettings = data.sidePanelLeft || {};
-                const rSettings = data.sidePanelRight || {};
+            // Support both legacy top-level keys AND new docV2.settings.viewer sub-object
+            const viewer   = (data.settings && data.settings.viewer) || {};
+            const lSettings = data.sidePanelLeft  || viewer.sidePanelLeft  || {};
+            const rSettings = data.sidePanelRight || viewer.sidePanelRight || {};
 
-            const lUrl = lSettings.videoUrl || DEFAULT_LEFT_VIDEO;
-            const rUrl = rSettings.videoUrl || DEFAULT_RIGHT_VIDEO;
-            const lLabel = lSettings.label || DEFAULT_LEFT_LABEL;
-            const rLabel = rSettings.label || DEFAULT_RIGHT_LABEL;
+            const lUrl   = lSettings.videoUrl || DEFAULT_LEFT_VIDEO;
+            const rUrl   = rSettings.videoUrl || DEFAULT_RIGHT_VIDEO;
+            const lLabel = lSettings.label    || DEFAULT_LEFT_LABEL;
+            const rLabel = rSettings.label    || DEFAULT_RIGHT_LABEL;
 
-            // Update Left Video
-            if (vLeft.src !== lUrl) {
-                vLeft.src = lUrl;
-                vLeft.load();
-            }
-            // Update Right Video
-            if (vRight.src !== rUrl) {
-                vRight.src = rUrl;
-                vRight.load();
-            }
+            if (vLeft.src  !== lUrl) { vLeft.src  = lUrl;  vLeft.load();  }
+            if (vRight.src !== rUrl) { vRight.src = rUrl; vRight.load(); }
 
-            // Update Labels
             const lLabelEl = panelLeft.querySelector('.panel-label');
             const rLabelEl = panelRight.querySelector('.panel-label');
             if (lLabelEl) lLabelEl.textContent = lLabel;
             if (rLabelEl) rLabelEl.textContent = rLabel;
 
-            // Restart videos if visible
             if (panelLeft.style.display !== 'none') {
                 vLeft.play().catch(()=>{});
                 vRight.play().catch(()=>{});
@@ -515,14 +670,14 @@
         init();
 
         setTimeout(() => {
-          if (isMobile() && !window._videoHintShown) {
-            window._videoHintShown = true;
-            const hint = document.createElement('div');
-            hint.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.82);color:#c8a96a;border:1px solid rgba(200,169,106,0.4);padding:8px 18px;border-radius:999px;font-size:12px;letter-spacing:1px;z-index:9999;pointer-events:none;transition:opacity 1s ease;white-space:nowrap;';
-            hint.textContent = '✨ Tap glowing items to watch a video preview';
-            document.body.appendChild(hint);
-            setTimeout(() => { hint.style.opacity = '0'; setTimeout(() => hint.remove(), 1000); }, 4000);
-          }
+            if (isMobile() && !window._videoHintShown) {
+                window._videoHintShown = true;
+                const hint = document.createElement('div');
+                hint.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.82);color:#c8a96a;border:1px solid rgba(200,169,106,0.4);padding:8px 18px;border-radius:999px;font-size:12px;letter-spacing:1px;z-index:9999;pointer-events:none;transition:opacity 1s ease;white-space:nowrap;';
+                hint.textContent = '\u2728 Tap glowing items to watch a video preview';
+                document.body.appendChild(hint);
+                setTimeout(() => { hint.style.opacity = '0'; setTimeout(() => hint.remove(), 1000); }, 4000);
+            }
         }, 2000);
     </script>
 </body>
