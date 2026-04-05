@@ -2519,8 +2519,15 @@ document.addEventListener('touchstart', (e) => {
     }
 }, { passive: true });
 
-function applyZoom(f) {
-    zoomScale = Math.max(0.3, Math.min(4, zoomScale * f));
+function applyZoom(f, isAbsolute = false) {
+    if (isAbsolute) {
+        zoomScale = f;
+    } else {
+        zoomScale *= f;
+    }
+    
+    // Constraints: floor at 0.2 (for auto-fit), cap at 4.0
+    zoomScale = Math.max(0.2, Math.min(4, zoomScale));
     
     // Only persist zoom that the user explicitly triggered
     // fitCanvasToScreen auto-fits should not overwrite the saved zoom
@@ -2896,36 +2903,39 @@ window.onload = async () => {
     initSmartTooltips();
     await loadUserImages();
 
-    // fitCanvasToScreen logic
     function fitCanvasToScreen() {
         _isFitZoom = true;
         const editorVP = document.getElementById('editor-viewport');
         if (!editorVP) return;
         const vw = editorVP.clientWidth;
         const vh = editorVP.clientHeight;
-        const scaleX = (vw - 80) / BASE_W;
-        const scaleY = (vh - 120) / BASE_H;
-        zoomScale = Math.min(scaleX, scaleY, 1.5);
-        zoomScale = Math.max(0.2, zoomScale);
-        const scalerWrapper = document.getElementById('scaler-wrapper');
-        const centeringWrapper = document.getElementById('centering-wrapper');
-        if (scalerWrapper) {
-            scalerWrapper.style.transform = `scale(${zoomScale})`;
-            scalerWrapper.style.transformOrigin = 'top center';
-        }
-        if (centeringWrapper) {
-            centeringWrapper.style.width = (BASE_W * zoomScale) + (PAD * 2) + 'px';
-            centeringWrapper.style.height = (BASE_H * zoomScale) + (PAD * 2) + 'px';
-        }
+        if (!vw || !vh) return; 
+
+        // Prioritize Width: Fill the editor area horizontally with 100px total margin
+        let targetScale = (vw - 100) / BASE_W;
+        
+        // On initial fit, don't exceed 1.0 scale to keep quality, 
+        // and don't go below 0.65 to ensure readability (allow scroll if needed)
+        zoomScale = Math.min(targetScale, 1.0);
+        zoomScale = Math.max(0.65, zoomScale);
+
+        applyZoom(zoomScale, true); 
         _isFitZoom = false;
     }
-    window.addEventListener('resize', fitCanvasToScreen);
+    window.addEventListener('resize', function() {
+        requestAnimationFrame(fitCanvasToScreen);
+    });
 
     const savedZoom = docV2.editorState?._userZoom;
     if (savedZoom && savedZoom !== 1) {
-        applyZoom(savedZoom);
+        applyZoom(savedZoom, true);
     } else {
-        fitCanvasToScreen();
+        // Double rAF to ensure sidebars are painted/calculated
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                fitCanvasToScreen();
+            });
+        });
     }
     maybeShowHelpPopout();
 
