@@ -1012,7 +1012,7 @@ function render() {
             opacity: d.opacity ?? 1,
             transform: `rotate(${d.rotation||0}deg)`,
             borderRadius: d.type === 'line' ? '0' : (d.cornerRadius||0)+'px',
-            border: d.type === 'line' ? 'none' : ((d.strokeWidth||0) > 0 ? `${d.strokeWidth}px solid ${d.strokeColor||'#000'}` : 'none')
+            border: 'none' // Stroke handled by inner elements for shapes
         });
         
         if(d.style) {
@@ -1063,6 +1063,20 @@ function render() {
             // Ensure line wrapper stays transparent
             el.style.backgroundColor = 'transparent';
             el.style.border = 'none';
+        }
+        
+        // Final Stroke/Outer Logic: Apply to inner for shapes
+        if (d.type === 'shape' && d.shapeType !== 'star') {
+            const inner = el.querySelector('.shape-inner');
+            if (inner && (d.strokeWidth || 0) > 0) {
+                inner.style.border = `${d.strokeWidth}px solid ${d.strokeColor || '#000'}`;
+                inner.style.boxSizing = 'border-box';
+            } else if (inner) {
+                inner.style.border = 'none';
+            }
+        } else if (d.type === 'image' && (d.strokeWidth || 0) > 0) {
+            el.style.border = `${d.strokeWidth}px solid ${d.strokeColor || '#000'}`;
+            el.style.boxSizing = 'border-box';
         }
         
         elementsLayer.appendChild(el); attach(el);
@@ -1206,7 +1220,7 @@ function injectResizeHandles(el) {
         h.className = 'resize-handle';
         const isN = corner.includes('n'), isW = corner.includes('w');
         Object.assign(h.style, {
-            display: 'block', position: 'absolute', width: '20px', height: '20px',
+            position: 'absolute', width: '20px', height: '20px',
             background: '#f1c40f', border: '2px solid #000', borderRadius: '50%',
             zIndex: '9999', boxSizing: 'border-box',
             cursor: corner+'-resize',
@@ -1622,6 +1636,7 @@ function updateSelectionBar() {
         }
         document.getElementById('sel-stroke-w').value = item.strokeWidth || 0;
         document.getElementById('sel-stroke-c').value = item.strokeColor || '#c8a96a';
+        document.getElementById('sel-stroke-c').oninput = (e) => updateProp('strokeColor', e.target.value);
         // Sync fill color picker
         const fillInput = document.getElementById('sel-fill-color');
         if (fillInput) fillInput.value = (item.style && item.style.fill && item.style.fill !== 'transparent') ? item.style.fill : '#333333';
