@@ -350,6 +350,30 @@
 
         let lastDataHash = null, menuData = null, bgImg = null, cachedImages = {};
 
+        function normalizeEl(el) {
+            // V1 → V2 field shim — never mutates saved data, returns a patched copy
+            const e = Object.assign({}, el);
+            // text content
+            if (e.content === undefined && e.text !== undefined) e.content = e.text;
+            // style wrapper → top-level fields
+            if (e.style && typeof e.style === 'object') {
+                if (e.color        === undefined && e.style.color)                        e.color        = e.style.color;
+                if (e.fontFamily   === undefined && e.style.fontFamily)                  e.fontFamily   = e.style.fontFamily;
+                if (e.fontSize     === undefined && e.style.fontSize)                    e.fontSize     = e.style.fontSize;
+                if (e.fontWeight   === undefined && e.style.fontWeight)                  e.fontWeight   = e.style.fontWeight;
+                if (e.textAlign    === undefined && e.style.textAlign)                   e.textAlign    = e.style.textAlign;
+                if (e.lineHeight   === undefined && e.style.lineHeight)                  e.lineHeight   = e.style.lineHeight;
+                if (e.letterSpacing === undefined && e.style.letterSpacing !== undefined) e.letterSpacing = e.style.letterSpacing;
+                if (e.fillColor    === undefined && e.style.fillColor)                   e.fillColor    = e.style.fillColor;
+                if (e.borderColor  === undefined && e.style.borderColor)                 e.borderColor  = e.style.borderColor;
+                if (e.borderWidth  === undefined && e.style.borderWidth)                 e.borderWidth  = e.style.borderWidth;
+                if (e.borderRadius === undefined && e.style.borderRadius !== undefined)  e.borderRadius = e.style.borderRadius;
+            }
+            // opacity: V1 stores 0–1, V2 stores 0–100
+            if (typeof e.opacity === 'number' && e.opacity <= 1) e.opacity = e.opacity * 100;
+            return e;
+        }
+
         async function init() {
             try {
                 bgImg = await preloadImage('/menu-bg-preview.jpg').catch(() => null);
@@ -447,7 +471,8 @@
 
             const elements = (data.elements || [])
                 .filter(el => el.visible !== false)
-                .sort((a, b) => (a.zIndex || 10) - (b.zIndex || 10));
+                .sort((a, b) => (a.zIndex || 10) - (b.zIndex || 10))
+                .map(normalizeEl);
 
             overlayContainer.innerHTML = '';
 
