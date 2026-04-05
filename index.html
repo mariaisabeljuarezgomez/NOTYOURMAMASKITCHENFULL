@@ -1953,6 +1953,8 @@ function sendToBack() {
     const idx = docV2.elements.findIndex(e => e.id === selectedId);
     if (idx === -1 || idx === 0) return;
     const [item] = docV2.elements.splice(idx, 1);
+    // Ensure item zIndex doesn't drop below the minimum visible content level (1)
+    if ((item.zIndex || 0) > 1) item.zIndex = 1;
     docV2.elements.unshift(item);
     render();
 }
@@ -1989,7 +1991,8 @@ function addText() {
     const cy = (vpRect.top + vpRect.height/2 - scalerRect.top) / zoomScale;
     const x = Math.max(50, Math.min(BASE_W - 200, cx));
     const y = Math.max(50, Math.min(BASE_H - 100, cy));
-    docV2.elements.push({id, type:'text', text:'New Text', x, y, zIndex:51, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fontFamily:'century-gothic-bold', fontSize:24, color:'#000', lineHeight:1.1, letterSpacing:0} }); 
+    const maxZ = docV2.elements.reduce((m, e) => Math.max(m, e.zIndex || 0), 0);
+    docV2.elements.push({id, type:'text', text:'New Text', x, y, zIndex: maxZ + 1, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fontFamily:'century-gothic-bold', fontSize:24, color:'#000', lineHeight:1.1, letterSpacing:0} }); 
     render(); 
     selectById(id); 
 }
@@ -2059,7 +2062,8 @@ function addRect() {
 
         pushState();
         const id = 'rect_' + Date.now();
-        docV2.elements.push({id, type:'shape', x:finX, y:finY, width:finW, height:finH, zIndex:5, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fill:'#333333'} });
+        const maxZ = docV2.elements.reduce((m, e) => Math.max(m, e.zIndex || 0), 0);
+        docV2.elements.push({id, type:'shape', x:finX, y:finY, width:finW, height:finH, zIndex: maxZ + 1, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fill:'#333333'} });
         render();
         selectById(id);
     }
@@ -2277,6 +2281,7 @@ async function addFromTray(src, skipPush) {
     const normalizedSrc = src.startsWith('/') ? src : '/' + src;
     const matchedAsset = (docV2.assets || []).find(a => a.storage.originalUrl === normalizedSrc);
 
+    const maxZ = docV2.elements.length ? Math.max(...docV2.elements.map(e => e.zIndex || 0)) : 0;
     const newElement = {
         id,
         type: 'image',
@@ -2284,7 +2289,7 @@ async function addFromTray(src, skipPush) {
         assetId: matchedAsset ? matchedAsset.id : null,
         x, y,
         width: 400, height: 400,
-        zIndex: 20, opacity: 1, rotation: 0,
+        zIndex: maxZ + 1, opacity: 1, rotation: 0,
         visible: true, locked: false, layerRole: 'content'
     };
     docV2.elements.push(newElement);
