@@ -575,7 +575,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
             <div id="geo-style-ctrls" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                 <div class="ctrl-group" id="ctrl-grp-fill"><label>Fill</label><input type="color" id="sel-fill-color" oninput="updateShapeFill(this.value)"></div>
                 <div class="ctrl-group" id="ctrl-grp-radius"><label>Rad</label><input type="range" id="sel-radius" min="0" max="200" style="width:40px" oninput="updateProp('cornerRadius', parseInt(this.value))"></div>
-                <div class="ctrl-group"><label id="stroke-label">Stroke</label><input type="number" id="sel-stroke-w" min="0" max="50" style="width:40px" onchange="updateProp('strokeWidth', parseInt(this.value))"><input type="color" id="sel-stroke-c" onchange="updateProp('strokeColor', this.value)"></div>
+                <div class="ctrl-group"><label id="stroke-label">Stroke</label><input type="number" id="sel-stroke-w" min="0" max="50" style="width:40px" onchange="updateProp('strokeWidth', parseInt(this.value))"><input type="color" id="sel-stroke-c" oninput="updateStrokeColorLive(this.value)"></div>
                 <div class="ctrl-group" id="ctrl-grp-outline"><button id="btn-outline-toggle" class="ctrl-btn" style="font-size:10px; padding:4px 10px; white-space:nowrap; width:auto;" onclick="toggleOutlineOnly()">Outline Only</button></div>
                 <div id="line-width-presets" class="ctrl-group" style="display:none;">
                   <label style="font-size:9px; color:#777; font-weight:700;">Width</label>
@@ -1169,18 +1169,37 @@ function injectResizeHandles(el) {
                     const currentScale = scalerRect.width / BASE_W;
                     const dx = (pe.clientX - startX) / currentScale;
                     const dy = (pe.clientY - startY) / currentScale;
-                    let nW, nH, nX=startLeft, nY=startTop;
-                    if(corner==='se')      { nW=Math.max(10,startW+dx); nH=Math.max(10,startH+dy); }
-                    else if(corner==='sw') { nW=Math.max(10,startW-dx); nH=Math.max(10,startH+dy); nX=startLeft+(startW-nW); }
-                    else if(corner==='ne') { nW=Math.max(10,startW+dx); nH=Math.max(10,startH-dy); nY=startTop+(startH-nH); }
-                    else                   { nW=Math.max(10,startW-dx); nH=Math.max(10,startH-dy); nX=startLeft+(startW-nW); nY=startTop+(startH-nH); }
-                    // Circle: lock nH = nW for perfect circle
+                    
+                    let nW = Math.max(10, startW + (isW ? -dx : dx));
+                    let nH = Math.max(10, startH + (isN ? -dy : dy));
+
+                    // FIX: Shift-drag aspect ratio lock
+                    if (pe.shiftKey) {
+                        const ratio = startW / startH;
+                        if (Math.abs(dx) >= Math.abs(dy)) {
+                            nH = nW / ratio;
+                        } else {
+                            nW = nH * ratio;
+                        }
+                    }
+
+                    // Calculate position shifts for N and W handles
+                    let nX = startLeft, nY = startTop;
+                    if (isW) nX = startLeft + (startW - nW);
+                    if (isN) nY = startTop + (startH - nH);
+
+                    // Circle lock (Circle always stays square)
                     if (isCircle) nH = nW;
-                    item.width=nW; item.height=nH; item.x=nX; item.y=nY;
-                    if (isCircle && item.cornerRadius !== undefined) item.cornerRadius = nW / 2;
-                    el.style.width=nW+'px'; el.style.height=nH+'px';
-                    el.style.left=nX+'px'; el.style.top=nY+'px';
-                    if (isCircle) el.style.borderRadius = '50%';
+
+                    item.width = nW; item.height = nH; item.x = nX; item.y = nY;
+                    el.style.width = nW + 'px'; el.style.height = nH + 'px';
+                    el.style.left = nX + 'px'; el.style.top = nY + 'px';
+                    
+                    if (isCircle) {
+                        const inner = el.querySelector('.shape-inner');
+                        if (inner) inner.style.borderRadius = '50%';
+                        if (item.cornerRadius !== undefined) item.cornerRadius = nW / 2;
+                    }
                 };
             } else {
                 // Image resize — aspect ratio locked
@@ -2040,31 +2059,41 @@ function setSizeFromInput(dim, val) {
     render();
 }
 
+function updateStrokeColorLive(v) {
+    if (!selectedId) return;
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item) return;
+    item.strokeColor = v;
+    const domNode = document.getElementById(selectedId);
+    if (domNode) {
+        const lineEl = domNode.querySelector('line');
+        if (lineEl) lineEl.setAttribute('stroke', v);
+        if (item.type === 'shape') domNode.style.borderColor = v;
+    }
+    sync();
+}
+
 function updateShapeFill(v) {
     if (!selectedId) return;
-    pushState();
     const item = docV2.elements.find(e => e.id === selectedId);
-    if (item) {
-        if (!item.style) item.style = {};
-        item.style.fillColor = v; 
-        item.style.fill = v;
-        if (item.type === 'line') item.strokeColor = v; // BUG 2 FIX
-
-        const domNode = document.getElementById(selectedId);
-        if (domNode) {
-            if (item.type === 'line') {
-                const innerLine = domNode.querySelector('line');
-                if (innerLine) innerLine.setAttribute('stroke', v);
-            } else {
-                const inner = domNode.querySelector('.shape-inner');
-                if (inner) inner.style.backgroundColor = v;
-                else domNode.style.backgroundColor = v;
-            }
-        }
-        // NO render() here — direct DOM update above is instant
-        // render() would rebuild the DOM and cause a flash
-        sync();
+    if (!item) return;
+    
+    if (item.type === 'line') { 
+        updateStrokeColorLive(v); 
+        return; 
     }
+
+    if (!item.style) item.style = {};
+    item.style.fill = v;
+    item.style.fillColor = v; 
+
+    const domNode = document.getElementById(selectedId);
+    if (domNode) {
+        const inner = domNode.querySelector('.shape-inner');
+        if (inner) inner.style.backgroundColor = v;
+        else domNode.style.backgroundColor = v;
+    }
+    sync();
 }
 
 function toggleOutlineOnly() {
