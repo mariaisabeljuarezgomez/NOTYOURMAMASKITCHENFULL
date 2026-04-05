@@ -96,6 +96,39 @@ def reset_menu():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/menu/backups", methods=["GET"])
+def list_backups():
+    """List all backup files — most recent first."""
+    try:
+        if not os.path.exists(BACKUP_DIR):
+            return jsonify({"backups": []}), 200
+        files = sorted(
+            [f for f in os.listdir(BACKUP_DIR) if f.endswith(".json")],
+            reverse=True
+        )
+        return jsonify({"backups": files}), 200
+    except Exception as e:
+        return jsonify({"backups": [], "error": str(e)}), 200
+
+@app.route("/api/menu/restore/<filename>", methods=["POST"])
+def restore_backup(filename):
+    """Restore a specific backup file to menu_data.json."""
+    try:
+        # Safety: only allow filenames that look like our backups (no path traversal)
+        if "/" in filename or "\\" in filename or not filename.endswith(".json"):
+            return jsonify({"error": "Invalid filename"}), 400
+        src = os.path.join(BACKUP_DIR, filename)
+        if not os.path.exists(src):
+            return jsonify({"error": "Backup file not found: " + filename}), 404
+        # Backup current state before overwriting (just in case)
+        if os.path.exists(DATA_FILE):
+            ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+            shutil.copy2(DATA_FILE, os.path.join(BACKUP_DIR, f"menu_data_pre_restore_{ts}.json"))
+        shutil.copy2(src, DATA_FILE)
+        return jsonify({"status": "restored", "from": filename}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/<path:path>")
 def static_proxy(path):
     response = send_from_directory(".", path)
