@@ -2895,13 +2895,38 @@ window.onload = async () => {
     // Step 4: Init the rest
     initSmartTooltips();
     await loadUserImages();
+
+    // fitCanvasToScreen logic
+    function fitCanvasToScreen() {
+        _isFitZoom = true;
+        const editorVP = document.getElementById('editor-viewport');
+        if (!editorVP) return;
+        const vw = editorVP.clientWidth;
+        const vh = editorVP.clientHeight;
+        const scaleX = (vw - 80) / BASE_W;
+        const scaleY = (vh - 120) / BASE_H;
+        zoomScale = Math.min(scaleX, scaleY, 1.5);
+        zoomScale = Math.max(0.2, zoomScale);
+        const scalerWrapper = document.getElementById('scaler-wrapper');
+        const centeringWrapper = document.getElementById('centering-wrapper');
+        if (scalerWrapper) {
+            scalerWrapper.style.transform = `scale(${zoomScale})`;
+            scalerWrapper.style.transformOrigin = 'top center';
+        }
+        if (centeringWrapper) {
+            centeringWrapper.style.width = (BASE_W * zoomScale) + (PAD * 2) + 'px';
+            centeringWrapper.style.height = (BASE_H * zoomScale) + (PAD * 2) + 'px';
+        }
+        _isFitZoom = false;
+    }
+    window.addEventListener('resize', fitCanvasToScreen);
+
     const savedZoom = docV2.editorState?._userZoom;
     if (savedZoom && savedZoom !== 1) {
         applyZoom(savedZoom);
     } else {
         fitCanvasToScreen();
     }
-    window.addEventListener('resize', fitCanvasToScreen);
     maybeShowHelpPopout();
 
     setInterval(() => {
@@ -2912,32 +2937,6 @@ window.onload = async () => {
     }, 30000);
 };
 
-function fitCanvasToScreen() {
-    _isFitZoom = true;
-    const vw = viewport.clientWidth;
-    const vh = viewport.clientHeight;
-    // Fit both width (with 40px each side) and height (with 60px each side)
-    const scaleX = (vw - 80) / BASE_W;
-    const scaleY = (vh - 120) / BASE_H;
-    
-    // Choose the smaller of the two scales to ensure the whole menu fits
-    zoomScale = Math.min(scaleX, scaleY);
-    
-    // Constraints: floor at 0.2, cap at 1.5
-    zoomScale = Math.max(0.2, Math.min(1.5, zoomScale));
-
-    const scalerWrapper = document.getElementById('scaler-wrapper');
-    const centeringWrapper = document.getElementById('centering-wrapper');
-    if (scalerWrapper) {
-        scalerWrapper.style.transform = `scale(${zoomScale})`;
-        scalerWrapper.style.transformOrigin = 'top center';
-    }
-    if (centeringWrapper) {
-        centeringWrapper.style.width = (BASE_W * zoomScale) + (PAD * 2) + 'px';
-        centeringWrapper.style.height = (BASE_H * zoomScale) + (PAD * 2) + 'px';
-    }
-    _isFitZoom = false;
-}
 viewport.onwheel = (e) => { if(e.ctrlKey) { e.preventDefault(); applyZoom(e.deltaY > 0 ? 0.9 : 1.1); } };
 
 window.addEventListener('keydown', (e) => {
