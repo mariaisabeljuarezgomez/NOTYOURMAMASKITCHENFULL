@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -752,6 +752,7 @@ const PAD = 100;
 let layoutLocked = true, selectedId = null, zoomScale = 1, _isFitZoom = false, _activeBarTab = 'layer';
 let historyStack = [];
 let redoStack = [];
+const elementDisplayNames = {}; // { elementId: "My Custom Name" } — editor display only, not persisted
 
 function pushState() {
     // Save state BEFORE the change
@@ -1161,11 +1162,11 @@ function renderLayerList() {
             : item.shapeType==='star' ? '⭐'
             : '⬜';
         const roleTag = `<span style="font-size:8px; padding:2px 4px; border-radius:3px; background:#444; color:#aaa; text-transform:uppercase; margin-right:4px;">${item.layerRole || 'content'}</span>`;
-        const name = (item.text || item.id).substring(0, 25) + ((item.text || item.id).length > 25 ? '...' : '');
+
 
         div.innerHTML = `<span style="cursor:grab; color:#555; font-size:14px; padding-right:6px; flex-shrink:0;" title="Drag to reorder">⠿</span>
             <div style="font-size:12px; width:20px; text-align:center;">${icon}</div>
-            <div class="layer-name" style="flex:1; overflow:hidden; text-overflow:ellipsis;">${roleTag}${name}</div>
+            <div class="layer-name" style="flex:1; overflow:hidden; text-overflow:ellipsis;">${roleTag}<span class="layer-rename-span" data-elid="${item.id}" title="Double-click to rename (editor only)"></span></div>
             <button class="layer-btn" title="${item.visible ? 'Visible' : 'Hidden — click to show'}"
                 onclick="toggleVisById(event, '${item.id}')"
                 style="font-size:11px; opacity:${item.visible ? '1' : '0.4'};">
@@ -1178,6 +1179,39 @@ function renderLayerList() {
             </button>
         `;
         layersPanel.appendChild(div);
+
+        // Wire up rename span after it is in DOM
+        const nameSpan = div.querySelector('.layer-rename-span');
+        if (nameSpan) {
+            nameSpan.textContent = elementDisplayNames[item.id] || item.id;
+
+            nameSpan.addEventListener('dblclick', (e) => {
+                e.stopPropagation();
+                nameSpan.contentEditable = 'true';
+                nameSpan.focus();
+                const range = document.createRange();
+                range.selectNodeContents(nameSpan);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+            });
+
+            nameSpan.addEventListener('blur', () => {
+                nameSpan.contentEditable = 'false';
+                const newName = nameSpan.innerText.trim();
+                if (newName) {
+                    elementDisplayNames[item.id] = newName;
+                } else {
+                    delete elementDisplayNames[item.id];
+                    nameSpan.textContent = item.id;
+                }
+            });
+
+            nameSpan.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); nameSpan.blur(); }
+                if (e.key === 'Escape') { nameSpan.innerText = elementDisplayNames[item.id] || item.id; nameSpan.blur(); }
+                e.stopPropagation(); // prevent canvas keyboard shortcuts while typing
+            });
+        }
     });
 }
 
@@ -1813,7 +1847,30 @@ function syncZoomControlsVisibility() {
     if(zoomControls) zoomControls.style.display = layoutLocked ? 'none' : 'flex';
 }
 
+function resequenceZIndex() {
+    // Sort elements array by current zIndex ascending, then reassign 1..N
+    docV2.elements.sort((a, b) => a.zIndex - b.zIndex);
+    docV2.elements.forEach((el, idx) => { el.zIndex = idx + 1; });
+}
+
 function updateZ(dir) {
+    const multiIds = docV2.editorState.selectedElementIds || [];
+    if (multiIds.length > 1) {
+        pushState();
+        multiIds.forEach(id => {
+            const idx = docV2.elements.findIndex(e => e.id === id);
+            if (idx === -1) return;
+            const newIdx = idx + dir;
+            if (newIdx < 0 || newIdx >= docV2.elements.length) return;
+            const [item] = docV2.elements.splice(idx, 1);
+            docV2.elements.splice(newIdx, 0, item);
+        });
+        resequenceZIndex();
+        render();
+        renderLayerList();
+        showToast('Layer order updated');
+        return;
+    }
     if (!selectedId) return;
     pushState();
     const idx = docV2.elements.findIndex(e => e.id === selectedId);
@@ -1822,7 +1879,10 @@ function updateZ(dir) {
     if (newIdx < 0 || newIdx >= docV2.elements.length) return;
     const [item] = docV2.elements.splice(idx, 1);
     docV2.elements.splice(newIdx, 0, item);
+    resequenceZIndex();
     render();
+    renderLayerList();
+    showToast('Layer order updated');
 }
 
 function alignSelected(mode) {
@@ -1953,16 +2013,54 @@ async function resetToOriginal() {
 }
 
 function bringToFront() {
+    const multiIds = docV2.editorState.selectedElementIds || [];
+    if (multiIds.length > 1) {
+        pushState();
+        const maxZ = Math.max(...docV2.elements.map(e => e.zIndex || 0));
+        // Sort selected by current zIndex to preserve relative order among the group
+        const selectedEls = multiIds
+            .map(id => docV2.elements.find(e => e.id === id))
+            .filter(Boolean)
+            .sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
+        selectedEls.forEach((el, i) => { el.zIndex = maxZ + i + 1; });
+        resequenceZIndex();
+        render();
+        renderLayerList();
+        showToast('Layer order updated');
+        return;
+    }
     if (!selectedId) return;
     pushState();
     const idx = docV2.elements.findIndex(e => e.id === selectedId);
     if (idx === -1 || idx === docV2.elements.length - 1) return;
     const [item] = docV2.elements.splice(idx, 1);
     docV2.elements.push(item);
+    resequenceZIndex();
     render();
+    renderLayerList();
+    showToast('Layer order updated');
 }
 
 function sendToBack() {
+    const multiIds = docV2.editorState.selectedElementIds || [];
+    if (multiIds.length > 1) {
+        pushState();
+        // Sort selected by current zIndex (ascending) to preserve relative order
+        const selectedEls = multiIds
+            .map(id => docV2.elements.find(e => e.id === id))
+            .filter(Boolean)
+            .sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
+        // Assign zIndex 1..n to selected, shift non-selected up above them
+        const selectedSet = new Set(multiIds);
+        const nonSelected = docV2.elements.filter(e => !selectedSet.has(e.id));
+        selectedEls.forEach((el, i) => { el.zIndex = i + 1; });
+        nonSelected.forEach((el, i) => { el.zIndex = selectedEls.length + i + 1; });
+        resequenceZIndex();
+        render();
+        renderLayerList();
+        showToast('Layer order updated');
+        return;
+    }
     if (!selectedId) return;
     pushState();
     const idx = docV2.elements.findIndex(e => e.id === selectedId);
@@ -1971,7 +2069,10 @@ function sendToBack() {
     // Ensure item zIndex doesn't drop below the minimum visible content level (1)
     if ((item.zIndex || 0) > 1) item.zIndex = 1;
     docV2.elements.unshift(item);
+    resequenceZIndex();
     render();
+    renderLayerList();
+    showToast('Layer order updated');
 }
 function centerElement(dir) {
     if(!selectedId) return;
