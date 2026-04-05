@@ -341,7 +341,6 @@
         const BASE_H = 1336.02;
         const API_URL = '/api/menu';
         const POLL_INTERVAL = 30000;
-        const BG_PATH = '/menu-bg-preview.jpg';
 
         const canvas = document.getElementById('menu-canvas');
         const ctx = canvas.getContext('2d');
@@ -349,11 +348,10 @@
         const overlayContainer = document.getElementById('overlay-container');
         const loading = document.getElementById('loading');
 
-        let lastDataHash = null, menuData = null, bgImg = null, cachedImages = {};
+        let lastDataHash = null, menuData = null, cachedImages = {};
 
         async function init() {
             try {
-                bgImg = await preloadImage(BG_PATH);
                 await fetchAndDraw();
                 setInterval(fetchAndDraw, POLL_INTERVAL);
                 window.addEventListener('resize', () => { if (menuData) draw(menuData); });
@@ -431,14 +429,7 @@
         // ────────────────────────────────────────────────────────────────────────
 
         async function draw(data) {
-            await Promise.race([
-                Promise.all([
-                    document.fonts.load('1em Century Gothic'),
-                    document.fonts.load('bold 1em Century Gothic'),
-                    document.fonts.load('1em bernard-mt-condensed-regular')
-                ]),
-                new Promise(r => setTimeout(r, 800))
-            ]);
+            await document.fonts.ready;
 
             const dpr = window.devicePixelRatio || 1;
             const displayWidth  = Math.min(document.getElementById('viewer-main').clientWidth, MENU_MAX_W);
@@ -451,10 +442,6 @@
             canvas.style.height = displayHeight + 'px';
             ctx.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
             ctx.clearRect(0, 0, BASE_W, BASE_H);
-            const hasBgElement = (data.elements || []).some(el =>
-                el.visible !== false && (el.layerRole === 'background' || el.zIndex <= 1)
-            );
-            if (bgImg && !hasBgElement) ctx.drawImage(bgImg, 0, 0, BASE_W, BASE_H);
 
             const elements = (data.elements || [])
                 .filter(el => el.visible !== false)
