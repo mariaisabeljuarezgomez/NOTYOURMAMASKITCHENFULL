@@ -350,6 +350,22 @@
 
         let lastDataHash = null, menuData = null, bgImg = null, cachedImages = {};
 
+        const ASSET_ID_TO_SRC = {
+            'asset_001': '/Images/Asset1.png',
+            'asset_002': '/Images/Asset10.png',
+            'asset_003': '/Images/Asset11.png',
+            'asset_004': '/Images/Asset12.png',
+            'asset_005': '/Images/Asset13.png',
+            'asset_006': '/Images/Asset14.png',
+            'asset_007': '/Images/Asset2.png',
+            'asset_008': '/Images/Asset3.png',
+            'asset_009': '/Images/Asset4.png',
+            'asset_010': '/Images/Asset6.png',
+            'asset_011': '/Images/Asset7.png',
+            'asset_012': '/Images/Asset8.png',
+            'asset_013': '/Images/Asset9.png'
+        };
+
         function normalizeEl(el) {
             // V1 → V2 field shim — never mutates saved data, returns a patched copy
             const e = Object.assign({}, el);
@@ -391,7 +407,7 @@
                 const hash = JSON.stringify(data.elements || []);
                 if (hash === lastDataHash) return;
                 lastDataHash = hash; menuData = data;
-                const imgs = [...new Set((data.elements||[]).filter(e=>e.type==='image').map(e=>e.src||(e.assetId?`/Images/${e.assetId}.png`:'')))];
+                const imgs = [...new Set((data.elements||[]).filter(e=>e.type==='image').map(e=>e.src||(e.assetId?ASSET_ID_TO_SRC[e.assetId]||'':'')))];
                 for (const s of imgs) if (s && !cachedImages[s]) cachedImages[s] = await preloadImage(s);
                 await draw(data);
                 loadHeroVideo(data);
@@ -521,7 +537,7 @@
 
                 // ── IMAGE ───────────────────────────────────────────────────────
                 } else if (el.type === 'image') {
-                    const src = el.src || (el.assetId ? `/Images/${el.assetId}.png` : '');
+                    const src = el.src || (el.assetId ? (ASSET_ID_TO_SRC[el.assetId] || '') : '');
                     if (cachedImages[src]) {
                         ctx.save();
                         ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 100) / 100;
