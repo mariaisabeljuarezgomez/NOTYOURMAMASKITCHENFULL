@@ -25,3 +25,5 @@ To make changes locally:
 ## 📱 Mobile Optimized
 - Featuring vibrant orange scrollbars and a pulsing "Scroll for more" hint.
 - Perfect canvas-style zooming and panning for easy editing on any screen size.
+
+<!-- test: volume persistence verified 2026-04-05 -->
