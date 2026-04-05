@@ -630,10 +630,10 @@
         });
 
         function preloadImage(url) {
-            return new Promise((res, rej) => {
+            return new Promise((res) => {
                 const i = new Image();
                 i.onload  = () => res(i);
-                i.onerror = rej;
+                i.onerror = () => res(null);
                 i.src     = url;
             });
         }
