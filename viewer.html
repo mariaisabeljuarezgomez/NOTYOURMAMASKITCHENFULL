@@ -234,6 +234,11 @@
         @keyframes dishFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
         @media (min-width: 1000px) { .side-marquee { display: block; } #hero-dish { display: block; } #hero-section { min-height: 620px; } }
         @media (max-width: 768px) { #hero-section { min-height: 380px; overflow: hidden; } #hero-content { padding: 36px 16px; } }
+        #viewer-main {
+            max-width: var(--menu-max-w);
+            margin: 0 auto;
+            padding: 0;
+        }
     </style>
 </head>
 <body>
@@ -407,7 +412,7 @@
                 const hash = JSON.stringify(data.elements || []);
                 if (hash === lastDataHash) return;
                 lastDataHash = hash; menuData = data;
-                const imgs = [...new Set((data.elements||[]).filter(e=>e.type==='image').map(e=>e.src||(e.assetId?ASSET_ID_TO_SRC[e.assetId]||'':'')))];
+                const imgs = [...new Set((data.elements||[]).filter(e=>e.type==='image').map(e=>(e.assetId?ASSET_ID_TO_SRC[e.assetId]||'':'')||e.src||''))];
                 for (const s of imgs) if (s && !cachedImages[s]) cachedImages[s] = await preloadImage(s);
                 await draw(data);
                 loadHeroVideo(data);
@@ -477,7 +482,8 @@
             ]).catch(() => {});
 
             const dpr = window.devicePixelRatio || 1;
-            const displayWidth  = Math.min(document.getElementById('viewer-main').clientWidth, MENU_MAX_W);
+            const vwCapped = Math.min(window.innerWidth, MENU_MAX_W);
+            const displayWidth  = Math.min(document.body.clientWidth, vwCapped);
             const scale         = displayWidth / BASE_W;
             const displayHeight = BASE_H * scale;
 
@@ -522,11 +528,11 @@
                     ctx.save();
                     ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 100) / 100;
                     ctx.beginPath();
-                    // Line coords are relative to x/y in viewer as well
-                    const lx1 = el.x + (el.x1 || 0);
-                    const ly1 = el.y + (el.y1 || 0);
-                    const lx2 = el.x + (el.x2 || 0);
-                    const ly2 = el.y + (el.y2 || 0);
+                    // x1/y1/x2/y2 are absolute canvas coords (not relative to x/y)
+                    const lx1 = el.x1 !== undefined ? el.x1 : el.x;
+                    const ly1 = el.y1 !== undefined ? el.y1 : el.y;
+                    const lx2 = el.x2 !== undefined ? el.x2 : el.x + (el.width || 100);
+                    const ly2 = el.y2 !== undefined ? el.y2 : el.y;
                     ctx.moveTo(lx1, ly1);
                     ctx.lineTo(lx2, ly2);
                     ctx.strokeStyle = el.strokeColor || '#c8a96a';
@@ -537,7 +543,7 @@
 
                 // ── IMAGE ───────────────────────────────────────────────────────
                 } else if (el.type === 'image') {
-                    const src = el.src || (el.assetId ? (ASSET_ID_TO_SRC[el.assetId] || '') : '');
+                    const src = (el.assetId ? (ASSET_ID_TO_SRC[el.assetId] || '') : '') || el.src || '';
                     if (cachedImages[src]) {
                         ctx.save();
                         ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 100) / 100;
