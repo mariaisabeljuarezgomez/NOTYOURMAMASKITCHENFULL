@@ -129,6 +129,32 @@ def restore_backup(filename):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/menu-debug", methods=["GET"])
+def debug_menu():
+    """Temporary debug endpoint — returns raw disk JSON + metadata for diagnosis."""
+    debug_info = {
+        "data_file_path": DATA_FILE,
+        "storage_base": STORAGE_BASE,
+        "is_persistent": IS_PERSISTENT,
+        "file_exists": os.path.exists(DATA_FILE),
+    }
+    if not os.path.exists(DATA_FILE):
+        return jsonify({"debug": debug_info, "data": None, "error": "No saved file on disk"}), 200
+    try:
+        file_size = os.path.getsize(DATA_FILE)
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            raw = json.load(f)
+        debug_info["file_size_bytes"] = file_size
+        debug_info["element_count"] = len(raw.get("elements", []))
+        debug_info["element_types"] = {}
+        for el in raw.get("elements", []):
+            t = el.get("type", "unknown")
+            debug_info["element_types"][t] = debug_info["element_types"].get(t, 0) + 1
+        return jsonify({"debug": debug_info, "data": raw}), 200
+    except Exception as e:
+        return jsonify({"debug": debug_info, "error": str(e)}), 500
+
+
 @app.route("/<path:path>")
 def static_proxy(path):
     response = send_from_directory(".", path)
