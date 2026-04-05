@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -3002,28 +3002,38 @@ async function exportPng() {
 }
 
 window.onload = async () => {
-    // Step 1: Load saved data
+    // Step 1: ALWAYS try server first. Only fall back to localStorage or
+    // hardcoded docV2 if the server explicitly returns empty/error.
+    let loadedFromExternal = false;
     try {
         const r = await fetch('/api/menu');
+        if (!r.ok) throw new Error('Server returned ' + r.status);
         const s = await r.json();
         if (s.elements && s.elements.length > 0) {
             _mergeLoadedDoc(s);
+            loadedFromExternal = true;
         } else {
             throw new Error('Empty server response');
         }
     } catch(e) {
+        // Server failed or empty — try localStorage before accepting hardcoded default
         try {
             const l = localStorage.getItem('menu_pro_draft_v2');
             if (l) {
                 const parsed = JSON.parse(l);
                 if (parsed.elements && parsed.elements.length > 0) {
                     _mergeLoadedDoc(parsed);
+                    loadedFromExternal = true;
                 }
             }
         } catch(e2) {}
     }
 
-    // Step 2: Declare fontNames FIRST, then use it
+    // Step 2: Render immediately with whatever state was loaded so the
+    // saved layout is visible right away — do NOT wait for fonts first.
+    try { render(); } catch(e) {}
+
+    // Step 3: Declare fontNames, then re-render once fonts are ready
     const fontNames = [
         'bernard-mt-condensed-regular',
         'century-gothic-bold-italic',
@@ -3031,20 +3041,18 @@ window.onload = async () => {
         'century-gothic-regular'
     ];
 
-    // Step 3: Wait for fonts, then render once
     const fontLoadPromises = fontNames.map(name =>
         document.fonts.load(`16px "${name}"`)
     );
 
-    // Fallback: ensure render fires even if fonts never resolve
+    // Safety fallback: re-render even if font promise never settles
     setTimeout(() => { try { render(); } catch(e) {} }, 800);
 
     Promise.all(fontLoadPromises).then(() => {
         try {
             render();
-            showToast('✔ Fonts Ready');
         } catch(e) {
-            console.error('Render error on load:', e);
+            console.error('Render error on font load:', e);
             render();
         }
     }).catch(e => {
