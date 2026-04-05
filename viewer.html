@@ -454,7 +454,11 @@
         // ────────────────────────────────────────────────────────────────────────
 
         async function draw(data) {
-            await document.fonts.ready;
+            await Promise.all([
+                document.fonts.load('normal 16px "Century Gothic"'),
+                document.fonts.load('bold 16px "Century Gothic"'),
+                document.fonts.load('normal 16px "bernard-mt-condensed-regular"'),
+            ]).catch(() => {});
 
             const dpr = window.devicePixelRatio || 1;
             const displayWidth  = Math.min(document.getElementById('viewer-main').clientWidth, MENU_MAX_W);
