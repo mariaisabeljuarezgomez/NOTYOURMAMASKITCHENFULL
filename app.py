@@ -107,27 +107,33 @@ def static_proxy(path):
 import base64
 from pathlib import Path
 
-IMAGES_DIR = os.path.join(STORAGE_BASE, "user_images")
+IMAGES_DIR = os.path.join(os.path.dirname(__file__), "Images")
 os.makedirs(IMAGES_DIR, exist_ok=True)
+
+PROTECTED_ASSETS = {f"Asset{i}.png" for i in range(1, 15)}
 
 @app.route("/api/upload-image", methods=["POST"])
 def upload_image():
     try:
         data = request.json
         filename = data.get("filename", f"upload_{int(datetime.now().timestamp())}.png")
-        img_data = data.get("data", "")
+        # Support both 'image' and 'data' keys for maximum compatibility
+        img_data = data.get("data") or data.get("image", "")
         if "," in img_data:
             img_data = img_data.split(",")[1]
         filepath = os.path.join(IMAGES_DIR, filename)
         with open(filepath, "wb") as f:
             f.write(base64.b64decode(img_data))
-        return jsonify({"status": "ok", "filename": filename, "url": f"/user-images/{filename}"}), 200
+        return jsonify({"status": "ok", "filename": filename, "url": f"/Images/{filename}"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route("/api/delete-image/<filename>", methods=["DELETE"])
-def delete_image(filename):
+@app.route("/api/delete-asset/<filename>", methods=["DELETE"])
+def delete_asset(filename):
     try:
+        if filename in PROTECTED_ASSETS:
+            return jsonify({"error": "Cannot delete template asset"}), 403
+            
         filepath = os.path.join(IMAGES_DIR, filename)
         if os.path.exists(filepath):
             os.remove(filepath)
@@ -139,13 +145,15 @@ def delete_image(filename):
 @app.route("/api/list-images", methods=["GET"])
 def list_images():
     try:
-        files = [f for f in os.listdir(IMAGES_DIR) if f.lower().endswith((".png", ".jpg", ".jpeg"))]
-        return jsonify({"images": [{"filename": f, "url": f"/user-images/{f}"} for f in sorted(files)]}), 200
+        files = [f for f in os.listdir(IMAGES_DIR) if f.lower().endswith((".png", ".jpg", ".jpeg", ".webp"))]
+        return jsonify({
+            "images": [{"filename": f, "url": f"/Images/{f}"} for f in sorted(files)]
+        }), 200
     except Exception as e:
         return jsonify({"images": []}), 200
 
-@app.route("/user-images/<path:filename>")
-def serve_user_image(filename):
+@app.route("/Images/<path:filename>")
+def serve_root_image(filename):
     response = send_from_directory(IMAGES_DIR, filename)
     response.headers["Cache-Control"] = "max-age=604800, public"
     return response

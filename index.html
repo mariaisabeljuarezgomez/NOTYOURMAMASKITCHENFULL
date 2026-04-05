@@ -386,6 +386,17 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 .ls-asset-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
 .ls-asset-item { width:100%; aspect-ratio:1; object-fit:contain; background:#2a2a2a; border-radius:6px; border:2px solid transparent; cursor:pointer; transition:0.2s; }
 .ls-asset-item:hover { border-color:var(--accent); transform:scale(1.04); }
+.asset-container { position: relative; }
+.asset-del-btn {
+    position: absolute; top: 4px; right: 4px;
+    background: rgba(192,57,43,0.9); border: none;
+    border-radius: 4px; color: #fff; font-size: 11px;
+    padding: 2px 5px; cursor: pointer;
+    opacity: 0; transition: opacity 0.2s;
+    z-index: 5;
+}
+.asset-container:hover .asset-del-btn { opacity: 1; }
+.asset-del-btn:hover { background: #e74c3c; transform: scale(1.1); }
 
 /* RIGHT PANEL */
 #right-panel { position:fixed; top:60px; right:0; width:260px; bottom:0; background:#1e1e1e; border-left:1px solid #333; display:flex; flex-direction:column; z-index:950; overflow:hidden; transition:transform 0.3s cubic-bezier(0.19,1,0.22,1); }
@@ -2203,27 +2214,16 @@ async function importImg(input) {
             const res = await fetch('/api/upload-image', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ image: base64Data, filename: f.name, mimeType: f.type })
+                body: JSON.stringify({ data: base64Data, filename: f.name })
             });
             const json = await res.json();
-            if (json.url) {
-                docV2.assets = docV2.assets || [];
-                const newAssetId = 'asset_user_' + Date.now();
-                docV2.assets.push({
-                    id: newAssetId,
-                    kind: 'image',
-                    name: f.name,
-                    storage: { originalUrl: json.url, previewUrl: json.url, thumbnailUrl: null },
-                    original: { width: null, height: null, mimeType: f.type || 'image/png' },
-                    tags: ['user-upload'],
-                    createdAt: new Date().toISOString()
-                });
-                renderAssetPanel();
-                addFromAsset(newAssetId, json.url);
-                showToast('Image saved to your library!');
+            if (json.status === "ok") {
+                showToast('Image saved to /Images/ successfully!');
+                await loadUserImages(); // Refresh panel immediately
                 return;
             }
         } catch(err) { console.error(err); }
+        // Fallback to legacy behavior if server fails
         addFromAsset(null, base64Data);
     };
     r.readAsDataURL(f);
@@ -2339,18 +2339,71 @@ async function renderAssetPanel() {
     const grid = document.querySelector('#ls-panel-assets .ls-asset-grid');
     if (!grid) return;
     grid.innerHTML = '';
+    
+    const protectedAssets = new Set([
+        'Asset1','Asset2','Asset3','Asset4','Asset6','Asset7','Asset8','Asset9','Asset10','Asset11','Asset12','Asset13','Asset14',
+        'Asset1.png','Asset2.png','Asset3.png','Asset4.png','Asset6.png','Asset7.png','Asset8.png','Asset9.png','Asset10.png','Asset11.png','Asset12.png','Asset13.png','Asset14.png'
+    ]);
+
     (docV2.assets || []).forEach(asset => {
         if (asset.kind === 'image') {
+            const url = asset.storage?.previewUrl || asset.storage?.originalUrl;
+            const filename = asset.name || (url ? url.split('/').pop() : '');
+
+            const container = document.createElement('div');
+            container.className = 'asset-container';
+
             const img = document.createElement('img');
-            img.src = asset.storage?.previewUrl || asset.storage?.originalUrl;
+            img.src = url;
             img.className = 'ls-asset-item';
             img.setAttribute('loading', 'lazy');
             img.width = 80;
             img.height = 80;
-            img.onclick = () => addFromAsset(asset.id, asset.storage?.originalUrl);
-            grid.appendChild(img);
+            img.onclick = () => addFromAsset(asset.id, url);
+            
+            container.appendChild(img);
+
+            // Add delete button ONLY if not protected
+            if (!protectedAssets.has(filename)) {
+                const delBtn = document.createElement('button');
+                delBtn.innerHTML = '🗑';
+                delBtn.className = 'asset-del-btn';
+                delBtn.title = 'Delete asset from server';
+                delBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (confirm(`Permanently delete ${filename}?`)) {
+                        deleteAssetFromServer(filename);
+                    }
+                };
+                container.appendChild(delBtn);
+            }
+
+            grid.appendChild(container);
         }
     });
+}
+
+async function deleteAssetFromServer(filename) {
+    try {
+        const res = await fetch(`/api/delete-asset/${encodeURIComponent(filename)}`, {
+            method: 'DELETE'
+        });
+        const json = await res.json();
+        if (json.status === 'deleted') {
+            showToast('🗑 Asset deleted successfully');
+            // Remove from local docV2.assets for immediate update
+            docV2.assets = docV2.assets.filter(a => {
+                const aName = a.name || a.storage?.originalUrl?.split('/').pop();
+                return aName !== filename;
+            });
+            renderAssetPanel();
+        } else {
+            showToast('❌ ' + (json.error || 'Delete failed'));
+        }
+    } catch(e) {
+        console.error('Delete error:', e);
+        showToast('❌ Server error during delete');
+    }
 }
 
 async function loadUserImages() {
