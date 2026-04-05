@@ -90,8 +90,17 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 
 /* Navigation UI — FAB/bottom-drawer retired, 3-zone layout used instead */
 
-#ls-panel-layers { display: flex; flex-direction: column; overflow: hidden; height: 100%; min-height: 0; }
-#layers-panel { background: #222; border-radius: 8px; border: 1px solid #333; flex: 1; overflow-y: auto; margin-top: 10px; min-height: 0; }
+#ls-panel-layers { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+#layers-panel { 
+    background: #222; border-radius: 8px; border: 1px solid #333; 
+    margin-top: 10px; overflow-y: auto; overflow-x: hidden; 
+    flex: 1; min-height: 0; 
+    scrollbar-width: thin; scrollbar-color: #666 #1e1e1e; 
+}
+#layers-panel::-webkit-scrollbar { width: 6px; }
+#layers-panel::-webkit-scrollbar-track { background: #1e1e1e; }
+#layers-panel::-webkit-scrollbar-thumb { background: #666; border-radius: 3px; }
+#layers-panel::-webkit-scrollbar-thumb:hover { background: #999; }
 .layer-item.dragging { opacity: 0.4; pointer-events: none; }
 .layer-item.drag-over { border-top: 2px solid var(--accent); }
 
@@ -740,7 +749,7 @@ const BASE_W = 908.4429931640625;
 const BASE_H = 1336.02001953125;
 const PAD = 100;
 
-let layoutLocked = true, selectedId = null, zoomScale = 1, _isFitZoom = false;
+let layoutLocked = true, selectedId = null, zoomScale = 1, _isFitZoom = false, _activeBarTab = 'layer';
 let historyStack = [];
 let redoStack = [];
 
@@ -1119,6 +1128,7 @@ function renderLayerList() {
                 const [moved] = docV2.elements.splice(fromIdx, 1);
                 docV2.elements.splice(toIdx, 0, moved);
                 render();
+                renderLayerList();
             }
         };
         // --- DRAG AND DROP END ---
@@ -1678,7 +1688,8 @@ function updateSelectionBar() {
         const twInput = document.getElementById('sel-text-width');
         if (twInput) twInput.value = item.width ? Math.round(item.width) : '';
         // Default text elements to DESIGN tab if unlocked
-        if(item.type === 'text') setBarTab('design');
+        if(item.type === 'text' && !_activeBarTab) _activeBarTab = 'design';
+        setBarTab(_activeBarTab || 'layer');
     }
 
     const btnSetBg = document.getElementById('btn-set-bg');
@@ -1703,7 +1714,8 @@ function updateSelectionBar() {
     }
 
     // Auto-open Design tab for shapes and lines
-    if (item.type === 'shape' || item.type === 'line') setBarTab('design');
+    if ((item.type === 'shape' || item.type === 'line') && !_activeBarTab) _activeBarTab = 'design';
+    setBarTab(_activeBarTab || 'layer');
 
     renderLayerList();
 }
@@ -1735,6 +1747,7 @@ function toggleVisById(e, id) { e.stopPropagation(); pushState(); const item = d
 function toggleLockById(e, id) { e.stopPropagation(); pushState(); const item = docV2.elements.find(i=>i.id===id); if(item) { item.locked = !item.locked; render(); } }
 
 function setBarTab(tab) {
+    _activeBarTab = tab;
     ['layer','design','arrange'].forEach(t => {
         const target = document.getElementById('bar-tab-'+t);
         if(target) target.style.display = (t===tab?'flex':'none');
