@@ -1381,10 +1381,10 @@ function attach(el) {
             updateDistributeBar();
             return;
         } else {
-            if (!docV2.editorState.selectedElementIds.includes(el.id)) {
-                docV2.editorState.selectedElementIds = [];
-                selectById(el.id);
-            }
+            // Always clear multi-select on a plain (non-shift) click.
+            // Leaving selectedElementIds dirty causes it to conflict with selectedId.
+            docV2.editorState.selectedElementIds = [];
+            selectById(el.id);
         }
 
         // Always init dimensions and inject resize handles for images, shapes, and lines
@@ -2707,6 +2707,10 @@ function _mergeLoadedDoc(s) {
     layoutLocked = docV2.settings?.layoutLocked ?? true;
     zoomScale = docV2.editorState?.zoom || 1;
     syncZoomControlsVisibility();
+    // Reset selection after any doc load — stale IDs from the old session
+    // would otherwise bleed into the new state and corrupt multi-select / render.
+    selectedId = null;
+    docV2.editorState.selectedElementIds = [];
 }
 
 async function save() {
