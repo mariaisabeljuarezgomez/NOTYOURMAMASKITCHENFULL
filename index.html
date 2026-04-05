@@ -2915,19 +2915,26 @@ window.onload = async () => {
 function fitCanvasToScreen() {
     _isFitZoom = true;
     const vw = viewport.clientWidth;
-    if (vw < BASE_W + 40) {
-        const targetScale = (vw - 40) / BASE_W;
-        zoomScale = Math.max(0.2, Math.min(1, targetScale));
-        const scalerWrapper = document.getElementById('scaler-wrapper');
-        const centeringWrapper = document.getElementById('centering-wrapper');
-        if (scalerWrapper) {
-            scalerWrapper.style.transform = `scale(${zoomScale})`;
-            scalerWrapper.style.transformOrigin = 'top center';
-        }
-        if (centeringWrapper) {
-            centeringWrapper.style.width = (BASE_W * zoomScale) + (PAD * 2) + 'px';
-            centeringWrapper.style.height = (BASE_H * zoomScale) + (PAD * 2) + 'px';
-        }
+    const vh = viewport.clientHeight;
+    // Fit both width (with 40px each side) and height (with 60px each side)
+    const scaleX = (vw - 80) / BASE_W;
+    const scaleY = (vh - 120) / BASE_H;
+    
+    // Choose the smaller of the two scales to ensure the whole menu fits
+    zoomScale = Math.min(scaleX, scaleY);
+    
+    // Constraints: floor at 0.2, cap at 1.5
+    zoomScale = Math.max(0.2, Math.min(1.5, zoomScale));
+
+    const scalerWrapper = document.getElementById('scaler-wrapper');
+    const centeringWrapper = document.getElementById('centering-wrapper');
+    if (scalerWrapper) {
+        scalerWrapper.style.transform = `scale(${zoomScale})`;
+        scalerWrapper.style.transformOrigin = 'top center';
+    }
+    if (centeringWrapper) {
+        centeringWrapper.style.width = (BASE_W * zoomScale) + (PAD * 2) + 'px';
+        centeringWrapper.style.height = (BASE_H * zoomScale) + (PAD * 2) + 'px';
     }
     _isFitZoom = false;
 }
