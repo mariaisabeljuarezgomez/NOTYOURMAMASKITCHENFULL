@@ -2347,8 +2347,12 @@ async function renderAssetPanel() {
 
     (docV2.assets || []).forEach(asset => {
         if (asset.kind === 'image') {
-            const url = asset.storage?.previewUrl || asset.storage?.originalUrl;
-            const filename = asset.name || (url ? url.split('/').pop() : '');
+            const url = asset.storage?.originalUrl || '';
+            
+            // Extract disk filename from server path (e.g. /Images/myimage.png -> myimage.png)
+            const filename = url.startsWith('/Images/')
+                ? url.replace('/Images/', '')
+                : url.split('/').pop().split('?')[0];
 
             const container = document.createElement('div');
             container.className = 'asset-container';
