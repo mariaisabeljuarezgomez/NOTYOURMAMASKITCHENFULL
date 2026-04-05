@@ -90,7 +90,11 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 
 /* Navigation UI — FAB/bottom-drawer retired, 3-zone layout used instead */
 
-#layers-panel { background: #222; border-radius: 8px; border: 1px solid #333; max-height: 150px; overflow-y: auto; margin-top: 10px; }
+#ls-panel-layers { display: flex; flex-direction: column; overflow: hidden; height: 100%; min-height: 0; }
+#layers-panel { background: #222; border-radius: 8px; border: 1px solid #333; flex: 1; overflow-y: auto; margin-top: 10px; min-height: 0; }
+.layer-item.dragging { opacity: 0.4; pointer-events: none; }
+.layer-item.drag-over { border-top: 2px solid var(--accent); }
+
 .layer-item { display: flex; align-items: center; gap: 10px; padding: 6px 12px; border-bottom: 1px solid #333; cursor: pointer; font-size: 11px; }
 .layer-item:hover { background: #2a2a2a; }
 .layer-item.active { background: #333; border-left: 3px solid var(--accent); }
@@ -1056,10 +1060,40 @@ function render() {
 
 function renderLayerList() {
     layersPanel.innerHTML = '';
-    [...docV2.elements].sort((a,b)=> (b.zIndex||10)-(a.zIndex||10)).forEach(item => {
+    // Show Top-most element at the top of the list (reverse order)
+    [...docV2.elements].reverse().forEach((item, i) => {
         const div = document.createElement('div');
         div.className = 'layer-item' + (selectedId === item.id ? ' active' : '');
-        div.setAttribute('title', item.text || item.type + ' — ' + item.id);
+        div.setAttribute('title', (item.text || item.type) + ' — ' + item.id);
+        
+        // --- DRAG AND DROP START ---
+        div.draggable = true;
+        div.ondragstart = (e) => {
+            e.dataTransfer.setData('text/plain', item.id);
+            div.classList.add('dragging');
+        };
+        div.ondragover = (e) => {
+            e.preventDefault();
+            div.classList.add('drag-over');
+        };
+        div.ondragleave = () => div.classList.remove('drag-over');
+        div.ondragend = () => div.classList.remove('dragging');
+        div.ondrop = (e) => {
+            e.preventDefault();
+            div.classList.remove('drag-over');
+            const draggedId = e.dataTransfer.getData('text/plain');
+            if (draggedId === item.id) return;
+            const fromIdx = docV2.elements.findIndex(el => el.id === draggedId);
+            const toIdx = docV2.elements.findIndex(el => el.id === item.id);
+            if (fromIdx !== -1 && toIdx !== -1) {
+                pushState();
+                const [moved] = docV2.elements.splice(fromIdx, 1);
+                docV2.elements.splice(toIdx, 0, moved);
+                render();
+            }
+        };
+        // --- DRAG AND DROP END ---
+
         div.onclick = (e) => { 
             e.stopPropagation(); 
             if (item.locked || (docV2.settings?.backgroundLayerLocked && item.layerRole === 'background')) return;
@@ -1072,21 +1106,20 @@ function renderLayerList() {
             : item.shapeType==='circle' ? '⭕'
             : item.shapeType==='star' ? '⭐'
             : '⬜';
-        const name = item.text || item.id;
-        
         const roleTag = `<span style="font-size:8px; padding:2px 4px; border-radius:3px; background:#444; color:#aaa; text-transform:uppercase; margin-right:4px;">${item.layerRole || 'content'}</span>`;
-        
+        const name = (item.text || item.id).substring(0, 25) + ((item.text || item.id).length > 25 ? '...' : '');
+
         div.innerHTML = `
-            <div style="font-size:12px">${icon}</div>
-            <div class="layer-name">${roleTag}${name}</div>
+            <div style="font-size:12px; width:20px; text-align:center;">${icon}</div>
+            <div class="layer-name" style="flex:1; overflow:hidden; text-overflow:ellipsis;">${roleTag}${name}</div>
             <button class="layer-btn" title="${item.visible ? 'Visible' : 'Hidden — click to show'}"
                 onclick="toggleVisById(event, '${item.id}')"
-                style="font-size:15px; opacity:${item.visible ? '1' : '0.4'};">
+                style="font-size:11px; opacity:${item.visible ? '1' : '0.4'};">
                 ${item.visible ? '👁️' : '🙈'}
             </button>
             <button class="layer-btn" title="${item.locked ? 'Locked' : 'Unlocked — click to lock'}"
                 onclick="toggleLockById(event, '${item.id}')"
-                style="font-size:15px; opacity:${item.locked ? '1' : '0.4'};">
+                style="font-size:11px; opacity:${item.locked ? '1' : '0.4'};">
                 ${item.locked ? '🔒' : '🔓'}
             </button>
         `;
@@ -1724,18 +1757,13 @@ function syncZoomControlsVisibility() {
 
 function updateZ(dir) {
     if (!selectedId) return;
-    const item = docV2.elements.find(e => e.id === selectedId);
-    if (!item) return;
+    const idx = docV2.elements.findIndex(e => e.id === selectedId);
+    if (idx === -1) return;
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= docV2.elements.length) return;
     pushState();
-    const sorted = [...docV2.elements].sort((a, b) => (a.zIndex || 10) - (b.zIndex || 10));
-    const idx = sorted.findIndex(e => e.id === selectedId);
-    const swapIdx = idx + dir;
-    if (swapIdx < 0 || swapIdx >= sorted.length) return;
-    const neighbor = sorted[swapIdx];
-    const tempZ = item.zIndex || 10;
-    item.zIndex = neighbor.zIndex || 10;
-    neighbor.zIndex = tempZ;
-    if (item.zIndex === neighbor.zIndex) { item.zIndex += dir; }
+    const [item] = docV2.elements.splice(idx, 1);
+    docV2.elements.splice(newIdx, 0, item);
     render();
 }
 
@@ -1866,8 +1894,25 @@ async function resetToOriginal() {
     }
 }
 
-function bringToFront() { if(!selectedId) return; pushState(); let maxZ = Math.max(...docV2.elements.map(e => e.zIndex || 10)); let item=docV2.elements.find(e=>e.id===selectedId); if(item) item.zIndex = maxZ + 1; render(); }
-function sendToBack() { if(!selectedId) return; pushState(); let minZ = Math.min(...docV2.elements.map(e => e.zIndex || 10)); let item=docV2.elements.find(e=>e.id===selectedId); if(item) item.zIndex = minZ - 1; render(); }
+function bringToFront() {
+    if (!selectedId) return;
+    const idx = docV2.elements.findIndex(e => e.id === selectedId);
+    if (idx === -1 || idx === docV2.elements.length - 1) return;
+    pushState();
+    const [item] = docV2.elements.splice(idx, 1);
+    docV2.elements.push(item);
+    render();
+}
+
+function sendToBack() {
+    if (!selectedId) return;
+    const idx = docV2.elements.findIndex(e => e.id === selectedId);
+    if (idx === -1 || idx === 0) return;
+    pushState();
+    const [item] = docV2.elements.splice(idx, 1);
+    docV2.elements.unshift(item);
+    render();
+}
 function centerElement(dir) {
     if(!selectedId) return;
     pushState();
