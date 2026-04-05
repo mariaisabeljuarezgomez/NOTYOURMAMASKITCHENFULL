@@ -2371,9 +2371,7 @@ async function renderAssetPanel() {
                 delBtn.title = 'Delete asset from server';
                 delBtn.onclick = (e) => {
                     e.stopPropagation();
-                    if (confirm(`Permanently delete ${filename}?`)) {
-                        deleteAssetFromServer(filename);
-                    }
+                    deleteAssetFromServer(filename);
                 };
                 container.appendChild(delBtn);
             }
@@ -2384,25 +2382,21 @@ async function renderAssetPanel() {
 }
 
 async function deleteAssetFromServer(filename) {
+    if (!confirm(`Delete ${filename} permanently?`)) return;
     try {
         const res = await fetch(`/api/delete-asset/${encodeURIComponent(filename)}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
         });
         const json = await res.json();
-        if (json.status === 'deleted') {
-            showToast('🗑 Asset deleted successfully');
-            // Remove from local docV2.assets for immediate update
-            docV2.assets = docV2.assets.filter(a => {
-                const aName = a.name || a.storage?.originalUrl?.split('/').pop();
-                return aName !== filename;
-            });
-            renderAssetPanel();
+        if (res.ok && json.status === 'deleted') {
+            showToast('Asset deleted.');
+            await loadUserImages();
         } else {
-            showToast('❌ ' + (json.error || 'Delete failed'));
+            showToast('Delete failed: ' + (json.error || res.status));
         }
-    } catch(e) {
-        console.error('Delete error:', e);
-        showToast('❌ Server error during delete');
+    } catch(err) {
+        showToast('Delete error: ' + err.message);
     }
 }
 
@@ -2411,26 +2405,22 @@ async function loadUserImages() {
         const res = await fetch('/api/list-images');
         const json = await res.json();
         if (json.images) {
-            docV2.assets = docV2.assets || [];
-            // Migrate legacy tray format to docV2.assets
-            json.images.forEach(fn => {
-                const filename = fn.filename || fn;
-                const url = fn.url || '/api/images/' + filename;
-                if (!docV2.assets.find(a => a.storage?.originalUrl === url)) {
-                    docV2.assets.push({
-                        id: 'asset_user_' + Date.now() + Math.random().toString(36).substring(7),
-                        kind: 'image',
-                        name: filename,
-                        storage: { originalUrl: url, previewUrl: url, thumbnailUrl: null },
-                        original: { width: null, height: null, mimeType: 'image/png' },
-                        tags: ['user-upload'],
-                        createdAt: new Date().toISOString()
-                    });
+            // REPLACE the entire assets array — do NOT push/concat
+            docV2.assets = json.images.map((img, i) => ({
+                id: 'asset_' + (i + 1).toString().padStart(3, '0'),
+                kind: 'image',
+                name: img.filename.replace(/\.[^/.]+$/, ''),
+                storage: { 
+                    originalUrl: img.url,
+                    previewUrl: img.url,
+                    thumbnailUrl: null 
                 }
-            });
+            }));
+            renderAssetPanel();
         }
-    } catch(e) { console.error('Failed to load user images', e); }
-    renderAssetPanel();
+    } catch(err) {
+        console.error('loadUserImages failed:', err);
+    }
 }
 
 async function addFromAsset(assetId, src) {
