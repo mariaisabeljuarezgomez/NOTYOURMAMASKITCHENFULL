@@ -412,13 +412,11 @@
         }
 
         function _applyShapeStyle(ctx, el) {
-            const s = el.style || {};
-            const fill   = s.fill   || el.fill   || 'transparent';
-            const sw     = el.strokeWidth  || s.strokeWidth  || 0;
-            const sc     = el.strokeColor  || s.strokeColor  || '#c8a96a';
-            const op     = (el.opacity !== undefined) ? el.opacity : 1;
+            const fill = el.fillColor || 'transparent';
+            const sw   = el.borderWidth || 0;
+            const sc   = el.borderColor || '#c8a96a';
             ctx.save();
-            ctx.globalAlpha = op;
+            ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 100) / 100;
             if (fill !== 'transparent' && fill !== 'none') {
                 ctx.fillStyle = fill;
                 ctx.fill();
@@ -462,32 +460,30 @@
             overlayContainer.innerHTML = '';
 
             elements.forEach(el => {
-                const s  = el.style || {};
-                const op = (el.opacity !== undefined) ? el.opacity : 1;
 
                 // ── TEXT ────────────────────────────────────────────────────────
                 if (el.type === 'text') {
-                    const fs  = s.fontSize || 16;
-                    const w   = s.fontWeight || 'normal';
-                    const fam = s.fontFamily || 'Century Gothic';
+                    const fs  = el.fontSize || 16;
+                    const w   = el.fontWeight || 'normal';
+                    const fam = el.fontFamily || 'Century Gothic';
                     let font  = `${w} ${fs}px "${fam}"`;
                     if (fam.toLowerCase().includes('condensed')) font = `${fs}px "bernard-mt-condensed-regular"`;
                     if (fam.toLowerCase().includes('century'))   font = `${w} ${fs}px "Century Gothic"`;
                     ctx.save();
-                    ctx.globalAlpha   = op;
+                    ctx.globalAlpha   = (el.opacity !== undefined ? el.opacity : 100) / 100;
                     ctx.font          = font;
-                    ctx.fillStyle     = s.color || '#000';
-                    ctx.textAlign     = s.textAlign || 'left';
+                    ctx.fillStyle     = el.color || '#000';
+                    ctx.textAlign     = el.textAlign || 'left';
                     ctx.textBaseline  = 'top';
-                    (el.text || '').split('\n').forEach((line, i) =>
-                        ctx.fillText(line, el.x, el.y + i * (s.lineHeight || 1.1) * fs)
+                    (el.content || '').split('\n').forEach((line, i) =>
+                        ctx.fillText(line, el.x, el.y + i * (el.lineHeight || 1.1) * fs)
                     );
                     ctx.restore();
                 
                 // ── LINE ────────────────────────────────────────────────────────
                 } else if (el.type === 'line') {
                     ctx.save();
-                    ctx.globalAlpha = op;
+                    ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 100) / 100;
                     ctx.beginPath();
                     // Line coords are relative to x/y in viewer as well
                     const lx1 = el.x + (el.x1 || 0);
@@ -507,10 +503,10 @@
                     const src = el.src || (el.assetId ? `/Images/${el.assetId}.png` : '');
                     if (cachedImages[src]) {
                         ctx.save();
-                        ctx.globalAlpha = op;
-                        if (el.cornerRadius) {
+                        ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 100) / 100;
+                        if (el.borderRadius) {
                             ctx.beginPath();
-                            ctx.roundRect(el.x, el.y, el.width, el.height, el.cornerRadius);
+                            ctx.roundRect(el.x, el.y, el.width, el.height, el.borderRadius);
                             ctx.clip();
                         }
                         ctx.drawImage(cachedImages[src], el.x, el.y, el.width, el.height);
@@ -523,17 +519,17 @@
                     const y  = el.y;
                     const w  = el.width  || 100;
                     const h  = el.height || 100;
-                    const cr = el.cornerRadius || s.cornerRadius || 0;
+                    const cr = el.borderRadius || 0;
                     // Detect line: height <= 8 treated as a line
                     const isLine = h <= 8;
 
                     ctx.save();
-                    ctx.globalAlpha = op;
+                    ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 100) / 100;
 
                     if (isLine) {
                         // ── LINE ──────────────────────────────────────────────
-                        const sw = el.strokeWidth || s.strokeWidth || h || 2;
-                        const sc = el.strokeColor || s.strokeColor || s.fill || '#c8a96a';
+                        const sw = el.borderWidth || h || 2;
+                        const sc = el.borderColor || el.fillColor || '#c8a96a';
                         const cap = el.lineCap || 'butt';
                         ctx.beginPath();
                         ctx.moveTo(x, y + h / 2);
@@ -577,7 +573,7 @@
                         left:   (el.x * scale) + 'px',
                         top:    (el.y * scale) + 'px',
                         width:  ((el.width  || 100) * scale) + 'px',
-                        height: ((el.height || (s.fontSize || 20) * 1.5) * scale) + 'px',
+                        height: ((el.height || (el.fontSize || 20) * 1.5) * scale) + 'px',
                         pointerEvents: 'auto',
                         cursor: 'pointer'
                     });
