@@ -451,7 +451,10 @@
             canvas.style.height = displayHeight + 'px';
             ctx.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
             ctx.clearRect(0, 0, BASE_W, BASE_H);
-            if (bgImg) ctx.drawImage(bgImg, 0, 0, BASE_W, BASE_H);
+            const hasBgElement = (data.elements || []).some(el =>
+                el.visible !== false && (el.layerRole === 'background' || el.zIndex <= 1)
+            );
+            if (bgImg && !hasBgElement) ctx.drawImage(bgImg, 0, 0, BASE_W, BASE_H);
 
             const elements = (data.elements || [])
                 .filter(el => el.visible !== false)
