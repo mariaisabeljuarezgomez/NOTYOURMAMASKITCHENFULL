@@ -742,11 +742,12 @@ const PAD = 100;
 
 let layoutLocked = true, selectedId = null, zoomScale = 1, _isFitZoom = false;
 let historyStack = [];
+let redoStack = [];
 
-function pushState(snapshot) {
-    const state = snapshot || JSON.stringify(docV2.elements);
-    historyStack = [...historyStack.slice(-29), state];
-    console.log("State Pushed. Stack Size:", historyStack.length);
+function pushState() {
+    // Save state BEFORE the change
+    historyStack = [...historyStack.slice(-49), JSON.stringify(docV2.elements)];
+    redoStack = []; // Clear redo on any new action
     markDirty();
 }
 
@@ -786,15 +787,16 @@ function openDrawer() {
 }
 
 function undo() {
-    console.log("Undo Request. Stack Size:", historyStack.length);
-    console.trace("Undo Source:");
-    if(historyStack.length === 0) { 
-        showToast("Nothing to Undo"); 
-        console.warn("Undo ignored: History empty");
-        return; 
+    if (historyStack.length === 0) {
+        showToast("Nothing to Undo");
+        return;
     }
-    const lastElements = JSON.parse(historyStack.pop());
-    docV2.elements = lastElements;
+    // Push CURRENT state to redo stack before popping
+    redoStack.push(JSON.stringify(docV2.elements));
+    
+    const prevState = historyStack.pop();
+    docV2.elements = JSON.parse(prevState);
+    
     // If the selected element was removed in the undone state, deselect
     if(selectedId) {
         const item = docV2.elements.find(e => e.id === selectedId);
@@ -804,7 +806,20 @@ function undo() {
     }
     render();
     showToast("Action Undone");
-    console.log("Undo Complete. New Stack Size:", historyStack.length);
+}
+
+function redo() {
+    if (redoStack.length === 0) {
+        showToast("Nothing to Redo");
+        return;
+    }
+    // Push CURRENT state back to history before redoing
+    historyStack.push(JSON.stringify(docV2.elements));
+    
+    const nextState = redoStack.pop();
+    docV2.elements = JSON.parse(nextState);
+    render();
+    showToast("Action Redone");
 }
 
 const elementsLayer = document.getElementById('elements-layer');
@@ -1701,8 +1716,8 @@ function toggleVisibility() {
     if (selectedId) toggleVisById({ stopPropagation: () => {} }, selectedId);
 }
 
-function toggleVisById(e, id) { e.stopPropagation(); const item = docV2.elements.find(i=>i.id===id); if(item) { pushState(); item.visible = !item.visible; render(); } }
-function toggleLockById(e, id) { e.stopPropagation(); const item = docV2.elements.find(i=>i.id===id); if(item) { pushState(); item.locked = !item.locked; render(); } }
+function toggleVisById(e, id) { e.stopPropagation(); pushState(); const item = docV2.elements.find(i=>i.id===id); if(item) { item.visible = !item.visible; render(); } }
+function toggleLockById(e, id) { e.stopPropagation(); pushState(); const item = docV2.elements.find(i=>i.id===id); if(item) { item.locked = !item.locked; render(); } }
 
 function setBarTab(tab) {
     ['layer','design','arrange'].forEach(t => {
@@ -1757,11 +1772,11 @@ function syncZoomControlsVisibility() {
 
 function updateZ(dir) {
     if (!selectedId) return;
+    pushState();
     const idx = docV2.elements.findIndex(e => e.id === selectedId);
     if (idx === -1) return;
     const newIdx = idx + dir;
     if (newIdx < 0 || newIdx >= docV2.elements.length) return;
-    pushState();
     const [item] = docV2.elements.splice(idx, 1);
     docV2.elements.splice(newIdx, 0, item);
     render();
@@ -1896,9 +1911,9 @@ async function resetToOriginal() {
 
 function bringToFront() {
     if (!selectedId) return;
+    pushState();
     const idx = docV2.elements.findIndex(e => e.id === selectedId);
     if (idx === -1 || idx === docV2.elements.length - 1) return;
-    pushState();
     const [item] = docV2.elements.splice(idx, 1);
     docV2.elements.push(item);
     render();
@@ -1906,9 +1921,9 @@ function bringToFront() {
 
 function sendToBack() {
     if (!selectedId) return;
+    pushState();
     const idx = docV2.elements.findIndex(e => e.id === selectedId);
     if (idx === -1 || idx === 0) return;
-    pushState();
     const [item] = docV2.elements.splice(idx, 1);
     docV2.elements.unshift(item);
     render();
@@ -2085,9 +2100,9 @@ function addStar() {
 
 function setLineWidth(w) {
     if (!selectedId) return;
+    pushState();
     const item = docV2.elements.find(e => e.id === selectedId);
     if (!item || item.type !== 'line') return;
-    pushState();
     item.strokeWidth = w;
     item.height = Math.max(w, 1);
     const lwCustom = document.getElementById('sel-line-width-custom');
@@ -2340,7 +2355,6 @@ async function setSelectedAsBackground() {
     if (!item || item.type !== 'image') return showToast("Only images can become backgrounds");
 
     pushState(); // Save before change
-
     // Hide legacy background
     docV2.settings.legacyBgVisible = false;
 
@@ -2920,10 +2934,17 @@ function fitCanvasToScreen() {
 viewport.onwheel = (e) => { if(e.ctrlKey) { e.preventDefault(); applyZoom(e.deltaY > 0 ? 0.9 : 1.1); } };
 
 window.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
         if (isEditingText) return;
         e.preventDefault();
-        undo();
+        if (e.shiftKey) redo();
+        else undo();
+        return;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+        if (isEditingText) return;
+        e.preventDefault();
+        redo();
         return;
     }
     const multiIds = docV2.editorState.selectedElementIds || [];
@@ -3042,10 +3063,10 @@ function onTextBlur(e) {
     if(textEditingOriginal !== null && textEditingOriginal !== e.target.innerText) {
         const item = docV2.elements.find(i => i.id === e.target.id);
         if(item) {
-            item.text = textEditingOriginal;        // restore original first
-            const snapshot = JSON.stringify(docV2.elements); // NOW snapshot
-            item.text = e.target.innerText;         // apply new value
-            pushState(snapshot);
+            const newText = e.target.innerText;
+            item.text = textEditingOriginal; // revert to original to capture it
+            pushState();
+            item.text = newText; // apply new
             sync();
             markDirty();
         }
