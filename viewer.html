@@ -348,10 +348,11 @@
         const overlayContainer = document.getElementById('overlay-container');
         const loading = document.getElementById('loading');
 
-        let lastDataHash = null, menuData = null, cachedImages = {};
+        let lastDataHash = null, menuData = null, bgImg = null, cachedImages = {};
 
         async function init() {
             try {
+                bgImg = await preloadImage('/menu-bg-preview.jpg').catch(() => null);
                 await fetchAndDraw();
                 setInterval(fetchAndDraw, POLL_INTERVAL);
                 window.addEventListener('resize', () => { if (menuData) draw(menuData); });
@@ -442,6 +443,7 @@
             canvas.style.height = displayHeight + 'px';
             ctx.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
             ctx.clearRect(0, 0, BASE_W, BASE_H);
+            if (bgImg) ctx.drawImage(bgImg, 0, 0, BASE_W, BASE_H);
 
             const elements = (data.elements || [])
                 .filter(el => el.visible !== false)
