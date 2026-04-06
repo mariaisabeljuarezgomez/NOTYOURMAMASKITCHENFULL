@@ -32,6 +32,17 @@ BACKUP_DIR = os.path.join(STORAGE_BASE, "backups")
 
 IS_PERSISTENT = STORAGE_BASE.startswith("/app/data") or os.environ.get("RAILWAY_VOLUME_MOUNTED") == "true"
 
+def prune_backups(backup_dir, keep=20):
+    try:
+        files = sorted(
+            [f for f in os.listdir(backup_dir) if f.endswith(".json")],
+            reverse=True
+        )
+        for old in files[keep:]:
+            os.remove(os.path.join(backup_dir, old))
+    except Exception:
+        pass
+
 def validate_schema(data):
     if not isinstance(data, dict):
         return False
@@ -76,6 +87,7 @@ def save_menu():
         with open(temp_file, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
         os.replace(temp_file, DATA_FILE)
+        prune_backups(BACKUP_DIR)
         return jsonify({"status": "success", "backup": f"menu_data_{timestamp}.json" if timestamp else None}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -91,6 +103,7 @@ def reset_menu():
             backup_path = os.path.join(BACKUP_DIR, f"menu_data_RESET_{timestamp}.json")
             shutil.copy2(DATA_FILE, backup_path)
             os.remove(DATA_FILE)
+        prune_backups(BACKUP_DIR)
         return jsonify({"status": "reset_ok", "message": "Saved data cleared. Page will now always load from embedded index.html state."}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
