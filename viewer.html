@@ -342,8 +342,8 @@
         window.addEventListener('resize', applyPanels);
 
         // ===== MENU CANVAS =====
-        const BASE_W = 908.44;
-        const BASE_H = 1336.02;
+        const BASE_W = 3600;
+        const BASE_H = 5400;
         const API_URL = '/api/menu';
         const POLL_INTERVAL = 30000;
 
@@ -486,7 +486,7 @@
             const dpr = window.devicePixelRatio || 1;
             const vwCapped = Math.min(window.innerWidth, MENU_MAX_W);
             const displayWidth  = Math.min(document.body.clientWidth, vwCapped);
-            const scale         = displayWidth / BASE_W;
+            const scale         = displayWidth / 3600;
             const displayHeight = BASE_H * scale;
 
             canvas.width  = displayWidth  * dpr;
@@ -499,6 +499,13 @@
 
             const elements = (data.elements || [])
                 .filter(el => el.visible !== false)
+                .filter(el => {
+                    // Filter duplicates that are already baked into the background / hero section
+                    if (el.type === 'image' && el.assetId === 'asset_015') return false; // bg element
+                    if (el.type === 'image' && el.assetId === 'asset_001') return false; // logo overlay duplicate
+                    if (el.type === 'text' && el.content && el.content.includes('Dine In')) return false;
+                    return true;
+                })
                 .sort((a, b) => (a.zIndex || 10) - (b.zIndex || 10))
                 .map(normalizeEl);
 
