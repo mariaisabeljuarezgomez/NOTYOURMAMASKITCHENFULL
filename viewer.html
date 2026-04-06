@@ -421,7 +421,10 @@
                     }
                 });
 
-                const imgs = [...new Set((data.elements||[]).filter(e=>e.type==='image').map(e=>(e.assetId?ASSET_ID_TO_SRC[e.assetId]||'':'')||e.src||''))];
+                const imgs = [...new Set((data.elements||[]).filter(e=>e.type==='image').map(e=>{
+                    if (e.layerRole === 'background') return (e.src && e.src !== '') ? e.src : (ASSET_ID_TO_SRC[e.assetId] || '');
+                    return (e.assetId ? (ASSET_ID_TO_SRC[e.assetId] || '') : '') || e.src || '';
+                }))];
                 for (const s of imgs) if (s && !cachedImages[s]) cachedImages[s] = await preloadImage(s);
                 await draw(data);
                 loadHeroVideo(data);
@@ -502,7 +505,14 @@
             canvas.style.height = displayHeight + 'px';
             ctx.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
             ctx.clearRect(0, 0, BASE_W, BASE_H);
-            if (bgImg) ctx.drawImage(bgImg, 0, 0, BASE_W, BASE_H);
+            
+            const bgEl = (data.elements || []).find(e => e.layerRole === 'background');
+            let _bgImgToDraw = bgImg;
+            if (bgEl) {
+                const bgSrc = (bgEl.src && bgEl.src !== '') ? bgEl.src : (ASSET_ID_TO_SRC[bgEl.assetId] || '');
+                if (bgSrc && cachedImages[bgSrc]) _bgImgToDraw = cachedImages[bgSrc];
+            }
+            if (_bgImgToDraw) ctx.drawImage(_bgImgToDraw, 0, 0, BASE_W, BASE_H);
 
             const elements = (data.elements || [])
                 .filter(el => el.visible !== false)

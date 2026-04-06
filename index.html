@@ -2468,6 +2468,7 @@ function setAsBackground(src) {
     
     let bgLayer = docV2.elements.find(e => e.type === 'image' && e.layerRole === 'background');
     if (bgLayer) {
+        bgLayer.assetId = 'asset_015';
         bgLayer.src = src;
         bgLayer.x = 0; bgLayer.y = 0;
         bgLayer.width = BASE_W; bgLayer.height = BASE_H;
@@ -2480,6 +2481,7 @@ function setAsBackground(src) {
         bgLayer = {
             id: 'bg_upload_' + Date.now(),
             type: 'image',
+            assetId: 'asset_015',
             src: src,
             x: 0, y: 0,
             width: BASE_W, height: BASE_H,
@@ -2515,6 +2517,7 @@ async function setSelectedAsBackground() {
             id: 'bg_upload_' + Date.now(),
             type: 'image',
             layerRole: 'background',
+            assetId: 'asset_015',
             src: item.src,
             x: 0, y: 0,
             width: BASE_W, height: BASE_H,
@@ -2527,6 +2530,7 @@ async function setSelectedAsBackground() {
 
     // Copy image src to background, set full-page bounds
     bgLayer.src = item.src;
+    bgLayer.assetId = 'asset_015';
     bgLayer.x = 0;
     bgLayer.y = 0;
     bgLayer.width = BASE_W;
