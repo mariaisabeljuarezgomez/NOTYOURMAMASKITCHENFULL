@@ -2,6 +2,11 @@
 trigger: always_on
 ---
 
+> **For full architectural context, system history, data model contract, and non-negotiable feature rules, see [`MASTER_HANDOFF.md`](../../MASTER_HANDOFF.md).**
+> This file (`global-rules.md`) governs **HOW** agents must operate (process, commit rules, verification steps).
+> That file (`MASTER_HANDOFF.md`) governs **WHAT** the system is (architecture, schema, history, anti-patterns).
+> **Both must be read before any task begins.**
+
 # NYMK AGENT RULES — COMPLETE RULES FILE
 # Last updated: April 5, 2026
 # All agents working on this repo must read this file before every task.
