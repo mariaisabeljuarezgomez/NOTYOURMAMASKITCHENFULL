@@ -188,6 +188,53 @@ Five independent audit rounds were conducted on `app.py`. All fixes applied to `
 
 ---
 
+## Manual System Architecture & Maintenance Rules
+
+### Manual Files
+| File | Purpose |
+|------|---------|
+| `USER_MANUAL_SOURCE.md` | Feature specification source — describes what every feature does. The single source of truth for manual content. |
+| `manual-en.html` | Published English manual — full HTML with styles, UI mockups, and page layout. Customer-facing. |
+| `manual-es.html` | Published Spanish manual — mirrors manual-en.html in Spanish. |
+
+### HTML Structure
+Every page in the HTML manual is a self-contained block:
+```html
+<section class="page page-break">
+  <h2>N. Section Title</h2>
+  ...content...
+  <div class="footer"><span>Label</span><span>Page N</span></div>
+</section>
+```
+CSS classes used: `.callout`, `.callout.tip`, `.callout.warning`, `.callout.danger`, `.ui-mock`, `.ui-btn`, `.step-row`, `.step-num`, `.spec-grid`, `.spec-card`, `.badge`, `.kbd`
+
+### The Surgical Injection Rule (NON-NEGOTIABLE)
+**Never rewrite or replace `manual-en.html` or `manual-es.html` in full.** These files are large (100KB+). A full rewrite guarantees truncation.
+The only permitted update method:
+1. Read the current file completely first
+2. Identify exactly where new content must be inserted or what existing text must be changed
+3. Insert new `<section>` blocks or patch specific lines using targeted edits
+4. Update the Table of Contents and cover page metadata if needed
+5. Repeat for the Spanish edition
+
+### When to Update the Manual
+A manual update is required whenever:
+- A new user-facing feature is shipped (same sprint or the next sprint — never deferred longer)
+- An existing feature's behavior changes
+- A new workflow is added (e.g. video hosting, AI video creation)
+- UI labels or button names change
+
+### Cover Page Metadata Fields
+When updating, always refresh:
+- `Version` line — increment minor version or add new phase/batch name
+- `Last Updated` — set to the date of the update
+- TOC — add any new section numbers and titles
+
+### Spanish Edition Parity
+Every update to `manual-en.html` must be mirrored to `manual-es.html` in the same commit or the immediately following commit. The two files must never be more than one sprint out of sync.
+
+---
+
 ## Background Replacement Rebuild (April 2026)
 The editor was rebuilt from scratch to correctly implement the full background replacement pipeline end-to-end. The original implementation had the background hardcoded into the layout. A "Replace Background" button existed but the full code path was never correctly wired through the entire stack. Attempting to implement the pipeline broke multiple dependent systems. A clean-slate rebuild was performed over a weekend, resulting in a correctly integrated background replacement feature that is now stable and production-ready.
 
