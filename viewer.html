@@ -383,6 +383,10 @@
           return doc;
         }
 
+        function resolveImageSrc(el) {
+          return el.src || ASSET_ID_TO_SRC[el.assetId] || '';
+        }
+
         function normalizeEl(el) {
             // V1 → V2 field shim — never mutates saved data, returns a patched copy
             const e = Object.assign({}, el);
@@ -432,13 +436,7 @@
                     }
                 });
 
-                const imgs = [...new Set((data.elements||[]).filter(e=>e.type==='image').map(e=>{
-                    if (e.layerRole === 'background') {
-                        if (e.src && e.src !== '' && !e.src.endsWith('menu-bg-preview.jpg') && !e.src.endsWith('menu-bg.png')) return e.src;
-                        return '/menu-bg-preview.jpg';
-                    }
-                    return e.src || (e.assetId ? (ASSET_ID_TO_SRC[e.assetId] || '') : '') || '';
-                }))];
+                const imgs = [...new Set((data.elements||[]).filter(e=>e.type==='image').map(e => resolveImageSrc(e)))];
                 for (const s of imgs) if (s && !cachedImages[s]) cachedImages[s] = await preloadImage(s);
                 await draw(data);
                 loadHeroVideo(data);
@@ -523,10 +521,7 @@
             const bgEl = (data.elements || []).find(e => e.layerRole === 'background');
             let _bgImgToDraw = bgImg;
             if (bgEl) {
-                let bgSrc = null;
-                if (bgEl.src && bgEl.src !== '' && !bgEl.src.endsWith('menu-bg-preview.jpg') && !bgEl.src.endsWith('menu-bg.png')) {
-                    bgSrc = bgEl.src;
-                }
+                const bgSrc = resolveImageSrc(bgEl);
                 if (bgSrc && cachedImages[bgSrc]) {
                     _bgImgToDraw = cachedImages[bgSrc];
                 }
@@ -585,7 +580,7 @@
 
                 // ── IMAGE ───────────────────────────────────────────────────────
                 } else if (el.type === 'image') {
-                    const src = el.src || (el.assetId ? (ASSET_ID_TO_SRC[el.assetId] || '') : '') || '';
+                    const src = resolveImageSrc(el);
                     if (cachedImages[src]) {
                         ctx.save();
                         ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 100) / 100;
