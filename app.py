@@ -407,8 +407,10 @@ def test_google():
         if not client:
             return jsonify({"error": "No HTTP client available"}), 500
         resp = client.get(url, headers=headers)
-        if resp.status_code in (200, 403, 404):
+        if resp.status_code == 200:
             return jsonify({"status": "ok"})
+        if resp.status_code == 403:
+            return jsonify({"error": "Credentials valid but Imagen API access denied — enable the Vertex AI API in your GCP project and ensure your service account has the 'Vertex AI User' role."}), 400
         return jsonify({"error": "Invalid credentials or project ID"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
