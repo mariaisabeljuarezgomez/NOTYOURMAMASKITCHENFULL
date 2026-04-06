@@ -521,7 +521,8 @@ Food videos can be created using AI video generators such as Kling or Veo 3.
 | Bug Audit Round D — D2 | 2026-04-06 | fix: set COMPRESS_MIN_SIZE to 500 to avoid compressing tiny responses — SHA `145aadc` |
 | Bug Audit Round D — D3 | 2026-04-06 | fix: cap duplicate filename counter at 999 to prevent unbounded loop — SHA `83fd470` |
 | Bug Audit Round D — D4 | 2026-04-06 | fix: log prune_backups exceptions instead of silently discarding — SHA `0dc7488` |
-| Bug Audit Round D — D5 | 2026-04-06 | fix: remove blank line with trailing whitespace in delete_asset — SHA (this sprint) |
+| Bug Audit Round D — D5 | 2026-04-06 | fix: remove blank line with trailing whitespace in delete_asset — SHA `0d9b547` |
+| Manual Doc Sprint | 2026-04-06 | docs: manual-en.html cover page fix, Reordering Layers subsection, Replace Background/Video Panel/Cloudinary sections injected, sequential numbering 1-35, TOC updated — SHA `a36fe65` |
 
 ### Background Replacement Rebuild (April 2026)
 The background replacement feature was rebuilt from scratch. The original implementation had the background hardcoded into the layout and the Replace Background button was never correctly wired through the full pipeline. Attempting to implement it incrementally broke multiple dependent systems. A clean-slate rebuild was performed, resulting in a correctly integrated background replacement feature that is now stable and production-ready. The rebuilt version is what is documented in Section 3.12.
