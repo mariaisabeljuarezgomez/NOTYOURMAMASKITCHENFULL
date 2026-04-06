@@ -256,6 +256,10 @@ def upload_image():
     try:
         data = request.json
         filename = data.get("filename", f"upload_{int(datetime.now().timestamp())}.png")
+        allowed_extensions = {".png", ".jpg", ".jpeg", ".webp"}
+        ext = os.path.splitext(filename).lower()
+        if ext not in allowed_extensions:
+            return jsonify({"error": "Invalid file type"}), 400
         # Support both 'image' and 'data' keys for maximum compatibility
         img_data = data.get("data") or data.get("image", "")
         if "," in img_data:
@@ -264,6 +268,14 @@ def upload_image():
             decoded = base64.b64decode(img_data)
         except Exception:
             return jsonify({"error": "Invalid base64 image data"}), 400
+        MAGIC_BYTES = {
+            b"\x89PNG": ".png",
+            b"\xff\xd8": ".jpg",
+            b"RIFF": ".webp",
+        }
+        decoded_check = base64.b64decode(img_data[:16] if len(img_data) >= 16 else img_data)
+        if not any(decoded_check[:len(sig)] == sig for sig in MAGIC_BYTES):
+            return jsonify({"error": "File content does not match a supported image type"}), 400
         filepath = os.path.join(IMAGES_DIR, filename)
         with open(filepath, "wb") as f:
             f.write(decoded)
