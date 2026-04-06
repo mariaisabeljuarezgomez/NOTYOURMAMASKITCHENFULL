@@ -123,7 +123,7 @@ def list_backups():
         )
         return jsonify({"backups": files}), 200
     except Exception as e:
-        return jsonify({"backups": [], "error": str(e)}), 200
+        return jsonify({"backups": [], "error": str(e)}), 500
 
 @app.route("/api/menu/restore/<filename>", methods=["POST"])
 def restore_backup(filename):
