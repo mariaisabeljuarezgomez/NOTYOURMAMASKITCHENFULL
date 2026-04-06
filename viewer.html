@@ -387,6 +387,35 @@
           return el.src || ASSET_ID_TO_SRC[el.assetId] || '';
         }
 
+        /**
+         * Manual fallback for letter-spacing when ctx.letterSpacing is not supported.
+         * Handles left, center, and right alignment.
+         */
+        function drawTextWithSpacing(ctx, text, x, y, letterSpacing) {
+          const originalAlign = ctx.textAlign;
+          let cursorX = x;
+          
+          if (originalAlign === 'center' || originalAlign === 'right') {
+            // We need to temporarily set align to 'left' for manual character placement
+            ctx.textAlign = 'left';
+            const charWidths = [...text].map(char => ctx.measureText(char).width);
+            const totalTextWidth = charWidths.reduce((a, b) => a + b, 0);
+            const totalSpacing = (text.length - 1) * letterSpacing;
+            const totalWidth = totalTextWidth + totalSpacing;
+            
+            if (originalAlign === 'center') cursorX = x - totalWidth / 2;
+            else if (originalAlign === 'right') cursorX = x - totalWidth;
+          }
+
+          for (const char of text) {
+            ctx.fillText(char, cursorX, y);
+            cursorX += ctx.measureText(char).width + letterSpacing;
+          }
+          
+          // Restore original alignment
+          ctx.textAlign = originalAlign;
+        }
+
         function normalizeEl(el) {
             // V1 → V2 field shim — never mutates saved data, returns a patched copy
             const e = Object.assign({}, el);
@@ -565,9 +594,28 @@
                     ctx.fillStyle     = el.color || '#000';
                     ctx.textAlign     = el.textAlign || 'left';
                     ctx.textBaseline  = 'top';
-                    (el.content || '').split('\n').forEach((line, i) =>
-                        ctx.fillText(line, el.x, el.y + i * (el.lineHeight || 1.1) * fs)
-                    );
+
+                    // Apply letterSpacing if present
+                    let _useManualLetterSpacing = false;
+                    if (typeof ctx.letterSpacing !== 'undefined') {
+                        ctx.letterSpacing = (el.letterSpacing || 0) + 'px';
+                    } else if (el.letterSpacing && el.letterSpacing !== 0) {
+                        _useManualLetterSpacing = true;
+                    }
+
+                    (el.content || '').split('\n').forEach((line, i) => {
+                        const ly = el.y + i * (el.lineHeight || 1.1) * fs;
+                        if (_useManualLetterSpacing) {
+                            drawTextWithSpacing(ctx, line, el.x, ly, el.letterSpacing || 0);
+                        } else {
+                            ctx.fillText(line, el.x, ly);
+                        }
+                    });
+
+                    // Reset letterSpacing after drawing this element
+                    if (typeof ctx.letterSpacing !== 'undefined') {
+                        ctx.letterSpacing = '0px';
+                    }
                     ctx.restore();
                 
                 // ── LINE ────────────────────────────────────────────────────────
