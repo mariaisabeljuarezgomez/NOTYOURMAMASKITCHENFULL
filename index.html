@@ -602,6 +602,29 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
       <span>🖼️ Generate Image</span><span id="ai-img-arrow" style="font-size:9px;">▶</span>
     </button>
     <div id="ai-img-body" style="display:none;padding:6px 0 10px;">
+      <label class="rp-label">Reference Image (optional)</label>
+      <div id="ai-img-ref-zone" onclick="document.getElementById('ai-img-ref-input').click()" style="border:2px dashed #444;border-radius:8px;padding:10px;text-align:center;cursor:pointer;color:#777;font-size:10px;margin-bottom:4px;">
+        📎 Click or drag to upload (JPG, PNG, WebP &lt;10MB)
+      </div>
+      <input type="file" id="ai-img-ref-input" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="handleAiImgRefUpload(this)">
+      <div id="ai-img-ref-preview" style="display:none;position:relative;margin-bottom:4px;">
+        <img id="ai-img-ref-thumb" style="width:100%;border-radius:6px;border:1px solid #333;">
+        <button onclick="clearAiImgRef()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.7);border:none;color:#fff;border-radius:50%;width:20px;height:20px;font-size:10px;cursor:pointer;">✕</button>
+      </div>
+      <div id="ai-img-mode-row" style="display:none;margin-bottom:4px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <label class="rp-label" style="margin-bottom:0;">Mode:</label>
+          <input type="radio" id="ai-img-mode-edit" name="ai-img-mode" value="edit" checked style="accent-color:var(--accent);">
+          <label for="ai-img-mode-edit" style="font-size:10px;color:#888;cursor:pointer;">Edit / Enhance</label>
+          <input type="radio" id="ai-img-mode-subject" name="ai-img-mode" value="subject" style="accent-color:var(--accent);">
+          <label for="ai-img-mode-subject" style="font-size:10px;color:#888;cursor:pointer;">Subject in New Scene</label>
+        </div>
+        <div id="ai-img-strength-row" style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:9px;color:#666;">Light</span>
+          <input type="range" id="ai-img-strength" min="0" max="1" step="0.1" value="0.5" style="flex:1;accent-color:var(--accent);">
+          <span style="font-size:9px;color:#666;">Heavy</span>
+        </div>
+      </div>
       <label class="rp-label">Prompt</label>
       <textarea id="ai-img-prompt" placeholder="e.g. a close-up of a grilled salmon dish with lemon, restaurant lighting" class="rp-input" style="height:56px;resize:vertical;margin-bottom:4px;font-family:inherit;"></textarea>
       <button onclick="enhanceAiPrompt('image')" class="btn-ui" style="font-size:10px;padding:4px 8px;margin-bottom:6px;width:100%;">✨ Enhance Prompt</button>
@@ -3760,6 +3783,7 @@ let aiState = {
   generatedImage: null,
   generatedImageUrl: null,
   generatedVideoUrl: null,
+  imgRefB64: null,
   vidRefB64: null,
   vidTaskId: null,
   vidPollingInterval: null
@@ -3903,17 +3927,35 @@ async function generateAiImage() {
   const btn = document.getElementById('ai-img-btn');
   btn.disabled = true;
   btn.textContent = '⏳ Generating…';
+  const hasRef = !!aiState.imgRefB64;
   try {
-    const res = await fetch('/api/ai/generate-image', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    let endpoint, payload;
+    if (hasRef) {
+      const mode = document.querySelector('input[name="ai-img-mode"]:checked').value;
+      const editStrength = parseFloat(document.getElementById('ai-img-strength').value);
+      endpoint = '/api/ai/edit-image';
+      payload = {
+        prompt,
+        negative_prompt: document.getElementById('ai-img-neg').value.trim(),
+        reference_image_b64: aiState.imgRefB64,
+        mode,
+        edit_strength: editStrength,
+        credentials: creds.imagen
+      };
+    } else {
+      endpoint = '/api/ai/generate-image';
+      payload = {
         prompt,
         negative_prompt: document.getElementById('ai-img-neg').value.trim(),
         aspect_ratio: document.getElementById('ai-img-ratio').value,
         style: document.getElementById('ai-img-style').value,
         credentials: creds.imagen
-      })
+      };
+    }
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
     const data = await res.json();
     if (data.image_url) {
@@ -4041,6 +4083,31 @@ function clearAiVidRef() {
   document.getElementById('ai-vid-ref-preview').style.display = 'none';
 }
 
+function handleAiImgRefUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { showToast('❌ File must be under 10MB'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    aiState.imgRefB64 = e.target.result.split(',')[1];
+    document.getElementById('ai-img-ref-thumb').src = e.target.result;
+    document.getElementById('ai-img-ref-zone').style.display = 'none';
+    document.getElementById('ai-img-ref-preview').style.display = 'block';
+    document.getElementById('ai-img-mode-row').style.display = 'block';
+    document.getElementById('ai-img-strength-row').style.display = 'flex';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearAiImgRef() {
+  aiState.imgRefB64 = null;
+  document.getElementById('ai-img-ref-input').value = '';
+  document.getElementById('ai-img-ref-zone').style.display = 'block';
+  document.getElementById('ai-img-ref-preview').style.display = 'none';
+  document.getElementById('ai-img-mode-row').style.display = 'none';
+  document.getElementById('ai-img-strength-row').style.display = 'none';
+}
+
 async function generateAiVideo() {
   const creds = getAiCredentials();
   const prompt = document.getElementById('ai-vid-prompt').value.trim();
@@ -4089,7 +4156,11 @@ function pollKlingStatus() {
   document.getElementById('ai-vid-status').textContent = 'Polling for result…';
   aiState.vidPollingInterval = setInterval(async () => {
     try {
-      const res = await fetch(`/api/ai/kling-status/${aiState.vidTaskId}?api_key=${encodeURIComponent(creds.kling.api_key)}&api_secret=${encodeURIComponent(creds.kling.api_secret)}`);
+      const res = await fetch(`/api/ai/kling-status/${aiState.vidTaskId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ api_key: creds.kling.api_key, api_secret: creds.kling.api_secret })
+      });
       const data = await res.json();
       if (data.progress !== undefined) {
         document.getElementById('ai-vid-status').textContent = `⏳ ${data.status} (${data.progress}%)`;
@@ -4175,6 +4246,21 @@ document.getElementById('ai-vid-ref-zone')?.addEventListener('drop', e => {
     dt.items.add(file);
     input.files = dt.files;
     handleAiVidRefUpload(input);
+  }
+});
+// drag-drop for image reference
+document.getElementById('ai-img-ref-zone')?.addEventListener('dragover', e => { e.preventDefault(); e.target.style.borderColor = 'var(--accent)'; });
+document.getElementById('ai-img-ref-zone')?.addEventListener('dragleave', e => { e.target.style.borderColor = '#444'; });
+document.getElementById('ai-img-ref-zone')?.addEventListener('drop', e => {
+  e.preventDefault();
+  e.target.style.borderColor = '#444';
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    const input = document.getElementById('ai-img-ref-input');
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    input.files = dt.files;
+    handleAiImgRefUpload(input);
   }
 });
 </script>
