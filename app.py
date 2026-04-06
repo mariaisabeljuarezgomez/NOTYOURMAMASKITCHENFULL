@@ -56,8 +56,7 @@ def get_menu():
     try:
         with open(DATA_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
-            data["status"] = status_info
-            return jsonify(data)
+            return jsonify({**data, "status": status_info})
     except Exception as e:
         return jsonify({"error": str(e), "status": status_info}), 500
 
