@@ -90,7 +90,9 @@ def save_menu():
     if request.content_length and request.content_length > 5_000_000:
         return jsonify({"error": "Payload too large"}), 413
     data = request.json
-    if not data or not validate_schema(data):
+    if data is None:
+        return jsonify({"error": "Request body is required"}), 400
+    if not validate_schema(data):
         return jsonify({"error": "Invalid schema"}), 400
     try:
         timestamp = None
