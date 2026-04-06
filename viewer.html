@@ -342,8 +342,8 @@
         window.addEventListener('resize', applyPanels);
 
         // ===== MENU CANVAS =====
-        const BASE_W = 3600;
-        const BASE_H = 5400;
+        const BASE_W = 908.4429931640625;
+        const BASE_H = 1336.02001953125;
         const API_URL = '/api/menu';
         const POLL_INTERVAL = 30000;
 
@@ -486,7 +486,7 @@
             const dpr = window.devicePixelRatio || 1;
             const vwCapped = Math.min(window.innerWidth, MENU_MAX_W);
             const displayWidth  = Math.min(document.body.clientWidth, vwCapped);
-            const scale         = displayWidth / 900;
+            const scale         = displayWidth / 908.4429931640625;
             const displayHeight = BASE_H * scale;
 
             canvas.width  = displayWidth  * dpr;
@@ -494,8 +494,8 @@
             canvas.style.width  = displayWidth  + 'px';
             canvas.style.height = displayHeight + 'px';
             ctx.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
-            ctx.clearRect(0, 0, 900, 1350);
-            if (bgImg) ctx.drawImage(bgImg, 0, 0, 900, 1350);
+            ctx.clearRect(0, 0, BASE_W, BASE_H);
+            if (bgImg) ctx.drawImage(bgImg, 0, 0, BASE_W, BASE_H);
 
             const elements = (data.elements || [])
                 .filter(el => el.visible !== false)
