@@ -1797,71 +1797,59 @@ function deselect() {
 
 function onCanvasClick(e) { if(isLassoing || _lassoJustFired) return; if(e.target.id === 'menu-container' || e.target.id === 'elements-layer') deselect(); }
 function onCanvasMousedown(e) {
-    const directTargets = ['menu-container', 'elements-layer', 'menu-bg'];
-    if (!directTargets.includes(e.target.id)) return;
-    deselect();
-    if (layoutLocked) return;
-    const scalerEl = document.getElementById('scaler-wrapper');
-    const lassoBox = document.getElementById('lasso-box');
-    if (!lassoBox || !scalerEl) return;
-    const startX = e.clientX;
-    const startY = e.clientY;
-    lassoAnchorX = startX;
-    lassoAnchorY = startY;
-    let lassoStarted = false;
-    function onLassoMove(me) {
-        const dx = me.clientX - startX;
-        const dy = me.clientY - startY;
-        if (!lassoStarted && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
-            lassoStarted = true;
-            isLassoing = true;
-            lassoBox.style.display = 'block';
-            lassoBox.style.left   = startX + 'px';
-            lassoBox.style.top    = startY + 'px';
-            lassoBox.style.width  = '0px';
-            lassoBox.style.height = '0px';
-        }
-        if (!lassoStarted) return;
-        const l = Math.min(me.clientX, startX);
-        const t = Math.min(me.clientY, startY);
-        const w = Math.abs(dx);
-        const h = Math.abs(dy);
-        lassoBox.style.left   = l + 'px';
-        lassoBox.style.top    = t + 'px';
-        lassoBox.style.width  = w + 'px';
-        lassoBox.style.height = h + 'px';
+  if (e.target !== e.currentTarget) return;
+  if (e.button !== 0) return;
+  deselect();
+  const startX = e.clientX;
+  const startY = e.clientY;
+  const lassoBox = document.getElementById('lasso-box');
+  let moved = false;
+  function onMove(me) {
+    const dx = me.clientX - startX;
+    const dy = me.clientY - startY;
+    if (!moved && Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+    moved = true;
+    isLassoing = true;
+    const x = Math.min(me.clientX, startX);
+    const y = Math.min(me.clientY, startY);
+    const w = Math.abs(dx);
+    const h = Math.abs(dy);
+    lassoBox.style.display = 'block';
+    lassoBox.style.left   = x + 'px';
+    lassoBox.style.top    = y + 'px';
+    lassoBox.style.width  = w + 'px';
+    lassoBox.style.height = h + 'px';
+  }
+  function onUp(ue) {
+    window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('mouseup', onUp);
+    lassoBox.style.display = 'none';
+    if (!moved || !isLassoing) { isLassoing = false; return; }
+    isLassoing = false;
+    const scalerRect = document.getElementById('scaler-wrapper').getBoundingClientRect();
+    const scale = scalerRect.width / BASE_W;
+    const lx1 = (Math.min(ue.clientX, startX) - scalerRect.left) / scale;
+    const ly1 = (Math.min(ue.clientY, startY) - scalerRect.top)  / scale;
+    const lx2 = (Math.max(ue.clientX, startX) - scalerRect.left) / scale;
+    const ly2 = (Math.max(ue.clientY, startY) - scalerRect.top)  / scale;
+    const hits = docV2.elements.filter(el => {
+      if (el.locked) return false;
+      if (docV2.settings?.backgroundLayerLocked && el.layerRole === 'background') return false;
+      const ex1 = el.x, ey1 = el.y;
+      const ex2 = ex1 + (el.width || 80);
+      const ey2 = ey1 + (el.height || 20);
+      return ex1 < lx2 && ex2 > lx1 && ey1 < ly2 && ey2 > ly1;
+    });
+    if (hits.length > 0) {
+      docV2.editorState.selectedElementIds = hits.map(el => el.id);
+      selectedId = null;
+      render();
+      updateSelectionBar();
+      updateDistributeBar();
     }
-    function onLassoUp() {
-        document.removeEventListener('mousemove', onLassoMove);
-        document.removeEventListener('mouseup',   onLassoUp);
-        lassoBox.style.display = 'none';
-        lassoBox.style.width   = '0';
-        lassoBox.style.height  = '0';
-        if (!lassoStarted) { isLassoing = false; return; }
-        const sRect = scalerEl.getBoundingClientRect();
-        const scale = sRect.width / BASE_W;
-        const lbRect = { left: parseFloat(lassoBox.style.left), top: parseFloat(lassoBox.style.top), right: parseFloat(lassoBox.style.left) + parseFloat(lassoBox.style.width), bottom: parseFloat(lassoBox.style.top) + parseFloat(lassoBox.style.height) };
-        const hits = docV2.elements.filter(el => {
-            if (!el.visible || el.locked) return false;
-            if (docV2.settings.backgroundLayerLocked && el.layerRole === 'background') return false;
-            const domEl = document.getElementById(el.id);
-            if (!domEl) return false;
-            const er = domEl.getBoundingClientRect();
-            return er.left < lbRect.right && er.right > lbRect.left &&
-                   er.top  < lbRect.bottom && er.bottom > lbRect.top;
-        });
-        if (hits.length > 0) {
-            docV2.editorState.selectedElementIds = hits.map(h => h.id);
-            selectedId = null;
-            render();
-            updateSelectionBar();
-            updateDistributeBar();
-            showToast(`✅ ${hits.length} element${hits.length > 1 ? 's' : ''} selected`);
-        }
-        setTimeout(() => { isLassoing = false; _lassoJustFired = hits.length > 0; setTimeout(() => { _lassoJustFired = false; }, 200); }, 50);
-    }
-    document.addEventListener('mousemove', onLassoMove);
-    document.addEventListener('mouseup',   onLassoUp);
+  }
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
 }
 function onViewportClick(e) { if(isLassoing || _lassoJustFired) return; if(e.target.id === 'editor-viewport' || e.target.id === 'centering-wrapper') deselect(); }
 
@@ -3517,96 +3505,7 @@ function dismissHelpPopout() {
     popout.classList.add('dismissing');
     localStorage.setItem('mde_help_shown', '1');
     setTimeout(() => { popout.style.display = 'none'; }, 300);
-}// ===== PHASE 7 LASSO — FIXED =====
-let lassoAnchorX = 0, lassoAnchorY = 0;
-
-document.addEventListener('mousemove', function(e) {
-    if (!isLassoing) return;
-    const x = Math.min(e.clientX, lassoAnchorX);
-    const y = Math.min(e.clientY, lassoAnchorY);
-    const w = Math.abs(e.clientX - lassoAnchorX);
-    const h = Math.abs(e.clientY - lassoAnchorY);
-    const box = document.getElementById('lasso-box');
-    box.style.left   = x + 'px';
-    box.style.top    = y + 'px';
-    box.style.width  = w + 'px';
-    box.style.height = h + 'px';
-});
-
-document.addEventListener('touchmove', function(e) {
-    if (!isLassoing) return;
-    if (e.touches.length !== 1) return;
-    const touch = e.touches[0];
-    const x = Math.min(touch.clientX, lassoAnchorX);
-    const y = Math.min(touch.clientY, lassoAnchorY);
-    const w = Math.abs(touch.clientX - lassoAnchorX);
-    const h = Math.abs(touch.clientY - lassoAnchorY);
-    const box = document.getElementById('lasso-box');
-    box.style.left   = x + 'px';
-    box.style.top    = y + 'px';
-    box.style.width  = w + 'px';
-    box.style.height = h + 'px';
-    e.preventDefault(); // prevent page scroll during lasso
-}, { passive: false });
-
-function finalizeLasso() {
-    isLassoing = false;
-    const box = document.getElementById('lasso-box');
-    box.style.display = 'none';
-
-    const lw = parseFloat(box.style.width);
-    const lh = parseFloat(box.style.height);
-    if (lw < 5 && lh < 5) return;
-
-    const lx1 = parseFloat(box.style.left);
-    const ly1 = parseFloat(box.style.top);
-    const lx2 = lx1 + lw;
-    const ly2 = ly1 + lh;
-
-    const scalerRect = document.getElementById('scaler-wrapper').getBoundingClientRect();
-    const selected = [];
-    const scaleRatio = scalerRect.width / BASE_W;
-    docV2.elements.forEach(item => {
-        if (!item.visible || item.locked) return;
-        if (docV2.settings.backgroundLayerLocked && item.layerRole === 'background') return;
-        const el = document.getElementById(item.id);
-        if (!el) return;
-        const ew = item.width || el.offsetWidth;
-        const eh = item.height || el.offsetHeight;
-        const ex1 = scalerRect.left + item.x * scaleRatio;
-        const ey1 = scalerRect.top  + item.y * scaleRatio;
-        const ex2 = ex1 + ew * scaleRatio;
-        const ey2 = ey1 + eh * scaleRatio;
-        if (ex1 < lx2 && ex2 > lx1 && ey1 < ly2 && ey2 > ly1) {
-            selected.push(item.id);
-        }
-    });
-
-    if (selected.length === 0) { deselect(); return; }
-    if (selected.length === 1) { selectById(selected[0]); }
-    else {
-        selectedId = null;
-        docV2.editorState.selectedElementIds = selected;
-        render();
-        updateSelectionBar();
-        updateDistributeBar();
-        showToast(selected.length + ' elements selected');
-    }
-
-    _lassoJustFired = true;
-    setTimeout(() => { _lassoJustFired = false; }, 50);
 }
-
-document.addEventListener('mouseup', function(e) {
-    if (!isLassoing) return;
-    finalizeLasso();
-});
-
-document.addEventListener('touchend', function(e) {
-    if (!isLassoing) return;
-    finalizeLasso();
-});
-// ===== END PHASE 7 LASSO =====
 </script>
 
 <!-- Fix 5b - Floating Zoom Buttons (Mobile Repaired) - REMOVED -->
