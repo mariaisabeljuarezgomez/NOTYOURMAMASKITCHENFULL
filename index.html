@@ -559,40 +559,54 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
       <!-- Cloudinary -->
       <div style="margin-bottom:10px;">
         <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:4px;">☁️ Cloudinary</div>
-        <input type="text" id="ai-cloud-name" placeholder="your-cloud-name" class="rp-input" style="margin-bottom:4px;">
-        <input type="text" id="ai-cloud-key" placeholder="API Key" class="rp-input" style="margin-bottom:4px;">
+        <input type="text" id="ai-cloud-name" placeholder="e.g. my-restaurant-123" class="rp-input" style="margin-bottom:4px;">
+        <input type="text" id="ai-cloud-key" placeholder="API Key (from Cloudinary dashboard)" class="rp-input" style="margin-bottom:4px;">
         <div style="position:relative;margin-bottom:4px;">
-          <input type="password" id="ai-cloud-secret" placeholder="API Secret" class="rp-input" style="padding-right:30px;">
+          <input type="password" id="ai-cloud-secret" placeholder="API Secret (from Cloudinary dashboard)" class="rp-input" style="padding-right:30px;">
           <button onclick="toggleAiPasswordShow('ai-cloud-secret',this)" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#888;cursor:pointer;font-size:11px;padding:2px;">👁</button>
         </div>
         <div style="display:flex;gap:4px;">
           <button onclick="testAiService('cloudinary')" class="btn-ui" style="flex:1;font-size:10px;padding:5px;">Test</button>
           <button onclick="saveAiCredentials()" class="btn-ui accent" style="flex:1;font-size:10px;padding:5px;">Save</button>
         </div>
+        <div style="font-size:9px;color:#666;margin-top:4px;line-height:1.5;">
+          💡 Find these at <strong style="color:#888;">cloudinary.com → Settings → API Keys</strong>. Your Cloud Name appears at the top of the dashboard.
+        </div>
       </div>
 
       <!-- Google Imagen -->
       <div style="margin-bottom:10px;">
-        <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:4px;">🖼️ Google Imagen</div>
-        <input type="text" id="ai-imagen-project" placeholder="Project ID" class="rp-input" style="margin-bottom:4px;">
-        <input type="text" id="ai-imagen-key" placeholder="API Key" class="rp-input" style="margin-bottom:4px;">
+        <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:4px;">🖼️ Google Imagen <span style="color:#c0392b;font-size:8px;font-weight:800;">⚠ ADVANCED</span></div>
+        <input type="text" id="ai-imagen-project" placeholder="GCP Project ID (e.g. my-project-123456)" class="rp-input" style="margin-bottom:4px;">
+        <label class="rp-label" style="color:#e67e22;">ACCESS TOKEN <span style="font-size:8px;font-weight:600;color:#888;">(NOT a regular API key)</span></label>
+        <input type="text" id="ai-imagen-key" placeholder="OAuth2 Bearer Token — NOT an API key" class="rp-input" style="margin-bottom:4px;">
         <div style="display:flex;gap:4px;">
           <button onclick="testAiService('imagen')" class="btn-ui" style="flex:1;font-size:10px;padding:5px;">Test</button>
           <button onclick="saveAiCredentials()" class="btn-ui accent" style="flex:1;font-size:10px;padding:5px;">Save</button>
+        </div>
+        <div style="font-size:9px;color:#666;margin-top:4px;line-height:1.6;background:#1a1a1a;border-left:2px solid #e67e22;padding:6px 8px;border-radius:4px;">
+          ⚠️ <strong style="color:#e67e22;">This is NOT a regular API key.</strong><br>
+          You need a <strong style="color:#aaa;">short-lived OAuth2 access token</strong> from Google Cloud.<br>
+          Get one by running this in Google Cloud Shell:<br>
+          <code style="font-size:8px;color:#f1c40f;background:#111;padding:2px 4px;border-radius:3px;display:inline-block;margin-top:2px;">gcloud auth print-access-token</code><br>
+          <span style="color:#555;margin-top:2px;display:block;">Tokens expire in ~1 hour. Generate a new one if you get an auth error.</span>
         </div>
       </div>
 
       <!-- Kling AI -->
       <div>
         <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:4px;">🎬 Kling AI</div>
-        <input type="text" id="ai-kling-key" placeholder="API Key" class="rp-input" style="margin-bottom:4px;">
+        <input type="text" id="ai-kling-key" placeholder="API Key (from kling.ai dashboard)" class="rp-input" style="margin-bottom:4px;">
         <div style="position:relative;margin-bottom:4px;">
-          <input type="password" id="ai-kling-secret" placeholder="API Secret" class="rp-input" style="padding-right:30px;">
+          <input type="password" id="ai-kling-secret" placeholder="API Secret (from kling.ai dashboard)" class="rp-input" style="padding-right:30px;">
           <button onclick="toggleAiPasswordShow('ai-kling-secret',this)" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#888;cursor:pointer;font-size:11px;padding:2px;">👁</button>
         </div>
         <div style="display:flex;gap:4px;">
           <button onclick="testAiService('kling')" class="btn-ui" style="flex:1;font-size:10px;padding:5px;">Test</button>
           <button onclick="saveAiCredentials()" class="btn-ui accent" style="flex:1;font-size:10px;padding:5px;">Save</button>
+        </div>
+        <div style="font-size:9px;color:#666;margin-top:4px;line-height:1.5;">
+          💡 Sign up at <strong style="color:#888;">klingai.com</strong> → Account → API. Free tier available.
         </div>
       </div>
     </div>
