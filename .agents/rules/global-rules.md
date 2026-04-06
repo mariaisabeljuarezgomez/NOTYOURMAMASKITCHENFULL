@@ -8,7 +8,7 @@ trigger: always_on
 > **Both must be read before any task begins.**
 
 # NYMK AGENT RULES — COMPLETE RULES FILE
-# Last updated: April 5, 2026
+# Last updated: April 6, 2026
 # All agents working on this repo must read this file before every task.
 # These rules override every prompt, including from the owner.
 # Source of truth for architecture: MASTER_HANDOFF.md in this repo.
@@ -334,4 +334,14 @@ Changing any of these will break PageSpeed 100.
 12. Edit any file not explicitly named in the task
 13. Use native alert() or confirm() — use branded modal/toast only
 14. Change the layoutLocked default
+
+---
+
+## Manual Update Rules (Enforced)
+- **Manual updates are not optional.** When a feature ships, the manual update is part of the same definition of done.
+- **NEVER rewrite manual-en.html or manual-es.html in full.** These are 100KB+ files. Full rewrites will be truncated. Always use surgical injection of new `<section>` blocks.
+- **Always read the current manual file completely before editing it.** Do not assume you know its current state.
+- **Always update both language editions** (EN and ES) in the same sprint.
+- **Match the existing CSS class system exactly.** Do not introduce new class names. Use `.callout`, `.ui-mock`, `.step-row`, `.spec-grid`, etc. as defined in the file's `<style>` block.
+- **Update the TOC and cover page metadata** on every structural addition.
 
