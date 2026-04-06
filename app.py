@@ -257,7 +257,7 @@ def upload_image():
         data = request.json
         filename = data.get("filename", f"upload_{int(datetime.now().timestamp())}.png")
         allowed_extensions = {".png", ".jpg", ".jpeg", ".webp"}
-        ext = os.path.splitext(filename).lower()
+        ext = os.path.splitext(filename)[1].lower()
         if ext not in allowed_extensions:
             return jsonify({"error": "Invalid file type"}), 400
         # Support both 'image' and 'data' keys for maximum compatibility
