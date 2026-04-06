@@ -414,6 +414,13 @@
                 const hash = JSON.stringify(data.elements || []);
                 if (hash === lastDataHash) return;
                 lastDataHash = hash; menuData = data;
+                
+                (data.elements || []).forEach(el => {
+                    if (el.type === 'image') {
+                        console.log(`[DEBUG Image] id: ${el.id}, assetId: ${el.assetId}, src: ${el.src}`);
+                    }
+                });
+
                 const imgs = [...new Set((data.elements||[]).filter(e=>e.type==='image').map(e=>(e.assetId?ASSET_ID_TO_SRC[e.assetId]||'':'')||e.src||''))];
                 for (const s of imgs) if (s && !cachedImages[s]) cachedImages[s] = await preloadImage(s);
                 await draw(data);
