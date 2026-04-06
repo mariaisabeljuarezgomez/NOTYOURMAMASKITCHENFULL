@@ -1,7 +1,7 @@
 # USER_MANUAL_SOURCE.md
 # Dine In Menu Editor Pro V2 — Complete Technical & User Manual Source
-**Version**: V2 Phase 30 + Phases 2A–11 + Bug Fix Batches 1–8 (Fully Hardened)
-**Last Updated**: March 28, 2026
+**Version**: V2 Phase 30 + Phases 2A–11 + Bug Fix Batches 1–8 + Bug Audit Rounds A–D (Fully Hardened)
+**Last Updated**: April 6, 2026
 **Repository**: mariaisabeljuarezgomez/NOTYOURMAMASKITCHENFULL
 **Prepared by**: MARIAS DIGITAL DESIGNS
 
@@ -36,7 +36,7 @@ This document should be updated whenever a Phase commit changes user-facing beha
 **Generator file**: `build_app.py` (frozen at Phase 30 — see warning above)
 **Live source**: `index.html` (manually patched through Phase 11 + Bug Batches 1–8)
 **Backend**: `app.py` (Python/Flask server, Railway Volume persistence at `/app/data`)
-**Latest SHA**: `6bc7fe4`
+**Latest SHA**: `0dc7488`
 
 ### Core Promise
 - Fast on mobile — PageSpeed 100/100/100/100 (achieved March 27, 2026)
@@ -434,7 +434,7 @@ Food videos can be created using AI video generators such as Kling or Veo 3.
 | Text edits not showing | Didn't double-click to enter edit mode | Double-click the text element; look for cursor before typing |
 | Ctrl+Z reverted whole element instead of one character | Expected — Ctrl+Z during text editing is now browser-native | Press Ctrl+Z again while still in text edit mode to undo individual characters |
 | Export looks blurry on screen | Normal — screen is lower DPI than export | Open PNG at 100% zoom or send directly to printer |
-| Rounded shape border looks thin/clipped | Old bug — fixed in Bug Batch 7 | Update to latest SHA (`6bc7fe4`) |
+| Rounded shape border looks thin/clipped | Old bug — fixed in Bug Batch 7 | Update to latest SHA (`0dc7488`) |
 | Changes not on second device | Forgot to Save on first device | Click 💾 Save before switching devices |
 | Save failing | Temporary network issue | Wait and retry; auto-save will retry; local backup is protecting your work |
 | Editor slow or frozen | Memory/browser issue | Save first, then click ↺ RELOAD |
@@ -448,7 +448,7 @@ Food videos can be created using AI video generators such as Kling or Veo 3.
 
 ## 11. Build & Deployment Workflow
 
-### Current State (March 28, 2026)
+### Current State (April 6, 2026)
 `index.html` is the live source. `build_app.py` is frozen at Phase 30. **Do not run `python build_app.py`** until all manual patches (Phases 2A–11, Bug Batches 1–8) have been reconciled into the generator.
 
 ### Normal workflow (when generator is reconciled):
@@ -512,6 +512,19 @@ Food videos can be created using AI video generators such as Kling or Veo 3.
 | Bug Batch 5 | 2026-03-28 | innerText consistency, fitCanvasToScreen functional, openDrawer retry — SHA `e210f58` |
 | Bug Batch 6 | 2026-03-28 | Ctrl+Z text guard, export rounded stroke path, addRect viewport pos — SHA `939a940` |
 | Bug Batch 7 | 2026-03-28 | deleteEl noRender param, addFromTray skipPush, fitCanvas zoom persistence — SHA `6bc7fe4` |
+| Bug Audit Round A — A1 | 2026-04-05 | fix: use string converter instead of path in serve_root_image route — SHA `dccae72` |
+| Bug Audit Round A — A2 | 2026-04-05 | fix: auto-suffix duplicate filenames instead of silently overwriting — SHA `42d3fbc` |
+| Bug Audit Round A — A3 | 2026-04-05 | fix: move MAGIC_BYTES constant to module level — SHA `94380ab` |
+| Bug Audit Round A — A4 | 2026-04-05 | fix: separate None body from invalid schema error in save_menu — SHA `29a3e6a` |
+| Bug Audit Round A — A5 | 2026-04-05 | fix: return JSON 404 from static_proxy on missing file — SHA `11cf223` |
+| Bug Audit Round D — D1 | 2026-04-06 | fix: move werkzeug NotFound import to module level — SHA `65a0158` |
+| Bug Audit Round D — D2 | 2026-04-06 | fix: set COMPRESS_MIN_SIZE to 500 to avoid compressing tiny responses — SHA `145aadc` |
+| Bug Audit Round D — D3 | 2026-04-06 | fix: cap duplicate filename counter at 999 to prevent unbounded loop — SHA `83fd470` |
+| Bug Audit Round D — D4 | 2026-04-06 | fix: log prune_backups exceptions instead of silently discarding — SHA `0dc7488` |
+| Bug Audit Round D — D5 | 2026-04-06 | fix: remove blank line with trailing whitespace in delete_asset — SHA (this sprint) |
+
+### Background Replacement Rebuild (April 2026)
+The background replacement feature was rebuilt from scratch. The original implementation had the background hardcoded into the layout and the Replace Background button was never correctly wired through the full pipeline. Attempting to implement it incrementally broke multiple dependent systems. A clean-slate rebuild was performed, resulting in a correctly integrated background replacement feature that is now stable and production-ready. The rebuilt version is what is documented in Section 3.12.
 
 ---
 
@@ -559,13 +572,13 @@ These terms appear in the UI and documentation and must remain consistent:
 
 The following are not part of the current production system and should not be confused with existing features:
 
-- Customer-facing read-only viewer (not built)
+- Customer-facing read-only viewer — **Built**: `viewer.html` is live and served from the same Railway deployment. Displays the menu with the video panel layout.
 - Multi-template or multi-restaurant platform (not built)
-- Video/animation/promo output (not built)
+- Video/animation/promo output — **Built**: Video Panel in the Viewer Settings tab supports Hero Video (1920×1080) and two Side Panel Videos (1080×1920). See Section 3.13.
 - Broad self-serve onboarding (not built)
-- Cloudinary CDN delivery for user uploads (partially referenced in data model, not fully wired)
+- Cloudinary for video hosting — **Documented**: Cloudinary is the recommended external video hosting workflow. See Section 3.14. (Cloudinary for user-uploaded menu images is not wired — only external video URLs are used.)
 - Reconciliation of `build_app.py` with `index.html` manual patches (pending)
 
 ---
 
-*End of USER_MANUAL_SOURCE.md — Updated March 28, 2026 (Phase 30 + Phases 2A–11 + Bug Fix Batches 1–8)*
+*End of USER_MANUAL_SOURCE.md — Updated April 6, 2026 (Phase 30 + Phases 2A–11 + Bug Fix Batches 1–8 + Bug Audit Rounds A–D)*
