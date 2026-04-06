@@ -132,6 +132,10 @@ def restore_backup(filename):
         src = os.path.join(BACKUP_DIR, filename)
         if not os.path.exists(src):
             return jsonify({"error": "Backup file not found: " + filename}), 404
+        with open(src, "r", encoding="utf-8") as f:
+            backup_data = json.load(f)
+        if not validate_schema(backup_data):
+            return jsonify({"error": "Backup is not a valid V2 document — restore aborted"}), 400
         # Backup current state before overwriting (just in case)
         if os.path.exists(DATA_FILE):
             ts = datetime.now().strftime("%Y%m%d_%H%M%S")
