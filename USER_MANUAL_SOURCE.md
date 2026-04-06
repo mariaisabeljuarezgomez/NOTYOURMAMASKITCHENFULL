@@ -126,6 +126,7 @@ Slide-up panel with all primary tools.
 | 💾 Save Session | Server-side session save |
 | 📂 Load Session | Loads latest server-saved session (replaces current state). Prompts if dirty. |
 | 🔄 Reset to Original | Restores original template. CANNOT be undone. Shows confirmation modal. Clears localStorage on success. |
+| 🖼️ Replace Background | Uploads a new background image for the entire menu. Immediately replaces the existing background on the canvas. Save Session required to persist. |
 | ⬇️ Export Pro PNG | Triggers full Canvas API export pipeline. Auto-saves first. Downloads PNG file. |
 | 📖 Manual (EN) | Opens in-app English user manual |
 | 📖 Manual (ES) | Opens in-app Spanish user manual |
@@ -252,6 +253,42 @@ Accessible from the Tools Drawer. Lists all current elements.
 - **Auto-save**: Runs every 30 seconds automatically
 - **Error toasts**: Visible feedback on save/load failure
 - **localStorage fallback**: Always written on successful server save; used as fallback if server unreachable on load
+
+### 3.12 Replace Background
+The Replace Background button in the Tools Drawer allows you to upload a new background image for the entire menu. The new background immediately replaces the existing one on the canvas. Click Save Session to persist the change.
+
+### 3.13 Viewer Settings — Video Panel
+The right-side Viewer tab in the Tools Drawer contains three video URL fields for the live customer menu:
+
+| Field | Description |
+|-------|-------------|
+| Hero Video | 1920×1080 widescreen video. Plays at the top of the live menu viewer page. |
+| Left Side Panel Video | 1080×1920 vertical / TikTok-style video. Plays in the left side panel. |
+| Right Side Panel Video | 1080×1920 vertical / TikTok-style video. Plays in the right side panel. |
+
+Paste a direct .mp4 or .webm URL into the field. Click the Clear button to remove a video. Click Update All Viewer Settings to publish the change instantly to the live customer menu.
+
+### 3.14 Cloudinary — Video Hosting
+Videos must be hosted on an external service before the URL can be used. Cloudinary (cloudinary.com) offers a free account.
+
+**Steps:**
+1. Create a free Cloudinary account at cloudinary.com
+2. Upload your video to Cloudinary
+3. Copy the video URL shown by Cloudinary
+4. Paste the URL into the correct Video URL field in the editor
+5. Click Update All Viewer Settings
+
+### 3.15 AI Video Creation
+Food videos can be created using AI video generators such as Kling or Veo 3.
+
+**Basic workflow:**
+1. Find or take a photo of the dish
+2. Upload the photo as a visual reference in the AI generator
+3. Write a simple text prompt describing the desired video (e.g., "sizzling shrimp on a cast iron skillet with steam rising")
+4. Generate the video
+5. Download the result
+6. Upload to Cloudinary (see Section 3.14)
+7. Paste the Cloudinary URL into the editor's Video URL field
 
 ---
 
