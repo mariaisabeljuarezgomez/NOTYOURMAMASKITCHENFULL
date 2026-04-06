@@ -14,18 +14,13 @@ try:
     import cloudscraper
 except ImportError:
     cloudscraper = None
-try:
-    import requests as _requests
-except ImportError:
-    _requests = None
+import requests as _requests  # hard import — will crash loudly on startup if missing
 
 def _http():
-    """Return cloudscraper session if available, else requests session, else None."""
+    """Return cloudscraper session if available, else requests session."""
     if cloudscraper:
         return cloudscraper.create_scraper()
-    if _requests:
-        return _requests.Session()
-    return None
+    return _requests.Session()
 
 def cloudinary_sign(params_dict, api_secret):
     """Generate Cloudinary auth signature: sorted params + api_secret, SHA-256."""
