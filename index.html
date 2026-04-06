@@ -1797,12 +1797,15 @@ function deselect() {
 
 function onCanvasClick(e) { if(isLassoing || _lassoJustFired) return; if(e.target.id === 'menu-container' || e.target.id === 'elements-layer') deselect(); }
 function onCanvasMousedown(e) {
-  if (e.target !== e.currentTarget) return;
+  const directTargets = ['menu-container', 'elements-layer', 'menu-bg'];
+  if (!directTargets.includes(e.target.id)) return;
   if (e.button !== 0) return;
-  deselect();
+  if (layoutLocked) return;
+  const lassoBox = document.getElementById('lasso-box');
+  const scalerEl = document.getElementById('scaler-wrapper');
+  if (!lassoBox || !scalerEl) return;
   const startX = e.clientX;
   const startY = e.clientY;
-  const lassoBox = document.getElementById('lasso-box');
   let moved = false;
   function onMove(me) {
     const dx = me.clientX - startX;
@@ -1812,40 +1815,42 @@ function onCanvasMousedown(e) {
     isLassoing = true;
     const x = Math.min(me.clientX, startX);
     const y = Math.min(me.clientY, startY);
-    const w = Math.abs(dx);
-    const h = Math.abs(dy);
     lassoBox.style.display = 'block';
     lassoBox.style.left   = x + 'px';
     lassoBox.style.top    = y + 'px';
-    lassoBox.style.width  = w + 'px';
-    lassoBox.style.height = h + 'px';
+    lassoBox.style.width  = Math.abs(dx) + 'px';
+    lassoBox.style.height = Math.abs(dy) + 'px';
   }
   function onUp(ue) {
     window.removeEventListener('mousemove', onMove);
     window.removeEventListener('mouseup', onUp);
     lassoBox.style.display = 'none';
-    if (!moved || !isLassoing) { isLassoing = false; return; }
+    if (!moved) { isLassoing = false; deselect(); return; }
     isLassoing = false;
-    const scalerRect = document.getElementById('scaler-wrapper').getBoundingClientRect();
-    const scale = scalerRect.width / BASE_W;
-    const lx1 = (Math.min(ue.clientX, startX) - scalerRect.left) / scale;
-    const ly1 = (Math.min(ue.clientY, startY) - scalerRect.top)  / scale;
-    const lx2 = (Math.max(ue.clientX, startX) - scalerRect.left) / scale;
-    const ly2 = (Math.max(ue.clientY, startY) - scalerRect.top)  / scale;
+    const sRect = scalerEl.getBoundingClientRect();
+    const scale = sRect.width / BASE_W;
+    const lx1 = (Math.min(ue.clientX, startX) - sRect.left) / scale;
+    const ly1 = (Math.min(ue.clientY, startY) - sRect.top)  / scale;
+    const lx2 = (Math.max(ue.clientX, startX) - sRect.left) / scale;
+    const ly2 = (Math.max(ue.clientY, startY) - sRect.top)  / scale;
     const hits = docV2.elements.filter(el => {
       if (el.locked) return false;
       if (docV2.settings?.backgroundLayerLocked && el.layerRole === 'background') return false;
-      const ex1 = el.x, ey1 = el.y;
-      const ex2 = ex1 + (el.width || 80);
-      const ey2 = ey1 + (el.height || 20);
-      return ex1 < lx2 && ex2 > lx1 && ey1 < ly2 && ey2 > ly1;
+      const ex2 = el.x + (el.width || 80);
+      const ey2 = el.y + (el.height || 20);
+      return el.x < lx2 && ex2 > lx1 && el.y < ly2 && ey2 > ly1;
     });
     if (hits.length > 0) {
       docV2.editorState.selectedElementIds = hits.map(el => el.id);
       selectedId = null;
+      _lassoJustFired = true;
       render();
       updateSelectionBar();
       updateDistributeBar();
+      showToast('✅ ' + hits.length + ' element' + (hits.length > 1 ? 's' : '') + ' selected');
+      setTimeout(() => { _lassoJustFired = false; }, 200);
+    } else {
+      deselect();
     }
   }
   window.addEventListener('mousemove', onMove);
