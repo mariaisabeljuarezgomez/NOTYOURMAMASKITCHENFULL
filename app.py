@@ -234,7 +234,7 @@ def render_check():
 @app.route("/<path:path>")
 def static_proxy(path):
     response = send_from_directory(".", path)
-    if path.lower().endswith((".ttf", ".js", ".jpg", ".jpeg", ".png", ".webp")):
+    if path.lower().endswith((".ttf", ".js")):
         response.headers["Cache-Control"] = "max-age=604800, public"
     return response
 
