@@ -439,6 +439,7 @@
       <li>Troubleshooting</li>
       <li>Best Practices</li>
       <li>Technical Specifications</li>
+      <li>AI Studio</li>
       <li>Document Information</li>
     </ol>
     <div class="footer"><span>Customer Edition</span><span>Page 2</span></div>
@@ -2120,8 +2121,89 @@
     <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 28</span></div>
   </section>
   <section class="page page-break">
+    <h2>35. AI Studio</h2>
+    <p>AI Studio is an <strong>optional</strong> panel within the Menu Editor Pro that lets you generate custom images and videos using AI and place them directly on your canvas. It requires free accounts with the supported AI services and is entirely separate from the core menu editing features.</p>
+
+    <h3>Supported AI Services</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>Purpose</th>
+          <th>Account Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Cloudinary</strong></td>
+          <td>Image & video hosting / CDN</td>
+          <td>Free tier available</td>
+        </tr>
+        <tr>
+          <td><strong>Google Imagen</strong></td>
+          <td>AI image generation</td>
+          <td>Google Cloud account with Imagen API enabled</td>
+        </tr>
+        <tr>
+          <td><strong>Kling AI</strong></td>
+          <td>AI video generation</td>
+          <td>Kling AI account (klingai.com)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>How to Obtain Credentials</h3>
+    <ul>
+      <li><strong>Cloudinary:</strong> Sign up free at <a href="https://cloudinary.com" style="color:#95201d;">cloudinary.com</a>. Your cloud name, API key, and API secret are in the Dashboard.</li>
+      <li><strong>Google Imagen:</strong> Create a Google Cloud project, enable the Imagen API, and create an API key. Requires billing enabled but includes free credits for new accounts.</li>
+      <li><strong>Kling AI:</strong> Sign up at <a href="https://www.klingai.com" style="color:#95201d;">klingai.com</a>. Your API key and secret are in your account settings.</li>
+    </ul>
+
+    <h3>Entering and Testing Credentials</h3>
+    <ol>
+      <li>Click the <strong>✨ AI Studio</strong> tab in the right panel of the editor.</li>
+      <li>Expand the <strong>🔑 Credentials</strong> section.</li>
+      <li>Fill in the fields for each service you want to use.</li>
+      <li>Click <strong>Test</strong> next to any service to verify your credentials are working. A toast will confirm success or show the error.</li>
+      <li>Click <strong>Save</strong> to store credentials in your browser (they are saved to localStorage and persist across sessions on this browser).</li>
+    </ol>
+    <div class="callout tip"><strong>Security note:</strong> Credentials are stored only in your browser's localStorage. They are never sent to any server other than the respective AI service APIs.</div>
+
+    <h3>Generating an Image</h3>
+    <ol>
+      <li>Expand the <strong>🖼️ Generate Image</strong> section.</li>
+      <li>Enter a prompt describing the image you want (e.g., <em>a beautifully plated grilled salmon with lemon and herbs, restaurant lighting</em>).</li>
+      <li>Optionally click <strong>✨ Enhance Prompt</strong> to have the AI improve your description for better results.</li>
+      <li>Choose an <strong>Aspect Ratio</strong> and <strong>Style</strong> from the dropdowns.</li>
+      <li>Optionally enter a <strong>Negative Prompt</strong> to exclude unwanted elements.</li>
+      <li>Click <strong>Generate Image</strong>. The image appears in the panel as a preview.</li>
+      <li>Click <strong>Upload to Cloudinary</strong> to host the image on your Cloudinary CDN, or click <strong>Place on Canvas</strong> to add it directly to your menu.</li>
+    </ol>
+
+    <h3>Generating a Video</h3>
+    <ol>
+      <li>Expand the <strong>🎬 Generate Video</strong> section.</li>
+      <li>Optionally upload a <strong>Reference Image</strong> to guide the video's starting frame.</li>
+      <li>Enter a prompt describing the video motion (e.g., <em>steam rising from a bowl of ramen, slow cinematic pull-back</em>).</li>
+      <li>Use <strong>✨ Enhance Prompt</strong> for better results.</li>
+      <li>Configure <strong>Duration</strong>, <strong>Resolution</strong>, and <strong>Camera Motion</strong>.</li>
+      <li>Adjust <strong>Creativity vs. Prompt Fidelity</strong> (CFG Scale) — lower values are more creative, higher values follow the prompt more strictly.</li>
+      <li>Click <strong>Generate Video</strong>. The video is submitted to Kling AI asynchronously. A progress indicator updates as the video is generated.</li>
+      <li>Once ready, the video plays in the panel. Click <strong>Send to Viewer</strong> to automatically populate the matching Viewer Panel video URL field based on your chosen resolution.</li>
+    </ol>
+
+    <h3>The Enhance Prompt Feature</h3>
+    <p>The Enhance Prompt button sends your text to the backend where it is augmented with professional food photography modifiers. For images, it adds terms like <em>professional food photography, soft natural lighting, shallow depth of field, 85mm lens</em>. For videos, it adds <em>cinematic food video, slow motion, professional lighting, 4K quality</em>. You can edit the enhanced result before generating.</p>
+
+    <h3>How AI Images Are Placed on the Canvas</h3>
+    <p>When you click <strong>Place on Canvas</strong>, the image is first uploaded to your Cloudinary CDN (if not already). A new image element is created at the center of your current viewport, sized at 300×300px. You can then move, resize, and style it like any other element. The element is placed using the standard V2 image element schema.</p>
+
+    <div class="callout warning"><strong>Important:</strong> AI-generated content may be subject to the respective service's terms of use. Review each platform's policies before using generated content commercially.</div>
+    <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 29</span></div>
+  </section>
+  <section class="page page-break">
     <div class="brand-bar"></div>
-    <h2>35. Document Information</h2>
+    <h2>36. Document Information</h2>
 
     <table>
       <thead>

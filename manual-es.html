@@ -427,6 +427,7 @@
       <li>Solución de Problemas</li>
       <li>Mejores Prácticas</li>
       <li>Especificaciones Técnicas</li>
+      <li>Estudio IA</li>
       <li>Información del Documento</li>
     </ol>
     <div class="footer"><span>Edición para el Cliente</span><span>Página 2</span></div>
@@ -1526,6 +1527,87 @@
       <li><strong>Uso de Grupos de Texto:</strong> Cree elementos de texto separados para nombres de platos y precios para que pueda alinearlos de forma independiente.</li>
     </ul>
 
+    <h2>27. Estudio IA</h2>
+    <p>Estudio IA es un panel <strong>opcional</strong> dentro del Editor de Menús que le permite generar imágenes y videos personalizados usando IA y colocarlos directamente en su lienzo. Requiere cuentas gratuitas con los servicios de IA compatibles y es completamente independiente de las funciones principales de edición de menús.</p>
+
+    <h3>Servicios de IA Compatibles</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Servicio</th>
+          <th>Propósito</th>
+          <th>Tipo de Cuenta</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Cloudinary</strong></td>
+          <td>Alojamiento de imágenes y videos / CDN</td>
+          <td>Nivel gratuito disponible</td>
+        </tr>
+        <tr>
+          <td><strong>Google Imagen</strong></td>
+          <td>Generación de imágenes por IA</td>
+          <td>Cuenta de Google Cloud con API de Imagen habilitada</td>
+        </tr>
+        <tr>
+          <td><strong>Kling AI</strong></td>
+          <td>Generación de videos por IA</td>
+          <td>Cuenta de Kling AI (klingai.com)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Cómo Obtener las Credenciales</h3>
+    <ul>
+      <li><strong>Cloudinary:</strong> Regístrese gratis en <a href="https://cloudinary.com" style="color:#95201d;">cloudinary.com</a>. Su nombre de nube, clave API y secreto API están en el Panel de Control.</li>
+      <li><strong>Google Imagen:</strong> Cree un proyecto en Google Cloud, habilite la API de Imagen y cree una clave API. Requiere facturación habilitada pero incluye créditos gratuitos para nuevas cuentas.</li>
+      <li><strong>Kling AI:</strong> Regístrese en <a href="https://www.klingai.com" style="color:#95201d;">klingai.com</a>. Su clave API y secreto están en la configuración de su cuenta.</li>
+    </ul>
+
+    <h3>Introducir y Probar Credenciales</h3>
+    <ol>
+      <li>Haga clic en la pestaña <strong>✨ Estudio IA</strong> en el panel derecho del editor.</li>
+      <li>Expanda la sección <strong>🔑 Credenciales</strong>.</li>
+      <li>Complete los campos de cada servicio que desee utilizar.</li>
+      <li>Haga clic en <strong>Probar</strong> junto a cualquier servicio para verificar que sus credenciales funcionan. Un toast confirmará el éxito o mostrará el error.</li>
+      <li>Haga clic en <strong>Guardar</strong> para almacenar las credenciales en su navegador (se guardan en localStorage y persisten entre sesiones en este navegador).</li>
+    </ol>
+    <div class="callout tip"><strong>Nota de seguridad:</strong> Las credenciales se almacenan únicamente en el localStorage de su navegador. Nunca se envían a ningún servidor que no sea la API del servicio de IA respectivo.</div>
+
+    <h3>Generar una Imagen</h3>
+    <ol>
+      <li>Expanda la sección <strong>🖼️ Generar Imagen</strong>.</li>
+      <li>Introduzca una descripción de la imagen que desea (ej., <em>un salmón a la parrilla bellamente emplatado con limón y hierbas, iluminación de restaurante</em>).</li>
+      <li>Opcionalmente haga clic en <strong>✨ Mejorar Prompt</strong> para que la IA mejore su descripción para mejores resultados.</li>
+      <li>Elija una <strong>Proporción</strong> y un <strong>Estilo</strong> de los menús desplegables.</li>
+      <li>Opcionalmente introduzca un <strong>Prompt Negativo</strong> para excluir elementos no deseados.</li>
+      <li>Haga clic en <strong>Generar Imagen</strong>. La imagen aparece en el panel como vista previa.</li>
+      <li>Haga clic en <strong>Subir a Cloudinary</strong> para alojar la imagen en su CDN de Cloudinary, o haga clic en <strong>Colocar en Lienzo</strong> para añadirla directamente a su menú.</li>
+    </ol>
+
+    <h3>Generar un Video</h3>
+    <ol>
+      <li>Expanda la sección <strong>🎬 Generar Video</strong>.</li>
+      <li>Opcionalmente cargue una <strong>Imagen de Referencia</strong> para guiar el fotograma inicial del video.</li>
+      <li>Introduzca una descripción del movimiento del video (ej., <em>vapor subiendo de un bowl de ramen, retroceso cinematográfico lento</em>).</li>
+      <li>Use <strong>✨ Mejorar Prompt</strong> para mejores resultados.</li>
+      <li>Configure la <strong>Duración</strong>, <strong>Resolución</strong> y <strong>Movimiento de Cámara</strong>.</li>
+      <li>Ajuste la <strong>Creatividad vs. Fidelidad al Prompt</strong> (Escala CFG) — valores más bajos son más creativos, valores más altos siguen el prompt más estrictamente.</li>
+      <li>Haga clic en <strong>Generar Video</strong>. El video se envía a Kling AI de forma asíncrona. Un indicador de progreso se actualiza mientras se genera el video.</li>
+      <li>Una vez listo, el video se reproduce en el panel. Haga clic en <strong>Enviar al Visor</strong> para completar automáticamente el campo de URL de video del Panel del Visor según la resolución elegida.</li>
+    </ol>
+
+    <h3>La Función Mejorar Prompt</h3>
+    <p>El botón Mejorar Prompt envía su texto al backend donde se mejora con modificadores profesionales de fotografía gastronómica. Para imágenes, añade términos como <em>fotografía gastronómica profesional, iluminación natural suave, profundidad de campo reducida, lente de 85mm</em>. Para videos, añade <em>video gastronómico cinematográfico, cámara lenta, iluminación profesional, calidad 4K</em>. Puede editar el resultado mejorado antes de generar.</p>
+
+    <h3>Cómo se Colocan las Imágenes de IA en el Lienzo</h3>
+    <p>Cuando hace clic en <strong>Colocar en Lienzo</strong>, la imagen primero se sube a su CDN de Cloudinary (si aún no lo está). Se crea un nuevo elemento de imagen en el centro de su viewport actual, con un tamaño de 300×300px. Luego puede moverlo, cambiar su tamaño y aplicarle estilo como cualquier otro elemento. El elemento se coloca usando el esquema estándar de elementos de imagen V2.</p>
+
+    <div class="callout warning"><strong>Importante:</strong> El contenido generado por IA puede estar sujeto a los términos de uso del servicio respectivo. Revise las políticas de cada plataforma antes de usar contenido generado con fines comerciales.</div>
+    <div class="footer"><span>Menu Editor Pro V2 &ndash; Manual Completo</span><span>Página 26</span></div>
+  </section>
+  <section class="page page-break">
     <h3>Especificaciones Técnicas</h3>
     <ul>
       <li><strong>Dimensiones de Lienzo:</strong> 3600 x 5400 px (12" x 18")</li>
