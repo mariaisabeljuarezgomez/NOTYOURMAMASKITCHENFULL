@@ -396,6 +396,9 @@ def test_google():
         data = request.json or {}
         project_id = data.get("project_id", "")
         api_key = data.get("api_key", "")
+        # api_key here is expected to be a short-lived OAuth2 Bearer access token (not a raw API key).
+        if len(api_key) < 100:
+            return jsonify({"error": "Google credentials must be an OAuth2 access token, not a raw API key. The frontend must exchange your API key for a Bearer token first."}), 400
         if not all([project_id, api_key]):
             return jsonify({"error": "Missing credentials"}), 400
         url = f"https://us-central1-aiplatform.googleapis.com/v1/projects/{project_id}/locations/us-central1/publishers/google/models/imagen-3.0-generate-001"
@@ -459,6 +462,11 @@ def generate_image():
         creds = data.get("credentials", {})
         project_id = creds.get("project_id", "")
         api_key = creds.get("api_key", "")
+        # api_key here is expected to be a short-lived OAuth2 Bearer access token (not a raw API key).
+        # The frontend is responsible for exchanging the raw API key for an access token via Google OAuth2.
+        # Short tokens (<100 chars) are raw API keys — reject with a clear message.
+        if len(api_key) < 100:
+            return jsonify({"error": "Google credentials must be an OAuth2 access token, not a raw API key. The frontend must exchange your API key for a Bearer token first."}), 400
         if not all([prompt, project_id, api_key]):
             return jsonify({"error": "Missing prompt or credentials"}), 400
         ar_map = {"1:1": "1:1", "4:3": "4:3", "3:4": "3:4", "16:9": "16:9"}
@@ -612,6 +620,9 @@ def edit_image():
         creds = data.get("credentials", {})
         project_id = creds.get("project_id", "")
         api_key = creds.get("api_key", "")
+        # api_key here is expected to be a short-lived OAuth2 Bearer access token (not a raw API key).
+        if len(api_key) < 100:
+            return jsonify({"error": "Google credentials must be an OAuth2 access token, not a raw API key. The frontend must exchange your API key for a Bearer token first."}), 400
         if not all([prompt, reference_image_b64, project_id, api_key]):
             return jsonify({"error": "Missing prompt, reference image, or credentials"}), 400
         url = f"https://us-central1-aiplatform.googleapis.com/v1/projects/{project_id}/locations/us-central1/publishers/google/models/imagen-3.0-capability-001:predict"
