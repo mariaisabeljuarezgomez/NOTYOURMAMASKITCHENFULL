@@ -1,5 +1,6 @@
 from flask import Flask, send_from_directory, request, jsonify
 from flask_compress import Compress
+from werkzeug.exceptions import NotFound
 import os
 import json
 import shutil
@@ -250,7 +251,6 @@ def render_check():
 
 @app.route("/<path:path>")
 def static_proxy(path):
-    from werkzeug.exceptions import NotFound
     try:
         response = send_from_directory(".", path)
         if path.lower().endswith((".ttf", ".js")):
