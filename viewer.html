@@ -520,15 +520,23 @@
             const fill = el.fillColor || 'transparent';
             const sw   = el.borderWidth || 0;
             const sc   = el.borderColor || '#c8a96a';
+            const hasFill   = fill !== 'transparent' && fill !== 'none' && fill !== '';
+            const hasStroke = sw > 0;
             ctx.save();
             ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 1);
-            if (fill !== 'transparent' && fill !== 'none') {
+            if (hasFill) {
                 ctx.fillStyle = fill;
                 ctx.fill();
             }
-            if (sw > 0) {
+            if (hasStroke) {
                 ctx.strokeStyle = sc;
                 ctx.lineWidth   = sw;
+                ctx.stroke();
+            }
+            // Fallback: shape has no fill and no stroke — render with gold outline so it is visible
+            if (!hasFill && !hasStroke) {
+                ctx.strokeStyle = '#c8a96a';
+                ctx.lineWidth   = 1;
                 ctx.stroke();
             }
             ctx.restore();
@@ -656,13 +664,13 @@
                 // ── IMAGE ───────────────────────────────────────────────────────
                 } else if (el.type === 'image') {
                     const src = resolveImageSrc(el);
-                    if (cachedImages[src]) {
                         const imgObj = cachedImages[src];
                         // Resolve dimensions — use saved el.width/height, fall back to natural size
                         const drawW = (el.width  > 0) ? el.width  : (imgObj.naturalWidth  || 0);
                         const drawH = (el.height > 0) ? el.height : (imgObj.naturalHeight || 0);
                         // Skip drawing entirely if we still have no valid dimensions
                         if (drawW <= 0 || drawH <= 0) return;
+
                         ctx.save();
                         ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 1);
                         const rotation = el.rotation || 0;
@@ -678,9 +686,20 @@
                             ctx.roundRect(el.x, el.y, drawW, drawH, el.borderRadius);
                             ctx.clip();
                         }
-                        ctx.drawImage(imgObj, el.x, el.y, drawW, drawH);
+                        
+                        // Fix for BUG 1: object-fit: contain logic
+                        const imgAspect = imgObj.naturalWidth / imgObj.naturalHeight;
+                        const boxAspect = drawW / drawH;
+                        let dstX = el.x, dstY = el.y, dstW = drawW, dstH = drawH;
+                        if (imgAspect > boxAspect) {
+                          dstH = drawW / imgAspect;
+                          dstY = el.y + (drawH - dstH) / 2;
+                        } else {
+                          dstW = drawH * imgAspect;
+                          dstX = el.x + (drawW - dstW) / 2;
+                        }
+                        ctx.drawImage(imgObj, dstX, dstY, dstW, dstH);
                         ctx.restore();
-                    }
 
                 // ── SHAPE ───────────────────────────────────────────────────────
                 } else if (el.type === 'shape') {
