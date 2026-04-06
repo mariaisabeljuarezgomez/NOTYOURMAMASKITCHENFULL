@@ -313,7 +313,7 @@ def list_images():
     except Exception as e:
         return jsonify({"images": [], "error": str(e)}), 500
 
-@app.route("/Images/<path:filename>")
+@app.route("/Images/<string:filename>")
 def serve_root_image(filename):
     response = send_from_directory(IMAGES_DIR, filename)
     response.headers["Cache-Control"] = "max-age=604800, public"
