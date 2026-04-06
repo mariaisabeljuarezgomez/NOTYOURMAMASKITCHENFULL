@@ -65,6 +65,7 @@ def save_menu():
     if not data or not validate_schema(data):
         return jsonify({"error": "Invalid schema"}), 400
     try:
+        timestamp = None
         if not os.path.exists(BACKUP_DIR):
             os.makedirs(BACKUP_DIR)
         if os.path.exists(DATA_FILE):
@@ -75,7 +76,7 @@ def save_menu():
         with open(temp_file, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
         os.replace(temp_file, DATA_FILE)
-        return jsonify({"status": "success", "backup": f"menu_data_{timestamp}.json" if 'timestamp' in locals() else None}), 200
+        return jsonify({"status": "success", "backup": f"menu_data_{timestamp}.json" if timestamp else None}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
