@@ -10,7 +10,7 @@ from datetime import datetime
 app = Flask(__name__)
 
 # Optimize Compression for PageSpeed & Performance
-app.config["COMPRESS_MIN_SIZE"] = 0  # Compress everything, even small JSONs
+app.config["COMPRESS_MIN_SIZE"] = 500  # Only compress responses larger than 500 bytes
 app.config["COMPRESS_MIMETYPES"] = [
     "text/html", "text/css", "text/xml", 
     "application/json", "application/javascript", "application/octet-stream",
