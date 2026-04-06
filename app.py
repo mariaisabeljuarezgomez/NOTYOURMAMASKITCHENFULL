@@ -4,6 +4,7 @@ from flask_compress import Compress
 import os
 import json
 import shutil
+import base64
 from datetime import datetime
 
 app = Flask(__name__)
@@ -238,9 +239,6 @@ def static_proxy(path):
     if path.lower().endswith((".ttf", ".js")):
         response.headers["Cache-Control"] = "max-age=604800, public"
     return response
-
-# --- IMAGE PERSISTENCE (Phase 13) ---
-import base64
 
 IMAGES_DIR = os.path.join(os.path.dirname(__file__), "Images")
 os.makedirs(IMAGES_DIR, exist_ok=True)
