@@ -533,10 +533,12 @@
                 ctx.lineWidth   = sw;
                 ctx.stroke();
             }
-            // Fallback: shape has no fill and no stroke — render with gold outline so it is visible
+            // Fallback: shape has no fill and no stroke — render with semi-transparent gold fill + outline
             if (!hasFill && !hasStroke) {
+                ctx.fillStyle = 'rgba(200, 169, 106, 0.35)';
+                ctx.fill();
                 ctx.strokeStyle = '#c8a96a';
-                ctx.lineWidth   = 1;
+                ctx.lineWidth = 2;
                 ctx.stroke();
             }
             ctx.restore();
