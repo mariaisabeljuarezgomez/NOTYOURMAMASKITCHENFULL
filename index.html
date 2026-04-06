@@ -1797,26 +1797,23 @@ function deselect() {
 
 function onCanvasClick(e) { if(isLassoing || _lassoJustFired) return; if(e.target.id === 'menu-container' || e.target.id === 'elements-layer') deselect(); }
 function onCanvasMousedown(e) {
-  const menuContainer = document.getElementById('menu-container');
-  const isCanvasBackground = (
-    e.target === menuContainer ||
-    e.target.id === 'elements-layer' ||
-    e.target === document.getElementById('menu-bg')
-  );
-  if (!isCanvasBackground) return;
   if (e.button !== 0) return;
   if (layoutLocked) return;
   const lassoBox = document.getElementById('lasso-box');
   const scalerEl = document.getElementById('scaler-wrapper');
   if (!lassoBox || !scalerEl) return;
+  const dragStartSelId = selectedId;
   const startX = e.clientX;
   const startY = e.clientY;
   let moved = false;
+  let lassoActive = false;
   function onMove(me) {
     const dx = me.clientX - startX;
     const dy = me.clientY - startY;
-    if (!moved && Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+    if (!moved && Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
     moved = true;
+    if (selectedId !== dragStartSelId) return;
+    lassoActive = true;
     isLassoing = true;
     const x = Math.min(me.clientX, startX);
     const y = Math.min(me.clientY, startY);
@@ -1830,8 +1827,8 @@ function onCanvasMousedown(e) {
     window.removeEventListener('mousemove', onMove);
     window.removeEventListener('mouseup', onUp);
     lassoBox.style.display = 'none';
-    if (!moved) { isLassoing = false; deselect(); return; }
     isLassoing = false;
+    if (!moved || !lassoActive) return;
     const sRect = scalerEl.getBoundingClientRect();
     const scale = sRect.width / BASE_W;
     const lx1 = (Math.min(ue.clientX, startX) - sRect.left) / scale;
