@@ -232,7 +232,6 @@ def render_check():
         return jsonify({"error": str(e)}), 500
 
 
-
 @app.route("/<path:path>")
 def static_proxy(path):
     response = send_from_directory(".", path)
