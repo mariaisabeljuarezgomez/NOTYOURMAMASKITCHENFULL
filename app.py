@@ -130,6 +130,9 @@ def restore_backup(filename):
 
 @app.route("/api/menu-debug", methods=["GET"])
 def debug_menu():
+    debug_key = os.environ.get("DEBUG_KEY", "")
+    if not debug_key or request.args.get("key") != debug_key:
+        return jsonify({"error": "Unauthorized"}), 403
     """Temporary debug endpoint — returns raw disk JSON + metadata for diagnosis."""
     debug_info = {
         "data_file_path": DATA_FILE,
