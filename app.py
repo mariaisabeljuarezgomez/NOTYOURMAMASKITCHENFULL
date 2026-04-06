@@ -261,6 +261,8 @@ def upload_image():
             return jsonify({"error": "Invalid file type"}), 400
         # Support both 'image' and 'data' keys for maximum compatibility
         img_data = data.get("data") or data.get("image", "")
+        if not img_data:
+            return jsonify({"error": "No image data provided"}), 400
         if "," in img_data:
             img_data = img_data.split(",")[1]
         try:
