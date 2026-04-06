@@ -1370,7 +1370,7 @@ function injectResizeHandles(el) {
 function attach(el) {
     el.onmousedown = (e) => {
         console.log("Element Mousedown:", el.id);
-        e.stopPropagation();
+        // e.stopPropagation(); removed to allow bubbling to viewport lasso listener
         const _itemData = d(el);
         // If locked or background role — completely ignore click, do not select
         if (!_itemData || _itemData.locked || (docV2.settings.backgroundLayerLocked && _itemData.layerRole === 'background')) return;
@@ -3384,9 +3384,11 @@ function dismissHelpPopout() {
 let lassoAnchorX = 0, lassoAnchorY = 0;
 
 document.getElementById('editor-viewport').addEventListener('mousedown', function(e) {
-    const allowed = ['editor-viewport','centering-wrapper','menu-container','elements-layer'];
-    if (!allowed.includes(e.target.id)) return;
-    if (layoutLocked) return; // only lasso in edit mode
+    if (layoutLocked) return; 
+
+    // Don't start lasso if clicking directly on an interactive element
+    const isElement = e.target.id && docV2 && docV2.elements && docV2.elements.some(el => el.id === e.target.id || (e.target.closest && e.target.closest('#' + el.id)));
+    if (isElement) return;
 
     isLassoing = true;
     lassoAnchorX = e.clientX;
@@ -3403,11 +3405,13 @@ document.getElementById('editor-viewport').addEventListener('mousedown', functio
 
 document.getElementById('editor-viewport').addEventListener('touchstart', function(e) {
     if (e.touches.length !== 1) return; // ignore pinch
-    const allowed = ['editor-viewport','centering-wrapper','menu-container','elements-layer'];
-    if (!allowed.includes(e.target.id)) return;
     if (layoutLocked) return;
 
+    // Don't start lasso if clicking directly on an interactive element
     const touch = e.touches[0];
+    const isElement = touch.target.id && docV2 && docV2.elements && docV2.elements.some(el => el.id === touch.target.id || (touch.target.closest && touch.target.closest('#' + el.id)));
+    if (isElement) return;
+
     isLassoing = true;
     lassoAnchorX = touch.clientX;
     lassoAnchorY = touch.clientY;
