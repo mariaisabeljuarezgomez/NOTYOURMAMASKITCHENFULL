@@ -268,13 +268,12 @@ def upload_image():
             decoded = base64.b64decode(img_data)
         except Exception:
             return jsonify({"error": "Invalid base64 image data"}), 400
-        MAGIC_BYTES = {
-            b"\x89PNG": ".png",
-            b"\xff\xd8": ".jpg",
-            b"RIFF": ".webp",
-        }
-        decoded_check = base64.b64decode(img_data[:16] if len(img_data) >= 16 else img_data)
-        if not any(decoded_check[:len(sig)] == sig for sig in MAGIC_BYTES):
+        MAGIC_BYTES = [
+            b"\x89PNG",
+            b"\xff\xd8",
+            b"RIFF",
+        ]
+        if not any(decoded[:len(sig)] == sig for sig in MAGIC_BYTES):
             return jsonify({"error": "File content does not match a supported image type"}), 400
         filepath = os.path.join(IMAGES_DIR, filename)
         with open(filepath, "wb") as f:
