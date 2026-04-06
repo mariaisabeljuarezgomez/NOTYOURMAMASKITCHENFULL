@@ -1,4 +1,4 @@
-from flask import Flask, send_from_directory, abort, request, jsonify
+from flask import Flask, send_from_directory, request, jsonify
 from flask_compress import Compress
 import os
 import json
