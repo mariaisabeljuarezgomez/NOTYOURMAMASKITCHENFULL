@@ -245,7 +245,11 @@ from pathlib import Path
 IMAGES_DIR = os.path.join(os.path.dirname(__file__), "Images")
 os.makedirs(IMAGES_DIR, exist_ok=True)
 
-PROTECTED_ASSETS = {f"Asset{i}.png" for i in range(1, 15)}
+PROTECTED_ASSETS = {
+    "Asset1.png", "Asset2.png", "Asset3.png", "Asset4.png",
+    "Asset6.png", "Asset7.png", "Asset8.png", "Asset9.png",
+    "Asset10.png", "Asset11.png", "Asset12.png", "Asset13.png", "Asset14.png"
+}
 
 @app.route("/api/upload-image", methods=["POST"])
 def upload_image():
