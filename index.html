@@ -524,6 +524,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
   <div class="rp-tabs">
     <button class="rp-tab active" id="rp-tab-viewer" onclick="setRpTab('viewer')" title="Viewer Settings">🌍<span>VIEWER</span></button>
     <button class="rp-tab"        id="rp-tab-manual" onclick="openManualModal('en')" title="Open Manual">📖<span>MANUAL</span></button>
+    <button class="rp-tab"        id="rp-tab-aistudio" onclick="setRpTab('aistudio')" title="AI Studio">✨<span>AI STUDIO</span></button>
   </div>
   <!-- TAB: VIEWER SETTINGS -->
   <div class="rp-panel" id="rp-panel-viewer">
@@ -544,6 +545,168 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     <button onclick="saveGlobalSettings()" class="rp-save-btn">💾 UPDATE ALL VIEWER SETTINGS</button>
     <div class="rp-hint">Changes apply immediately to the public viewer.</div>
   </div><!-- /.rp-panel#rp-panel-viewer -->
+
+  <!-- TAB: AI STUDIO -->
+  <div class="rp-panel" id="rp-panel-aistudio" style="display:none;">
+    <div class="rp-section-title">✨ AI Studio</div>
+
+    <!-- CREDENTIALS ACCORDION -->
+    <button class="ai-accordion-trigger" id="ai-cred-trigger" onclick="toggleAiAccordion('cred')" style="width:100%;display:flex;align-items:center;justify-content:space-between;background:#2a2a2a;border:1px solid #333;border-radius:8px;padding:8px 10px;color:#ccc;cursor:pointer;font-size:11px;font-weight:700;margin-bottom:4px;">
+      <span>🔑 Credentials</span><span id="ai-cred-arrow" style="font-size:9px;">▼</span>
+    </button>
+    <div id="ai-cred-body" style="display:none;padding:6px 0 10px;">
+
+      <!-- Cloudinary -->
+      <div style="margin-bottom:10px;">
+        <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:4px;">☁️ Cloudinary</div>
+        <input type="text" id="ai-cloud-name" placeholder="your-cloud-name" class="rp-input" style="margin-bottom:4px;">
+        <input type="text" id="ai-cloud-key" placeholder="API Key" class="rp-input" style="margin-bottom:4px;">
+        <div style="position:relative;margin-bottom:4px;">
+          <input type="password" id="ai-cloud-secret" placeholder="API Secret" class="rp-input" style="padding-right:30px;">
+          <button onclick="toggleAiPasswordShow('ai-cloud-secret',this)" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#888;cursor:pointer;font-size:11px;padding:2px;">👁</button>
+        </div>
+        <div style="display:flex;gap:4px;">
+          <button onclick="testAiService('cloudinary')" class="btn-ui" style="flex:1;font-size:10px;padding:5px;">Test</button>
+          <button onclick="saveAiCredentials()" class="btn-ui accent" style="flex:1;font-size:10px;padding:5px;">Save</button>
+        </div>
+      </div>
+
+      <!-- Google Imagen -->
+      <div style="margin-bottom:10px;">
+        <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:4px;">🖼️ Google Imagen</div>
+        <input type="text" id="ai-imagen-project" placeholder="Project ID" class="rp-input" style="margin-bottom:4px;">
+        <input type="text" id="ai-imagen-key" placeholder="API Key" class="rp-input" style="margin-bottom:4px;">
+        <div style="display:flex;gap:4px;">
+          <button onclick="testAiService('imagen')" class="btn-ui" style="flex:1;font-size:10px;padding:5px;">Test</button>
+          <button onclick="saveAiCredentials()" class="btn-ui accent" style="flex:1;font-size:10px;padding:5px;">Save</button>
+        </div>
+      </div>
+
+      <!-- Kling AI -->
+      <div>
+        <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:4px;">🎬 Kling AI</div>
+        <input type="text" id="ai-kling-key" placeholder="API Key" class="rp-input" style="margin-bottom:4px;">
+        <div style="position:relative;margin-bottom:4px;">
+          <input type="password" id="ai-kling-secret" placeholder="API Secret" class="rp-input" style="padding-right:30px;">
+          <button onclick="toggleAiPasswordShow('ai-kling-secret',this)" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#888;cursor:pointer;font-size:11px;padding:2px;">👁</button>
+        </div>
+        <div style="display:flex;gap:4px;">
+          <button onclick="testAiService('kling')" class="btn-ui" style="flex:1;font-size:10px;padding:5px;">Test</button>
+          <button onclick="saveAiCredentials()" class="btn-ui accent" style="flex:1;font-size:10px;padding:5px;">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GENERATE IMAGE -->
+    <button class="ai-accordion-trigger" id="ai-img-trigger" onclick="toggleAiAccordion('img')" style="width:100%;display:flex;align-items:center;justify-content:space-between;background:#2a2a2a;border:1px solid #333;border-radius:8px;padding:8px 10px;color:#ccc;cursor:pointer;font-size:11px;font-weight:700;margin-bottom:4px;">
+      <span>🖼️ Generate Image</span><span id="ai-img-arrow" style="font-size:9px;">▶</span>
+    </button>
+    <div id="ai-img-body" style="display:none;padding:6px 0 10px;">
+      <label class="rp-label">Prompt</label>
+      <textarea id="ai-img-prompt" placeholder="e.g. a close-up of a grilled salmon dish with lemon, restaurant lighting" class="rp-input" style="height:56px;resize:vertical;margin-bottom:4px;font-family:inherit;"></textarea>
+      <button onclick="enhanceAiPrompt('image')" class="btn-ui" style="font-size:10px;padding:4px 8px;margin-bottom:6px;width:100%;">✨ Enhance Prompt</button>
+      <div style="display:flex;gap:4px;margin-bottom:4px;">
+        <select id="ai-img-ratio" class="rp-input" style="flex:1;font-size:10px;padding:5px;">
+          <option value="1:1">1:1 Square</option>
+          <option value="4:3">4:3 Landscape</option>
+          <option value="3:4">3:4 Portrait</option>
+          <option value="16:9">16:9 Widescreen</option>
+        </select>
+        <select id="ai-img-style" class="rp-input" style="flex:1;font-size:10px;padding:5px;">
+          <option value="photo-realistic">Photo-Realistic</option>
+          <option value="illustrated">Illustrated</option>
+          <option value="watercolor">Watercolor</option>
+          <option value="minimalist">Minimalist</option>
+        </select>
+      </div>
+      <label class="rp-label">Negative Prompt</label>
+      <textarea id="ai-img-neg" placeholder="e.g. blurry, text, watermarks, cartoon" class="rp-input" style="height:40px;resize:vertical;margin-bottom:6px;font-family:inherit;"></textarea>
+      <button onclick="generateAiImage()" id="ai-img-btn" class="btn-ui accent" style="width:100%;font-size:11px;padding:8px;margin-bottom:4px;" disabled>Generate Image</button>
+      <div id="ai-img-preview" style="display:none;margin-bottom:6px;">
+        <img id="ai-img-thumb" style="width:100%;border-radius:6px;border:1px solid #333;">
+        <div style="display:flex;gap:4px;margin-top:4px;">
+          <button onclick="uploadAiToCloudinary('image')" class="btn-ui" style="flex:1;font-size:10px;padding:5px;">Upload to Cloudinary</button>
+          <button onclick="placeAiImageOnCanvas()" class="btn-ui accent" style="flex:1;font-size:10px;padding:5px;">Place on Canvas</button>
+        </div>
+        <div id="ai-img-url-row" style="display:none;margin-top:4px;">
+          <input type="text" id="ai-img-url" class="rp-input" style="font-size:10px;margin-bottom:4px;" readonly>
+          <button onclick="copyAiUrl('ai-img-url')" class="btn-ui" style="width:100%;font-size:10px;padding:4px;">Copy URL</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GENERATE VIDEO -->
+    <button class="ai-accordion-trigger" id="ai-vid-trigger" onclick="toggleAiAccordion('vid')" style="width:100%;display:flex;align-items:center;justify-content:space-between;background:#2a2a2a;border:1px solid #333;border-radius:8px;padding:8px 10px;color:#ccc;cursor:pointer;font-size:11px;font-weight:700;margin-bottom:4px;">
+      <span>🎬 Generate Video</span><span id="ai-vid-arrow" style="font-size:9px;">▶</span>
+    </button>
+    <div id="ai-vid-body" style="display:none;padding:6px 0 10px;">
+
+      <!-- Reference image upload -->
+      <label class="rp-label">Reference Image (optional)</label>
+      <div id="ai-vid-ref-zone" onclick="document.getElementById('ai-vid-ref-input').click()" style="border:2px dashed #444;border-radius:8px;padding:12px;text-align:center;cursor:pointer;color:#777;font-size:10px;margin-bottom:4px;">
+        📎 Click or drag to upload (JPG, PNG, WebP &lt;10MB)
+      </div>
+      <input type="file" id="ai-vid-ref-input" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="handleAiVidRefUpload(this)">
+      <div id="ai-vid-ref-preview" style="display:none;position:relative;margin-bottom:4px;">
+        <img id="ai-vid-ref-thumb" style="width:100%;border-radius:6px;border:1px solid #333;">
+        <button onclick="clearAiVidRef()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.7);border:none;color:#fff;border-radius:50%;width:20px;height:20px;font-size:10px;cursor:pointer;">✕</button>
+      </div>
+
+      <label class="rp-label">Prompt</label>
+      <textarea id="ai-vid-prompt" placeholder="e.g. steam rising from hot soup, slow camera pull-back, cinematic" class="rp-input" style="height:56px;resize:vertical;margin-bottom:4px;font-family:inherit;"></textarea>
+      <button onclick="enhanceAiPrompt('video')" class="btn-ui" style="font-size:10px;padding:4px 8px;margin-bottom:6px;width:100%;">✨ Enhance Prompt</button>
+      <label class="rp-label">Negative Prompt</label>
+      <textarea id="ai-vid-neg" placeholder="e.g. shaky camera, fast cuts, text overlays" class="rp-input" style="height:40px;resize:vertical;margin-bottom:6px;font-family:inherit;"></textarea>
+
+      <div style="display:flex;gap:4px;margin-bottom:4px;">
+        <select id="ai-vid-duration" class="rp-input" style="flex:1;font-size:10px;padding:5px;">
+          <option value="5">5 seconds</option>
+          <option value="10">10 seconds</option>
+        </select>
+        <select id="ai-vid-resolution" class="rp-input" style="flex:1;font-size:10px;padding:5px;">
+          <option value="1920x1080">1920×1080 Hero</option>
+          <option value="1080x1920">1080×1920 Side</option>
+          <option value="1080x1080">1080×1080 Square</option>
+        </select>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+        <input type="checkbox" id="ai-vid-pin-start" checked style="accent-color:var(--accent);">
+        <label for="ai-vid-pin-start" style="font-size:10px;color:#888;cursor:pointer;">Pin start to reference image</label>
+      </div>
+
+      <label class="rp-label">Camera Motion</label>
+      <select id="ai-vid-camera" class="rp-input" style="margin-bottom:4px;font-size:10px;padding:5px;">
+        <option value="none">None</option>
+        <option value="slow_push_in">Slow Push In</option>
+        <option value="slow_pull_back">Slow Pull Back</option>
+        <option value="pan_left">Pan Left</option>
+        <option value="pan_right">Pan Right</option>
+        <option value="orbit">Orbit</option>
+      </select>
+
+      <label class="rp-label">Creativity vs. Prompt Fidelity</label>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+        <span style="font-size:9px;color:#666;">Creative</span>
+        <input type="range" id="ai-vid-cfg" min="0" max="1" step="0.1" value="0.5" style="flex:1;accent-color:var(--accent);">
+        <span style="font-size:9px;color:#666;">Strict</span>
+      </div>
+
+      <button onclick="generateAiVideo()" id="ai-vid-btn" class="btn-ui accent" style="width:100%;font-size:11px;padding:8px;margin-bottom:4px;" disabled>Generate Video</button>
+      <div id="ai-vid-progress" style="display:none;font-size:10px;color:#888;text-align:center;margin-bottom:6px;">⏳ <span id="ai-vid-status">Submitting to Kling…</span></div>
+      <div id="ai-vid-preview" style="display:none;margin-bottom:6px;">
+        <video id="ai-vid-player" autoplay muted loop playsinline style="width:100%;border-radius:6px;border:1px solid #333;"></video>
+        <div style="display:flex;gap:4px;margin-top:4px;">
+          <button onclick="uploadAiToCloudinary('video')" class="btn-ui" style="flex:1;font-size:10px;padding:5px;">Upload to Cloudinary</button>
+          <button onclick="sendAiVideoToViewer()" class="btn-ui accent" style="flex:1;font-size:10px;padding:5px;">Send to Viewer</button>
+        </div>
+        <div id="ai-vid-url-row" style="display:none;margin-top:4px;">
+          <input type="text" id="ai-vid-url" class="rp-input" style="font-size:10px;margin-bottom:4px;" readonly>
+          <button onclick="copyAiUrl('ai-vid-url')" class="btn-ui" style="width:100%;font-size:10px;padding:4px;">Copy URL</button>
+        </div>
+      </div>
+    </div>
+  </div><!-- /.rp-panel#rp-panel-aistudio -->
 </div><!-- /#right-panel -->
 
 <div id="reset-modal" class="modal-overlay">
@@ -3580,13 +3743,440 @@ function setLsTab(tab) {
 
 // ===== RIGHT PANEL TAB SWITCHER =====
 function setRpTab(tab) {
-  ['viewer'].forEach(t => {
+  ['viewer', 'aistudio'].forEach(t => {
     const tabEl = document.getElementById('rp-tab-' + t);
     const panelEl = document.getElementById('rp-panel-' + t);
     if (tabEl) tabEl.classList.toggle('active', t === tab);
     if (panelEl) panelEl.style.display = t === tab ? 'block' : 'none';
   });
+  if (tab === 'aistudio') {
+    loadAiCredentials();
+  }
 }
+
+// ===== AI STUDIO =====
+const AI_CRED_KEY = 'nymk_ai_credentials';
+let aiState = {
+  generatedImage: null,
+  generatedImageUrl: null,
+  generatedVideoUrl: null,
+  vidRefB64: null,
+  vidTaskId: null,
+  vidPollingInterval: null
+};
+
+function toggleAiAccordion(id) {
+  const trigger = document.getElementById('ai-' + id + '-trigger');
+  const body = document.getElementById('ai-' + id + '-body');
+  const arrow = document.getElementById('ai-' + id + '-arrow');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  trigger.style.background = open ? '#2a2a2a' : '#333';
+  arrow.textContent = open ? '▶' : '▼';
+}
+
+function toggleAiPasswordShow(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    btn.textContent = '👁';
+  }
+}
+
+function getAiCredentials() {
+  return {
+    cloudinary: {
+      cloud_name: document.getElementById('ai-cloud-name').value.trim(),
+      api_key: document.getElementById('ai-cloud-key').value.trim(),
+      api_secret: document.getElementById('ai-cloud-secret').value
+    },
+    imagen: {
+      project_id: document.getElementById('ai-imagen-project').value.trim(),
+      api_key: document.getElementById('ai-imagen-key').value.trim()
+    },
+    kling: {
+      api_key: document.getElementById('ai-kling-key').value.trim(),
+      api_secret: document.getElementById('ai-kling-secret').value
+    }
+  };
+}
+
+function saveAiCredentials() {
+  const creds = getAiCredentials();
+  localStorage.setItem(AI_CRED_KEY, JSON.stringify(creds));
+  showToast('✅ Credentials saved');
+}
+
+function loadAiCredentials() {
+  const stored = localStorage.getItem(AI_CRED_KEY);
+  if (!stored) return;
+  try {
+    const creds = JSON.parse(stored);
+    if (creds.cloudinary) {
+      document.getElementById('ai-cloud-name').value = creds.cloudinary.cloud_name || '';
+      document.getElementById('ai-cloud-key').value = creds.cloudinary.api_key || '';
+      document.getElementById('ai-cloud-secret').value = creds.cloudinary.api_secret || '';
+    }
+    if (creds.imagen) {
+      document.getElementById('ai-imagen-project').value = creds.imagen.project_id || '';
+      document.getElementById('ai-imagen-key').value = creds.imagen.api_key || '';
+    }
+    if (creds.kling) {
+      document.getElementById('ai-kling-key').value = creds.kling.api_key || '';
+      document.getElementById('ai-kling-secret').value = creds.kling.api_secret || '';
+    }
+  } catch (e) { /* ignore parse errors */ }
+}
+
+async function testAiService(service) {
+  const creds = getAiCredentials();
+  let endpoint, body;
+  if (service === 'cloudinary') {
+    endpoint = '/api/ai/test-cloudinary';
+    body = creds.cloudinary;
+  } else if (service === 'imagen') {
+    endpoint = '/api/ai/test-google';
+    body = creds.imagen;
+  } else {
+    endpoint = '/api/ai/test-kling';
+    body = creds.kling;
+  }
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (data.status === 'ok') {
+      showToast(`✅ ${service.charAt(0).toUpperCase() + service.slice(1)} connected successfully`);
+    } else {
+      showToast(`❌ ${service.charAt(0).toUpperCase() + service.slice(1)} connection failed: ${data.error || 'Unknown error'}`);
+    }
+  } catch (e) {
+    showToast(`❌ ${service.charAt(0).toUpperCase() + service.slice(1)} connection failed: ${e.message}`);
+  }
+}
+
+async function enhanceAiPrompt(type) {
+  const el = document.getElementById(type === 'image' ? 'ai-img-prompt' : 'ai-vid-prompt');
+  const prompt = el.value.trim();
+  if (!prompt) { showToast('❌ Enter a prompt first'); return; }
+  el.value = '⏳ Enhancing…';
+  el.disabled = true;
+  try {
+    const res = await fetch('/api/ai/enhance-prompt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, type })
+    });
+    const data = await res.json();
+    if (data.enhanced_prompt) {
+      el.value = data.enhanced_prompt;
+      showToast('✨ Prompt enhanced');
+    } else {
+      showToast('❌ Enhancement failed: ' + (data.error || 'Unknown error'));
+      el.value = prompt;
+    }
+  } catch (e) {
+    showToast('❌ Enhancement failed: ' + e.message);
+    el.value = prompt;
+  }
+  el.disabled = false;
+}
+
+document.getElementById('ai-img-prompt')?.addEventListener('input', function() {
+  document.getElementById('ai-img-btn').disabled = !this.value.trim();
+});
+document.getElementById('ai-vid-prompt')?.addEventListener('input', function() {
+  document.getElementById('ai-vid-btn').disabled = !this.value.trim();
+});
+
+async function generateAiImage() {
+  const creds = getAiCredentials();
+  const prompt = document.getElementById('ai-img-prompt').value.trim();
+  if (!prompt) return;
+  const btn = document.getElementById('ai-img-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Generating…';
+  try {
+    const res = await fetch('/api/ai/generate-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt,
+        negative_prompt: document.getElementById('ai-img-neg').value.trim(),
+        aspect_ratio: document.getElementById('ai-img-ratio').value,
+        style: document.getElementById('ai-img-style').value,
+        credentials: creds.imagen
+      })
+    });
+    const data = await res.json();
+    if (data.image_url) {
+      aiState.generatedImage = data.image_url;
+      aiState.generatedImageUrl = null;
+      const preview = document.getElementById('ai-img-preview');
+      const thumb = document.getElementById('ai-img-thumb');
+      thumb.src = data.image_url;
+      preview.style.display = 'block';
+      document.getElementById('ai-img-url-row').style.display = 'none';
+      showToast('✅ Image generated');
+    } else {
+      showToast('❌ Image generation failed: ' + (data.error || 'Unknown error'));
+    }
+  } catch (e) {
+    showToast('❌ Image generation failed: ' + e.message);
+  }
+  btn.disabled = false;
+  btn.textContent = 'Generate Image';
+}
+
+async function uploadAiToCloudinary(fileType) {
+  const creds = getAiCredentials();
+  if (fileType === 'image') {
+    if (!aiState.generatedImage) return;
+    const b64 = aiState.generatedImage.includes(',') ? aiState.generatedImage.split(',')[1] : aiState.generatedImage;
+    try {
+      const res = await fetch('/api/ai/cloudinary-upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file_b64: b64, file_type: 'image', credentials: creds.cloudinary })
+      });
+      const data = await res.json();
+      if (data.url) {
+        aiState.generatedImageUrl = data.url;
+        document.getElementById('ai-img-url').value = data.url;
+        document.getElementById('ai-img-url-row').style.display = 'block';
+        showToast('✅ Uploaded to Cloudinary');
+      } else {
+        showToast('❌ Cloudinary upload failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch (e) {
+      showToast('❌ Cloudinary upload failed: ' + e.message);
+    }
+  } else {
+    if (!aiState.generatedVideoUrl) return;
+    try {
+      const res = await fetch('/api/ai/cloudinary-upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file_b64: aiState.generatedVideoUrl, file_type: 'video', credentials: creds.cloudinary })
+      });
+      const data = await res.json();
+      if (data.url) {
+        aiState.generatedVideoUrl = data.url;
+        document.getElementById('ai-vid-url').value = data.url;
+        document.getElementById('ai-vid-url-row').style.display = 'block';
+        showToast('✅ Video uploaded to Cloudinary');
+      } else {
+        showToast('❌ Cloudinary upload failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch (e) {
+      showToast('❌ Cloudinary upload failed: ' + e.message);
+    }
+  }
+}
+
+function placeAiImageOnCanvas() {
+  const url = aiState.generatedImageUrl || aiState.generatedImage;
+  if (!url) { showToast('❌ Upload to Cloudinary first'); return; }
+  const creds = getAiCredentials();
+  if (!aiState.generatedImageUrl) {
+    showToast('⏳ Uploading to Cloudinary first…');
+    uploadAiToCloudinary('image').then(() => placeAiImageOnCanvas());
+    return;
+  }
+  const vpRect = viewport.getBoundingClientRect();
+  const scalerRect = scaler.getBoundingClientRect();
+  const cx = (vpRect.left + vpRect.width / 2 - scalerRect.left) / zoomScale;
+  const cy = (vpRect.top + vpRect.height / 2 - scalerRect.top) / zoomScale;
+  const maxZ = docV2.elements.length ? Math.max(...docV2.elements.map(e => e.zIndex || 0)) : 0;
+  const newEl = {
+    id: 'img_ai_' + Date.now(),
+    type: 'image',
+    src: aiState.generatedImageUrl,
+    assetId: 'ai_generated_' + Date.now(),
+    x: Math.max(50, Math.min(BASE_W - 400, cx - 150)),
+    y: Math.max(50, Math.min(BASE_H - 400, cy - 150)),
+    width: 300, height: 300,
+    zIndex: maxZ + 1, opacity: 1, rotation: 0,
+    visible: true, locked: false, layerRole: 'content'
+  };
+  pushState();
+  docV2.elements.push(newEl);
+  render();
+  selectById(newEl.id);
+  showToast('✅ AI image placed on canvas');
+}
+
+function copyAiUrl(inputId) {
+  const val = document.getElementById(inputId).value;
+  if (!val) return;
+  navigator.clipboard.writeText(val).then(() => showToast('✅ URL copied to clipboard')).catch(() => showToast('❌ Copy failed'));
+}
+
+function handleAiVidRefUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { showToast('❌ File must be under 10MB'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    aiState.vidRefB64 = e.target.result.split(',')[1];
+    const thumb = document.getElementById('ai-vid-ref-thumb');
+    thumb.src = e.target.result;
+    document.getElementById('ai-vid-ref-zone').style.display = 'none';
+    document.getElementById('ai-vid-ref-preview').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearAiVidRef() {
+  aiState.vidRefB64 = null;
+  document.getElementById('ai-vid-ref-input').value = '';
+  document.getElementById('ai-vid-ref-zone').style.display = 'block';
+  document.getElementById('ai-vid-ref-preview').style.display = 'none';
+}
+
+async function generateAiVideo() {
+  const creds = getAiCredentials();
+  const prompt = document.getElementById('ai-vid-prompt').value.trim();
+  if (!prompt) return;
+  const btn = document.getElementById('ai-vid-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Submitting…';
+  document.getElementById('ai-vid-progress').style.display = 'block';
+  document.getElementById('ai-vid-status').textContent = 'Submitting to Kling…';
+  document.getElementById('ai-vid-preview').style.display = 'none';
+  try {
+    const res = await fetch('/api/ai/generate-video', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt,
+        negative_prompt: document.getElementById('ai-vid-neg').value.trim(),
+        duration: parseInt(document.getElementById('ai-vid-duration').value),
+        resolution: document.getElementById('ai-vid-resolution').value,
+        camera_motion: document.getElementById('ai-vid-camera').value,
+        cfg_scale: parseFloat(document.getElementById('ai-vid-cfg').value),
+        reference_image_b64: document.getElementById('ai-vid-pin-start').checked ? aiState.vidRefB64 : null,
+        credentials: creds.kling
+      })
+    });
+    const data = await res.json();
+    if (data.task_id) {
+      aiState.vidTaskId = data.task_id;
+      pollKlingStatus();
+    } else {
+      showToast('❌ Video generation failed: ' + (data.error || 'Unknown error'));
+      btn.disabled = false;
+      btn.textContent = 'Generate Video';
+      document.getElementById('ai-vid-progress').style.display = 'none';
+    }
+  } catch (e) {
+    showToast('❌ Video generation failed: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = 'Generate Video';
+    document.getElementById('ai-vid-progress').style.display = 'none';
+  }
+}
+
+function pollKlingStatus() {
+  const creds = getAiCredentials();
+  document.getElementById('ai-vid-status').textContent = 'Polling for result…';
+  aiState.vidPollingInterval = setInterval(async () => {
+    try {
+      const res = await fetch(`/api/ai/kling-status/${aiState.vidTaskId}?api_key=${encodeURIComponent(creds.kling.api_key)}&api_secret=${encodeURIComponent(creds.kling.api_secret)}`);
+      const data = await res.json();
+      if (data.progress !== undefined) {
+        document.getElementById('ai-vid-status').textContent = `⏳ ${data.status} (${data.progress}%)`;
+      }
+      if (data.status === 'done' && data.video_url) {
+        clearInterval(aiState.vidPollingInterval);
+        aiState.vidPollingInterval = null;
+        aiState.generatedVideoUrl = data.video_url;
+        document.getElementById('ai-vid-player').src = data.video_url;
+        document.getElementById('ai-vid-preview').style.display = 'block';
+        document.getElementById('ai-vid-progress').style.display = 'none';
+        document.getElementById('ai-vid-btn').disabled = false;
+        document.getElementById('ai-vid-btn').textContent = 'Generate Video';
+        document.getElementById('ai-vid-url-row').style.display = 'none';
+        showToast('✅ Video ready');
+      } else if (data.status === 'failed') {
+        clearInterval(aiState.vidPollingInterval);
+        aiState.vidPollingInterval = null;
+        showToast('❌ Video generation failed: ' + (data.error || 'Unknown error'));
+        document.getElementById('ai-vid-progress').style.display = 'none';
+        document.getElementById('ai-vid-btn').disabled = false;
+        document.getElementById('ai-vid-btn').textContent = 'Generate Video';
+      }
+    } catch (e) {
+      // keep polling
+    }
+  }, 5000);
+}
+
+function sendAiVideoToViewer() {
+  let url = aiState.generatedVideoUrl;
+  if (!url) { showToast('❌ No video generated yet'); return; }
+  const resolution = document.getElementById('ai-vid-resolution').value;
+  if (resolution === '1080x1920') {
+    showBrandedModal2('Send to Viewer Panel', 'Choose which side panel:', [
+      { label: 'Left Side Panel', onClick: () => { document.getElementById('side-panel-left-url').value = url; saveGlobalSettings(); showToast('✅ Video URL sent to Viewer — click Update All Viewer Settings to publish'); closeGenericModal(); } },
+      { label: 'Right Side Panel', onClick: () => { document.getElementById('side-panel-right-url').value = url; saveGlobalSettings(); showToast('✅ Video URL sent to Viewer — click Update All Viewer Settings to publish'); closeGenericModal(); } }
+    ]);
+  } else {
+    document.getElementById('hero-video-url-input').value = url;
+    saveGlobalSettings();
+    showToast('✅ Video URL sent to Viewer — click Update All Viewer Settings to publish');
+  }
+}
+
+function showBrandedModal2(title, body, buttons) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.style.display = 'flex';
+  overlay.innerHTML = `<div class="modal-content">
+    <div class="modal-title">${title}</div>
+    <div class="modal-body">${body}</div>
+    <div class="modal-actions" id="modal2-actions"></div>
+  </div>`;
+  document.body.appendChild(overlay);
+  const actions = overlay.querySelector('#modal2-actions');
+  buttons.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'btn-ui';
+    btn.textContent = b.label;
+    btn.onclick = b.onClick;
+    actions.appendChild(btn);
+  });
+  window._genericModalOverlay = overlay;
+}
+function closeGenericModal() {
+  if (window._genericModalOverlay) {
+    window._genericModalOverlay.remove();
+    window._genericModalOverlay = null;
+  }
+}
+
+// drag-drop for video reference
+document.getElementById('ai-vid-ref-zone')?.addEventListener('dragover', e => { e.preventDefault(); e.target.style.borderColor = 'var(--accent)'; });
+document.getElementById('ai-vid-ref-zone')?.addEventListener('dragleave', e => { e.target.style.borderColor = '#444'; });
+document.getElementById('ai-vid-ref-zone')?.addEventListener('drop', e => {
+  e.preventDefault();
+  e.target.style.borderColor = '#444';
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    const input = document.getElementById('ai-vid-ref-input');
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    input.files = dt.files;
+    handleAiVidRefUpload(input);
+  }
+});
 </script>
 
 
