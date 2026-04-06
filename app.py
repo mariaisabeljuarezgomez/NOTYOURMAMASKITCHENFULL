@@ -255,7 +255,7 @@ PROTECTED_ASSETS = {
 def upload_image():
     try:
         data = request.json
-        filename = data.get("filename", f"upload_{int(datetime.now().timestamp())}.png")
+        filename = os.path.basename(data.get("filename", f"upload_{int(datetime.now().timestamp())}.png"))
         allowed_extensions = {".png", ".jpg", ".jpeg", ".webp"}
         ext = os.path.splitext(filename)[1].lower()
         if ext not in allowed_extensions:
