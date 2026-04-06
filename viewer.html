@@ -416,6 +416,14 @@
           ctx.textAlign = originalAlign;
         }
 
+        const FONT_MAP = {
+          'serif':       'Georgia, serif',
+          'sans-serif':  'Arial, sans-serif',
+          'monospace':   'Courier New, monospace',
+          'cursive':     'Pacifico, cursive',
+          'fantasy':     'Impact, fantasy',
+        };
+
         function normalizeEl(el) {
             // V1 → V2 field shim — never mutates saved data, returns a patched copy
             const e = Object.assign({}, el);
@@ -572,12 +580,11 @@
 
                 // ── TEXT ────────────────────────────────────────────────────────
                 if (el.type === 'text') {
-                    const fs  = el.fontSize || 16;
-                    const w   = el.fontWeight || 'normal';
-                    const fam = el.fontFamily || 'Century Gothic';
-                    let font  = `${w} ${fs}px "${fam}"`;
-                    if (fam.toLowerCase().includes('condensed')) font = `${fs}px "bernard-mt-condensed-regular"`;
-                    if (fam.toLowerCase().includes('century'))   font = `${w} ${fs}px "Century Gothic"`;
+                    const fs   = el.fontSize || 16;
+                    const fw   = el.fontWeight || 'normal';
+                    const fi   = el.fontStyle  || 'normal';
+                    const ff   = FONT_MAP[el.fontFamily] || el.fontFamily || 'Arial, sans-serif';
+                    const font = `${fi} ${fw} ${fs}px ${ff}`;
                     ctx.save();
                     // Apply opacity (RULES.md: el.opacity is 0-100, divide by 100 for canvas)
                     ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 100) / 100;
