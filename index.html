@@ -1797,8 +1797,13 @@ function deselect() {
 
 function onCanvasClick(e) { if(isLassoing || _lassoJustFired) return; if(e.target.id === 'menu-container' || e.target.id === 'elements-layer') deselect(); }
 function onCanvasMousedown(e) {
-  const directTargets = ['menu-container', 'elements-layer', 'menu-bg'];
-  if (!directTargets.includes(e.target.id)) return;
+  const menuContainer = document.getElementById('menu-container');
+  const isCanvasBackground = (
+    e.target === menuContainer ||
+    e.target.id === 'elements-layer' ||
+    e.target === document.getElementById('menu-bg')
+  );
+  if (!isCanvasBackground) return;
   if (e.button !== 0) return;
   if (layoutLocked) return;
   const lassoBox = document.getElementById('lasso-box');
