@@ -550,7 +550,17 @@
                     if (fam.toLowerCase().includes('condensed')) font = `${fs}px "bernard-mt-condensed-regular"`;
                     if (fam.toLowerCase().includes('century'))   font = `${w} ${fs}px "Century Gothic"`;
                     ctx.save();
-                    ctx.globalAlpha   = (el.opacity !== undefined ? el.opacity : 100) / 100;
+                    // Apply opacity (RULES.md: el.opacity is 0-100, divide by 100 for canvas)
+                    ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 100) / 100;
+                    // Apply rotation
+                    const rotation = el.rotation || 0;
+                    if (rotation !== 0) {
+                      const cx = el.x + (el.width || 0) / 2;
+                      const cy = el.y + (el.height || 0) / 2;
+                      ctx.translate(cx, cy);
+                      ctx.rotate(rotation * Math.PI / 180);
+                      ctx.translate(-cx, -cy);
+                    }
                     ctx.font          = font;
                     ctx.fillStyle     = el.color || '#000';
                     ctx.textAlign     = el.textAlign || 'left';
@@ -563,7 +573,17 @@
                 // ── LINE ────────────────────────────────────────────────────────
                 } else if (el.type === 'line') {
                     ctx.save();
+                    // Apply opacity (RULES.md: el.opacity is 0-100, divide by 100 for canvas)
                     ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 100) / 100;
+                    // Apply rotation
+                    const rotation = el.rotation || 0;
+                    if (rotation !== 0) {
+                      const cx = el.x + (el.width || 0) / 2;
+                      const cy = el.y + (el.height || 0) / 2;
+                      ctx.translate(cx, cy);
+                      ctx.rotate(rotation * Math.PI / 180);
+                      ctx.translate(-cx, -cy);
+                    }
                     ctx.beginPath();
                     // x1/y1/x2/y2 are absolute canvas coords (not relative to x/y)
                     const lx1 = el.x1 !== undefined ? el.x1 : el.x;
@@ -583,7 +603,17 @@
                     const src = resolveImageSrc(el);
                     if (cachedImages[src]) {
                         ctx.save();
+                        // Apply opacity (RULES.md: el.opacity is 0-100, divide by 100 for canvas)
                         ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 100) / 100;
+                        // Apply rotation
+                        const rotation = el.rotation || 0;
+                        if (rotation !== 0) {
+                          const cx = el.x + (el.width || 0) / 2;
+                          const cy = el.y + (el.height || 0) / 2;
+                          ctx.translate(cx, cy);
+                          ctx.rotate(rotation * Math.PI / 180);
+                          ctx.translate(-cx, -cy);
+                        }
                         if (el.borderRadius) {
                             ctx.beginPath();
                             ctx.roundRect(el.x, el.y, el.width, el.height, el.borderRadius);
@@ -604,7 +634,17 @@
                     const isLine = h <= 8;
 
                     ctx.save();
+                    // Apply opacity (RULES.md: el.opacity is 0-100, divide by 100 for canvas)
                     ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 100) / 100;
+                    // Apply rotation
+                    const rotation = el.rotation || 0;
+                    if (rotation !== 0) {
+                      const cx = el.x + (el.width || 0) / 2;
+                      const cy = el.y + (el.height || 0) / 2;
+                      ctx.translate(cx, cy);
+                      ctx.rotate(rotation * Math.PI / 180);
+                      ctx.translate(-cx, -cy);
+                    }
 
                     if (isLine) {
                         // ── LINE ──────────────────────────────────────────────
