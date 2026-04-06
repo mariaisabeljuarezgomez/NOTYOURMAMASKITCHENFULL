@@ -143,6 +143,7 @@ def restore_backup(filename):
             ts = datetime.now().strftime("%Y%m%d_%H%M%S")
             shutil.copy2(DATA_FILE, os.path.join(BACKUP_DIR, f"menu_data_pre_restore_{ts}.json"))
         shutil.copy2(src, DATA_FILE)
+        prune_backups(BACKUP_DIR)
         return jsonify({"status": "restored", "from": filename}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
