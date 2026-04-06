@@ -7,6 +7,27 @@
 **Latest Known Good SHA:** `6bc7fe4` — Bug Fix Batch 8  
 **PageSpeed Score (Mar 27, 2026):** 100 / 100 / 100 / 100 ✅
 
+## Phase: Schema Unification & Viewer Rendering Parity
+**Status:** ✅ Complete  
+**Date:** April 2026  
+**Commits:** c96ccb3 → 678bd8a (8 commits)
+### What Was Built
+| # | Commit | File | Change |
+|---|--------|------|--------|
+| 1 | c96ccb3 | viewer.html | el.content compliance per RULES.md |
+| 2 | 0053bd1 | viewer.html | normalizeViewerSettings() — legacy settings migration layer |
+| 3 | 752619d | viewer.html | resolveImageSrc() — unified cache key for preload + draw |
+| 4 | 80ddf60 | viewer.html | Rotation + opacity for all element types (text, image, line, shape) |
+| 5 | 0fbf3cc | viewer.html | Letter-spacing with drawTextWithSpacing() manual fallback |
+| 6 | 752619d | viewer.html | FONT_MAP — unified font family mapping |
+| 7 | a008570 | index.html | Canonical save path: settings.viewer in save() + saveGlobalSettings() |
+| 8 | 678bd8a | viewer.html | BUGFIX: opacity scale corrected 0–1 (was erroneously ÷100) |
+### Key Architecture Decisions
+- **Opacity scale:** Editor stores 0–1. Viewer uses raw value — NO division by 100.
+- **Image cache key:** resolveImageSrc() return value is the single source of truth for both preload store and draw retrieve.
+- **Settings path:** New saves write to settings.viewer. Legacy root-level fields preserved for backward compat. normalizeViewerSettings() bridges both.
+- **Font mapping:** FONT_MAP handles generic CSS names. Custom fonts (century-gothic-*) pass through directly to canvas.
+
 ---
 
 ## ⚠️ CRITICAL WARNING — READ FIRST
