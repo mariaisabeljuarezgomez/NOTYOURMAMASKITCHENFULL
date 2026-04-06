@@ -587,20 +587,21 @@ def cloudinary_upload():
         timestamp = int(time.time())
         sig = cloudinary_sign({"folder": "nymk_ai", "timestamp": timestamp}, api_secret)
         upload_url = f"https://api.cloudinary.com/v1_1/{cloud_name}/auto/upload"
-        upload_payload = {
-            "file": f"data:image/png;base64,{file_b64}" if file_type == "image" else f"data:video/mp4;base64,{file_b64}",
+        mime_type = "image/png" if file_type == "image" else "video/mp4"
+        file_payload = f"data:{mime_type};base64,{file_b64}"
+        upload_fields = {
             "api_key": api_key,
             "timestamp": timestamp,
             "signature": sig,
             "folder": "nymk_ai"
         }
         if file_type == "video":
-            upload_payload["resource_type"] = "video"
-            upload_payload["eager"] = [{"streaming_profile": "hd"}]
+            upload_fields["resource_type"] = "video"
+            upload_fields["eager"] = "[{\"streaming_profile\": \"hd\"}]"
         client = _http()
         if not client:
             return jsonify({"error": "No HTTP client available"}), 500
-        resp = client.post(upload_url, data=upload_payload)
+        resp = client.post(upload_url, files={"file": (None, file_payload, mime_type)}, data=upload_fields)
         if resp.status_code in (200, 201):
             result = resp.json()
             return jsonify({"url": result.get("secure_url", "")})
