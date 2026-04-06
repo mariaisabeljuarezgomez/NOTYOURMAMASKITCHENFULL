@@ -920,7 +920,17 @@ function showToast(m) {
 
 function render() {
     const bg = document.getElementById('menu-bg'); 
-    if(bg) bg.classList.toggle('legacy-bg-hidden', docV2.settings?.legacyBgVisible === false);
+    if(bg) {
+        bg.classList.toggle('legacy-bg-hidden', docV2.settings?.legacyBgVisible === false);
+        const bgEl = docV2.elements.find(e => e.layerRole === 'background');
+        let newSrc = 'menu-bg-preview.jpg';
+        if (bgEl && bgEl.src && bgEl.src !== '' && !bgEl.src.endsWith('menu-bg-preview.jpg') && !bgEl.src.endsWith('menu-bg.png')) {
+            newSrc = bgEl.src;
+        }
+        if (!bg.src.endsWith(newSrc)) {
+            bg.src = newSrc;
+        }
+    }
     
     elementsLayer.innerHTML = ''; 
     const sorted = [...docV2.elements].sort((a,b)=> (a.zIndex||10)-(b.zIndex||10));
@@ -2885,9 +2895,15 @@ async function exportPng() {
         canvas.width = TARGET_W;
         canvas.height = Math.round(BASE_H * S);
         const ctx = canvas.getContext('2d');
-        if(docV2.settings.legacyBgVisible) {
+        const bgEl = docV2.elements.find(e => e.layerRole === 'background');
+        let bgSrc = "menu-bg.png";
+        if (bgEl && bgEl.src && bgEl.src !== '' && !bgEl.src.endsWith('menu-bg-preview.jpg') && !bgEl.src.endsWith('menu-bg.png')) {
+            bgSrc = bgEl.src;
+        }
+
+        if(docV2.settings.legacyBgVisible || bgSrc !== "menu-bg.png") {
             const img = new Image();
-            img.src = "menu-bg.png";
+            img.src = bgSrc;
             await new Promise(r => { img.onload = r; img.onerror = () => { showToast('⚠️ Background image not found, exporting without it.'); r(); }; });
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         } else { ctx.fillStyle='#fff'; ctx.fillRect(0,0,canvas.width,canvas.height); }

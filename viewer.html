@@ -422,7 +422,10 @@
                 });
 
                 const imgs = [...new Set((data.elements||[]).filter(e=>e.type==='image').map(e=>{
-                    if (e.layerRole === 'background') return (e.src && e.src !== '') ? e.src : (ASSET_ID_TO_SRC[e.assetId] || '');
+                    if (e.layerRole === 'background') {
+                        if (e.src && e.src !== '' && !e.src.endsWith('menu-bg-preview.jpg') && !e.src.endsWith('menu-bg.png')) return e.src;
+                        return '/menu-bg-preview.jpg';
+                    }
                     return (e.assetId ? (ASSET_ID_TO_SRC[e.assetId] || '') : '') || e.src || '';
                 }))];
                 for (const s of imgs) if (s && !cachedImages[s]) cachedImages[s] = await preloadImage(s);
@@ -509,8 +512,13 @@
             const bgEl = (data.elements || []).find(e => e.layerRole === 'background');
             let _bgImgToDraw = bgImg;
             if (bgEl) {
-                const bgSrc = (bgEl.src && bgEl.src !== '') ? bgEl.src : (ASSET_ID_TO_SRC[bgEl.assetId] || '');
-                if (bgSrc && cachedImages[bgSrc]) _bgImgToDraw = cachedImages[bgSrc];
+                let bgSrc = null;
+                if (bgEl.src && bgEl.src !== '' && !bgEl.src.endsWith('menu-bg-preview.jpg') && !bgEl.src.endsWith('menu-bg.png')) {
+                    bgSrc = bgEl.src;
+                }
+                if (bgSrc && cachedImages[bgSrc]) {
+                    _bgImgToDraw = cachedImages[bgSrc];
+                }
             }
             if (_bgImgToDraw) ctx.drawImage(_bgImgToDraw, 0, 0, BASE_W, BASE_H);
 
