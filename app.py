@@ -386,28 +386,23 @@ def test_cloudinary():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route("/api/ai/test-google", methods=["POST"])
-def test_google():
+@app.route("/api/ai/test-stability", methods=["POST"])
+def test_stability():
     try:
         data = request.json or {}
-        project_id = data.get("project_id", "")
         api_key = data.get("api_key", "")
-        # api_key here is expected to be a short-lived OAuth2 Bearer access token (not a raw API key).
-        if len(api_key) < 100:
-            return jsonify({"error": "Google credentials must be an OAuth2 access token, not a raw API key. The frontend must exchange your API key for a Bearer token first."}), 400
-        if not all([project_id, api_key]):
-            return jsonify({"error": "Missing credentials"}), 400
-        url = f"https://us-central1-aiplatform.googleapis.com/v1/projects/{project_id}/locations/us-central1/publishers/google/models/imagen-3.0-generate-001"
-        headers = {"Authorization": f"Bearer {api_key}"}
+        if not api_key:
+            return jsonify({"error": "Missing API key"}), 400
         client = _http()
         if not client:
             return jsonify({"error": "No HTTP client available"}), 500
-        resp = client.get(url, headers=headers)
+        resp = client.get(
+            "https://api.stability.ai/v1/user/account",
+            headers={"Authorization": f"Bearer {api_key}"}
+        )
         if resp.status_code == 200:
             return jsonify({"status": "ok"})
-        if resp.status_code == 403:
-            return jsonify({"error": "Credentials valid but Imagen API access denied — enable the Vertex AI API in your GCP project and ensure your service account has the 'Vertex AI User' role."}), 400
-        return jsonify({"error": "Invalid credentials or project ID"}), 400
+        return jsonify({"error": "Invalid API key"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -459,37 +454,26 @@ def generate_image():
         prompt = data.get("prompt", "")
         negative_prompt = data.get("negative_prompt", "")
         aspect_ratio = data.get("aspect_ratio", "1:1")
-        style = data.get("style", "photo-realistic")
         creds = data.get("credentials", {})
-        project_id = creds.get("project_id", "")
         api_key = creds.get("api_key", "")
-        # api_key here is expected to be a short-lived OAuth2 Bearer access token (not a raw API key).
-        # The frontend is responsible for exchanging the raw API key for an access token via Google OAuth2.
-        # Short tokens (<100 chars) are raw API keys — reject with a clear message.
-        if len(api_key) < 100:
-            return jsonify({"error": "Google credentials must be an OAuth2 access token, not a raw API key. The frontend must exchange your API key for a Bearer token first."}), 400
-        if not all([prompt, project_id, api_key]):
+        if not prompt or not api_key:
             return jsonify({"error": "Missing prompt or credentials"}), 400
-        ar_map = {"1:1": "1:1", "4:3": "4:3", "3:4": "3:4", "16:9": "16:9"}
-        model_input = {"prompt": prompt, "aspect_ratio": ar_map.get(aspect_ratio, "1:1")}
-        if negative_prompt:
-            model_input["negative_prompt"] = negative_prompt
-        if style != "photo-realistic":
-            model_input["prompt"] = f"{prompt}, {style} style"
-        url = f"https://us-central1-aiplatform.googleapis.com/v1/projects/{project_id}/locations/us-central1/publishers/google/models/imagen-3.0-generate-001:predict"
-        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
         client = _http()
         if not client:
             return jsonify({"error": "No HTTP client available"}), 500
-        resp = client.post(url, headers=headers, json={"instances": [model_input], "parameters": {}})
+        fields = {"prompt": prompt, "output_format": "png", "aspect_ratio": aspect_ratio}
+        if negative_prompt:
+            fields["negative_prompt"] = negative_prompt
+        resp = client.post(
+            "https://api.stability.ai/v2beta/stable-image/generate/core",
+            headers={"Authorization": f"Bearer {api_key}", "Accept": "image/*"},
+            files={"none": ""},
+            data=fields
+        )
         if resp.status_code == 200:
-            result = resp.json()
-            predictions = result.get("predictions", [])
-            if predictions and len(predictions) > 0:
-                b64_img = predictions[0].get("bytesBase64Encoded", "")
-                if b64_img:
-                    return jsonify({"image_url": f"data:image/png;base64,{b64_img}"})
-        return jsonify({"error": f"Image generation failed — API status {resp.status_code if resp else 'no response'}"}), 400
+            b64_img = base64.b64encode(resp.content).decode("utf-8")
+            return jsonify({"image_url": f"data:image/png;base64,{b64_img}"})
+        return jsonify({"error": f"Image generation failed — API status {resp.status_code}"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -607,62 +591,6 @@ def cloudinary_upload():
             result = resp.json()
             return jsonify({"url": result.get("secure_url", "")})
         return jsonify({"error": f"Cloudinary upload failed — status {resp.status_code if resp else 'no response'}"}), 400
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/api/ai/edit-image", methods=["POST"])
-def edit_image():
-    try:
-        data = request.json or {}
-        prompt = data.get("prompt", "")
-        negative_prompt = data.get("negative_prompt", "")
-        reference_image_b64 = data.get("reference_image_b64", "")
-        mode = data.get("mode", "edit")
-        edit_strength = float(data.get("edit_strength", 0.5))
-        creds = data.get("credentials", {})
-        project_id = creds.get("project_id", "")
-        api_key = creds.get("api_key", "")
-        # api_key here is expected to be a short-lived OAuth2 Bearer access token (not a raw API key).
-        if len(api_key) < 100:
-            return jsonify({"error": "Google credentials must be an OAuth2 access token, not a raw API key. The frontend must exchange your API key for a Bearer token first."}), 400
-        if not all([prompt, reference_image_b64, project_id, api_key]):
-            return jsonify({"error": "Missing prompt, reference image, or credentials"}), 400
-        url = f"https://us-central1-aiplatform.googleapis.com/v1/projects/{project_id}/locations/us-central1/publishers/google/models/imagen-3.0-capability-001:predict"
-        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-        if mode == "subject":
-            prompt_with_ref = prompt if "[3]" in prompt else f"{prompt} [3]"
-            instance = {
-                "prompt": prompt_with_ref,
-                "referenceImages": [{
-                    "referenceType": "REFERENCE_TYPE_SUBJECT",
-                    "referenceId": 1,
-                    "referenceImage": {"bytesBase64Encoded": reference_image_b64},
-                    "subjectImageConfig": {"subjectType": "SUBJECT_TYPE_PRODUCT"}
-                }]
-            }
-        else:
-            instance = {
-                "prompt": prompt,
-                "image": {"bytesBase64Encoded": reference_image_b64},
-                "editConfig": {
-                    "editMode": "EDIT_MODE_DEFAULT",
-                    "guidanceScale": max(1, min(30, int(edit_strength * 30)))
-                }
-            }
-            if negative_prompt:
-                instance["negativePrompt"] = negative_prompt
-        client = _http()
-        if not client:
-            return jsonify({"error": "No HTTP client available"}), 500
-        resp = client.post(url, headers=headers, json={"instances": [instance], "parameters": {}})
-        if resp.status_code == 200:
-            result = resp.json()
-            predictions = result.get("predictions", [])
-            if predictions:
-                b64_img = predictions[0].get("bytesBase64Encoded", "")
-                if b64_img:
-                    return jsonify({"image_url": f"data:image/png;base64,{b64_img}"})
-        return jsonify({"error": f"Edit image failed — API status {resp.status_code if resp else 'no response'}"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
