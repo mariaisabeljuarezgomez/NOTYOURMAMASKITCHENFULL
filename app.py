@@ -310,7 +310,6 @@ def delete_asset(filename):
         filename = os.path.basename(filename)
         if filename in PROTECTED_ASSETS:
             return jsonify({"error": "Cannot delete template asset"}), 403
-            
         filepath = os.path.join(IMAGES_DIR, filename)
         if os.path.exists(filepath):
             os.remove(filepath)
