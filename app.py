@@ -237,7 +237,12 @@ def upload_image():
         filepath = os.path.join(IMAGES_DIR, filename)
         with open(filepath, "wb") as f:
             f.write(base64.b64decode(img_data))
-        return jsonify({"status": "ok", "filename": filename, "url": f"/Images/{filename}"}), 200
+        return jsonify({
+            "status": "ok",
+            "filename": filename,
+            "url": f"/Images/{filename}",
+            "storage": {"originalUrl": f"/Images/{filename}"}
+        }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
