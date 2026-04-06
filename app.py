@@ -241,7 +241,6 @@ def static_proxy(path):
 
 # --- IMAGE PERSISTENCE (Phase 13) ---
 import base64
-from pathlib import Path
 
 IMAGES_DIR = os.path.join(os.path.dirname(__file__), "Images")
 os.makedirs(IMAGES_DIR, exist_ok=True)
