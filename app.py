@@ -289,6 +289,8 @@ def upload_image():
             counter = 1
             while os.path.exists(os.path.join(IMAGES_DIR, f"{name}_{counter}{ext}")):
                 counter += 1
+                if counter > 999:
+                    return jsonify({"error": "Too many files with the same name"}), 409
             filename = f"{name}_{counter}{ext}"
             filepath = os.path.join(IMAGES_DIR, filename)
         with open(filepath, "wb") as f:
