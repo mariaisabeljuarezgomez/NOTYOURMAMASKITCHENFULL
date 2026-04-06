@@ -4,7 +4,7 @@
 **Live URL:** https://web-production-3e17d.up.railway.app/  
 **GitHub Repo:** https://github.com/mariaisabeljuarezgomez/NOTYOURMAMASKITCHENFULL  
 **Deployment:** Railway (auto-deploys from GitHub `main` branch)  
-**Latest Known Good SHA:** `6bc7fe4` — Bug Fix Batch 8  
+**Latest Known Good SHA:** `0d9b547` — Bug Audit Rounds A–D Complete  
 **PageSpeed Score (Mar 27, 2026):** 100 / 100 / 100 / 100 ✅
 
 ## Phase: Schema Unification & Viewer Rendering Parity
@@ -40,6 +40,7 @@
 
 ## RULES FOR ANY AI ASSISTANT READING THIS FILE
 
+0. **Read `.agents/rules/global-rules.md` FIRST.** That file is the enforcement layer for how all agents must operate. This file (MASTER_HANDOFF.md) is the architectural reference. Both must be read before any task begins.
 1. **Read `index.html` from GitHub before touching anything.** Do not assume local state.
 2. **Edit `index.html` only** until `build_app.py` is reconciled. Do not run `python build_app.py`.
 3. **One commit per logical fix.** Never mix feature work with bug fixes.
@@ -167,6 +168,28 @@ User-uploaded images → Cache-Control: max-age=604800, public (7 days)
 | Bug Batch 6 | Ctrl+Z text guard, export stroke path, addRect viewport pos | `939a940` |
 | Bug Batch 7 | deleteEl noRender param, addFromTray skipPush, fitCanvas zoom | `6bc7fe4` |
 | Phase 27–30 | contentEditable fix, 300 DPI export, PageSpeed 100 | `d3fc068` |
+
+---
+
+## Bug Audit Rounds A–D (April 2026)
+Five independent audit rounds were conducted on `app.py`. All fixes applied to `app.py` only. No other files touched.
+| Round | SHA | Commit Message |
+|-------|-----|----------------|
+| A1 | dccae72 | fix: use string converter instead of path in serve_root_image route |
+| A2 | 42d3fbc | fix: auto-suffix duplicate filenames instead of silently overwriting |
+| A3 | 94380ab | fix: move MAGIC_BYTES constant to module level |
+| A4 | 29a3e6a | fix: separate None body from invalid schema error in save_menu |
+| A5 | 11cf223 | fix: return JSON 404 from static_proxy on missing file |
+| D1 | 65a0158 | fix: move werkzeug NotFound import to module level |
+| D2 | 145aadc | fix: set COMPRESS_MIN_SIZE to 500 to avoid compressing tiny responses |
+| D3 | 83fd470 | fix: cap duplicate filename counter at 999 to prevent unbounded loop |
+| D4 | 0dc7488 | fix: log prune_backups exceptions instead of silently discarding |
+| D5 | 0d9b547 | fix: remove blank line with trailing whitespace in delete_asset |
+
+---
+
+## Background Replacement Rebuild (April 2026)
+The editor was rebuilt from scratch to correctly implement the full background replacement pipeline end-to-end. The original implementation had the background hardcoded into the layout. A "Replace Background" button existed but the full code path was never correctly wired through the entire stack. Attempting to implement the pipeline broke multiple dependent systems. A clean-slate rebuild was performed over a weekend, resulting in a correctly integrated background replacement feature that is now stable and production-ready.
 
 ---
 
@@ -508,13 +531,9 @@ See Section 3 for full commit table.
 
 ### 🔜 NEXT PRIORITIES
 
-1. **Reconcile `build_app.py` with `index.html`** — migrate all Phases 2A–11 + Bug Batches 1–8 back into the generator. Until done, index.html remains the live source.
-
-2. **Behavior verification matrix** — full manual test pass: edit mode, lock states, undo ordering, save/load cross-device, style persistence. Goal: confirm every feature works end-to-end, not just that the code exists.
-
-3. **Read-Only Viewer** — separate route, read-only, no editor controls, no persistence mutation. Reuses the same rendering model. **Only build this after the editor is fully verified.**
-
-4. **Future extensions** — Cloudinary delivery, multi-page, template library. These are Stage 3 and beyond.
+1. **Text Formatting Pack (index.html)** — Next feature sprint. Adds Bold/Italic/Underline toggles, line-height slider, letter-spacing slider, ALL CAPS toggle, and text shadow toggle to the selection panel. All 6 features use existing V2 schema fields — no schema changes required. One commit per feature.
+2. **Reconcile `build_app.py` with `index.html`** — Still deferred. Migrate all Phases 2A–11 + Bug Batches 1–8 + Bug Audit Rounds A–D back into the generator. Until done, index.html remains the live source.
+3. **Behavior verification matrix** — Full manual test pass: edit mode, lock states, undo ordering, save/load cross-device, style persistence. Goal: confirm every feature works end-to-end, not just that the code exists.
 
 ### Philosophy: Harden Before Expanding
 The project failed every time it tried to expand before the base was stable. The correct pattern is: identify a narrow class of problems → solve only that class → verify → lock → move on. Never mix concerns.
