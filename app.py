@@ -56,8 +56,8 @@ def prune_backups(backup_dir, keep=20):
         )
         for old in files[keep:]:
             os.remove(os.path.join(backup_dir, old))
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"[prune_backups] Failed to prune backups in {backup_dir}: {e}")
 
 def validate_schema(data):
     if not isinstance(data, dict):
