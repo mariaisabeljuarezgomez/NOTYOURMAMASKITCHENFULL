@@ -250,10 +250,14 @@ def render_check():
 
 @app.route("/<path:path>")
 def static_proxy(path):
-    response = send_from_directory(".", path)
-    if path.lower().endswith((".ttf", ".js")):
-        response.headers["Cache-Control"] = "max-age=604800, public"
-    return response
+    from werkzeug.exceptions import NotFound
+    try:
+        response = send_from_directory(".", path)
+        if path.lower().endswith((".ttf", ".js")):
+            response.headers["Cache-Control"] = "max-age=604800, public"
+        return response
+    except NotFound:
+        return jsonify({"error": "Not found", "path": path}), 404
 
 
 @app.route("/api/upload-image", methods=["POST"])
