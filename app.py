@@ -14,6 +14,24 @@ try:
     import cloudscraper
 except ImportError:
     cloudscraper = None
+try:
+    import requests as _requests
+except ImportError:
+    _requests = None
+
+def _http():
+    """Return cloudscraper session if available, else requests session, else None."""
+    if cloudscraper:
+        return cloudscraper.create_scraper()
+    if _requests:
+        return _requests.Session()
+    return None
+
+def cloudinary_sign(params_dict, api_secret):
+    """Generate Cloudinary auth signature: sorted params + api_secret, SHA-256."""
+    sorted_params = "&".join(f"{k}={v}" for k, v in sorted(params_dict.items()))
+    to_sign = sorted_params + api_secret
+    return hashlib.sha256(to_sign.encode("utf-8")).hexdigest()
 
 app = Flask(__name__)
 
@@ -360,11 +378,13 @@ def test_cloudinary():
         if not all([cloud_name, api_key, api_secret]):
             return jsonify({"error": "Missing credentials"}), 400
         timestamp = int(time.time())
-        params = {"cloud_name": cloud_name, "api_key": api_key, "timestamp": timestamp}
-        params["signature"] = hmac.new(api_secret.encode(), str(timestamp).encode(), hashlib.sha256).hexdigest()
-        url = f"https://api.cloudinary.com/v1_1/{cloud_name}/resources/image?timestamp={timestamp}&api_key={api_key}&signature={params['signature']}"
-        resp = cloudscraper.create_scraper().get(url) if cloudscraper else None
-        if resp and resp.status_code in (200, 401):
+        sig = cloudinary_sign({"timestamp": timestamp}, api_secret)
+        url = f"https://api.cloudinary.com/v1_1/{cloud_name}/resources/image?timestamp={timestamp}&api_key={api_key}&signature={sig}"
+        client = _http()
+        if not client:
+            return jsonify({"error": "No HTTP client available"}), 500
+        resp = client.get(url)
+        if resp.status_code in (200, 401):
             return jsonify({"status": "ok"})
         return jsonify({"error": "Invalid credentials or connection failed"}), 400
     except Exception as e:
@@ -378,11 +398,15 @@ def test_google():
         api_key = data.get("api_key", "")
         if not all([project_id, api_key]):
             return jsonify({"error": "Missing credentials"}), 400
-        test_url = f"https://content-vision.googleapis.com/v1/projects/{project_id}/locations/global:countTokens?key={api_key}"
-        resp = cloudscraper.create_scraper().post(test_url, json={"text": "test"}) if cloudscraper else None
-        if resp and resp.status_code in (200, 400):
+        url = f"https://us-central1-aiplatform.googleapis.com/v1/projects/{project_id}/locations/us-central1/publishers/google/models/imagen-3.0-generate-001"
+        headers = {"Authorization": f"Bearer {api_key}"}
+        client = _http()
+        if not client:
+            return jsonify({"error": "No HTTP client available"}), 500
+        resp = client.get(url, headers=headers)
+        if resp.status_code in (200, 403, 404):
             return jsonify({"status": "ok"})
-        return jsonify({"error": "Invalid credentials or connection failed"}), 400
+        return jsonify({"error": "Invalid credentials or project ID"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -395,10 +419,13 @@ def test_kling():
         if not all([api_key, api_secret]):
             return jsonify({"error": "Missing credentials"}), 400
         test_url = "https://api.kling.ai/v1/oauth/token"
-        resp = cloudscraper.create_scraper().post(test_url, json={
+        client = _http()
+        if not client:
+            return jsonify({"error": "No HTTP client available"}), 500
+        resp = client.post(test_url, json={
             "api_key": api_key, "api_secret": api_secret
-        }) if cloudscraper else None
-        if resp and resp.status_code in (200, 401, 403):
+        })
+        if resp.status_code in (200, 401, 403):
             return jsonify({"status": "ok"})
         return jsonify({"error": "Invalid credentials or connection failed"}), 400
     except Exception as e:
@@ -440,16 +467,20 @@ def generate_image():
             model_input["negative_prompt"] = negative_prompt
         if style != "photo-realistic":
             model_input["prompt"] = f"{prompt}, {style} style"
-        url = f"https://visionlanguage.googleapis.com/v1/projects/{project_id}/locations/global:predict?key={api_key}"
-        resp = cloudscraper.create_scraper().post(url, json={"instances": [model_input], "parameters": {}}) if cloudscraper else None
-        if resp and resp.status_code == 200:
+        url = f"https://us-central1-aiplatform.googleapis.com/v1/projects/{project_id}/locations/us-central1/publishers/google/models/imagen-3.0-generate-001:predict"
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        client = _http()
+        if not client:
+            return jsonify({"error": "No HTTP client available"}), 500
+        resp = client.post(url, headers=headers, json={"instances": [model_input], "parameters": {}})
+        if resp.status_code == 200:
             result = resp.json()
             predictions = result.get("predictions", [])
             if predictions and len(predictions) > 0:
                 b64_img = predictions[0].get("bytesBase64Encoded", "")
                 if b64_img:
                     return jsonify({"image_url": f"data:image/png;base64,{b64_img}"})
-        return jsonify({"error": "Image generation failed or no response from API"}), 400
+        return jsonify({"error": f"Image generation failed — API status {resp.status_code if resp else 'no response'}"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -470,10 +501,13 @@ def generate_video():
         if not all([prompt, api_key, api_secret]):
             return jsonify({"error": "Missing prompt or credentials"}), 400
         token_url = "https://api.kling.ai/v1/oauth/token"
-        token_resp = cloudscraper.create_scraper().post(token_url, json={
+        client = _http()
+        if not client:
+            return jsonify({"error": "No HTTP client available"}), 500
+        token_resp = client.post(token_url, json={
             "api_key": api_key, "api_secret": api_secret, "grant_type": "client_credentials"
-        }) if cloudscraper else None
-        if not token_resp or token_resp.status_code != 200:
+        })
+        if token_resp.status_code != 200:
             return jsonify({"error": "Kling AI authentication failed"}), 400
         token_data = token_resp.json()
         access_token = token_data.get("access_token", "")
@@ -490,8 +524,8 @@ def generate_video():
             payload["negative_prompt"] = negative_prompt
         if reference_image_b64:
             payload["reference_image"] = f"data:image/jpeg;base64,{reference_image_b64}"
-        sub_resp = cloudscraper.create_scraper().post(submit_url, headers=headers, json=payload) if cloudscraper else None
-        if sub_resp and sub_resp.status_code in (200, 201, 202):
+        sub_resp = client.post(submit_url, headers=headers, json=payload)
+        if sub_resp.status_code in (200, 201, 202):
             task_data = sub_resp.json()
             task_id = task_data.get("data", {}).get("task_id") or task_data.get("task_id") or "pending"
             return jsonify({"task_id": task_id})
@@ -499,24 +533,28 @@ def generate_video():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route("/api/ai/kling-status/<task_id>", methods=["GET"])
+@app.route("/api/ai/kling-status/<task_id>", methods=["POST"])
 def kling_status(task_id):
     try:
-        api_key = request.args.get("api_key", "")
-        api_secret = request.args.get("api_secret", "")
+        data = request.json or {}
+        api_key = data.get("api_key", "")
+        api_secret = data.get("api_secret", "")
         if not all([api_key, api_secret]):
             return jsonify({"error": "Missing credentials"}), 400
         token_url = "https://api.kling.ai/v1/oauth/token"
-        token_resp = cloudscraper.create_scraper().post(token_url, json={
+        client = _http()
+        if not client:
+            return jsonify({"error": "No HTTP client available"}), 500
+        token_resp = client.post(token_url, json={
             "api_key": api_key, "api_secret": api_secret, "grant_type": "client_credentials"
-        }) if cloudscraper else None
-        if not token_resp or token_resp.status_code != 200:
+        })
+        if token_resp.status_code != 200:
             return jsonify({"status": "failed", "error": "Kling AI auth failed"}), 400
         access_token = token_resp.json().get("access_token", "")
         status_url = f"https://api.kling.ai/v1/videos/text2video/{task_id}"
         headers = {"Authorization": f"Bearer {access_token}"}
-        stat_resp = cloudscraper.create_scraper().get(status_url, headers=headers) if cloudscraper else None
-        if stat_resp and stat_resp.status_code == 200:
+        stat_resp = client.get(status_url, headers=headers)
+        if stat_resp.status_code == 200:
             sd = stat_resp.json().get("data", {})
             status_str = sd.get("status", "pending")
             video_url = sd.get("video_url", "")
@@ -539,24 +577,79 @@ def cloudinary_upload():
         if not all([file_b64, cloud_name, api_key, api_secret]):
             return jsonify({"error": "Missing file or credentials"}), 400
         timestamp = int(time.time())
-        params = f"timestamp={timestamp}&api_key={api_key}"
-        signature = hmac.new(api_secret.encode(), params.encode(), hashlib.sha256).hexdigest()
+        sig = cloudinary_sign({"folder": "nymk_ai", "timestamp": timestamp}, api_secret)
         upload_url = f"https://api.cloudinary.com/v1_1/{cloud_name}/auto/upload"
         upload_payload = {
             "file": f"data:image/png;base64,{file_b64}" if file_type == "image" else f"data:video/mp4;base64,{file_b64}",
             "api_key": api_key,
             "timestamp": timestamp,
-            "signature": signature,
+            "signature": sig,
             "folder": "nymk_ai"
         }
         if file_type == "video":
             upload_payload["resource_type"] = "video"
             upload_payload["eager"] = [{"streaming_profile": "hd"}]
-        resp = cloudscraper.create_scraper().post(upload_url, data=upload_payload) if cloudscraper else None
-        if resp and resp.status_code in (200, 201):
+        client = _http()
+        if not client:
+            return jsonify({"error": "No HTTP client available"}), 500
+        resp = client.post(upload_url, data=upload_payload)
+        if resp.status_code in (200, 201):
             result = resp.json()
             return jsonify({"url": result.get("secure_url", "")})
-        return jsonify({"error": "Cloudinary upload failed"}), 400
+        return jsonify({"error": f"Cloudinary upload failed — status {resp.status_code if resp else 'no response'}"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/ai/edit-image", methods=["POST"])
+def edit_image():
+    try:
+        data = request.json or {}
+        prompt = data.get("prompt", "")
+        negative_prompt = data.get("negative_prompt", "")
+        reference_image_b64 = data.get("reference_image_b64", "")
+        mode = data.get("mode", "edit")
+        edit_strength = float(data.get("edit_strength", 0.5))
+        creds = data.get("credentials", {})
+        project_id = creds.get("project_id", "")
+        api_key = creds.get("api_key", "")
+        if not all([prompt, reference_image_b64, project_id, api_key]):
+            return jsonify({"error": "Missing prompt, reference image, or credentials"}), 400
+        url = f"https://us-central1-aiplatform.googleapis.com/v1/projects/{project_id}/locations/us-central1/publishers/google/models/imagen-3.0-capability-001:predict"
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        if mode == "subject":
+            prompt_with_ref = prompt if "[3]" in prompt else f"{prompt} [3]"
+            instance = {
+                "prompt": prompt_with_ref,
+                "referenceImages": [{
+                    "referenceType": "REFERENCE_TYPE_SUBJECT",
+                    "referenceId": 1,
+                    "referenceImage": {"bytesBase64Encoded": reference_image_b64},
+                    "subjectImageConfig": {"subjectType": "SUBJECT_TYPE_PRODUCT"}
+                }]
+            }
+        else:
+            instance = {
+                "prompt": prompt,
+                "image": {"bytesBase64Encoded": reference_image_b64},
+                "editConfig": {
+                    "editMode": "EDIT_MODE_DEFAULT",
+                    "guidanceScale": int(edit_strength * 100)
+                }
+            }
+            if negative_prompt:
+                instance["negativePrompt"] = negative_prompt
+        client = _http()
+        if not client:
+            return jsonify({"error": "No HTTP client available"}), 500
+        resp = client.post(url, headers=headers, json={"instances": [instance], "parameters": {}})
+        if resp.status_code == 200:
+            result = resp.json()
+            predictions = result.get("predictions", [])
+            if predictions:
+                b64_img = predictions[0].get("bytesBase64Encoded", "")
+                if b64_img:
+                    return jsonify({"image_url": f"data:image/png;base64,{b64_img}"})
+        return jsonify({"error": f"Edit image failed — API status {resp.status_code if resp else 'no response'}"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
