@@ -393,7 +393,7 @@
                 if (e.borderRadius === undefined && e.style.borderRadius !== undefined)  e.borderRadius = e.style.borderRadius;
             }
             // opacity: V1 stores 0–1, V2 stores 0–100
-            if (typeof e.opacity === 'number' && e.opacity <= 1) e.opacity = e.opacity * 100;
+
             return e;
         }
 
@@ -426,7 +426,7 @@
                         if (e.src && e.src !== '' && !e.src.endsWith('menu-bg-preview.jpg') && !e.src.endsWith('menu-bg.png')) return e.src;
                         return '/menu-bg-preview.jpg';
                     }
-                    return (e.assetId ? (ASSET_ID_TO_SRC[e.assetId] || '') : '') || e.src || '';
+                    return e.src || (e.assetId ? (ASSET_ID_TO_SRC[e.assetId] || '') : '') || '';
                 }))];
                 for (const s of imgs) if (s && !cachedImages[s]) cachedImages[s] = await preloadImage(s);
                 await draw(data);
@@ -499,7 +499,7 @@
             const dpr = window.devicePixelRatio || 1;
             const vwCapped = Math.min(window.innerWidth, MENU_MAX_W);
             const displayWidth  = Math.min(document.body.clientWidth, vwCapped);
-            const scale         = displayWidth / 908.4429931640625;
+            const scale         = displayWidth / BASE_W;
             const displayHeight = BASE_H * scale;
 
             canvas.width  = displayWidth  * dpr;
@@ -574,7 +574,7 @@
 
                 // ── IMAGE ───────────────────────────────────────────────────────
                 } else if (el.type === 'image') {
-                    const src = (el.assetId ? (ASSET_ID_TO_SRC[el.assetId] || '') : '') || el.src || '';
+                    const src = el.src || (el.assetId ? (ASSET_ID_TO_SRC[el.assetId] || '') : '') || '';
                     if (cachedImages[src]) {
                         ctx.save();
                         ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 100) / 100;
