@@ -290,6 +290,7 @@ def upload_image():
 @app.route("/api/delete-asset/<filename>", methods=["DELETE"])
 def delete_asset(filename):
     try:
+        filename = os.path.basename(filename)
         if filename in PROTECTED_ASSETS:
             return jsonify({"error": "Cannot delete template asset"}), 403
             
