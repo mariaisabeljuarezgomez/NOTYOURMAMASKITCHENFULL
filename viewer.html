@@ -521,7 +521,7 @@
             const sw   = el.borderWidth || 0;
             const sc   = el.borderColor || '#c8a96a';
             ctx.save();
-            ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 100) / 100;
+            ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 1);
             if (fill !== 'transparent' && fill !== 'none') {
                 ctx.fillStyle = fill;
                 ctx.fill();
@@ -586,8 +586,8 @@
                     const ff   = FONT_MAP[el.fontFamily] || el.fontFamily || 'Arial, sans-serif';
                     const font = `${fi} ${fw} ${fs}px ${ff}`;
                     ctx.save();
-                    // Apply opacity (RULES.md: el.opacity is 0-100, divide by 100 for canvas)
-                    ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 100) / 100;
+                    // Apply opacity (RULES.md: el.opacity is 0-1 scale, synced with editor)
+                    ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 1);
                     // Apply rotation
                     const rotation = el.rotation || 0;
                     if (rotation !== 0) {
@@ -628,8 +628,8 @@
                 // ── LINE ────────────────────────────────────────────────────────
                 } else if (el.type === 'line') {
                     ctx.save();
-                    // Apply opacity (RULES.md: el.opacity is 0-100, divide by 100 for canvas)
-                    ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 100) / 100;
+                    // Apply opacity (RULES.md: el.opacity is 0-1 scale, synced with editor)
+                    ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 1);
                     // Apply rotation
                     const rotation = el.rotation || 0;
                     if (rotation !== 0) {
@@ -658,8 +658,8 @@
                     const src = resolveImageSrc(el);
                     if (cachedImages[src]) {
                         ctx.save();
-                        // Apply opacity (RULES.md: el.opacity is 0-100, divide by 100 for canvas)
-                        ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 100) / 100;
+                        // Apply opacity (RULES.md: el.opacity is 0-1 scale, synced with editor)
+                        ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 1);
                         // Apply rotation
                         const rotation = el.rotation || 0;
                         if (rotation !== 0) {
@@ -689,8 +689,8 @@
                     const isLine = h <= 8;
 
                     ctx.save();
-                    // Apply opacity (RULES.md: el.opacity is 0-100, divide by 100 for canvas)
-                    ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 100) / 100;
+                    // Apply opacity (RULES.md: el.opacity is 0-1 scale, synced with editor)
+                    ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 1);
                     // Apply rotation
                     const rotation = el.rotation || 0;
                     if (rotation !== 0) {
