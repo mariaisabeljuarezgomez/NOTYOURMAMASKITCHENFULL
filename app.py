@@ -602,7 +602,7 @@ def cloudinary_upload():
         }
         if file_type == "video":
             upload_fields["resource_type"] = "video"
-            upload_fields["eager"] = "[{\"streaming_profile\": \"hd\"}]"
+            upload_fields["eager"] = "sp_hd"
         client = _http()
         if not client:
             return jsonify({"error": "No HTTP client available"}), 500
