@@ -190,11 +190,11 @@ def render_check():
     """Visual regression check endpoint: verifies all image assets exist on disk."""
     if not os.path.exists(DATA_FILE):
         return jsonify({"error": "No saved data to check"}), 404
-        
+
     try:
         with open(DATA_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
-            
+
         # Build src lookup from saved doc assets
         assets_list = data.get("assets", [])
         asset_src_map = {}
@@ -203,25 +203,25 @@ def render_check():
             src = (a.get("storage") or {}).get("originalUrl") or a.get("src", "")
             if aid and src:
                 asset_src_map[aid] = src
-        
+
         results = []
         for el in data.get("elements", []):
             if el.get("type") == "image":
                 asset_id = el.get("assetId")
                 base_src = el.get("src")
-                
+
                 # Resolve exactly like viewer.html
                 resolved_src = asset_src_map.get(asset_id, "") if asset_id else ""
                 if not resolved_src:
                     resolved_src = base_src or ""
-                    
+
                 exists = False
                 if resolved_src:
                     # Strip leading slash to map to local filesystem correctly
                     local_path = resolved_src.lstrip("/")
                     full_path = os.path.join(os.path.dirname(__file__), local_path)
                     exists = os.path.exists(full_path)
-                
+
                 results.append({
                     "element_id": el.get("id"),
                     "assetId": asset_id,
@@ -229,13 +229,13 @@ def render_check():
                     "resolved_src": resolved_src,
                     "exists_on_disk": exists
                 })
-                
+
         return jsonify({
             "total_images": len(results),
             "missing_images": sum(1 for r in results if not r["exists_on_disk"]),
             "details": results
         }), 200
-        
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
