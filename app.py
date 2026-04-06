@@ -277,6 +277,13 @@ def upload_image():
         if not any(decoded[:len(sig)] == sig for sig in MAGIC_BYTES):
             return jsonify({"error": "File content does not match a supported image type"}), 400
         filepath = os.path.join(IMAGES_DIR, filename)
+        if os.path.exists(filepath):
+            name, ext = os.path.splitext(filename)
+            counter = 1
+            while os.path.exists(os.path.join(IMAGES_DIR, f"{name}_{counter}{ext}")):
+                counter += 1
+            filename = f"{name}_{counter}{ext}"
+            filepath = os.path.join(IMAGES_DIR, filename)
         with open(filepath, "wb") as f:
             f.write(decoded)
         return jsonify({
