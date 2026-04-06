@@ -382,11 +382,11 @@
       </div>
       <div class="meta">
         <div>Version</div>
-        <div>3.0 (Phase 30 + Phases 2A–11 + Bug Batches 1–8)</div>
+        <div>3.1 (Phase 30 + Phases 2A–11 + Bug Batches 1–8 + Bug Audit Rounds A–D)</div>
         <div>Release Date</div>
         <div>March 2026</div>
         <div>Last Updated</div>
-        <div>March 28, 2026</div>
+        <div>April 6, 2026</div>
         <div>Document Type</div>
         <div>Complete Customer User Guide</div>
         <div>Prepared By</div>
@@ -424,12 +424,15 @@
       <li>The ARRANGE Tab – Position, Order &amp; Rotation</li>
       <li>The Layers Panel</li>
       <li>Layout Lock vs. Layout Unlocked</li>
+      <li>Replace Background</li>
+      <li>Video Panel / Viewer Settings</li>
+      <li>Cloudinary &amp; AI Video Creation</li>
       <li>Save, Load &amp; Auto-Save</li>
       <li>Undo History</li>
       <li>Export Pro PNG – Print-Ready Output</li>
       <li>Keyboard Shortcuts</li>
-      <li>Zoom &amp; Canvas Navigation</li>
       <li>Smart Tooltips</li>
+      <li>Zoom &amp; Canvas Navigation</li>
       <li>Reset to Original</li>
       <li>Cross-Device Syncing</li>
       <li>Mobile Guide</li>
@@ -1293,6 +1296,15 @@
     <h3>Toggling Visibility and Lock from the Panel</h3>
     <p>Click the 👁️ or 🙈 icon in any row to show or hide that element without selecting it first. Click 🔓 or 🔒 to
       toggle lock state. This lets you quickly manage multiple elements without selecting each one individually.</p>
+    <h3>Reordering Layers by Drag</h3>
+    <p>You can drag any layer row to reposition it in the stacking order. Click and hold the row, then drag it up or down.
+      A gold indicator line shows where the layer will be placed. Release to confirm the new position. This changes the
+      element's visual z-index on the canvas — elements drawn higher in the list appear in front of those lower in the
+      list.</p>
+    <p>Drag reordering works independently of the Bring Forward / Send Backward buttons in the ARRANGE tab. Use whichever
+      method feels faster for the task at hand — drag for large jumps, the buttons for single-step adjustments.</p>
+    <div class="callout tip"><strong>Tip:</strong> Drag reordering is especially useful when you want to quickly place an
+      element between two specific layers, rather than sending it all the way to front or back.</div>
     <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 20</span></div>
   </section>
   <section class="page page-break">
@@ -1323,8 +1335,90 @@
     </table>
     <div class="callout warning"><strong>Mobile caution:</strong> When unlocked on mobile, accidental touch movement is
       possible. Always re-lock after repositioning any element.</div>
+  </section>
+  <section class="page page-break">
+    <h2>20. Replace Background</h2>
+    <p>The Replace Background feature lets you swap out the menu's background image instantly. All text and element
+      placements remain exactly as they are — only the background changes.</p>
+    <h3>How to Replace the Background</h3>
+    <ol>
+      <li>Click <strong>📷 Replace Background</strong> in the Tools Drawer</li>
+      <li>A dialog opens showing all available background images in the <code>backgrounds/</code> folder on the server</li>
+      <li>Click any thumbnail to preview it on the canvas</li>
+      <li>Click <strong>Confirm</strong> to apply, or <strong>Cancel</strong> to keep the current background</li>
+    </ol>
+    <h3>Background Discovery</h3>
+    <p>The dialog dynamically scans the <code>backgrounds/</code> folder. Supported formats are <code>.png</code>,
+      <code>.jpg</code>, <code>.jpeg</code>, <code>.webp</code>, and <code>.gif</code>. Any image you upload to that
+      folder appears in the picker automatically — no code changes or restart required.</p>
+    <h3>What Is Preserved</h3>
+    <ul>
+      <li>Every text element and its content, font, size, color, spacing, and alignment</li>
+      <li>Every image element and its placement, crop, and opacity</li>
+      <li>Every shape element and its fill, border, and corner radius</li>
+      <li>Layer order, visibility, and lock states for all elements</li>
+    </ul>
+    <div class="callout tip"><strong>Tip:</strong> The Replace Background feature is safe to use at any stage of editing.
+      You can experiment freely — just switch back to a different background at any time.</div>
 
-    <h2 style="margin-top:32px;">20. Save, Load &amp; Auto-Save</h2>
+    <h2>21. Video Panel / Viewer Settings</h2>
+    <p>The Video Panel provides playback controls for any video embedded on the canvas, as well as global viewer settings
+      that apply to the exported viewer.html.</p>
+    <h3>Video Controls</h3>
+    <ul>
+      <li><strong>Play / Pause:</strong> Toggles video playback</li>
+      <li><strong>Timeline scrubber:</strong> Drag to seek to any point in the video</li>
+      <li><strong>Volume:</strong> Adjust or mute the audio track</li>
+      <li><strong>Fullscreen:</strong> Expands the video to fill the browser window</li>
+      <li><strong>Loop:</strong> When enabled, the video repeats continuously</li>
+    </ul>
+    <h3>Viewer Settings</h3>
+    <ul>
+      <li><strong>Autoplay:</strong> Video starts automatically when the page loads (muted by default for browser
+        compatibility)</li>
+      <li><strong>Poster frame:</strong> The image shown before the video plays or while loading</li>
+      <li><strong>Aspect ratio:</strong> Sets the display dimensions of the video container</li>
+      <li><strong>Controls visibility:</strong> Choose whether native playback controls are shown</li>
+    </ul>
+    <h3>Exporting with Video</h3>
+    <p>When exporting a canvas that includes a video element, the editor captures the current video frame as a static
+      image and composites all elements on top. The exported PNG shows a clear, static snapshot — not a moving image.
+      To create animated content, use the Cloudinary AI Video feature instead.</p>
+
+    <h2>22. Cloudinary &amp; AI Video Creation</h2>
+    <p>The editor integrates with <strong>Cloudinary</strong> to generate AI-powered video content from text prompts.
+      This feature is designed for creating short promotional videos, social media content, and animated menu
+      previews.</p>
+    <h3>How AI Video Generation Works</h3>
+    <ol>
+      <li>Navigate to the <strong>Cloudinary</strong> section of the Tools Drawer</li>
+      <li>Enter a descriptive prompt for the video you want to create (e.g., <em>"Slow pan across a beautifully plated
+          dish with warm lighting"</em>)</li>
+      <li>Optionally enter a negative prompt to exclude unwanted elements</li>
+      <li>Click <strong>Generate Video</strong></li>
+      <li>The server submits the request to Cloudinary's AI video API and polls for completion</li>
+      <li>When ready, the video is downloaded and saved to your project</li>
+    </ol>
+    <h3>Technical Details</h3>
+    <ul>
+      <li><strong>API:</strong> Cloudinary's AI Video generation API</li>
+      <li><strong>Library:</strong> cloudscraper — handles API requests server-side</li>
+      <li><strong>Credentials:</strong> Cloudinary API key, secret, and cloud name are read from environment variables
+      </li>
+      <li><strong>Async:</strong> Generation is asynchronous; status is polled until the video is ready</li>
+      <li><strong>Output:</strong> Downloaded MP4 video saved to the project directory</li>
+    </ul>
+    <h3>Configuration</h3>
+    <p>Set the following environment variables before using AI video features:</p>
+    <ul>
+      <li><code>CLOUDINARY_API_KEY</code></li>
+      <li><code>CLOUDINARY_API_SECRET</code></li>
+      <li><code>CLOUDINARY_CLOUD_NAME</code></li>
+    </ul>
+    <div class="callout tip"><strong>Creative tip:</strong> AI video generation works best with specific, descriptive
+      prompts. Describe the mood, camera movement, lighting, and subject clearly for the best results.</div>
+
+    <h2 style="margin-top:32px;">23. Save, Load &amp; Auto-Save</h2>
     <h3>💾 Save Session</h3>
     <p>Saves your entire state to the server: every element's content, position, style, layer settings, visibility, lock
       state, and image placements. Creates both a server backup and a local browser backup simultaneously. Confirmation
@@ -1348,7 +1442,7 @@
     <div class="callout"><strong>Best practice:</strong> Save after completing each menu section. Before closing the
       browser. Before switching to another device.</div>
 
-    <h2 style="margin-top:32px;">21. Undo History</h2>
+    <h2 style="margin-top:32px;">24. Undo History</h2>
     <p>The <strong>↺ Undo Last Change</strong> button (top header bar, or press <span class="kbd">Ctrl+Z</span>) steps
       back through your editing history one action at a time. The undo system tracks up to 30 actions.</p>
     <h3>What Undo Covers</h3>
@@ -1366,7 +1460,7 @@
     <div class="footer"><span>Customer Edition</span><span>Page 21</span></div>
   </section>
   <section class="page page-break">
-    <h2>22. Export Pro PNG – Print-Ready Output</h2>
+    <h2>25. Export Pro PNG – Print-Ready Output</h2>
     <p>The <strong>⬇️ Export Pro PNG</strong> button in the Tools Drawer produces a professional, print-ready PNG file.
       This is the only way to get a file suitable for commercial printing or sending to a print shop.</p>
 
@@ -1449,7 +1543,7 @@
     <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 22</span></div>
   </section>
   <section class="page page-break">
-    <h2>23. Keyboard Shortcuts</h2>
+    <h2>26. Keyboard Shortcuts</h2>
     <p>These shortcuts work on <strong>desktop and laptop computers</strong> when the editor is the active window. They
       speed up the most common actions significantly.</p>
 
@@ -1480,7 +1574,7 @@
       shortcuts. <span class="kbd">⌘+Z</span> for Undo, <span class="kbd">⌘+E</span> for Export.
     </div>
 
-    <h2 style="margin-top:32px;">24. Zoom &amp; Canvas Navigation</h2>
+    <h2 style="margin-top:32px;">28. Zoom &amp; Canvas Navigation</h2>
     <p>The zoom system lets you work comfortably at any detail level. Zoom behavior depends on whether the layout is
       Locked or Unlocked.</p>
 
@@ -1519,7 +1613,7 @@
     <div class="footer"><span>Customer Edition</span><span>Page 23</span></div>
   </section>
   <section class="page page-break">
-    <h2>25. Smart Tooltips</h2>
+    <h2>27. Smart Tooltips</h2>
     <p>Every button in the editor has a <strong>tooltip</strong> — a small label that appears when you hover over it
       with your mouse. Tooltips explain what each button does in plain language without requiring you to open this
       manual.</p>
@@ -1535,7 +1629,7 @@
       tooltip will tell you exactly what it does and confirm whether it is the right button for your task.
     </div>
 
-    <h2 style="margin-top:32px;">26. Reset to Original</h2>
+    <h2 style="margin-top:32px;">29. Reset to Original</h2>
     <p>The <strong>🔄 Reset</strong> button in the Tools Drawer restores the menu to its original template — exactly as
       it was when first delivered to you. All custom edits, text changes, image placements, and style changes are
       removed.</p>
@@ -1559,7 +1653,7 @@
     <p>In all other cases, use <strong>↺ Undo</strong> for individual mistakes and <strong>📂 Load Session</strong> to
       return to your last saved state.</p>
 
-    <h2 style="margin-top:32px;">27. Cross-Device Syncing</h2>
+    <h2 style="margin-top:32px;">30. Cross-Device Syncing</h2>
     <p>Menu Editor Pro V2 uses <strong>server-side persistence</strong> — your saved sessions are stored securely on the
       server, not just in your browser. This means you can work on any device and always have access to your latest
       saved version.</p>
@@ -1589,7 +1683,7 @@
     <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 24</span></div>
   </section>
   <section class="page page-break">
-    <h2>28. Mobile Guide – iPhone, Android &amp; Tablet</h2>
+    <h2>31. Mobile Guide – iPhone, Android &amp; Tablet</h2>
     <p>Menu Editor Pro V2 is fully optimized for mobile devices. This section covers the specific ways the editor
       behaves on phones and tablets, and the best practices for mobile editing.</p>
 
@@ -1689,7 +1783,7 @@
     <div class="footer"><span>Customer Edition</span><span>Page 25</span></div>
   </section>
   <section class="page page-break">
-    <h2>29. Troubleshooting</h2>
+    <h2>32. Troubleshooting</h2>
     <p>This section covers the most common issues you may encounter and how to resolve each one quickly.</p>
 
         <table>
@@ -1762,7 +1856,7 @@
     <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 26</span></div>
   </section>
   <section class="page page-break">
-    <h2>30. Best Practices</h2>
+     <h2>33. Best Practices</h2>
     <p>These habits will protect your work, keep your menu looking professional, and make editing fast and
       frustration-free.</p>
 
@@ -1823,7 +1917,7 @@
     <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 27</span></div>
   </section>
   <section class="page page-break">
-    <h2>31. Technical Specifications</h2>
+    <h2>34. Technical Specifications</h2>
     <p>This section documents the confirmed technical architecture of Menu Editor Pro V2 for reference.</p>
 
     <h3>Application Architecture</h3>
@@ -2027,7 +2121,7 @@
   </section>
   <section class="page page-break">
     <div class="brand-bar"></div>
-    <h2>32. Document Information</h2>
+    <h2>35. Document Information</h2>
 
     <table>
       <thead>
