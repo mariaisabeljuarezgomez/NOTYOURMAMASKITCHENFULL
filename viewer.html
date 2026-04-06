@@ -373,6 +373,16 @@
             'asset_015': '/menu-bg-preview.jpg'
         };
 
+        function normalizeViewerSettings(doc) {
+          if (!doc.settings) doc.settings = {};
+          if (!doc.settings.viewer) doc.settings.viewer = {};
+          const v = doc.settings.viewer;
+          if (!v.heroVideoUrl && doc.heroVideoUrl) v.heroVideoUrl = doc.heroVideoUrl;
+          if (!v.sidePanelLeft && doc.sidePanelLeft) v.sidePanelLeft = doc.sidePanelLeft;
+          if (!v.sidePanelRight && doc.sidePanelRight) v.sidePanelRight = doc.sidePanelRight;
+          return doc;
+        }
+
         function normalizeEl(el) {
             // V1 → V2 field shim — never mutates saved data, returns a patched copy
             const e = Object.assign({}, el);
@@ -410,7 +420,8 @@
             try {
                 const res = await fetch(`${API_URL}?t=${Date.now()}`);
                 if (!res.ok) return;
-                const data = await res.json();
+                let data = await res.json();
+                data = normalizeViewerSettings(data);
                 const hash = JSON.stringify(data);
                 if (hash === lastDataHash) return;
                 lastDataHash = hash; menuData = data;
@@ -723,7 +734,7 @@
         }
 
         function loadHeroVideo(data) {
-            const url = data.heroVideoUrl || (data.settings && data.settings.viewer && data.settings.viewer.heroVideoUrl) || '';
+            const url = (data.settings && data.settings.viewer && data.settings.viewer.heroVideoUrl) || data.heroVideoUrl || '';
             if (url) {
                 const v = document.getElementById('hero-video');
                 if (v && v.src !== url) { v.src = url; v.classList.add('has-src'); }
@@ -733,8 +744,8 @@
         function loadSidePanelSettings(data) {
             // Support both legacy top-level keys AND new docV2.settings.viewer sub-object
             const viewer   = (data.settings && data.settings.viewer) || {};
-            const lSettings = data.sidePanelLeft  || viewer.sidePanelLeft  || {};
-            const rSettings = data.sidePanelRight || viewer.sidePanelRight || {};
+            const lSettings = viewer.sidePanelLeft  || data.sidePanelLeft  || {};
+            const rSettings = viewer.sidePanelRight || data.sidePanelRight || {};
 
             const lUrl   = lSettings.videoUrl || DEFAULT_LEFT_VIDEO;
             const rUrl   = rSettings.videoUrl || DEFAULT_RIGHT_VIDEO;
