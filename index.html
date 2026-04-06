@@ -1373,7 +1373,10 @@ function attach(el) {
         // e.stopPropagation(); removed to allow bubbling to viewport lasso listener
         const _itemData = d(el);
         // If locked or background role — completely ignore click, do not select
-        if (!_itemData || _itemData.locked || (docV2.settings.backgroundLayerLocked && _itemData.layerRole === 'background')) return;
+        if (!_itemData || _itemData.locked || (docV2.settings.backgroundLayerLocked && _itemData.layerRole === 'background')) {
+            deselect();
+            return;
+        }
         
         docV2.editorState.selectedElementIds = docV2.editorState.selectedElementIds || [];
         if (e.shiftKey) {
