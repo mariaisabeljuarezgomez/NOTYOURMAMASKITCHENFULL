@@ -41,6 +41,12 @@ PROTECTED_ASSETS = {
     "Asset10.png", "Asset11.png", "Asset12.png", "Asset13.png", "Asset14.png"
 }
 
+MAGIC_BYTES = [
+    b"\x89PNG",
+    b"\xff\xd8",
+    b"RIFF",
+]
+
 def prune_backups(backup_dir, keep=20):
     try:
         files = sorted(
@@ -269,11 +275,6 @@ def upload_image():
             decoded = base64.b64decode(img_data)
         except Exception:
             return jsonify({"error": "Invalid base64 image data"}), 400
-        MAGIC_BYTES = [
-            b"\x89PNG",
-            b"\xff\xd8",
-            b"RIFF",
-        ]
         if not any(decoded[:len(sig)] == sig for sig in MAGIC_BYTES):
             return jsonify({"error": "File content does not match a supported image type"}), 400
         filepath = os.path.join(IMAGES_DIR, filename)
