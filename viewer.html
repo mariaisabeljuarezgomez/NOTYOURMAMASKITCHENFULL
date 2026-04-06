@@ -500,10 +500,7 @@
             const elements = (data.elements || [])
                 .filter(el => el.visible !== false)
                 .filter(el => {
-                    // Filter duplicates that are already baked into the background / hero section
-                    if (el.type === 'image' && el.assetId === 'asset_015') return false; // bg element
-                    if (el.type === 'image' && el.assetId === 'asset_001') return false; // logo overlay duplicate
-                    if (el.type === 'text' && el.content && el.content.includes('Dine In')) return false;
+                    if (el.layerRole === 'background') return false; // skip bg-role elements only
                     return true;
                 })
                 .sort((a, b) => (a.zIndex || 10) - (b.zIndex || 10))
