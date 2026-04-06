@@ -256,9 +256,13 @@ def upload_image():
         img_data = data.get("data") or data.get("image", "")
         if "," in img_data:
             img_data = img_data.split(",")[1]
+        try:
+            decoded = base64.b64decode(img_data)
+        except Exception:
+            return jsonify({"error": "Invalid base64 image data"}), 400
         filepath = os.path.join(IMAGES_DIR, filename)
         with open(filepath, "wb") as f:
-            f.write(base64.b64decode(img_data))
+            f.write(decoded)
         return jsonify({
             "status": "ok",
             "filename": filename,
