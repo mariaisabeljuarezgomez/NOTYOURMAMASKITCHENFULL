@@ -310,7 +310,7 @@ def list_images():
             "images": [{"filename": f, "url": f"/Images/{f}"} for f in sorted(files)]
         }), 200
     except Exception as e:
-        return jsonify({"images": []}), 200
+        return jsonify({"images": [], "error": str(e)}), 500
 
 @app.route("/Images/<path:filename>")
 def serve_root_image(filename):
