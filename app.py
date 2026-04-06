@@ -33,6 +33,15 @@ BACKUP_DIR = os.path.join(STORAGE_BASE, "backups")
 
 IS_PERSISTENT = STORAGE_BASE.startswith("/app/data") or os.environ.get("RAILWAY_VOLUME_MOUNTED") == "true"
 
+IMAGES_DIR = os.path.join(os.path.dirname(__file__), "Images")
+os.makedirs(IMAGES_DIR, exist_ok=True)
+
+PROTECTED_ASSETS = {
+    "Asset1.png", "Asset2.png", "Asset3.png", "Asset4.png",
+    "Asset6.png", "Asset7.png", "Asset8.png", "Asset9.png",
+    "Asset10.png", "Asset11.png", "Asset12.png", "Asset13.png", "Asset14.png"
+}
+
 def prune_backups(backup_dir, keep=20):
     try:
         files = sorted(
@@ -239,14 +248,6 @@ def static_proxy(path):
         response.headers["Cache-Control"] = "max-age=604800, public"
     return response
 
-IMAGES_DIR = os.path.join(os.path.dirname(__file__), "Images")
-os.makedirs(IMAGES_DIR, exist_ok=True)
-
-PROTECTED_ASSETS = {
-    "Asset1.png", "Asset2.png", "Asset3.png", "Asset4.png",
-    "Asset6.png", "Asset7.png", "Asset8.png", "Asset9.png",
-    "Asset10.png", "Asset11.png", "Asset12.png", "Asset13.png", "Asset14.png"
-}
 
 @app.route("/api/upload-image", methods=["POST"])
 def upload_image():
