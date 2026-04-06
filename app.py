@@ -163,24 +163,14 @@ def render_check():
         with open(DATA_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
             
-        # Parity with viewer.html ASSET_ID_TO_SRC mapping
-        asset_map = {
-            'asset_001': '/Images/Asset1.png',
-            'asset_002': '/Images/Asset10.png',
-            'asset_003': '/Images/Asset11.png',
-            'asset_004': '/Images/Asset12.png',
-            'asset_005': '/Images/Asset13.png',
-            'asset_006': '/Images/Asset14.png',
-            'asset_007': '/Images/Asset2.png',
-            'asset_008': '/Images/Asset3.png',
-            'asset_009': '/Images/Asset4.png',
-            'asset_010': '/Images/Asset6.png',
-            'asset_011': '/Images/Asset7.png',
-            'asset_012': '/Images/Asset8.png',
-            'asset_013': '/Images/Asset9.png',
-            'asset_014': '/Images/Asset14.png',
-            'asset_015': '/menu-bg-preview.jpg'
-        }
+        # Build src lookup from saved doc assets
+        assets_list = data.get("assets", [])
+        asset_src_map = {}
+        for a in assets_list:
+            aid = a.get("id") or a.get("assetId")
+            src = (a.get("storage") or {}).get("originalUrl") or a.get("src", "")
+            if aid and src:
+                asset_src_map[aid] = src
         
         results = []
         for el in data.get("elements", []):
@@ -189,7 +179,7 @@ def render_check():
                 base_src = el.get("src")
                 
                 # Resolve exactly like viewer.html
-                resolved_src = asset_map.get(asset_id, "") if asset_id else ""
+                resolved_src = asset_src_map.get(asset_id, "") if asset_id else ""
                 if not resolved_src:
                     resolved_src = base_src or ""
                     
