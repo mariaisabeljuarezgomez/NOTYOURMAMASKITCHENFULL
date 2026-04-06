@@ -446,7 +446,10 @@ def enhance_prompt():
             modifiers = "professional food photography, soft natural lighting, shallow depth of field, 85mm lens, restaurant-quality presentation, high resolution, appetizing composition"
         else:
             modifiers = "cinematic food video, slow motion, professional lighting, 4K quality, appetizing presentation, smooth camera movement, broadcast quality"
-        enhanced = f"{prompt}. {modifiers}"
+        if "professional food photography" not in prompt.lower():
+            enhanced = f"{prompt}. {modifiers}"
+        else:
+            enhanced = prompt
         return jsonify({"enhanced_prompt": enhanced})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -521,10 +524,12 @@ def generate_video():
         access_token = token_data.get("access_token", "")
         submit_url = "https://api.kling.ai/v1/videos/text2video"
         headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
+        res_map = {"1920x1080": "16:9", "1080x1920": "9:16", "1080x1080": "1:1"}
+        aspect = res_map.get(resolution, "16:9")
         payload = {
             "prompt": prompt,
             "duration": duration,
-            "aspect_ratio": resolution,
+            "aspect_ratio": aspect,
             "camera_motion": camera_motion,
             "cfg_scale": cfg_scale
         }
@@ -645,7 +650,7 @@ def edit_image():
                 "image": {"bytesBase64Encoded": reference_image_b64},
                 "editConfig": {
                     "editMode": "EDIT_MODE_DEFAULT",
-                    "guidanceScale": int(edit_strength * 100)
+                    "guidanceScale": max(1, min(30, int(edit_strength * 30)))
                 }
             }
             if negative_prompt:
