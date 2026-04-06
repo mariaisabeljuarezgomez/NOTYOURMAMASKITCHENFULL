@@ -574,5 +574,33 @@ git push origin main
 
 ---
 
+## Manual System Architecture (Confirmed April 2026)
+
+### Active Files (DO NOT DELETE)
+
+**manual-en.html** — English manual, served by Flask route `/manual-en`. Opens as pop-out window from editor.
+
+**manual-es.html** — Spanish manual, served by Flask route `/manual-es`. Opens as pop-out window from editor.
+
+**USER_MANUAL_SOURCE.md** — Markdown source of truth. Edit this file, then regenerate the HTML files.
+
+### Dead Files (SAFE TO DELETE — orphaned from old split-page system)
+
+- `MANUAL/manual_en_part1.html`
+- `MANUAL/manual_en_part2.html`
+- `MANUAL/manual_en_part3.html`
+
+These three files are NOT referenced from index.html, not served by Flask, and not linked anywhere. They predate the consolidated single-file manual and were never removed.
+
+### How the Manual Opens
+
+The editor (index.html) has a button that calls `window.open('/manual-en')` or `window.open('/manual-es')` depending on language selection. Flask serves manual-en.html / manual-es.html from the root of the repo. The manual appears as a browser pop-out, NOT as a panel inside the editor.
+
+### Workflow for Updating the Manual
+
+1. Edit `USER_MANUAL_SOURCE.md` (the source of truth)
+2. Regenerate `manual-en.html` and `manual-es.html` from it
+3. Do NOT touch anything in the `MANUAL/` subfolder — it is dead code
+
 *This file consolidates: HANDOFF_V3.md (Mar 28, 2026) + DINE_IN_MENU_EDITOR_PRO_COMPREHENSIVE_MASTER_HANDOFF.md + MASTER_TECHNICAL_SPEC.md*  
 *Begin all new threads by pasting this file as the first message to any AI assistant.*
