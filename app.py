@@ -516,7 +516,8 @@ def generate_video():
         if negative_prompt:
             payload["negative_prompt"] = negative_prompt
         if reference_image_b64:
-            payload["reference_image"] = f"data:image/jpeg;base64,{reference_image_b64}"
+            mime_type = data.get("reference_image_mime", "image/jpeg")
+            payload["reference_image"] = f"data:{mime_type};base64,{reference_image_b64}"
         sub_resp = client.post(submit_url, headers=headers, json=payload)
         if sub_resp.status_code in (200, 201, 202):
             task_data = sub_resp.json()
@@ -552,7 +553,11 @@ def kling_status(task_id):
             status_str = sd.get("status", "pending")
             video_url = sd.get("video_url", "")
             progress = sd.get("progress", 50) if status_str == "processing" else (100 if status_str == "done" else 0)
-            return jsonify({"status": status_str, "video_url": video_url, "progress": progress})
+            error = sd.get("error") or ("Kling AI video generation failed" if status_str == "failed" else None)
+            resp = {"status": status_str, "video_url": video_url, "progress": progress}
+            if error:
+                resp["error"] = error
+            return jsonify(resp)
         return jsonify({"status": "pending", "progress": 0}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

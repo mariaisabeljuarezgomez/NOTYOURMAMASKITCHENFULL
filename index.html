@@ -3766,6 +3766,7 @@ let aiState = {
   generatedImageUrl: null,
   generatedVideoUrl: null,
   vidRefB64: null,
+  vidRefMimeType: null,
   vidTaskId: null,
   vidPollingInterval: null
 };
@@ -3827,10 +3828,12 @@ function loadAiCredentials() {
     }
     if (creds.stability) {
       document.getElementById('ai-stability-key').value = creds.stability.api_key || '';
+      document.getElementById('ai-img-btn').removeAttribute('disabled');
     }
     if (creds.kling) {
       document.getElementById('ai-kling-key').value = creds.kling.api_key || '';
       document.getElementById('ai-kling-secret').value = creds.kling.api_secret || '';
+      document.getElementById('ai-vid-btn').removeAttribute('disabled');
     }
   } catch (e) { /* ignore parse errors */ }
 }
@@ -4029,6 +4032,7 @@ function handleAiVidRefUpload(input) {
   const reader = new FileReader();
   reader.onload = function(e) {
     aiState.vidRefB64 = e.target.result.split(',')[1];
+    aiState.vidRefMimeType = file.type || 'image/jpeg';
     const thumb = document.getElementById('ai-vid-ref-thumb');
     thumb.src = e.target.result;
     document.getElementById('ai-vid-ref-zone').style.display = 'none';
@@ -4066,6 +4070,7 @@ async function generateAiVideo() {
         camera_motion: document.getElementById('ai-vid-camera').value,
         cfg_scale: parseFloat(document.getElementById('ai-vid-cfg').value),
         reference_image_b64: document.getElementById('ai-vid-pin-start').checked ? aiState.vidRefB64 : null,
+        reference_image_mime: aiState.vidRefMimeType || 'image/jpeg',
         credentials: creds.kling
       })
     });
