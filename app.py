@@ -154,6 +154,71 @@ def debug_menu():
     except Exception as e:
         return jsonify({"debug": debug_info, "error": str(e)}), 500
 
+@app.route("/api/render-check", methods=["GET"])
+def render_check():
+    """Visual regression check endpoint: verifies all image assets exist on disk."""
+    if not os.path.exists(DATA_FILE):
+        return jsonify({"error": "No saved data to check"}), 404
+        
+    try:
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            
+        # Parity with viewer.html ASSET_ID_TO_SRC mapping
+        asset_map = {
+            'asset_001': '/Images/Asset1.png',
+            'asset_002': '/Images/Asset10.png',
+            'asset_003': '/Images/Asset11.png',
+            'asset_004': '/Images/Asset12.png',
+            'asset_005': '/Images/Asset13.png',
+            'asset_006': '/Images/Asset14.png',
+            'asset_007': '/Images/Asset2.png',
+            'asset_008': '/Images/Asset3.png',
+            'asset_009': '/Images/Asset4.png',
+            'asset_010': '/Images/Asset6.png',
+            'asset_011': '/Images/Asset7.png',
+            'asset_012': '/Images/Asset8.png',
+            'asset_013': '/Images/Asset9.png',
+            'asset_014': '/Images/Asset14.png',
+            'asset_015': '/menu-bg-preview.jpg'
+        }
+        
+        results = []
+        for el in data.get("elements", []):
+            if el.get("type") == "image":
+                asset_id = el.get("assetId")
+                base_src = el.get("src")
+                
+                # Resolve exactly like viewer.html
+                resolved_src = asset_map.get(asset_id, "") if asset_id else ""
+                if not resolved_src:
+                    resolved_src = base_src or ""
+                    
+                exists = False
+                if resolved_src:
+                    # Strip leading slash to map to local filesystem correctly
+                    local_path = resolved_src.lstrip("/")
+                    full_path = os.path.join(os.path.dirname(__file__), local_path)
+                    exists = os.path.exists(full_path)
+                
+                results.append({
+                    "element_id": el.get("id"),
+                    "assetId": asset_id,
+                    "original_src": base_src,
+                    "resolved_src": resolved_src,
+                    "exists_on_disk": exists
+                })
+                
+        return jsonify({
+            "total_images": len(results),
+            "missing_images": sum(1 for r in results if not r["exists_on_disk"]),
+            "details": results
+        }), 200
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 
 @app.route("/<path:path>")
 def static_proxy(path):
