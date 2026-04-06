@@ -379,6 +379,7 @@ def test_cloudinary():
             return jsonify({"error": "Missing credentials"}), 400
         timestamp = int(time.time())
         sig = cloudinary_sign({"timestamp": timestamp}, api_secret)
+        # Note: test signs {timestamp} only; actual cloudinary_upload() signs {folder, timestamp}. This is intentional — the test verifies credentials work in general, uploads include folder in the signature.
         url = f"https://api.cloudinary.com/v1_1/{cloud_name}/resources/image?timestamp={timestamp}&api_key={api_key}&signature={sig}"
         client = _http()
         if not client:
