@@ -2414,11 +2414,30 @@ async function addFromTray(src, skipPush) {
         src: trimmedSrc,
         assetId: matchedAsset ? matchedAsset.id : null,
         x, y,
-        width: 400, height: 400,
+        width: 300, height: 300,
         zIndex: maxZ + 1, opacity: 1, rotation: 0,
         visible: true, locked: false, layerRole: 'content'
     };
     docV2.elements.push(newElement);
+
+    // Immediate dimension correction via preload
+    const _fixEl = docV2.elements[docV2.elements.length - 1];
+    const _tmpImg = new Image();
+    _tmpImg.onload = function() {
+        const nat = { w: this.naturalWidth, h: this.naturalHeight };
+        const cap = 400;
+        let fw = nat.w, fh = nat.h;
+        if (fw > cap || fh > cap) {
+            const ratio = Math.min(cap / fw, cap / fh);
+            fw = Math.round(fw * ratio);
+            fh = Math.round(fh * ratio);
+        }
+        _fixEl.width  = fw;
+        _fixEl.height = fh;
+        render();
+    };
+    _tmpImg.src = trimmedSrc;
+
     render();
     selectById(id);
 }
@@ -2661,11 +2680,30 @@ async function addFromAsset(assetId, src) {
 
     const newElement = {
         id, type: 'image', src, assetId,
-        x, y, width: 400, height: 400,
+        x, y, width: 300, height: 300,
         zIndex: 20, opacity: 1, rotation: 0,
         visible: true, locked: false, layerRole: 'content'
     };
     docV2.elements.push(newElement);
+
+    // Immediate dimension correction via preload
+    const _fixEl = docV2.elements[docV2.elements.length - 1];
+    const _tmpImg = new Image();
+    _tmpImg.onload = function() {
+        const nat = { w: this.naturalWidth, h: this.naturalHeight };
+        const cap = 400;
+        let fw = nat.w, fh = nat.h;
+        if (fw > cap || fh > cap) {
+            const ratio = Math.min(cap / fw, cap / fh);
+            fw = Math.round(fw * ratio);
+            fh = Math.round(fh * ratio);
+        }
+        _fixEl.width  = fw;
+        _fixEl.height = fh;
+        render();
+    };
+    _tmpImg.src = src;
+
     render(); selectById(id);
 }
 
