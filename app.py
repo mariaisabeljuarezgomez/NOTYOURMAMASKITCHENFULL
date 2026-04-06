@@ -33,12 +33,11 @@ BACKUP_DIR = os.path.join(STORAGE_BASE, "backups")
 IS_PERSISTENT = STORAGE_BASE.startswith("/app/data") or os.environ.get("RAILWAY_VOLUME_MOUNTED") == "true"
 
 def validate_schema(data):
-    if "version" in data and "elements" in data:
-        return isinstance(data["elements"], list)
-    required_keys = ["zoom", "scroll", "elements"]
-    if all(k in data for k in required_keys):
-        return isinstance(data["elements"], list)
-    return False
+    if not isinstance(data, dict):
+        return False
+    if data.get("version") != 2:
+        return False
+    return isinstance(data.get("elements"), list)
 
 @app.route("/")
 def index():
