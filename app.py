@@ -503,7 +503,6 @@ def generate_video():
         negative_prompt = data.get("negative_prompt", "")
         duration = data.get("duration", 5)
         resolution = data.get("resolution", "1920x1080")
-        camera_motion = data.get("camera_motion", "none")
         cfg_scale = data.get("cfg_scale", 0.5)
         reference_image_b64 = data.get("reference_image_b64", "")
         creds = data.get("credentials", {})
@@ -530,7 +529,6 @@ def generate_video():
             "prompt": prompt,
             "duration": duration,
             "aspect_ratio": aspect,
-            "camera_motion": camera_motion,
             "cfg_scale": cfg_scale
         }
         if negative_prompt:
