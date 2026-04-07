@@ -1152,8 +1152,8 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     </div>
     <div style="display:flex; gap:6px; flex-shrink:0; margin-left:10px; border-left:1px solid #444; padding-left:10px; align-items:center; height: 100%;">
         <button id="btn-set-bg" class="ctrl-btn set-bg" style="padding:4px 8px; font-size:10px;" onclick="setSelectedAsBackground()" title="Promote this image to full-page locked background" data-help="Sets the selected image as the full-page menu background">🖼️ BG</button>
-        <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9; padding:4px 8px; font-size:10px;" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); render(); showToast('Duplicated ' + ids.length + ' elements');}else{duplicateEl();}" title="Duplicate Layer" data-help="Makes an exact copy of the selected layer — text, image, or shape">📋</button>
-        <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c; padding:4px 8px; font-size:10px;" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds];ids.forEach(id=>{selectedId=id;deleteEl(true,true);});docV2.editorState.selectedElementIds=[];deselect();render();}else{deleteEl();}" title="Delete Layer" data-help="Permanently removes the selected element from the menu">🗑</button>
+        <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9; padding:4px 8px; font-size:10px;" onclick="duplicateEl()" title="Duplicate Layer" data-help="Makes an exact copy of the selected layer — text, image, or shape">📋</button>
+        <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c; padding:4px 8px; font-size:10px;" onclick="deleteEl()" title="Delete Layer" data-help="Permanently removes the selected element from the menu">🗑</button>
     </div>
 </div>
 
@@ -2142,8 +2142,7 @@ function updateSelectionBar() {
             const div = document.createElement('div');
             div.id = 'multi-select-actions';
             div.style.cssText = 'display:flex; align-items:center; gap:10px; width:100%; justify-content:center; padding:5px 0;';
-            div.innerHTML = `<button class="ctrl-btn" style="background:#c0392b; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; deleteEl(true,true);}); docV2.editorState.selectedElementIds=[]; deselect(); render();">🗑️ Delete All (<span id="ms-del-count"></span>)</button><button class="ctrl-btn" style="background:#2980b9; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); render(); showToast('Duplicated ' + ids.length + ' elements');">📋 Duplicate All (<span id="ms-dup-count"></span>)</button>
-<div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:6px;">
+            div.innerHTML = `<div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center;">
   <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('left')"    title="Align Left Edges">⬛ Left</button>
   <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('right')"   title="Align Right Edges">⬛ Right</button>
   <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('top')"     title="Align Top Edges">⬛ Top</button>
@@ -2156,8 +2155,6 @@ function updateSelectionBar() {
             document.getElementById('bar-content').appendChild(div);
             msBlock = div;
         }
-        document.getElementById('ms-del-count').innerText = multiIds.length;
-        document.getElementById('ms-dup-count').innerText = multiIds.length;
         msBlock.style.display = 'flex';
         return;
     }
