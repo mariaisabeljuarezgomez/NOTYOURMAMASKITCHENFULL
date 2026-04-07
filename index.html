@@ -196,26 +196,13 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     overflow: visible;
 }
 
-@media (max-width: 768px) {
-    #selection-bar {
-        left: 2vw !important;
-        right: 2vw !important;
-        transform: none !important;
-        width: 96vw;
-        bottom: 100px;
-        border-radius: 16px;
-    }
-}
-
 #bar-content {
     display:flex; 
     align-items:center; 
     gap:10px; 
     flex-grow:1; 
-    overflow-x:auto; 
-    scrollbar-width:none;
-    -webkit-overflow-scrolling: touch; 
-    min-width: max-content;
+    overflow: visible;
+    min-width: fit-content;
 }
 .ctrl-group { 
     display:flex; 
@@ -1262,9 +1249,9 @@ if(barHandle) {
                 selBar.style.margin = '0';
                 selBar.style.animation = 'none';
             }
-            let nx = pe.clientX - offX;
-            let ny = pe.clientY - offY;
-
+	            let nx = pe.clientX - offX;
+	            let ny = pe.clientY - offY;
+	
 	            // Viewport Constraints
 	            nx = Math.max(0, Math.min(nx, window.innerWidth - selBar.offsetWidth));
 	            ny = Math.max(0, Math.min(ny, window.innerHeight - selBar.offsetHeight));
@@ -1274,6 +1261,7 @@ if(barHandle) {
 	            selBar.style.bottom = 'auto'; // Break the fixed bottom rule
 	            selBar.style.right = 'auto';  // Prevent stretching on mobile
 	            selBar.style.width = 'auto';  // Allow content to define width
+	            selBar.style.transform = 'none'; // Ensure transform doesn't interfere with top/left
 	        };
 
         document.onpointerup = () => {
@@ -1311,6 +1299,7 @@ if(distBarHandle) {
 	            distBar.style.bottom = 'auto';
 	            distBar.style.right = 'auto';  // Prevent stretching on mobile
 	            distBar.style.width = 'auto';  // Allow content to define width
+	            distBar.style.transform = 'none'; // Ensure transform doesn't interfere with top/left
 	        };
 
         document.onpointerup = () => {
