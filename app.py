@@ -414,7 +414,7 @@ def test_kling():
         api_secret = data.get("api_secret", "")
         if not all([api_key, api_secret]):
             return jsonify({"error": "Missing credentials"}), 400
-        test_url = "https://api.kling.ai/v1/oauth/token"
+        test_url = "https://api.klingai.com/v1/oauth/token"
         client = _http()
         if not client:
             return jsonify({"error": "No HTTP client available"}), 500
@@ -492,7 +492,7 @@ def generate_video():
         api_secret = creds.get("api_secret", "")
         if not all([prompt, api_key, api_secret]):
             return jsonify({"error": "Missing prompt or credentials"}), 400
-        token_url = "https://api.kling.ai/v1/oauth/token"
+        token_url = "https://api.klingai.com/v1/oauth/token"
         client = _http()
         if not client:
             return jsonify({"error": "No HTTP client available"}), 500
@@ -503,7 +503,7 @@ def generate_video():
             return jsonify({"error": "Kling AI authentication failed"}), 400
         token_data = token_resp.json()
         access_token = token_data.get("access_token", "")
-        submit_url = "https://api.kling.ai/v1/videos/text2video"
+        submit_url = "https://api.klingai.com/v1/videos/text2video"
         headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
         res_map = {"1920x1080": "16:9", "1080x1920": "9:16", "1080x1080": "1:1"}
         aspect = res_map.get(resolution, "16:9")
@@ -535,7 +535,7 @@ def kling_status(task_id):
         api_secret = data.get("api_secret", "")
         if not all([api_key, api_secret]):
             return jsonify({"error": "Missing credentials"}), 400
-        token_url = "https://api.kling.ai/v1/oauth/token"
+        token_url = "https://api.klingai.com/v1/oauth/token"
         client = _http()
         if not client:
             return jsonify({"error": "No HTTP client available"}), 500
@@ -545,7 +545,7 @@ def kling_status(task_id):
         if token_resp.status_code != 200:
             return jsonify({"status": "failed", "error": "Kling AI auth failed"}), 400
         access_token = token_resp.json().get("access_token", "")
-        status_url = f"https://api.kling.ai/v1/videos/text2video/{task_id}"
+        status_url = f"https://api.klingai.com/v1/videos/text2video/{task_id}"
         headers = {"Authorization": f"Bearer {access_token}"}
         stat_resp = client.get(status_url, headers=headers)
         if stat_resp.status_code == 200:
