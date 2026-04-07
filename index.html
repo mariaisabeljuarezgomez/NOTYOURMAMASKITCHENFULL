@@ -1658,10 +1658,13 @@ function renderLayerList() {
             : '⬜';
         const roleTag = `<span style="font-size:8px; padding:2px 4px; border-radius:3px; background:#444; color:#aaa; text-transform:uppercase; margin-right:4px;">${item.layerRole || 'content'}</span>`;
 
-
+        // Use a direct ondblclick for rename to ensure it always fires
         div.innerHTML = `<span style="cursor:grab; color:#555; font-size:14px; padding-right:6px; flex-shrink:0;" title="Drag to reorder">⠿</span>
             <div style="font-size:12px; width:20px; text-align:center;">${icon}</div>
-            <div class="layer-name" style="flex:1; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center;">${roleTag}<span class="layer-rename-span" data-elid="${item.id}" title="Double-click to rename (editor only)" style="flex:1; min-width:50px; min-height:18px; display:inline-block; cursor:text;"></span></div>
+            <div class="layer-name" style="flex:1; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center;" ondblclick="startLayerRename(event, '${item.id}')">
+                ${roleTag}
+                <span id="rename-span-${item.id}" class="layer-rename-span" title="Double-click to rename" style="flex:1; min-width:50px; min-height:18px; display:inline-block; cursor:text;">${item.name || item.id}</span>
+            </div>
             <button class="layer-btn" title="${item.visible ? 'Visible' : 'Hidden — click to show'}"
                 onclick="toggleVisById(event, '${item.id}')"
                 style="font-size:11px; opacity:${item.visible ? '1' : '0.4'};">
@@ -1674,40 +1677,45 @@ function renderLayerList() {
             </button>
         `;
         layersPanel.appendChild(div);
-
-        // Wire up rename span after it is in DOM
-        const nameSpan = div.querySelector('.layer-rename-span');
-        if (nameSpan) {
-            nameSpan.textContent = item.name || item.id;
-
-            nameSpan.addEventListener('dblclick', (e) => {
-                e.stopPropagation();
-                nameSpan.contentEditable = 'true';
-                nameSpan.focus();
-                const range = document.createRange();
-                range.selectNodeContents(nameSpan);
-                window.getSelection().removeAllRanges();
-                window.getSelection().addRange(range);
-            });
-
-            nameSpan.addEventListener('blur', () => {
-                nameSpan.contentEditable = 'false';
-                const newName = nameSpan.innerText.trim();
-                if (newName) {
-                    item.name = newName;
-                } else {
-                    delete item.name;
-                    nameSpan.textContent = item.id;
-                }
-            });
-
-            nameSpan.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') { e.preventDefault(); nameSpan.blur(); }
-                if (e.key === 'Escape') { nameSpan.innerText = item.name || item.id; nameSpan.blur(); }
-                e.stopPropagation(); // prevent canvas keyboard shortcuts while typing
-            });
-        }
     });
+}
+
+function startLayerRename(e, id) {
+    e.stopPropagation();
+    const span = document.getElementById('rename-span-' + id);
+    if (!span) return;
+    span.contentEditable = 'true';
+    span.focus();
+    const range = document.createRange();
+    range.selectNodeContents(span);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+
+    const onBlur = () => {
+        span.contentEditable = 'false';
+        const newName = span.innerText.trim();
+        const item = docV2.elements.find(el => el.id === id);
+        if (item) {
+            if (newName) item.name = newName;
+            else delete item.name;
+        }
+        span.removeEventListener('blur', onBlur);
+        span.removeEventListener('keydown', onKey);
+        renderLayerList();
+    };
+
+    const onKey = (ke) => {
+        if (ke.key === 'Enter') { ke.preventDefault(); span.blur(); }
+        if (ke.key === 'Escape') { 
+            const item = docV2.elements.find(el => el.id === id);
+            span.innerText = item ? (item.name || item.id) : id; 
+            span.blur(); 
+        }
+        ke.stopPropagation();
+    };
+
+    span.addEventListener('blur', onBlur);
+    span.addEventListener('keydown', onKey);
 }
 
 function injectResizeHandles(el) {
