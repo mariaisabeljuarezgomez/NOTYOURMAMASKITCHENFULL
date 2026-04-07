@@ -3362,6 +3362,12 @@ function saveGlobalSettings() {
         docV2.heroVideoUrl = heroUrl;
         docV2.sidePanelLeft = { videoUrl: lUrl, label: lLabel };
         docV2.sidePanelRight = { videoUrl: rUrl, label: rLabel };
+        if (!docV2.settings) docV2.settings = {};
+        docV2.settings.viewer = {
+            heroVideoUrl: heroUrl,
+            sidePanelLeft: { videoUrl: lUrl, label: lLabel },
+            sidePanelRight: { videoUrl: rUrl, label: rLabel }
+        };
     })
     .catch(() => showToast('❌ Failed to save global settings'));
 }
@@ -5169,11 +5175,12 @@ function pollKlingStatus() {
         document.getElementById('ai-vid-progress').style.display = 'none';
         document.getElementById('ai-vid-btn').disabled = false;
         document.getElementById('ai-vid-btn').textContent = 'Generate Video';
-        document.getElementById('ai-vid-url').value = data.video_url; // FALLBACK for applyVideoToSlot
-        document.getElementById('ai-vid-url-row').style.display = 'block';
-        document.getElementById('ai-vid-apply-row').style.display = 'block';
-        document.getElementById('ai-vid-slot-picker').style.display = 'block';
-        showToast('✅ Video ready — Uploading to Cloudinary…');
+
+        // Hide apply buttons until Cloudinary upload finishes
+        document.getElementById('ai-vid-apply-row').style.display = 'none';
+        document.getElementById('ai-vid-slot-picker').style.display = 'none';
+
+        showToast('⏳ Video ready! Uploading to Cloudinary for permanent storage…');
         // Auto-upload to Cloudinary
         uploadAiToCloudinary('video');
       } else if (data.status === 'failed') {
