@@ -570,7 +570,7 @@ def generate_video():
         aspect = res_map.get(resolution, "16:9")
         payload = {
             "prompt": prompt,
-            "duration": duration,
+            "duration": str(duration),
             "aspect_ratio": aspect,
             "cfg_scale": cfg_scale,
             "model_name": data.get("model_name", "kling-v1")
@@ -585,7 +585,11 @@ def generate_video():
             task_data = sub_resp.json()
             task_id = task_data.get("data", {}).get("task_id") or task_data.get("task_id") or "pending"
             return jsonify({"task_id": task_id, "task_type": task_type})
-        return jsonify({"error": "Video generation submission failed"}), 400
+        try:
+            kling_err = sub_resp.json()
+        except Exception:
+            kling_err = sub_resp.text
+        return jsonify({"error": f"Kling submission failed {sub_resp.status_code}: {kling_err}"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
