@@ -587,7 +587,8 @@ def generate_video():
                 "prompt": prompt,
                 "duration": str(duration),
                 "aspect_ratio": aspect,
-                "model_name": data.get("model_name", "kling-v1")
+                "model_name": data.get("model_name", "kling-v1"),
+                "image_url": reference_image_b64
             }
         else:
             payload = {

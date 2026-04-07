@@ -204,7 +204,8 @@ Five independent audit rounds were conducted on `app.py`. All fixes applied to `
 | A5 | 11cf223 | fix: return JSON 404 from static_proxy on missing file |
 | D1 | 65a0158 | fix: move werkzeug NotFound import to module level |
 | D2 | 145aadc | fix: set COMPRESS_MIN_SIZE to 500 to avoid compressing tiny responses |
-| D3 | 83fd470 | fix: cap duplicate filename counter at 999 to prevent unbounded loop |
+| D3 | [SHA] | fix: AI asset persistence (version: 2 in save()) & Kling video image_url fix |
+3fd470 | fix: cap duplicate filename counter at 999 to prevent unbounded loop |
 | D4 | 0dc7488 | fix: log prune_backups exceptions instead of silently discarding |
 | D5 | 0d9b547 | fix: remove blank line with trailing whitespace in delete_asset |
 

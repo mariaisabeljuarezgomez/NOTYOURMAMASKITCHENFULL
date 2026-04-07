@@ -4323,12 +4323,21 @@ function useLastAiImageAsVideoRef() {
 }
 
 function setVidRefFromUrl(src) {
-  aiState.vidRefB64 = src.includes(',') ? src.split(',')[1] : btoa(encodeURIComponent(src));
+  // Use let/const or global scope correctly
+  if (src.includes(',')) {
+    aiState.vidRefB64 = src.split(',')[1];
+  } else {
+    // If it's already a B64 string or a URL, handle accordingly.
+    // Most AI images are data URIs here.
+    aiState.vidRefB64 = src;
+  }
   aiState.vidRefMimeType = 'image/png';
   const thumb = document.getElementById('ai-vid-ref-thumb');
-  thumb.src = src;
-  document.getElementById('ai-vid-ref-zone').style.display = 'none';
-  document.getElementById('ai-vid-ref-preview').style.display = 'block';
+  if (thumb) thumb.src = src;
+  const zone = document.getElementById('ai-vid-ref-zone');
+  if (zone) zone.style.display = 'none';
+  const preview = document.getElementById('ai-vid-ref-preview');
+  if (preview) preview.style.display = 'block';
 }
 
 function sendCanvasImageToVideoRef(el) {
