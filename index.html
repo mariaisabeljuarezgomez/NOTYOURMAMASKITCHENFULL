@@ -51,7 +51,20 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 #header-title { font-weight:700; font-size:16px; letter-spacing:1px; color:var(--accent); }
 .header-actions { display:flex; gap:10px; align-items:center; }
 
-#editor-viewport { position:absolute; top:160px; left:0; right:0; bottom:0; overflow:auto; background:#111; display:flex; align-items:flex-start; justify-content:center; }
+#editor-viewport { 
+    position:absolute; 
+    top:160px; 
+    left:0; 
+    right:0; 
+    bottom:0; 
+    overflow:auto; 
+    background:#111; 
+    background-image: radial-gradient(circle, #222 1.5px, transparent 1.5px);
+    background-size: 30px 30px;
+    display:flex; 
+    align-items:flex-start; 
+    justify-content:center; 
+}
 #centering-wrapper { 
     padding: 100px; 
     display: flex; 
@@ -84,13 +97,14 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 .resize-handle {
     display: none;
     position: absolute;
-    width: 20px;
-    height: 20px;
-    background: #f1c40f;
-    border: 2px solid #000;
-    border-radius: 50%;
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border: 2px solid var(--accent);
+    border-radius: 2px;
     z-index: 9999;
     box-sizing: border-box;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 .editable-element.selected .resize-handle { display: block; }
 
@@ -191,10 +205,10 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     bottom:120px; 
     left:50%; 
     transform:translateX(-50%); 
-    background:rgba(0,0,0,0.95); 
-    backdrop-filter:blur(10px); 
-    padding:0 16px; 
-    border-radius:20px; 
+    background:rgba(0,0,0,0.7); 
+    backdrop-filter:blur(15px) saturate(180%); 
+    padding:0 20px; 
+    border-radius:26px; 
     display:none; 
     align-items:center; 
     gap:12px; 
@@ -443,7 +457,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 .ls-tab:hover { color:#ccc; background:#252525; }
 .ls-tab.active { color:var(--accent); border-bottom-color:var(--accent); background:#252525; }
 .ls-panel { flex:1; overflow-y:auto; padding:12px 10px; scrollbar-width:thin; scrollbar-color:#444 #1e1e1e; }
-.ls-section-title { font-size:9px; font-weight:800; color:#666; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid #2a2a2a; }
+.ls-section-title { font-size:10px; font-weight:800; color:#888; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid #333; }
 .ls-action-btn { width:100%; display:flex; align-items:center; gap:10px; padding:9px 10px; background:#2a2a2a; border:1px solid #333; border-radius:8px; color:#ccc; cursor:pointer; font-size:12px; font-weight:600; margin-bottom:6px; transition:0.2s; text-align:left; }
 .ls-action-btn:hover { background:#333; color:#fff; }
 .ls-action-btn.accent { background:var(--accent); color:#000; border-color:transparent; font-weight:700; }
@@ -478,10 +492,10 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 .rp-tab:hover { color:#ccc; background:#252525; }
 .rp-tab.active { color:var(--accent); border-bottom-color:var(--accent); background:#252525; }
 .rp-panel { flex:1; overflow-y:auto; padding:14px 12px; scrollbar-width:thin; scrollbar-color:#444 #1e1e1e; }
-.rp-section-title { font-size:9px; font-weight:800; color:#666; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid #2a2a2a; }
-.rp-label { display:block; font-size:9px; color:#777; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
-.rp-input { width:100%; background:#111; border:1px solid #444; color:var(--accent); padding:8px 10px; border-radius:8px; font-size:11px; outline:none; box-sizing:border-box; }
-.rp-input:focus { border-color:var(--accent); background:#000; }
+.rp-section-title { font-size:10px; font-weight:800; color:#888; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid #333; }
+.rp-label { display:block; font-size:10px; color:#999; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px; margin-top:10px; }
+.rp-input { width:100%; background:#111; border:1px solid #333; color:var(--accent); padding:10px 12px; border-radius:10px; font-size:11px; outline:none; box-sizing:border-box; transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+.rp-input:focus { border-color:var(--accent); background:#000; box-shadow: inset 0 0 0 1px var(--accent), 0 0 10px rgba(241, 196, 15, 0.1); }
 .rp-clear-btn { margin-top:6px; background:#2a2a2a; border:1px solid #444; color:#888; border-radius:6px; padding:5px 12px; font-size:10px; cursor:pointer; transition:0.2s; }
 .rp-clear-btn:hover { background:#c0392b; color:#fff; border-color:transparent; }
 .rp-save-btn { width:100%; margin-top:20px; background:var(--primary); color:#fff; border:none; border-radius:8px; padding:12px; font-size:11px; font-weight:700; cursor:pointer; transition:0.2s; }
@@ -1354,10 +1368,10 @@ function render() {
         
         Object.assign(el.style, { 
             left:d.x+'px', top:d.y+'px', zIndex:d.zIndex||10, 
-            opacity: d.opacity ?? 1,
+            opacity: (d.opacity !== undefined ? d.opacity : 100) / 100,
             transform: `rotate(${d.rotation||0}deg)`,
             borderRadius: d.type === 'line' ? '0' : (d.cornerRadius||0)+'px',
-            border: (d.type === 'shape' && d.strokeWidth > 0) ? `${d.strokeWidth}px solid ${d.strokeColor || '#c8a96a'}` : 'none'
+            border: (d.type === 'shape' && d.borderWidth > 0) ? `${d.borderWidth}px solid ${d.borderColor || '#000000'}` : 'none'
         });
         
         // Support both V2 top-level fields AND V1 style object
@@ -1371,7 +1385,10 @@ function render() {
         const textDecoration = d.textDecoration || d.style?.textDecoration;
         const textAlign = d.textAlign || d.style?.textAlign;
         const textShadow = d.textShadow || d.style?.textShadow;
-        const fill = d.fillColor || d.style?.fill;
+        const textTransform = d.textTransform || d.style?.textTransform;
+        
+        // Resolve fill color using V2 schema logic
+        const fill = d.fillColor || (d.style ? d.style.fill : null);
 
         if(fontFamily) el.style.fontFamily = fontFamily;
         if(fontSize) el.style.fontSize = fontSize + 'px';
@@ -1382,12 +1399,15 @@ function render() {
         if(fontStyle) el.style.fontStyle = fontStyle;
         if(textDecoration) el.style.textDecoration = textDecoration;
         if(textAlign) el.style.textAlign = textAlign;
+        if(textTransform) el.style.textTransform = textTransform;
+        
         if(textShadow && textShadow > 0) {
             el.style.textShadow = `0 ${textShadow/2}px ${textShadow}px rgba(0,0,0,0.5)`;
         } else {
             el.style.textShadow = 'none';
         }
-        if(fill) el.style.backgroundColor = fill;
+        if(fill && d.type === 'text') el.style.backgroundColor = fill;
+        else el.style.backgroundColor = 'transparent';
         if (d.type === 'text') {
             if (d.width) {
                 el.style.width = d.width + 'px';
@@ -1414,7 +1434,7 @@ function render() {
                 inner.style.boxSizing = 'border-box';
                 // Apply border to inner element for perfect circle border
                 if ((d.borderWidth || 0) > 0) {
-                    inner.style.border = `${d.borderWidth}px solid ${d.borderColor || '#c8a96a'}`;
+                    inner.style.border = `${d.borderWidth || 0}px solid ${d.borderColor || '#000000'}`;
                 } else {
                     inner.style.border = 'none';
                 }
@@ -1430,7 +1450,7 @@ function render() {
             el.style.clipPath = 'none';
             el.style.borderRadius = '0';
             if ((d.borderWidth || 0) > 0) {
-                inner.style.boxShadow = `inset 0 0 0 ${d.borderWidth}px ${d.borderColor || '#c8a96a'}`;
+                inner.style.boxShadow = `inset 0 0 0 ${d.borderWidth}px ${d.borderColor || '#000000'}`;
             } else {
                 inner.style.boxShadow = 'none';
             }
@@ -1446,7 +1466,7 @@ function render() {
                 inner.style.backgroundColor = d.fillColor || '#c8a96a';
                 inner.style.boxSizing = 'border-box';
                 if ((d.borderWidth || 0) > 0) {
-                    inner.style.border = `${d.borderWidth}px solid ${d.borderColor || '#000'}`;
+                    inner.style.border = `${d.borderWidth || 0}px solid ${d.borderColor || '#000000'}`;
                 } else {
                     inner.style.border = 'none';
                 }
@@ -2039,7 +2059,7 @@ function updateSelectionBar() {
     
     selBar.classList.add('show');
     document.getElementById('bar-quick-settings').style.display = 'flex';
-    document.getElementById('sel-opacity').value = (item.opacity ?? 1) * 100;
+    document.getElementById('sel-opacity').value = item.opacity ?? 100;
     document.getElementById('sel-rotate').value = item.rotation || 0;
     
     // Update Ribbon Arrange Inputs
@@ -2067,6 +2087,7 @@ function updateSelectionBar() {
                 <button class="ribbon-btn ${item.style?.fontWeight==='bold'?'active':''}" onclick="toggleStyle('fontWeight', 'bold', 'normal')"><b>B</b></button>
                 <button class="ribbon-btn ${item.style?.fontStyle==='italic'?'active':''}" onclick="toggleStyle('fontStyle', 'italic', 'normal')"><i>I</i></button>
                 <button class="ribbon-btn ${item.style?.textDecoration==='underline'?'active':''}" onclick="toggleStyle('textDecoration', 'underline', 'none')"><u>U</u></button>
+                <button class="ribbon-btn ${item.style?.textTransform==='uppercase'?'active':''}" onclick="toggleStyle('textTransform', 'uppercase', 'none')" title="All Caps">AA</button>
             </div>
             <div class="ribbon-group">
                 <span class="ribbon-label">Align</span>
@@ -2076,27 +2097,41 @@ function updateSelectionBar() {
             </div>
             <div class="ribbon-group">
                 <span class="ribbon-label">Spacing</span>
-                <div style="display:flex; gap:4px; align-items:center;">
-                    <label class="ribbon-label">H</label><input type="number" class="ribbon-input" step="0.1" value="${item.style?.lineHeight || 1.2}" style="width:42px" onchange="updateStyle('lineHeight', parseFloat(this.value))">
-                    <label class="ribbon-label">W</label><input type="number" class="ribbon-input" value="${item.style?.letterSpacing || 0}" style="width:42px" onchange="updateStyle('letterSpacing', parseInt(this.value))">
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <div style="display:flex; flex-direction:column; gap:2px;">
+                        <span style="font-size:8px; color:#666;">LINE</span>
+                        <input type="range" min="0.8" max="2.5" step="0.1" value="${item.style?.lineHeight || 1.1}" style="width:60px" oninput="updateStyle('lineHeight', parseFloat(this.value))">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:2px;">
+                        <span style="font-size:8px; color:#666;">LETTER</span>
+                        <input type="range" min="-5" max="30" step="1" value="${item.style?.letterSpacing || 0}" style="width:60px" oninput="updateStyle('letterSpacing', parseInt(this.value))">
+                    </div>
                 </div>
+            </div>
+            <div class="ribbon-group">
+                <span class="ribbon-label">Effects</span>
+                <button class="ribbon-btn ${(item.style?.textShadow||0)>0?'active':''}" onclick="toggleStyle('textShadow', 6, 0)" title="Toggle Text Shadow">S</button>
             </div>
         `;
     } else if (item.type === 'shape' || item.type === 'image') {
         const isLine = item.type === 'line';
+        const fillVal = item.fillColor || '#1a1a1a';
+        const bWidth = item.borderWidth || 0;
+        const bColor = item.borderColor || '#000000';
+        
         ribbonContext.innerHTML = `
             <div class="ribbon-group">
                 <span class="ribbon-label">Fill</span>
-                <input type="color" value="${item.fillColor || '#ffffff'}" oninput="updateShapeFill(this.value)" ${isLine?'disabled':''}>
+                <input type="color" value="${fillVal}" oninput="updateShapeFill(this.value)" ${isLine?'disabled':''}>
             </div>
             <div class="ribbon-group">
-                <span class="ribbon-label">Stroke</span>
-                <input type="number" class="ribbon-input" value="${item.strokeWidth || 0}" style="width:45px" onchange="updateProp('strokeWidth', parseInt(this.value))">
-                <input type="color" value="${item.strokeColor || '#000000'}" oninput="updateStrokeColorLive(this.value)">
+                <span class="ribbon-label">Border</span>
+                <input type="number" class="ribbon-input" value="${bWidth}" style="width:45px" onchange="updateShapeBorder(parseInt(this.value))">
+                <input type="color" value="${bColor}" oninput="updateShapeBorderColor(this.value)">
             </div>
             <div class="ribbon-group">
                 <span class="ribbon-label">Radius</span>
-                <input type="number" class="ribbon-input" value="${item.cornerRadius || 0}" style="width:45px" onchange="updateProp('cornerRadius', parseInt(this.value))">
+                <input type="number" class="ribbon-input" value="${item.borderRadius || 0}" style="width:45px" onchange="updateProp('borderRadius', parseInt(this.value))">
             </div>
         `;
     }
@@ -2218,11 +2253,17 @@ function updateProp(k, v) {
     let item = docV2.elements.find(e=>e.id===selectedId); 
     if(item) { 
         item[k]=v; 
-        // V2 Rule: Sync strokeWidth/strokeColor to style for backward compatibility
+        // V2 Rule: Sync strokeWidth/strokeColor for shapes and lines
         if(!item.style) item.style = {};
-        if(k === 'strokeWidth') item.style.borderWidth = v;
-        if(k === 'strokeColor') item.style.borderColor = v;
-        if(k === 'cornerRadius') item.style.borderRadius = v;
+        if(k === 'strokeWidth' || k === 'borderWidth') {
+            item.borderWidth = v;
+            if(item.type === 'line') item.strokeWidth = v;
+        }
+        if(k === 'strokeColor' || k === 'borderColor') {
+            item.borderColor = v;
+            if(item.type === 'line') item.strokeColor = v;
+        }
+        if(k === 'cornerRadius' || k === 'borderRadius') item.borderRadius = v;
         render(); 
     } 
 }
@@ -2244,6 +2285,7 @@ function updateStyle(k, v) {
         if(k === 'textDecoration') item.textDecoration = v;
         if(k === 'textAlign') item.textAlign = v;
         if(k === 'textShadow') item.textShadow = v;
+        if(k === 'textTransform') item.textTransform = v;
         
         render(); 
         // Force live color update to DOM for instant feedback
@@ -2671,7 +2713,7 @@ function addText() {
     const x = Math.max(50, Math.min(BASE_W - 200, cx));
     const y = Math.max(50, Math.min(BASE_H - 100, cy));
     const maxZ = docV2.elements.reduce((m, e) => Math.max(m, e.zIndex || 0), 0);
-    docV2.elements.push({id, type:'text', text:'New Text', x, y, zIndex: maxZ + 1, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fontFamily:'century-gothic-bold', fontSize:24, color:'#000', lineHeight:1.1, letterSpacing:0} }); 
+    docV2.elements.push({id, type:'text', text:'New Text', x, y, zIndex: maxZ + 1, opacity:100, rotation:0, visible:true, locked:false, layerRole:'content', style:{fontFamily:'century-gothic-bold', fontSize:24, color:'#000', lineHeight:1.1, letterSpacing:0} }); 
     render(); 
     selectById(id); 
 }
@@ -2742,7 +2784,14 @@ function addRect() {
         pushState();
         const id = 'rect_' + Date.now();
         const maxZ = docV2.elements.reduce((m, e) => Math.max(m, e.zIndex || 0), 0);
-        docV2.elements.push({id, type:'shape', x:finX, y:finY, width:finW, height:finH, zIndex: maxZ + 1, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fill:'#333333'} });
+        docV2.elements.push({
+            id, type: 'shape', shapeType: 'rect',
+            x: finX, y: finY, width: finW, height: finH,
+            zIndex: maxZ + 1, opacity: 100, rotation: 0,
+            visible: true, locked: false, layerRole: 'content',
+            fillColor: '#1a1a1a',
+            borderColor: '#000000', borderWidth: 0, borderRadius: 0
+        });
         render();
         selectById(id);
     }
@@ -2767,7 +2816,7 @@ function addLine() {
         x2: 400, y2: 0,
         width: 400, height: 4, // BUG 3 FIX: Visibility
         strokeColor: '#c8a96a', strokeWidth: 4, lineCap: 'butt', // BUG 3 FIX: Visibility
-        zIndex: maxZ + 1, opacity: 1, rotation: 0,
+        zIndex: maxZ + 1, opacity: 100, rotation: 0,
         visible: true, locked: false, layerRole: 'content'
     });
     render();
@@ -2784,8 +2833,8 @@ function addCircle() {
         x: 300, y: 300, width: 150, height: 150,
         zIndex: maxZ + 1, opacity: 100, rotation: 0,
         visible: true, locked: false, layerRole: 'content',
-        borderWidth: 0, borderColor: '#c8a96a', borderRadius: 75,
-        fillColor: '#c8a96a'
+        borderWidth: 0, borderColor: '#000000', borderRadius: 75,
+        fillColor: '#1a1a1a'
     });
     render();
     setTimeout(() => { selectById(id); setBarTab('design'); }, 50);
@@ -2801,8 +2850,8 @@ function addStar() {
         x: 300, y: 300, width: 150, height: 150,
         zIndex: maxZ + 1, opacity: 100, rotation: 0,
         visible: true, locked: false, layerRole: 'content',
-        borderWidth: 0, borderColor: '#c8a96a', borderRadius: 0,
-        fillColor: '#c8a96a'
+        borderWidth: 0, borderColor: '#000000', borderRadius: 0,
+        fillColor: '#1a1a1a'
     });
     render();
     setTimeout(() => { selectById(id); setBarTab('design'); }, 50);
@@ -2865,9 +2914,7 @@ function updateShapeFill(v) {
         return; 
     }
 
-    if (!item.style) item.style = {};
-    item.style.fill = v;
-    item.style.fillColor = v; 
+    item.fillColor = v;
 
     const domNode = document.getElementById(selectedId);
     if (domNode) {
@@ -2876,6 +2923,31 @@ function updateShapeFill(v) {
         else domNode.style.backgroundColor = v;
     }
     sync();
+}
+
+function updateShapeBorder(v) {
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item) return;
+    item.borderWidth = v;
+    render();
+}
+
+function updateShapeBorderColor(v) {
+    if (!selectedId) return;
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item) return;
+    item.borderColor = v;
+    const domNode = document.getElementById(selectedId);
+    if (domNode) {
+        const inner = domNode.querySelector('.shape-inner');
+        if (inner) inner.style.borderColor = v;
+        else domNode.style.borderColor = v;
+        
+        // Also update outer border if it exists (rect fallbacks)
+        domNode.style.borderColor = v;
+    }
 }
 
 function toggleOutlineOnly() {
