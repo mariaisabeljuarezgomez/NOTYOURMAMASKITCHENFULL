@@ -1135,12 +1135,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
             </div>
             <button id="btn-center-h" class="btn-ui" style="padding:6px 12px; font-size:10px;" onclick="centerElement('h')" data-help="Snaps the element to the exact horizontal center of the menu">Center H</button>
             <button id="btn-center-v" class="btn-ui" style="padding:6px 12px; font-size:10px;" onclick="centerElement('v')" data-help="Snaps the element to the exact vertical center of the menu">Center V</button>
-            <div class="ctrl-group">
-                <button id="btn-layer-up" class="ctrl-btn" style="width:30px; height:30px" onclick="updateZ(1)" title="Layer Up" data-help="Moves the element forward in the stacking order">⬆️</button>
-                <button id="btn-layer-down" class="ctrl-btn" style="width:30px; height:30px" onclick="updateZ(-1)" title="Layer Down" data-help="Moves the element backward in the stacking order">⬇️</button>
-                <button id="btn-layer-front" class="ctrl-btn" style="width:30px; height:30px; font-size:12px;" onclick="bringToFront()" title="To Front" data-help="Sends element all the way to the very top of the layer stack">⇈</button>
-                <button id="btn-layer-back" class="ctrl-btn" style="width:30px; height:30px; font-size:12px;" onclick="sendToBack()" title="To Back" data-help="Sends element all the way to the very bottom of the layer stack">⇊</button>
-            </div>
+<!-- Layering buttons removed as requested — use drag-and-drop in the LAYERS panel instead -->
             <div class="ctrl-group" style="gap:4px; flex-direction:column; align-items:center;">
                 <button class="ctrl-btn" style="width:32px;height:32px;font-size:14px;"
                     onclick="nudge(0,-2)" title="Nudge Up">▲</button>
@@ -1658,13 +1653,14 @@ function renderLayerList() {
             : '⬜';
         const roleTag = `<span style="font-size:8px; padding:2px 4px; border-radius:3px; background:#444; color:#aaa; text-transform:uppercase; margin-right:4px;">${item.layerRole || 'content'}</span>`;
 
-        // Use a direct ondblclick for rename to ensure it always fires
+        // Simplified rename UI with a dedicated edit button for 100% reliability
         div.innerHTML = `<span style="cursor:grab; color:#555; font-size:14px; padding-right:6px; flex-shrink:0;" title="Drag to reorder">⠿</span>
             <div style="font-size:12px; width:20px; text-align:center;">${icon}</div>
-            <div class="layer-name" style="flex:1; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center;" ondblclick="startLayerRename(event, '${item.id}')">
+            <div class="layer-name" style="flex:1; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center;">
                 ${roleTag}
-                <span id="rename-span-${item.id}" class="layer-rename-span" title="Double-click to rename" style="flex:1; min-width:50px; min-height:18px; display:inline-block; cursor:text;">${item.name || item.id}</span>
+                <span id="rename-span-${item.id}" class="layer-rename-span" style="flex:1; min-width:50px; min-height:18px; display:inline-block;">${item.name || item.id}</span>
             </div>
+            <button class="layer-btn" title="Rename Layer" onclick="startLayerRename(event, '${item.id}')" style="font-size:10px; margin-right:4px;">✏️</button>
             <button class="layer-btn" title="${item.visible ? 'Visible' : 'Hidden — click to show'}"
                 onclick="toggleVisById(event, '${item.id}')"
                 style="font-size:11px; opacity:${item.visible ? '1' : '0.4'};">
