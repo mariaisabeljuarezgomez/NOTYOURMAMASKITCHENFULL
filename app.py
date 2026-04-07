@@ -888,12 +888,11 @@ def cloudinary_upload():
             if not client:
                 return jsonify({"error": "No HTTP client available"}), 500
             timestamp = str(int(__import__('time').time()))
-            params = {"folder": "menu-editor", "resource_type": "video",
-                      "timestamp": timestamp, "type": "auto"}
+            params = {"folder": "menu-editor", "timestamp": timestamp}
             params["signature"] = cloudinary_sign(params, api_secret)
             resp = client.post(
                 f"https://api.cloudinary.com/v1_1/{cloud_name}/video/upload",
-                data={**params, "file": file_url, "api_key": api_key}
+                data={**params, "file": file_url, "api_key": api_key, "resource_type": "video"}
             )
             rj = resp.json()
             if "secure_url" in rj:

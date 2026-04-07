@@ -3340,10 +3340,9 @@ function saveGlobalSettings() {
         settings: {
             ...(updatedDoc.settings || {}),
             viewer: {
-                heroVideoUrl:   updatedDoc.heroVideoUrl   || '',
-                sidePanelLeft:  updatedDoc.sidePanelLeft  || {},
-                sidePanelRight: updatedDoc.sidePanelRight || {},
-                ...(updatedDoc.settings?.viewer || {}),
+                heroVideoUrl:   heroUrl,
+                sidePanelLeft:  { videoUrl: lUrl, label: lLabel },
+                sidePanelRight: { videoUrl: rUrl, label: rLabel },
             }
         }
     };
