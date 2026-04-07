@@ -910,7 +910,7 @@ def cloudinary_upload():
         import base64 as _b64_mod
         if file_url:
             # Fetch the URL bytes directly
-            u_resp = client.get(file_url, timeout=30)
+            u_resp = client.get(file_url, timeout=180)
             if u_resp.status_code != 200:
                 return jsonify({"error": f"Failed to fetch source file from URL: {file_url}"}), 400
             raw_bytes = u_resp.content
