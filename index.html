@@ -3178,6 +3178,9 @@ async function load() {
         const s = await r.json();
         if (s.elements && s.elements.length > 0) {
             _mergeLoadedDoc(s);
+            // FIX A: Ensure assets array exists
+            if (!Array.isArray(docV2.assets)) { docV2.assets = []; }
+            renderAssetPanel();
             render();
             applyZoom(1);
             showToast('✅ Project loaded from server');
@@ -3191,6 +3194,9 @@ async function load() {
                 const parsed = JSON.parse(l);
                 if (parsed.elements && parsed.elements.length > 0) {
                     _mergeLoadedDoc(parsed);
+                    // FIX A: Ensure assets array exists
+                    if (!Array.isArray(docV2.assets)) { docV2.assets = []; }
+                    renderAssetPanel();
                     render();
                     applyZoom(1);
                     showToast('⚠️ Loaded from local backup — server unavailable');
