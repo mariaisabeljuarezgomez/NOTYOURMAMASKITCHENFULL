@@ -3326,31 +3326,22 @@ function saveGlobalSettings() {
     const rUrl = (document.getElementById('side-panel-right-url').value || '').trim();
     const rLabel = (document.getElementById('side-panel-right-label').value || '').trim();
 
-    // Prepare updated doc
-    const updatedDoc = {
-        ...docV2,
-        heroVideoUrl: heroUrl,
-        sidePanelLeft: { videoUrl: lUrl, label: lLabel },
-        sidePanelRight: { videoUrl: rUrl, label: rLabel }
-    };
-
-    // Commit 7: Normalize save payload to settings.viewer
-    const payload = {
-        ...updatedDoc,
-        settings: {
-            ...(updatedDoc.settings || {}),
-            viewer: {
-                heroVideoUrl:   heroUrl,
-                sidePanelLeft:  { videoUrl: lUrl, label: lLabel },
-                sidePanelRight: { videoUrl: rUrl, label: rLabel },
-            }
-        }
+    // RULE #1: Mutate docV2 directly before posting
+    docV2.heroVideoUrl = heroUrl;
+    docV2.sidePanelLeft = { videoUrl: lUrl, label: lLabel };
+    docV2.sidePanelRight = { videoUrl: rUrl, label: rLabel };
+    
+    if (!docV2.settings) docV2.settings = {};
+    docV2.settings.viewer = {
+        heroVideoUrl:   heroUrl,
+        sidePanelLeft:  { videoUrl: lUrl, label: lLabel },
+        sidePanelRight: { videoUrl: rUrl, label: rLabel },
     };
 
     fetch('/api/menu', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(docV2) // Send full mutated docV2
     })
     .then(r => {
         if (!r.ok) throw new Error('Server error');
@@ -3358,10 +3349,6 @@ function saveGlobalSettings() {
     })
     .then(() => {
         showToast('⚙️ Global Settings updated!');
-        // Keep local doc in sync
-        docV2.heroVideoUrl = heroUrl;
-        docV2.sidePanelLeft = { videoUrl: lUrl, label: lLabel };
-        docV2.sidePanelRight = { videoUrl: rUrl, label: rLabel };
     })
     .catch(() => showToast('❌ Failed to save global settings'));
 }
@@ -5171,8 +5158,8 @@ function pollKlingStatus() {
         document.getElementById('ai-vid-btn').textContent = 'Generate Video';
         document.getElementById('ai-vid-url').value = data.video_url; // FALLBACK for applyVideoToSlot
         document.getElementById('ai-vid-url-row').style.display = 'block';
-        document.getElementById('ai-vid-apply-row').style.display = 'block';
-        document.getElementById('ai-vid-slot-picker').style.display = 'block';
+        // HIDE apply buttons until Cloudinary permanent URL is ready
+        document.getElementById('ai-vid-apply-row').style.display = 'none';
         showToast('✅ Video ready — Uploading to Cloudinary…');
         // Auto-upload to Cloudinary
         uploadAiToCloudinary('video');
