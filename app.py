@@ -495,6 +495,53 @@ def generate_image():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/ai/generate-image-to-image", methods=["POST"])
+def generate_image_to_image():
+    try:
+        data = request.json or {}
+        prompt = data.get("prompt", "")
+        negative_prompt = data.get("negative_prompt", "")
+        init_image_b64 = data.get("init_image_b64", "")
+        strength = float(data.get("strength", 0.75))
+        allowed_ar = {"16:9", "1:1", "21:9", "2:3", "3:2", "4:5", "5:4", "9:16", "9:21"}
+        aspect_ratio = data.get("aspect_ratio", "1:1")
+        if aspect_ratio not in allowed_ar:
+            aspect_ratio = "1:1"
+        creds = data.get("credentials", {})
+        api_key = creds.get("api_key", "")
+        if not prompt or not api_key or not init_image_b64:
+            return jsonify({"error": "Missing prompt, init_image_b64, or credentials"}), 400
+        if "," in init_image_b64:
+            init_image_b64 = init_image_b64.split(",")[1]
+        image_bytes = base64.b64decode(init_image_b64)
+        client = _http()
+        if not client:
+            return jsonify({"error": "No HTTP client available"}), 500
+        files = {
+            "prompt": (None, prompt),
+            "output_format": (None, "png"),
+            "strength": (None, str(strength)),
+            "image": ("image.png", image_bytes, "image/png"),
+        }
+        if negative_prompt:
+            files["negative_prompt"] = (None, negative_prompt)
+        resp = client.post(
+            "https://api.stability.ai/v2beta/stable-image/generate/sd3",
+            headers={"Authorization": f"Bearer {api_key}", "Accept": "image/*"},
+            files=files,
+            timeout=60
+        )
+        if resp.status_code == 200:
+            b64_img = base64.b64encode(resp.content).decode("utf-8")
+            return jsonify({"image_url": f"data:image/png;base64,{b64_img}"})
+        try:
+            err_detail = resp.json().get("errors", [resp.text])
+        except Exception:
+            err_detail = resp.text
+        return jsonify({"error": f"Stability img2img {resp.status_code}: {err_detail}"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/api/ai/generate-video", methods=["POST"])
 def generate_video():
     try:

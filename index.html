@@ -614,6 +614,27 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     </button>
     <div id="ai-img-body" style="display:none;padding:6px 0 10px;">
       <label class="rp-label">Prompt</label>
+      <div id="img-mode-toggle" style="display:flex; gap:8px; margin-bottom:12px;">
+        <button id="btn-mode-txt2img" class="btn-ui primary" onclick="setImgMode('txt2img')" style="font-size:11px; padding:6px 14px;">✏️ Text → Image</button>
+        <button id="btn-mode-img2img" class="btn-ui" onclick="setImgMode('img2img')" style="font-size:11px; padding:6px 14px;">🖼️ Image → Image</button>
+      </div>
+      <div id="img2img-source-panel" style="display:none; margin-bottom:12px; background:#1a1a1a; border:1px solid #444; border-radius:8px; padding:12px;">
+        <div style="font-size:11px; color:#aaa; margin-bottom:8px;">📎 Source Image:</div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <button class="btn-ui" onclick="useCanvasAsImg2ImgSource()" style="font-size:11px; padding:6px 12px;">🎨 Use Current Canvas</button>
+          <button class="btn-ui" onclick="document.getElementById('img2img-file-input').click()" style="font-size:11px; padding:6px 12px;">📁 Upload Image</button>
+          <input type="file" id="img2img-file-input" accept="image/*" style="display:none" onchange="loadImg2ImgFile(this)">
+        </div>
+        <div id="img2img-preview-wrap" style="display:none; margin-top:10px;">
+          <img id="img2img-preview" style="max-width:100%; max-height:120px; border-radius:6px; border:1px solid #444;" alt="Source image preview">
+          <div style="font-size:10px; color:#888; margin-top:4px;">Source image loaded ✓</div>
+        </div>
+        <div style="margin-top:10px;">
+          <label style="font-size:11px; color:#aaa;">Strength: <span id="strength-val">0.75</span></label>
+          <input type="range" id="img2img-strength" min="0.1" max="1.0" step="0.05" value="0.75" style="width:100%; margin-top:4px;" oninput="document.getElementById('strength-val').textContent=parseFloat(this.value).toFixed(2)">
+          <div style="font-size:10px; color:#666; margin-top:2px;">Lower = keep original. Higher = more creative freedom.</div>
+        </div>
+      </div>
       <textarea id="ai-img-prompt" placeholder="e.g. a close-up of a grilled salmon dish with lemon, restaurant lighting" class="rp-input" style="height:56px;resize:vertical;margin-bottom:4px;font-family:inherit;"></textarea>
       <button onclick="enhanceAiPrompt('image')" class="btn-ui" style="font-size:10px;padding:4px 8px;margin-bottom:6px;width:100%;">✨ Enhance Prompt</button>
       <div style="display:flex;gap:4px;margin-bottom:4px;">
@@ -669,9 +690,9 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
           <option value="10">10 seconds</option>
         </select>
         <select id="ai-vid-resolution" class="rp-input" style="flex:1;font-size:10px;padding:5px;">
-          <option value="1920x1080">1920×1080 Hero</option>
-          <option value="1080x1920">1080×1920 Side</option>
-          <option value="1080x1080">1080×1080 Square</option>
+          <option value="1920x1080">📺 Landscape 16:9 (1920×1080)</option>
+          <option value="1080x1920">📱 Vertical 9:16 (1080×1920)</option>
+          <option value="1080x1080">⬜ Square 1:1 (1080×1080)</option>
         </select>
       </div>
 
@@ -3916,6 +3937,53 @@ document.getElementById('ai-vid-prompt')?.addEventListener('input', function() {
   document.getElementById('ai-vid-btn').disabled = !this.value.trim();
 });
 
+let _img2imgMode = 'txt2img';
+let _img2imgSourceB64 = null;
+
+function setImgMode(mode) {
+  _img2imgMode = mode;
+  document.getElementById('btn-mode-txt2img').className = mode === 'txt2img' ? 'btn-ui primary' : 'btn-ui';
+  document.getElementById('btn-mode-img2img').className = mode === 'img2img' ? 'btn-ui primary' : 'btn-ui';
+  document.getElementById('img2img-source-panel').style.display = mode === 'img2img' ? 'block' : 'none';
+}
+
+function useCanvasAsImg2ImgSource() {
+  try {
+    const canvas = document.querySelector('#scaler-wrapper canvas') || document.getElementById('export-canvas');
+    if (canvas) {
+      _img2imgSourceB64 = canvas.toDataURL('image/png');
+      showImg2ImgPreview(_img2imgSourceB64);
+      showToast('✅ Canvas captured as source image');
+    } else if (typeof html2canvas !== 'undefined') {
+      html2canvas(document.getElementById('scaler-wrapper'), { scale:1, useCORS:true, allowTaint:true }).then(c => {
+        _img2imgSourceB64 = c.toDataURL('image/png');
+        showImg2ImgPreview(_img2imgSourceB64);
+        showToast('✅ Canvas captured as source image');
+      });
+    } else {
+      showToast('⚠️ Canvas not available — upload an image instead');
+    }
+  } catch(e) { showToast('⚠️ Could not capture canvas: ' + e.message); }
+}
+
+function loadImg2ImgFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    _img2imgSourceB64 = e.target.result;
+    showImg2ImgPreview(_img2imgSourceB64);
+    showToast('✅ Image loaded as source');
+  };
+  reader.readAsDataURL(file);
+}
+
+function showImg2ImgPreview(b64) {
+  const wrap = document.getElementById('img2img-preview-wrap');
+  const img = document.getElementById('img2img-preview');
+  if (wrap && img) { img.src = b64; wrap.style.display = 'block'; }
+}
+
 async function generateAiImage() {
   const creds = getAiCredentials();
   const prompt = document.getElementById('ai-img-prompt').value.trim();
@@ -3924,6 +3992,54 @@ async function generateAiImage() {
   btn.disabled = true;
   btn.textContent = '⏳ Generating…';
   try {
+    if (_img2imgMode === 'img2img') {
+      if (!_img2imgSourceB64) {
+        showToast('⚠️ Please load a source image first');
+        btn.disabled = false;
+        btn.textContent = 'Generate Image';
+        return;
+      }
+      const negative_prompt = document.getElementById('ai-img-neg').value.trim();
+      const aspect_ratio = document.getElementById('ai-img-ratio').value;
+      const init_image_b64 = _img2imgSourceB64.includes(',') ? _img2imgSourceB64.split(',')[1] : _img2imgSourceB64;
+      const strength = parseFloat(document.getElementById('img2img-strength')?.value || 0.75);
+      const payload = {
+        prompt,
+        negative_prompt,
+        aspect_ratio,
+        init_image_b64,
+        strength,
+        credentials: creds.stability
+      };
+      const res = await fetch('/api/ai/generate-image-to-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.image_url) {
+        aiState.generatedImage = data.image_url;
+        aiState.generatedImageUrl = null;
+        const preview = document.getElementById('ai-img-preview');
+        const thumb = document.getElementById('ai-img-thumb');
+        thumb.src = data.image_url;
+        preview.style.display = 'block';
+        document.getElementById('ai-img-url-row').style.display = 'none';
+        window._lastAiImageUrl = data.image_url;
+        window._lastAiImageBlob = data.image_url;
+        const lastImgBtn = document.getElementById('ai-vid-use-last-img-btn');
+        if (lastImgBtn) { lastImgBtn.disabled = false; lastImgBtn.classList.add('accent'); }
+        const b64only = data.image_url.replace('data:image/png;base64,', '');
+        const promptLabel = document.getElementById('ai-img-prompt').value.trim().substring(0, 40);
+        saveAiImageToAssets(b64only, promptLabel);
+        showToast('✅ Image generated');
+      } else {
+        showToast('❌ Image generation failed: ' + (data.error || 'Unknown error'));
+      }
+      btn.disabled = false;
+      btn.textContent = 'Generate Image';
+      return;
+    }
     const payload = {
       prompt,
       negative_prompt: document.getElementById('ai-img-neg').value.trim(),
