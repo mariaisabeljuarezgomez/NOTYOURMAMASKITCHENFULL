@@ -1234,14 +1234,16 @@ if(barHandle) {
             let nx = pe.clientX - offX;
             let ny = pe.clientY - offY;
 
-            // Viewport Constraints
-            nx = Math.max(0, Math.min(nx, window.innerWidth - selBar.offsetWidth));
-            ny = Math.max(60, Math.min(ny, window.innerHeight - selBar.offsetHeight));
-
-            selBar.style.left = nx + 'px';
-            selBar.style.top = ny + 'px';
-            selBar.style.bottom = 'auto'; // Break the fixed bottom rule
-        };
+	            // Viewport Constraints
+	            nx = Math.max(0, Math.min(nx, window.innerWidth - selBar.offsetWidth));
+	            ny = Math.max(0, Math.min(ny, window.innerHeight - selBar.offsetHeight));
+	
+	            selBar.style.left = nx + 'px';
+	            selBar.style.top = ny + 'px';
+	            selBar.style.bottom = 'auto'; // Break the fixed bottom rule
+	            selBar.style.right = 'auto';  // Prevent stretching on mobile
+	            selBar.style.width = 'auto';  // Allow content to define width
+	        };
 
         document.onpointerup = () => {
             document.onpointermove = null;
@@ -1269,14 +1271,16 @@ if(distBarHandle) {
                 distBar.style.margin = '0';
                 distBar.style.animation = 'none';
             }
-            let nx = pe.clientX - offX;
-            let ny = pe.clientY - offY;
-            nx = Math.max(0, Math.min(nx, window.innerWidth - distBar.offsetWidth));
-            ny = Math.max(60, Math.min(ny, window.innerHeight - distBar.offsetHeight));
-            distBar.style.left = nx + 'px';
-            distBar.style.top = ny + 'px';
-            distBar.style.bottom = 'auto';
-        };
+	            let nx = pe.clientX - offX;
+	            let ny = pe.clientY - offY;
+	            nx = Math.max(0, Math.min(nx, window.innerWidth - distBar.offsetWidth));
+	            ny = Math.max(0, Math.min(ny, window.innerHeight - distBar.offsetHeight));
+	            distBar.style.left = nx + 'px';
+	            distBar.style.top = ny + 'px';
+	            distBar.style.bottom = 'auto';
+	            distBar.style.right = 'auto';  // Prevent stretching on mobile
+	            distBar.style.width = 'auto';  // Allow content to define width
+	        };
 
         document.onpointerup = () => {
             document.onpointermove = null;
