@@ -440,6 +440,16 @@ def test_kling():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/ai/debug-token", methods=["POST"])
+def debug_token():
+    data = request.json or {}
+    api_key = data.get("api_key", "")
+    api_secret = data.get("api_secret", "")
+    if not all([api_key, api_secret]):
+        return jsonify({"error": "Missing credentials"}), 400
+    token = generate_kling_token(api_key, api_secret)
+    return jsonify({"token": token})
+
 @app.route("/api/ai/enhance-prompt", methods=["POST"])
 def enhance_prompt():
     try:
