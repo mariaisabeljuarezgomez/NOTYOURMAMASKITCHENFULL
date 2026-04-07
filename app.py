@@ -459,7 +459,10 @@ def generate_image():
         data = request.json or {}
         prompt = data.get("prompt", "")
         negative_prompt = data.get("negative_prompt", "")
+        allowed_ar = {"16:9", "1:1", "21:9", "2:3", "3:2", "4:5", "5:4", "9:16", "9:21"}
         aspect_ratio = data.get("aspect_ratio", "1:1")
+        if aspect_ratio not in allowed_ar:
+            aspect_ratio = "1:1"
         creds = data.get("credentials", {})
         api_key = creds.get("api_key", "")
         if not prompt or not api_key:
@@ -467,19 +470,27 @@ def generate_image():
         client = _http()
         if not client:
             return jsonify({"error": "No HTTP client available"}), 500
-        fields = {"prompt": prompt, "output_format": "png", "aspect_ratio": aspect_ratio}
+        files = {
+            "prompt": (None, prompt),
+            "output_format": (None, "png"),
+            "aspect_ratio": (None, aspect_ratio),
+        }
         if negative_prompt:
-            fields["negative_prompt"] = negative_prompt
+            files["negative_prompt"] = (None, negative_prompt)
         resp = client.post(
             "https://api.stability.ai/v2beta/stable-image/generate/core",
             headers={"Authorization": f"Bearer {api_key}", "Accept": "image/*"},
-            files={"none": ""},
-            data=fields
+            files=files,
+            timeout=60
         )
         if resp.status_code == 200:
             b64_img = base64.b64encode(resp.content).decode("utf-8")
             return jsonify({"image_url": f"data:image/png;base64,{b64_img}"})
-        return jsonify({"error": f"Image generation failed — API status {resp.status_code}"}), 400
+        try:
+            err_detail = resp.json().get("errors", [resp.text])
+        except Exception:
+            err_detail = resp.text
+        return jsonify({"error": f"Stability API {resp.status_code}: {err_detail}"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
