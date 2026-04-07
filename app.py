@@ -575,7 +575,7 @@ def generate_video():
         aspect = res_map.get(resolution, "16:9")
         payload = {
             "prompt": prompt,
-            "duration": str(duration),
+            "duration": int(duration),
             "aspect_ratio": aspect,
             "cfg_scale": cfg_scale,
             "model_name": data.get("model_name", "kling-v1")
@@ -600,7 +600,7 @@ def generate_video():
                     mime_type = data.get("reference_image_mime", "image/jpeg")
             except Exception:
                 mime_type = data.get("reference_image_mime", "image/jpeg")
-            payload["image"] = reference_image_b64
+            payload["image_url"] = reference_image_b64
         sub_resp = client.post(submit_url, headers=headers, json=payload, timeout=30)
         if sub_resp.status_code in (200, 201, 202):
             task_data = sub_resp.json()
