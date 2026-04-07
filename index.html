@@ -4178,7 +4178,23 @@ async function saveAiImageToAssets(b64, prompt) {
       if (!docV2.assets) docV2.assets = [];
       docV2.assets.push(newAsset);
       renderAssetPanel();
-      showToast('🖼️ AI image saved to Assets panel permanently!');
+      // Persist the updated docV2 (including the new asset) to the server
+      try {
+        const saveRes = await fetch('/api/menu', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(docV2)
+        });
+        if (saveRes.ok) {
+          showToast('🖼️ AI image saved to Assets panel permanently!');
+        } else {
+          markDirty();
+          showToast('🖼️ AI image added — click Save to keep it after refresh.');
+        }
+      } catch (saveErr) {
+        markDirty();
+        showToast('🖼️ AI image added — click Save to keep it after refresh.');
+      }
     }
   } catch(e) {
     showToast('⚠️ Could not save to Assets — available in canvas only this session.');
