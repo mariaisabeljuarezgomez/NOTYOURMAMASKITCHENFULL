@@ -4360,10 +4360,10 @@ function placeAiImageOnCanvas() {
   const cy = (vpRect.top + vpRect.height / 2 - scalerRect.top) / zoomScale;
   const maxZ = docV2.elements.length ? Math.max(...docV2.elements.map(e => e.zIndex || 0)) : 0;
   const newEl = {
-    id: 'img_ai_' + Date.now(),
+    id: 'el_' + Date.now() + '_' + Math.random().toString(36).slice(2,5),
     type: 'image',
     src: aiState.generatedImageUrl,
-    assetId: 'ai_generated_' + Date.now(),
+    assetId: 'asset_ai_' + Date.now(),
     x: Math.max(50, Math.min(BASE_W - 400, cx - 150)),
     y: Math.max(50, Math.min(BASE_H - 400, cy - 150)),
     width: 300, height: 300,
@@ -4391,7 +4391,7 @@ async function saveAiImageToAssets(b64, prompt) {
         id: 'asset_ai_' + Date.now(),
         kind: 'image',
         name: prompt ? prompt.substring(0, 40) : 'AI Image',
-        storage: { originalUrl: resp.url, previewUrl: resp.url, thumbnailUrl: null }
+        storage: { originalUrl: resp.url, previewUrl: null, thumbnailUrl: null }
       };
       if (!docV2.assets) docV2.assets = [];
       docV2.assets.push(newAsset);
