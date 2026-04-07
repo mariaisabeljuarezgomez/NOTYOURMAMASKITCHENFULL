@@ -3038,16 +3038,35 @@ async function renderAssetPanel() {
 }
 
 async function deleteAssetFromServer(filename) {
-    if (!confirm(`Delete ${filename} permanently?`)) return;
+    if (!confirm('Delete ' + filename + ' permanently?')) return;
     try {
-        const res = await fetch(`/api/delete-asset/${encodeURIComponent(filename)}`, {
+        const res = await fetch('/api/delete-asset/' + encodeURIComponent(filename), {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' }
         });
         const json = await res.json();
         if (res.ok && json.status === 'deleted') {
-            showToast('Asset deleted.');
-            await loadUserImages();
+            // Remove ONLY this asset from docV2.assets by matching filename in originalUrl
+            // DO NOT call loadUserImages() — that would wipe AI-generated assets
+            if (Array.isArray(docV2.assets)) {
+                docV2.assets = docV2.assets.filter(a => {
+                    const url = a.storage?.originalUrl || '';
+                    const assetFilename = url.split('/').pop().split('?')[0];
+                    return assetFilename !== filename;
+                });
+            }
+            // Persist updated docV2 (minus deleted asset) to server
+            try {
+                await fetch('/api/menu', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(docV2)
+                });
+            } catch(saveErr) {
+                markDirty();
+            }
+            renderAssetPanel();
+            showToast('🗑️ Asset deleted.');
         } else {
             showToast('Delete failed: ' + (json.error || res.status));
         }
@@ -3060,20 +3079,36 @@ async function loadUserImages() {
     try {
         const res = await fetch('/api/list-images');
         const json = await res.json();
-        if (json.images) {
-            // REPLACE the entire assets array — do NOT push/concat
-            docV2.assets = json.images.map((img, i) => ({
-                id: 'asset_' + (i + 1).toString().padStart(3, '0'),
+        if (!json.images) return;
+
+        // Build a set of originalUrls already in docV2.assets
+        // so we never create duplicate entries
+        const existingUrls = new Set(
+            (docV2.assets || []).map(a => a.storage?.originalUrl)
+        );
+
+        // Build static asset entries for /Images/ files only
+        // These use the protected asset_001..asset_013 ID format
+        const staticAssets = json.images
+            .filter(img => !existingUrls.has(img.url))
+            .map((img, i) => ({
+                id: 'asset_' + String(
+                        (docV2.assets || []).filter(a => a.id.startsWith('asset_0')).length + i + 1
+                    ).padStart(3, '0'),
                 kind: 'image',
                 name: img.filename.replace(/\.[^/.]+$/, ''),
-                storage: { 
+                storage: {
                     originalUrl: img.url,
-                    previewUrl: img.url,
-                    thumbnailUrl: null 
+                    previewUrl: null,        // ALWAYS null — never set to real URL
+                    thumbnailUrl: null
                 }
             }));
-            renderAssetPanel();
-        }
+
+        // MERGE new static assets into docV2.assets — never replace the whole array
+        // AI-generated assets (id starts with asset_ai_) are preserved untouched
+        if (!Array.isArray(docV2.assets)) docV2.assets = [];
+        docV2.assets = [...docV2.assets, ...staticAssets];
+        renderAssetPanel();
     } catch(err) {
         console.error('loadUserImages failed:', err);
     }
