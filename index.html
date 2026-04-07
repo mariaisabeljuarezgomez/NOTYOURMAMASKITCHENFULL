@@ -1406,8 +1406,22 @@ function render() {
         
         // Shape-type overrides after base styles applied
         if (d.type === 'shape' && d.shapeType === 'circle') {
-            el.querySelector('.shape-inner').style.borderRadius = '50%';
+            const inner = el.querySelector('.shape-inner');
+            if (inner) {
+                // V2 Rule: Circle must have borderRadius 50% for perfect circle
+                inner.style.borderRadius = '50%';
+                inner.style.backgroundColor = d.fillColor || '#c8a96a';
+                inner.style.boxSizing = 'border-box';
+                // Apply border to inner element for perfect circle border
+                if ((d.borderWidth || 0) > 0) {
+                    inner.style.border = `${d.borderWidth}px solid ${d.borderColor || '#c8a96a'}`;
+                } else {
+                    inner.style.border = 'none';
+                }
+            }
             el.style.borderRadius = '0';
+            el.style.backgroundColor = 'transparent';
+            el.style.border = 'none';
         } else if (d.type === 'shape' && d.shapeType === 'star') {
             const inner = el.querySelector('.shape-inner');
             inner.style.backgroundColor = d.fillColor || 'transparent';
@@ -1425,13 +1439,14 @@ function render() {
             el.style.border = 'none';
         }
         
-        if (d.type === 'shape' && d.shapeType !== 'star') {
+        if (d.type === 'shape' && d.shapeType !== 'star' && d.shapeType !== 'circle') {
             const inner = el.querySelector('.shape-inner');
             if (inner) {
                 inner.style.borderRadius = (d.borderRadius || 0) + 'px';
+                inner.style.backgroundColor = d.fillColor || '#c8a96a';
+                inner.style.boxSizing = 'border-box';
                 if ((d.borderWidth || 0) > 0) {
                     inner.style.border = `${d.borderWidth}px solid ${d.borderColor || '#000'}`;
-                    inner.style.boxSizing = 'border-box';
                 } else {
                     inner.style.border = 'none';
                 }
@@ -2767,11 +2782,10 @@ function addCircle() {
     docV2.elements.push({
         id, type: 'shape', shapeType: 'circle',
         x: 300, y: 300, width: 150, height: 150,
-        zIndex: maxZ + 1, opacity: 1, rotation: 0,
+        zIndex: maxZ + 1, opacity: 100, rotation: 0,
         visible: true, locked: false, layerRole: 'content',
-        strokeWidth: 0, strokeColor: '#c8a96a', cornerRadius: 75,
-        fillColor: '#c8a96a',
-        style: { fill: '#c8a96a' }
+        borderWidth: 0, borderColor: '#c8a96a', borderRadius: 75,
+        fillColor: '#c8a96a'
     });
     render();
     setTimeout(() => { selectById(id); setBarTab('design'); }, 50);
