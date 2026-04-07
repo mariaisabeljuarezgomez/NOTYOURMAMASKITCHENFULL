@@ -3149,8 +3149,11 @@ async function deleteAssetFromServer(filename) {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' }
         });
-        const json = await res.json();
-        if (res.ok && json.status === 'deleted') {
+        // Force cleanup even if server says 404 (already gone)
+        const isAlreadyGone = (res.status === 404);
+        const json = (res.status !== 204) ? await res.json().catch(() => ({})) : {};
+
+        if (res.ok || isAlreadyGone) {
             // Remove ONLY this asset from docV2.assets by matching filename in originalUrl
             if (Array.isArray(docV2.assets)) {
                 docV2.assets = docV2.assets.filter(a => {
@@ -3178,7 +3181,12 @@ async function deleteAssetFromServer(filename) {
             }
             render();
             renderAssetPanel();
-            showToast('✅ Asset deleted and removed from canvas');
+            
+            if (isAlreadyGone) {
+                showToast('ℹ️ Asset was already gone from server; cleaned up local state.');
+            } else {
+                showToast('✅ Asset deleted and removed from canvas');
+            }
         } else {
             showToast('❌ Delete failed: ' + (json.error || res.status));
         }
