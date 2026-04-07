@@ -509,6 +509,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     <div class="header-actions">
         <button id="btn-save-header" class="btn-ui" onclick="save()" data-help="Saves your current layout to the server and browser backup" style="background:#1e8449; border-color:#2ecc71; color:#fff;">💾 Save Session</button>
         <button id="btn-undo" class="btn-ui" onclick="undo()" title="Undo Last Change" data-help="Reverses your last action (move, edit, delete, etc.)">↺ Undo Last Change</button>
+        <button id="btn-lock-bg" class="btn-ui" onclick="toggleBgLock()" data-help="Toggle the background layer lock to move or delete promoted background images.">🔒 Unlock BG</button>
         <button id="btn-lock-global" class="btn-ui primary" onclick="toggleGlobalLock()" data-help="When locked, elements cannot be moved or edited — click to unlock for editing">🔒 Layout Locked</button>
         <button id="btn-reload" class="btn-ui" onclick="location.reload()" data-help="Reloads the page to reset the session if needed.">↺ RELOAD</button>
     </div>
@@ -2291,6 +2292,32 @@ function toggleGlobalLock() {
     render();
 }
 
+function toggleBgLock() {
+    if (!docV2.settings) docV2.settings = {};
+    docV2.settings.backgroundLayerLocked = !docV2.settings.backgroundLayerLocked;
+
+    // Unlock any background elements directly so they can be manipulated
+    if (!docV2.settings.backgroundLayerLocked) {
+        docV2.elements.forEach(el => {
+            if (el.layerRole === 'background') {
+                el.locked = false;
+            }
+        });
+    } else {
+        docV2.elements.forEach(el => {
+            if (el.layerRole === 'background') {
+                el.locked = true;
+            }
+        });
+    }
+
+    const btn = document.getElementById('btn-lock-bg');
+    btn.innerText = docV2.settings.backgroundLayerLocked ? '🔒 Unlock BG' : '🔓 Lock BG';
+    btn.classList.toggle('lock-unlocked', !docV2.settings.backgroundLayerLocked);
+    showToast(docV2.settings.backgroundLayerLocked ? 'Background Layer Locked' : 'Background Layer Unlocked - you can now select/delete the background image');
+    render();
+}
+
 function syncZoomControlsVisibility() {
     const zoomControls = document.getElementById('zoom-controls');
     if(zoomControls) zoomControls.style.display = layoutLocked ? 'none' : 'flex';
@@ -3279,6 +3306,20 @@ function _mergeLoadedDoc(s) {
     selectedId = null;
     docV2.editorState.selectedElementIds = [];
     restoreAiCredentials(docV2);
+
+    // Sync the Unlock BG button state on load
+    if (docV2.settings) {
+        // Ensure background layer lock state defaults to true for older sessions
+        if (docV2.settings.backgroundLayerLocked === undefined) {
+            docV2.settings.backgroundLayerLocked = true;
+        }
+
+        const bgBtn = document.getElementById('btn-lock-bg');
+        if (bgBtn) {
+            bgBtn.innerText = docV2.settings.backgroundLayerLocked ? '🔒 Unlock BG' : '🔓 Lock BG';
+            bgBtn.classList.toggle('lock-unlocked', !docV2.settings.backgroundLayerLocked);
+        }
+    }
 }
 
 async function save() {
