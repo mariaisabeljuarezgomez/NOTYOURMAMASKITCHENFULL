@@ -1005,7 +1005,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 <option value="century-gothic-bold-italic">Century Gothic Bold Italic</option>
 <option value="century-gothic-regular">Century Gothic Regular</option>
 </select>
-                <input type="color" id="sel-color" onchange="updateStyle('color', this.value)">
+                <input type="color" id="sel-color" oninput="updateStyle('color', this.value)">
                 <div class="ctrl-group">
                   <label>Size</label>
                   <input type="number" id="sel-font-size" min="4" max="400" step="1" style="width:52px"
@@ -2119,10 +2119,16 @@ function updateSelectionBar() {
     document.getElementById('sel-video-url').value = item.videoUrl || '';
     
     if(item.type==='text') {
-        document.getElementById('sel-font').value = item.style.fontFamily.replace(/['"]/g, '');
-        document.getElementById('sel-color').value = item.style.color;
-        document.getElementById('sel-l-height').value = item.style.lineHeight || 1.1;
-        document.getElementById('sel-l-spacing').value = item.style.letterSpacing || 0;
+        // V2 Rule: Support both top-level and style object
+        const fontFamily = (item.fontFamily || (item.style && item.style.fontFamily) || 'century-gothic-regular').replace(/['"]/g, '');
+        const color = item.color || (item.style && item.style.color) || '#000000';
+        const lineHeight = item.lineHeight || (item.style && item.style.lineHeight) || 1.1;
+        const letterSpacing = item.letterSpacing || (item.style && item.style.letterSpacing) || 0;
+
+        document.getElementById('sel-font').value = fontFamily;
+        document.getElementById('sel-color').value = color;
+        document.getElementById('sel-l-height').value = lineHeight;
+        document.getElementById('sel-l-spacing').value = letterSpacing;
         
         const fsInput = document.getElementById('sel-font-size');
         if (fsInput) fsInput.value = Math.round(item.style.fontSize || 16);
@@ -2281,7 +2287,15 @@ function updateStyle(k, v) {
         if(k === 'color') item.color = v;
         if(k === 'fontSize') item.fontSize = v;
         if(k === 'fontFamily') item.fontFamily = v;
+        if(k === 'lineHeight') item.lineHeight = v;
+        if(k === 'letterSpacing') item.letterSpacing = v;
+        
         render(); 
+        // Force live color update to DOM for instant feedback
+        if(k === 'color') {
+            const el = document.getElementById(selectedId);
+            if(el) el.style.color = v;
+        }
     } 
 }
 
