@@ -883,7 +883,7 @@ def cloudinary_upload():
         
         # Step 1 & 2: Build params dict for both signing AND sending
         if file_type == "video":
-            params = {"folder": "nymk_ai", "resource_type": "video", "timestamp": timestamp}
+            params = {"folder": "nymk_ai", "timestamp": timestamp}
             upload_url = f"https://api.cloudinary.com/v1_1/{cloud_name}/video/upload"
         else:
             params = {"folder": "nymk_ai", "timestamp": timestamp}

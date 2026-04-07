@@ -893,7 +893,16 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         <video id="ai-vid-player" autoplay muted loop playsinline style="width:100%;border-radius:6px;border:1px solid #333;"></video>
         <div style="display:flex;gap:4px;margin-top:4px;">
           <button onclick="uploadAiToCloudinary('video')" class="btn-ui" style="flex:1;font-size:10px;padding:5px;">Upload to Cloudinary</button>
-          <button onclick="sendAiVideoToViewer()" class="btn-ui accent" style="flex:1;font-size:10px;padding:5px;">Send to Viewer</button>
+        </div>
+        <div id="ai-vid-slot-picker" style="margin-top:6px;">
+          <div style="font-size:9px;color:#aaa;font-weight:800;text-transform:uppercase;margin-bottom:4px;">
+            📺 Replace Viewer Video:
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <button onclick="sendAiVideoToSlot('hero')" class="btn-ui accent" style="width:100%;font-size:10px;padding:6px;text-align:left;">🎬 Replace Hero Video</button>
+            <button onclick="sendAiVideoToSlot('left')" class="btn-ui" style="width:100%;font-size:10px;padding:6px;text-align:left;">◀ Replace Left Panel Video</button>
+            <button onclick="sendAiVideoToSlot('right')" class="btn-ui" style="width:100%;font-size:10px;padding:6px;text-align:left;">▶ Replace Right Panel Video</button>
+          </div>
         </div>
         <div id="ai-vid-url-row" style="display:none;margin-top:4px;">
           <input type="text" id="ai-vid-url" class="rp-input" style="font-size:10px;margin-bottom:4px;" readonly>
@@ -5137,19 +5146,48 @@ function pollKlingStatus() {
   }, 5000);
 }
 
-function sendAiVideoToViewer() {
-  let url = aiState.generatedVideoUrl;
-  if (!url) { showToast('❌ No video generated yet'); return; }
-  const resolution = document.getElementById('ai-vid-resolution').value;
-  if (resolution === '1080x1920') {
-    showBrandedModal2('Send to Viewer Panel', 'Choose which side panel:', [
-      { label: 'Left Side Panel', onClick: () => { document.getElementById('side-panel-left-url').value = url; saveGlobalSettings(); showToast('✅ Video URL sent to Viewer — click Update All Viewer Settings to publish'); closeGenericModal(); } },
-      { label: 'Right Side Panel', onClick: () => { document.getElementById('side-panel-right-url').value = url; saveGlobalSettings(); showToast('✅ Video URL sent to Viewer — click Update All Viewer Settings to publish'); closeGenericModal(); } }
-    ]);
-  } else {
-    document.getElementById('hero-video-url-input').value = url;
-    saveGlobalSettings();
-    showToast('✅ Video URL sent to Viewer — click Update All Viewer Settings to publish');
+async function sendAiVideoToSlot(slot) {
+  const url = aiState.generatedVideoUrl;
+  if (!url) {
+    showToast('⚠️ No video URL. Upload to Cloudinary first.');
+    return;
+  }
+  const slotMap = {
+    hero:  'heroVideoUrl',
+    left:  'sidePanelLeftUrl',
+    right: 'sidePanelRightUrl'
+  };
+  const labelMap = {
+    hero:  'Hero Video',
+    left:  'Left Panel Video',
+    right: 'Right Panel Video'
+  };
+  const inputMap = {
+    hero:  'hero-video-url-input',
+    left:  'side-panel-left-url',
+    right: 'side-panel-right-url'
+  };
+  const field = slotMap[slot];
+  if (!field) return;
+  if (!docV2.settings) docV2.settings = {};
+  docV2.settings[field] = url;
+  const inputEl = document.getElementById(inputMap[slot]);
+  if (inputEl) inputEl.value = url;
+  try {
+    const res = await fetch('/api/menu', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(docV2)
+    });
+    if (res.ok) {
+      showToast('✅ ' + labelMap[slot] + ' updated in Viewer!');
+    } else {
+      markDirty();
+      showToast('⚠️ Save failed — use 💾 Save Session to retry.');
+    }
+  } catch (err) {
+    markDirty();
+    showToast('⚠️ Network error — use 💾 Save Session to retry.');
   }
 }
 
