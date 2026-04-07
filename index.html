@@ -4166,12 +4166,15 @@ function showImg2ImgPreview(b64) {
                 const imgResp = await fetch(pollData.image_url);
                 const blob = await imgResp.blob();
                 const reader = new FileReader();
-                reader.onloadend = () => {
+                reader.onloadend = async () => {
                   const b64 = reader.result;
                   window._lastAiImageB64 = b64.split(',')[1];
                   document.getElementById('ai-img-thumb').src = b64;
                   document.getElementById('ai-img-preview').style.display = 'block';
                   showToast('✅ Kling image ready!');
+                  // Auto-save to Railway assets
+                  await saveAiImageToAssets(b64.split(',')[1], 'Kling AI Image');
+                  window._lastAiImageUrl = b64; // For placeAiImageOnCanvas
                 };
                 reader.readAsDataURL(blob);
               } catch(fetchErr) {
@@ -4181,6 +4184,9 @@ function showImg2ImgPreview(b64) {
                 document.getElementById('ai-img-url-row').style.display = 'block';
                 document.getElementById('ai-img-preview').style.display = 'block';
                 showToast('✅ Kling image ready!');
+                // Auto-save to Railway assets (URL-based)
+                saveAiImageToAssets(null, 'Kling AI Image', pollData.image_url);
+                window._lastAiImageUrl = pollData.image_url;
               }
             } else if (pollData.status === 'failed') {
               clearInterval(pollInterval);
@@ -4346,14 +4352,8 @@ async function uploadAiToCloudinary(fileType) {
 }
 
 function placeAiImageOnCanvas() {
-  const url = aiState.generatedImageUrl || aiState.generatedImage;
-  if (!url) { showToast('❌ Upload to Cloudinary first'); return; }
-  const creds = getAiCredentials();
-  if (!aiState.generatedImageUrl) {
-    showToast('⏳ Uploading to Cloudinary first…');
-    uploadAiToCloudinary('image').then(() => placeAiImageOnCanvas());
-    return;
-  }
+  const url = window._lastAiImageUrl || aiState.generatedImageUrl || aiState.generatedImage;
+  if (!url) { showToast('❌ No image to place — generate one first'); return; }
   const vpRect = viewport.getBoundingClientRect();
   const scalerRect = scaler.getBoundingClientRect();
   const cx = (vpRect.left + vpRect.width / 2 - scalerRect.left) / zoomScale;
@@ -4362,8 +4362,8 @@ function placeAiImageOnCanvas() {
   const newEl = {
     id: 'el_' + Date.now() + '_' + Math.random().toString(36).slice(2,5),
     type: 'image',
-    src: aiState.generatedImageUrl,
-    assetId: 'asset_ai_' + Date.now(),
+    src: url,
+    assetId: window._lastAiAssetId || '',
     x: Math.max(50, Math.min(BASE_W - 400, cx - 150)),
     y: Math.max(50, Math.min(BASE_H - 400, cy - 150)),
     width: 300, height: 300,
@@ -4374,45 +4374,66 @@ function placeAiImageOnCanvas() {
   docV2.elements.push(newEl);
   render();
   selectById(newEl.id);
+  // Auto-persist to server
+  save();
   showToast('✅ AI image placed on canvas');
 }
 
-async function saveAiImageToAssets(b64, prompt) {
-  const filename = 'ai-' + Date.now() + '.png';
-  try {
-    const res = await fetch('/api/upload-image', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ filename: filename, data: b64 })
-    });
-    const resp = await res.json();
-    if (resp.url) {
-      const newAsset = {
-        id: 'asset_ai_' + Date.now(),
-        kind: 'image',
-        name: prompt ? prompt.substring(0, 40) : 'AI Image',
-        storage: { originalUrl: resp.url, previewUrl: null, thumbnailUrl: null }
-      };
-      if (!docV2.assets) docV2.assets = [];
-      docV2.assets.push(newAsset);
-      renderAssetPanel();
-      // Persist updated docV2 (with new asset) to server immediately
-      try {
-        const saveRes = await fetch('/api/menu', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(docV2)
-        });
-        if (!saveRes.ok) {
-          markDirty();
-        }
-      } catch (saveErr) {
+async function saveAiImageToAssets(b64, prompt, urlOverride) {
+  let assetUrl = null;
+  let filename = null;
+  
+  // If urlOverride is provided (Kling URL case), use it directly
+  if (urlOverride) {
+    assetUrl = urlOverride;
+    // Extract filename from URL or generate one
+    const urlParts = urlOverride.split('/');
+    filename = urlParts[urlParts.length - 1] || 'ai-' + Date.now() + '.png';
+  } else {
+    // Original flow: upload base64 to Railway
+    filename = 'ai-' + Date.now() + '.png';
+    try {
+      const res = await fetch('/api/upload-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: filename, data: b64 })
+      });
+      const resp = await res.json();
+      if (resp.url) {
+        assetUrl = resp.url;
+      }
+    } catch(e) {
+      showToast('⚠️ Could not save to Assets — available in canvas only this session.');
+      return;
+    }
+  }
+  
+  if (assetUrl) {
+    const newAsset = {
+      id: 'asset_ai_' + Date.now(),
+      kind: 'image',
+      name: prompt ? prompt.substring(0, 40) : 'AI Image',
+      storage: { originalUrl: assetUrl, previewUrl: null, thumbnailUrl: null }
+    };
+    if (!docV2.assets) docV2.assets = [];
+    docV2.assets.push(newAsset);
+    renderAssetPanel();
+    // Store assetId for use by placeAiImageOnCanvas
+    window._lastAiAssetId = newAsset.id;
+    // Persist updated docV2 (with new asset) to server immediately
+    try {
+      const saveRes = await fetch('/api/menu', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(docV2)
+      });
+      if (!saveRes.ok) {
         markDirty();
       }
-      showToast('🖼️ AI image saved to Assets — will persist after refresh.');
+    } catch (saveErr) {
+      markDirty();
     }
-  } catch(e) {
-    showToast('⚠️ Could not save to Assets — available in canvas only this session.');
+    showToast('🖼️ AI image saved to Assets — will persist after refresh.');
   }
 }
 
