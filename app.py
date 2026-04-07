@@ -597,6 +597,9 @@ def generate_video():
         if task_type == "text2video" and camera_motion and camera_motion != "none":
             payload["camera_motion"] = camera_motion
         if reference_image_b64:
+            # Strip data URI prefix BEFORE decoding — must happen first
+            if "," in reference_image_b64:
+                reference_image_b64 = reference_image_b64.split(",", 1)[1]
             try:
                 raw_bytes = base64.b64decode(reference_image_b64)
                 if PILImage:
