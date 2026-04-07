@@ -3034,35 +3034,42 @@ function setAsBackground(src) {
     
     let bgLayer = docV2.elements.find(e => e.type === 'image' && e.layerRole === 'background');
     if (bgLayer) {
+        // Update existing background layer with V2 schema compliance
         bgLayer.assetId = 'asset_015';
         bgLayer.src = src;
-        bgLayer.x = 0; bgLayer.y = 0;
-        bgLayer.width = BASE_W; bgLayer.height = BASE_H;
+        bgLayer.x = 0; 
+        bgLayer.y = 0;
+        bgLayer.width = BASE_W;      // Auto-fit to canvas width (908.44px)
+        bgLayer.height = BASE_H;     // Auto-fit to canvas height (1336.02px)
         bgLayer.locked = true;
         bgLayer.visible = true;
-        bgLayer.opacity = 1;
+        bgLayer.opacity = 100;       // V2 Rule: opacity stored as 0-100
         bgLayer.rotation = 0;
     } else {
+        // Create new background layer with V2 schema compliance
         const minZ = Math.min(...docV2.elements.map(e => e.zIndex || 10));
         bgLayer = {
             id: 'bg_upload_' + Date.now(),
             type: 'image',
             assetId: 'asset_015',
             src: src,
-            x: 0, y: 0,
-            width: BASE_W, height: BASE_H,
+            x: 0, 
+            y: 0,
+            width: BASE_W,              // Auto-fit to canvas width (908.44px)
+            height: BASE_H,             // Auto-fit to canvas height (1336.02px)
             zIndex: minZ - 1,
-            opacity: 1,
+            opacity: 100,               // V2 Rule: opacity stored as 0-100
             rotation: 0,
             visible: true,
             locked: true,
-            layerRole: 'background'
+            layerRole: 'background',
+            name: 'Background Image'     // V2 Rule: provide meaningful name
         };
         docV2.elements.push(bgLayer);
     }
     selectedId = null;
     render();
-    showToast('✅ Background replaced and locked');
+    showToast('✅ Background replaced and locked — Toggle Original BG to switch');
 }
 
 async function setSelectedAsBackground() {
