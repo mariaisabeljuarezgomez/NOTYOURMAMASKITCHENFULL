@@ -452,7 +452,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 <div id="top-header">
     <div id="header-title">MENU EDITOR PRO V2</div>
     <div class="header-actions">
-        <button id="btn-save-header" class="btn-ui" onclick="save()" data-help="Saves your current layout to the server and browser backup" style="background:#1e8449; border-color:#2ecc71; color:#fff;">💾 Save</button>
+        <button id="btn-save-header" class="btn-ui" onclick="save()" data-help="Saves your current layout to the server and browser backup" style="background:#1e8449; border-color:#2ecc71; color:#fff;">💾 Save Session</button>
         <button id="btn-undo" class="btn-ui" onclick="undo()" title="Undo Last Change" data-help="Reverses your last action (move, edit, delete, etc.)">↺ Undo Last Change</button>
         <button id="btn-lock-global" class="btn-ui primary" onclick="toggleGlobalLock()" data-help="When locked, elements cannot be moved or edited — click to unlock for editing">🔒 Layout Locked</button>
         <button id="btn-reload" class="btn-ui" onclick="location.reload()" data-help="Reloads the page to reset the session if needed.">↺ RELOAD</button>
@@ -491,15 +491,15 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
   <div class="ls-panel" id="ls-panel-add">
     <div class="ls-section-title">Create Elements</div>
     <button class="ls-action-btn" onclick="addText()"><span class="ls-btn-icon">T</span><span class="ls-btn-label">Add Text</span></button>
-    <button class="ls-action-btn" onclick="addRect()"><span class="ls-btn-icon">⬜</span><span class="ls-btn-label">Add Rectangle</span></button>
+    <button class="ls-action-btn" onclick="addRect()"><span class="ls-btn-icon">⬜</span><span class="ls-btn-label">Add Rect</span></button>
     <button class="ls-action-btn" onclick="addCircle()"><span class="ls-btn-icon">⭕</span><span class="ls-btn-label">Add Circle</span></button>
     <button class="ls-action-btn" onclick="addStar()"><span class="ls-btn-icon">⭐</span><span class="ls-btn-label">Add Star</span></button>
     <button class="ls-action-btn" onclick="addLine()"><span class="ls-btn-icon">╱</span><span class="ls-btn-label">Add Line</span></button>
-    <button class="ls-action-btn" onclick="document.getElementById('in-img').click()"><span class="ls-btn-icon">📷</span><span class="ls-btn-label">Upload Image</span></button>
+    <button class="ls-action-btn" onclick="document.getElementById('in-img').click()"><span class="ls-btn-icon">📷</span><span class="ls-btn-label">Upload Img</span></button>
     <button class="ls-action-btn" onclick="document.getElementById('in-bg').click()"><span class="ls-btn-icon">🖼️</span><span class="ls-btn-label">Replace Background</span></button>
     <button class="ls-action-btn" onclick="toggleBg()"><span class="ls-btn-icon">👁️</span><span class="ls-btn-label">Toggle Original BG</span></button>
     <div class="ls-section-title" style="margin-top:16px;">File</div>
-    <button class="ls-action-btn accent" onclick="exportPng()"><span class="ls-btn-icon">⬇️</span><span class="ls-btn-label">Export PNG</span></button>
+    <button class="ls-action-btn accent" onclick="exportPng()"><span class="ls-btn-icon">⬇️</span><span class="ls-btn-label">Export Pro PNG</span></button>
     <button class="ls-action-btn" onclick="load()"><span class="ls-btn-icon">📂</span><span class="ls-btn-label">Load Session</span></button>
     <button class="ls-action-btn danger" onclick="showResetModal()"><span class="ls-btn-icon">🔄</span><span class="ls-btn-label">Reset to Original</span></button>
   </div>
