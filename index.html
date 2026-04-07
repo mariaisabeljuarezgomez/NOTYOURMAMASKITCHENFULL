@@ -1536,34 +1536,36 @@ function render() {
             el.style.borderRadius = '0';
         } else if (d.type === 'shape' && d.shapeType === 'star') {
             const inner = el.querySelector('.shape-inner');
-            inner.style.backgroundColor = (d.style && d.style.fill) ? d.style.fill : 'transparent';
+            inner.style.backgroundColor = d.fillColor || 'transparent';
             inner.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
             el.style.backgroundColor = 'transparent';
-            el.style.clipPath = 'none'; // BUG 1 FIX: Handles stay visible
+            el.style.clipPath = 'none';
             el.style.borderRadius = '0';
-            if ((d.strokeWidth || 0) > 0) {
-                inner.style.boxShadow = `inset 0 0 0 ${d.strokeWidth}px ${d.strokeColor || '#c8a96a'}`;
+            if ((d.borderWidth || 0) > 0) {
+                inner.style.boxShadow = `inset 0 0 0 ${d.borderWidth}px ${d.borderColor || '#c8a96a'}`;
             } else {
                 inner.style.boxShadow = 'none';
             }
         } else if (d.type === 'line') {
-            // Ensure line wrapper stays transparent
             el.style.backgroundColor = 'transparent';
             el.style.border = 'none';
         }
         
-        // Final Stroke/Outer Logic: Apply to inner for shapes
         if (d.type === 'shape' && d.shapeType !== 'star') {
             const inner = el.querySelector('.shape-inner');
-            if (inner && (d.strokeWidth || 0) > 0) {
-                inner.style.border = `${d.strokeWidth}px solid ${d.strokeColor || '#000'}`;
-                inner.style.boxSizing = 'border-box';
-            } else if (inner) {
-                inner.style.border = 'none';
+            if (inner) {
+                inner.style.borderRadius = (d.borderRadius || 0) + 'px';
+                if ((d.borderWidth || 0) > 0) {
+                    inner.style.border = `${d.borderWidth}px solid ${d.borderColor || '#000'}`;
+                    inner.style.boxSizing = 'border-box';
+                } else {
+                    inner.style.border = 'none';
+                }
             }
-        } else if (d.type === 'image' && (d.strokeWidth || 0) > 0) {
-            el.style.border = `${d.strokeWidth}px solid ${d.strokeColor || '#000'}`;
+        } else if (d.type === 'image' && (d.borderWidth || 0) > 0) {
+            el.style.border = `${d.borderWidth}px solid ${d.borderColor || '#000'}`;
             el.style.boxSizing = 'border-box';
+            el.style.borderRadius = (d.borderRadius || 0) + 'px';
         }
         
         elementsLayer.appendChild(el); attach(el);
@@ -1572,6 +1574,17 @@ function render() {
     renderLayerList();
     if(selectedId) updateSelectionBar();
     updateDistributeBar();
+}
+
+function updateDistributeBar() {
+    const ids = docV2.editorState.selectedElementIds || [];
+    const bar = document.getElementById('distribute-bar');
+    if (!bar) return;
+    if (ids.length >= 3) {
+        bar.classList.add('show');
+    } else {
+        bar.classList.remove('show');
+    }
 }
 
 function renderLayerList() {
@@ -1661,7 +1674,7 @@ function renderLayerList() {
         // Wire up rename span after it is in DOM
         const nameSpan = div.querySelector('.layer-rename-span');
         if (nameSpan) {
-            nameSpan.textContent = elementDisplayNames[item.id] || item.id;
+            nameSpan.textContent = item.name || item.id;
 
             nameSpan.addEventListener('dblclick', (e) => {
                 e.stopPropagation();
@@ -1677,16 +1690,16 @@ function renderLayerList() {
                 nameSpan.contentEditable = 'false';
                 const newName = nameSpan.innerText.trim();
                 if (newName) {
-                    elementDisplayNames[item.id] = newName;
+                    item.name = newName;
                 } else {
-                    delete elementDisplayNames[item.id];
+                    delete item.name;
                     nameSpan.textContent = item.id;
                 }
             });
 
             nameSpan.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') { e.preventDefault(); nameSpan.blur(); }
-                if (e.key === 'Escape') { nameSpan.innerText = elementDisplayNames[item.id] || item.id; nameSpan.blur(); }
+                if (e.key === 'Escape') { nameSpan.innerText = item.name || item.id; nameSpan.blur(); }
                 e.stopPropagation(); // prevent canvas keyboard shortcuts while typing
             });
         }
@@ -2108,7 +2121,7 @@ function updateSelectionBar() {
         if(tabDesign) tabDesign.style.display = 'none';
         
         const tabArrange = document.getElementById('bar-tab-arrange');
-        if(tabArrange) tabArrange.style.display = 'none';
+        if(tabArrange) tabArrange.style.display = 'flex';
 
         const textCtrls = document.getElementById('text-style-ctrls');
         if(textCtrls) textCtrls.style.display = 'none';
@@ -2882,14 +2895,14 @@ function addCircle() {
 function addStar() {
     pushState();
     const id = 'star_' + Date.now();
-    const maxZ = docV2.elements.reduce((m, e) => Math.max(m, e.zIndex || 0), 0);
+    const maxZ = docV2.elements.length ? Math.max(...docV2.elements.map(e => e.zIndex || 0)) : 0;
     docV2.elements.push({
         id, type: 'shape', shapeType: 'star',
         x: 300, y: 300, width: 150, height: 150,
-        zIndex: maxZ + 1, opacity: 1, rotation: 0,
+        zIndex: maxZ + 1, opacity: 100, rotation: 0,
         visible: true, locked: false, layerRole: 'content',
-        strokeWidth: 0, strokeColor: '#c8a96a', cornerRadius: 0,
-        style: { fill: '#c8a96a' }
+        borderWidth: 0, borderColor: '#c8a96a', borderRadius: 0,
+        fillColor: '#c8a96a'
     });
     render();
     setTimeout(() => { selectById(id); setBarTab('design'); }, 50);
@@ -2970,16 +2983,13 @@ function toggleOutlineOnly() {
     pushState();
     const item = docV2.elements.find(e => e.id === selectedId);
     if (!item) return;
-    if (!item.style) item.style = {};
-    const currentFill = item.style.fill;
+    const currentFill = item.fillColor;
     if (!currentFill || currentFill === 'transparent' || currentFill === 'none') {
-        // Restore fill
-        item.style.fill = '#333333';
+        item.fillColor = '#333333';
     } else {
-        // Set to outline-only
-        item.style.fill = 'transparent';
-        if (!item.strokeWidth || item.strokeWidth < 2) item.strokeWidth = 2;
-        if (!item.strokeColor) item.strokeColor = '#c8a96a';
+        item.fillColor = 'transparent';
+        if (!item.borderWidth || item.borderWidth < 2) item.borderWidth = 2;
+        if (!item.borderColor) item.borderColor = '#c8a96a';
     }
     render();
     sync();
@@ -3055,7 +3065,7 @@ async function addFromTray(src, skipPush) {
         assetId: matchedAsset ? matchedAsset.id : null,
         x, y,
         width: 300, height: 300,
-        zIndex: maxZ + 1, opacity: 1, rotation: 0,
+        zIndex: maxZ + 1, opacity: 100, rotation: 0,
         visible: true, locked: false, layerRole: 'content'
     };
     docV2.elements.push(newElement);
