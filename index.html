@@ -813,6 +813,28 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     </button>
     <div id="ai-vid-body" style="display:none;padding:6px 0 10px;">
 
+      <!-- Model and Quality dropdowns -->
+      <label class="rp-label">Video Model</label>
+      <select id="ai-vid-model" class="rp-input" style="margin-bottom:6px;font-size:10px;padding:5px;" onchange="updateVideoModelOptions()">
+        <option value="kling-v1">kling-v1</option>
+        <option value="kling-v1-5">kling-v1-5</option>
+        <option value="kling-v1-6">kling-v1-6</option>
+        <option value="kling-v2-1">kling-v2-1</option>
+        <option value="kling-v2-5-turbo">kling-v2-5-turbo</option>
+        <option value="kling-v2-6">kling-v2-6</option>
+        <option value="kling-v3">kling-v3</option>
+        <option value="kling-v3-omni">kling-v3-omni</option>
+        <option value="kling-video-o1">kling-video-o1</option>
+      </select>
+      <label class="rp-label">Mode / Quality</label>
+      <select id="ai-vid-quality" class="rp-input" style="margin-bottom:6px;font-size:10px;padding:5px;" onchange="updateVideoModelOptions()">
+        <option value="std">STD</option>
+        <option value="pro">PRO</option>
+      </select>
+      <div id="ai-vid-model-hint" style="font-size:9px;color:#666;margin-bottom:6px;line-height:1.4;">
+        Some Kling features vary by model. This panel currently supports model, STD/PRO, duration, resolution, and optional image reference.
+      </div>
+
       <!-- Reference image upload -->
       <label class="rp-label">Reference Image (optional)</label>
       <div id="ai-vid-ref-zone" onclick="document.getElementById('ai-vid-ref-input').click()" style="border:2px dashed #444;border-radius:8px;padding:12px;text-align:center;cursor:pointer;color:#777;font-size:10px;margin-bottom:4px;">
@@ -843,7 +865,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
       </div>
 
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-        <input type="checkbox" id="ai-vid-pin-start" checked style="accent-color:var(--accent);">
+        <input type="checkbox" id="ai-vid-pin-start" checked style="accent-color:var(--accent);" onchange="updateVideoControlStates()">
         <label for="ai-vid-pin-start" style="font-size:10px;color:#888;cursor:pointer;">Pin start to reference image</label>
       </div>
       <button onclick="useLastAiImageAsVideoRef()" id="ai-vid-use-last-img-btn" class="btn-ui" style="width:100%;font-size:10px;padding:5px 8px;margin-bottom:6px;" disabled>🎨 Use Last AI Image</button>
@@ -3653,6 +3675,7 @@ window.onload = async () => {
     window._klingQuality = '1s';
     updateKlingCostEstimate();
     onKlingModelChange();
+    updateVideoModelOptions();
 
     function fitCanvasToScreen() {
         _isFitZoom = true;
@@ -4402,6 +4425,45 @@ function showImg2ImgPreview(b64) {
       document.getElementById('kling-ref-preview').style.display = 'none';
     }
 
+    // ===== VIDEO MODEL CONTROLS =====
+    function updateVideoModelOptions() {
+      const model = document.getElementById('ai-vid-model').value;
+      const quality = document.getElementById('ai-vid-quality').value;
+      const durSel = document.getElementById('ai-vid-duration');
+      const resSel = document.getElementById('ai-vid-resolution');
+      
+      const durations = {
+        'kling-v1': [5, 10],
+        'kling-v1-5': [5, 10],
+        'kling-v1-6': [5, 10],
+        'kling-v2-1': [5, 10],
+        'kling-v2-5-turbo': [5, 10],
+        'kling-v2-6': [5, 10],
+        'kling-v3': [3, 5, 10, 15],
+        'kling-v3-omni': [3, 5, 10, 15],
+        'kling-video-o1': [5, 10]
+      };
+      
+      const resolutions = {
+        '1920x1080': '📺 Landscape 16:9 (1920×1080)',
+        '1080x1920': '📱 Vertical 9:16 (1080×1920)',
+        '1080x1080': '⬜ Square 1:1 (1080×1080)'
+      };
+      
+      const durs = durations[model] || [5, 10];
+      durSel.innerHTML = durs.map(d => '<option value="' + d + '">' + d + ' seconds</option>').join('');
+      resSel.innerHTML = Object.entries(resolutions).map(([val, label]) => '<option value="' + val + '">' + label + '</option>').join('');
+    }
+    
+    function updateVideoControlStates() {
+      const cameraSel = document.getElementById('ai-vid-camera');
+      const hasRef = aiState.vidRefB64;
+      const pinChecked = document.getElementById('ai-vid-pin-start')?.checked;
+      const disabled = hasRef && pinChecked;
+      cameraSel.disabled = disabled;
+      cameraSel.style.opacity = disabled ? '0.5' : '1';
+    }
+
     async function generateKlingImage() {
       const creds = docV2.aiCredentials || {};
       const api_key    = creds.kling_key    || '';
@@ -4803,6 +4865,7 @@ function handleAiVidRefUpload(input) {
     thumb.src = e.target.result;
     document.getElementById('ai-vid-ref-zone').style.display = 'none';
     document.getElementById('ai-vid-ref-preview').style.display = 'block';
+    updateVideoControlStates();
   };
   reader.readAsDataURL(file);
 }
@@ -4812,6 +4875,7 @@ function clearAiVidRef() {
   document.getElementById('ai-vid-ref-input').value = '';
   document.getElementById('ai-vid-ref-zone').style.display = 'block';
   document.getElementById('ai-vid-ref-preview').style.display = 'none';
+  updateVideoControlStates();
 }
 
 async function applyVideoToSlot(slot) {
@@ -4900,6 +4964,7 @@ function setVidRefFromUrl(src) {
   if (zone) zone.style.display = 'none';
   const preview = document.getElementById('ai-vid-ref-preview');
   if (preview) preview.style.display = 'block';
+  updateVideoControlStates();
 }
 
 function sendCanvasImageToVideoRef(el) {
@@ -4984,6 +5049,9 @@ async function generateAiVideo() {
   const creds = getAiCredentials();
   const prompt = document.getElementById('ai-vid-prompt').value.trim();
   if (!prompt) return;
+  
+  updateVideoControlStates(); // Disable camera if needed
+  
   const btn = document.getElementById('ai-vid-btn');
   btn.disabled = true;
   btn.textContent = '⏳ Submitting…';
@@ -4991,7 +5059,7 @@ async function generateAiVideo() {
   document.getElementById('ai-vid-status').textContent = 'Submitting to Kling…';
   document.getElementById('ai-vid-preview').style.display = 'none';
   try {
-    const refB64 = aiState.vidRefB64;
+    let refB64 = aiState.vidRefB64;
     if (refB64 && refB64.includes(',')) refB64 = refB64.split(',')[1];
     const res = await fetch('/api/ai/generate-video', {
       method: 'POST',
@@ -5005,6 +5073,8 @@ async function generateAiVideo() {
         cfg_scale: parseFloat(document.getElementById('ai-vid-cfg').value),
         reference_image_b64: document.getElementById('ai-vid-pin-start').checked ? refB64 : null,
         reference_image_mime: aiState.vidRefMimeType || 'image/jpeg',
+        model_name: document.getElementById('ai-vid-model').value,
+        quality_mode: document.getElementById('ai-vid-quality').value,
         credentials: creds.kling,
         cloudinary_credentials: creds.cloudinary
       })

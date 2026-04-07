@@ -700,6 +700,7 @@ def generate_video():
         resolution = data.get("resolution", "1920x1080")
         cfg_scale = data.get("cfg_scale", 0.5)
         reference_image_b64 = data.get("reference_image_b64", "")
+        quality_mode = data.get("quality_mode", "std")
         creds = data.get("credentials", {})
         api_key = creds.get("api_key", "")
         api_secret = creds.get("api_secret", "")
@@ -733,6 +734,10 @@ def generate_video():
 
         if negative_prompt:
             payload["negative_prompt"] = negative_prompt
+
+        # Add quality_mode if provided
+        if quality_mode:
+            payload["mode"] = quality_mode
 
         # camera_motion is only valid for text2video — strip it for image2video
         camera_motion = data.get("camera_motion", "none")
