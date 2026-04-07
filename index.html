@@ -185,14 +185,14 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 
 /* Selection Bar (Contextual) */
 /* Fix 2 & 3 - Moveable Toolbar & Horizontal Scroll */
-#selection-bar { 
+    #selection-bar { 
     position:fixed; 
     bottom:120px; 
     left:50%; 
     transform:translateX(-50%); 
     background:rgba(0,0,0,0.95); 
     backdrop-filter:blur(10px); 
-    padding:10px 16px; 
+    padding:6px 16px; 
     border-radius:20px; 
     display:none; 
     align-items:center; 
@@ -201,7 +201,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     box-shadow:0 10px 30px rgba(0,0,0,0.8); 
     border:1px solid #444; 
     width: auto !important;
-    height: auto !important;
+    height: 48px !important;
     max-width: 95vw !important;
     min-width: 200px;
     overflow: visible;
@@ -377,9 +377,9 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     }
 
     /* Distribution Bar */
-    #distribute-bar {
+        #distribute-bar {
         position: fixed;
-        bottom: 240px;
+        bottom: 180px;
         left: 50%;
         transform: translateX(-50%);
         display: none;
@@ -389,10 +389,10 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         background: rgba(0,0,0,0.95);
         border: 1px solid #c8a96a;
         border-radius: 20px;
-        padding: 8px 16px;
+        padding: 4px 16px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         width: auto !important;
-        height: auto !important;
+        height: 40px !important;
         max-width: 95vw !important;
         overflow: visible;
     }
@@ -1151,10 +1151,10 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
             </div>
         </div>
     </div>
-    <div style="display:flex; gap:10px; flex-shrink:0; margin-left:10px; border-left:1px solid #444; padding-left:10px;">
-        <button id="btn-set-bg" class="ctrl-btn set-bg" onclick="setSelectedAsBackground()" title="Promote this image to full-page locked background" data-help="Sets the selected image as the full-page menu background">🖼️ BG</button>
-        <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); render(); showToast('Duplicated ' + ids.length + ' elements');}else{duplicateEl();}" title="Duplicate Layer" data-help="Makes an exact copy of the selected layer — text, image, or shape">📋</button>
-        <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c;" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds];ids.forEach(id=>{selectedId=id;deleteEl(true,true);});docV2.editorState.selectedElementIds=[];deselect();render();}else{deleteEl();}" title="Delete Layer" data-help="Permanently removes the selected element from the menu">🗑</button>
+    <div style="display:flex; gap:6px; flex-shrink:0; margin-left:10px; border-left:1px solid #444; padding-left:10px;">
+        <button id="btn-set-bg" class="ctrl-btn set-bg" style="padding:4px 8px; font-size:10px;" onclick="setSelectedAsBackground()" title="Promote this image to full-page locked background" data-help="Sets the selected image as the full-page menu background">🖼️ BG</button>
+        <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9; padding:4px 8px; font-size:10px;" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); render(); showToast('Duplicated ' + ids.length + ' elements');}else{duplicateEl();}" title="Duplicate Layer" data-help="Makes an exact copy of the selected layer — text, image, or shape">📋</button>
+        <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c; padding:4px 8px; font-size:10px;" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds];ids.forEach(id=>{selectedId=id;deleteEl(true,true);});docV2.editorState.selectedElementIds=[];deselect();render();}else{deleteEl();}" title="Delete Layer" data-help="Permanently removes the selected element from the menu">🗑</button>
     </div>
 </div>
 
