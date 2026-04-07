@@ -613,46 +613,85 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
       <span>🖼️ Generate Image</span><span id="ai-img-arrow" style="font-size:9px;">▶</span>
     </button>
     <div id="ai-img-body" style="display:none;padding:6px 0 10px;">
-      <label class="rp-label">Prompt</label>
-      <div id="img-mode-toggle" style="display:flex; gap:8px; margin-bottom:12px;">
-        <button id="btn-mode-txt2img" class="btn-ui primary" onclick="setImgMode('txt2img')" style="font-size:11px; padding:6px 14px;">✏️ Text → Image</button>
-        <button id="btn-mode-img2img" class="btn-ui" onclick="setImgMode('img2img')" style="font-size:11px; padding:6px 14px;">🖼️ Image → Image</button>
+      <div id="ai-img-provider-toggle" style="display:flex; gap:8px; margin-bottom:10px;">
+        <button id="btn-img-prov-stability" class="btn-ui primary" onclick="setImgProvider('stability')" style="font-size:11px; padding:6px 14px;">🖼️ Stability AI</button>
+        <button id="btn-img-prov-kling" class="btn-ui" onclick="setImgProvider('kling')" style="font-size:11px; padding:6px 14px;">🎨 Kling AI</button>
       </div>
-      <div id="img2img-source-panel" style="display:none; margin-bottom:12px; background:#1a1a1a; border:1px solid #444; border-radius:8px; padding:12px;">
-        <div style="font-size:11px; color:#aaa; margin-bottom:8px;">📎 Source Image:</div>
-        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-          <button class="btn-ui" onclick="useCanvasAsImg2ImgSource()" style="font-size:11px; padding:6px 12px;">🎨 Use Current Canvas</button>
-          <button class="btn-ui" onclick="document.getElementById('img2img-file-input').click()" style="font-size:11px; padding:6px 12px;">📁 Upload Image</button>
-          <input type="file" id="img2img-file-input" accept="image/*" style="display:none" onchange="loadImg2ImgFile(this)">
+
+      <!-- STABILITY PANEL (existing controls wrapped) -->
+      <div id="ai-img-stability-panel">
+        <div id="img-mode-toggle" style="display:flex; gap:8px; margin-bottom:12px;">
+          <button id="btn-mode-txt2img" class="btn-ui primary" onclick="setImgMode('txt2img')" style="font-size:11px; padding:6px 14px;">✏️ Text → Image</button>
+          <button id="btn-mode-img2img" class="btn-ui" onclick="setImgMode('img2img')" style="font-size:11px; padding:6px 14px;">🖼️ Image → Image</button>
         </div>
-        <div id="img2img-preview-wrap" style="display:none; margin-top:10px;">
-          <img id="img2img-preview" style="max-width:100%; max-height:120px; border-radius:6px; border:1px solid #444;" alt="Source image preview">
-          <div style="font-size:10px; color:#888; margin-top:4px;">Source image loaded ✓</div>
+        <div id="img2img-source-panel" style="display:none; margin-bottom:12px; background:#1a1a1a; border:1px solid #444; border-radius:8px; padding:12px;">
+          <div style="font-size:11px; color:#aaa; margin-bottom:8px;">📎 Source Image:</div>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <button class="btn-ui" onclick="useCanvasAsImg2ImgSource()" style="font-size:11px; padding:6px 12px;">🎨 Use Current Canvas</button>
+            <button class="btn-ui" onclick="document.getElementById('img2img-file-input').click()" style="font-size:11px; padding:6px 12px;">📁 Upload Image</button>
+            <input type="file" id="img2img-file-input" accept="image/*" style="display:none" onchange="loadImg2ImgFile(this)">
+          </div>
+          <div id="img2img-preview-wrap" style="display:none; margin-top:10px;">
+            <img id="img2img-preview" style="max-width:100%; max-height:120px; border-radius:6px; border:1px solid #444;" alt="Source image preview">
+            <div style="font-size:10px; color:#888; margin-top:4px;">Source image loaded ✓</div>
+          </div>
+          <div style="margin-top:10px;">
+            <label style="font-size:11px; color:#aaa;">Strength: <span id="strength-val">0.75</span></label>
+            <input type="range" id="img2img-strength" min="0.1" max="1.0" step="0.05" value="0.75" style="width:100%; margin-top:4px;" oninput="document.getElementById('strength-val').textContent=parseFloat(this.value).toFixed(2)">
+            <div style="font-size:10px; color:#666; margin-top:2px;">Lower = keep original. Higher = more creative freedom.</div>
+          </div>
         </div>
-        <div style="margin-top:10px;">
-          <label style="font-size:11px; color:#aaa;">Strength: <span id="strength-val">0.75</span></label>
-          <input type="range" id="img2img-strength" min="0.1" max="1.0" step="0.05" value="0.75" style="width:100%; margin-top:4px;" oninput="document.getElementById('strength-val').textContent=parseFloat(this.value).toFixed(2)">
-          <div style="font-size:10px; color:#666; margin-top:2px;">Lower = keep original. Higher = more creative freedom.</div>
+        <label class="rp-label">Prompt</label>
+        <textarea id="ai-img-prompt" placeholder="e.g. a close-up of a grilled salmon dish with lemon, restaurant lighting" class="rp-input" style="height:56px;resize:vertical;margin-bottom:4px;font-family:inherit;"></textarea>
+        <button onclick="enhanceAiPrompt('image')" class="btn-ui" style="font-size:10px;padding:4px 8px;margin-bottom:6px;width:100%;">✨ Enhance Prompt</button>
+        <div style="display:flex;gap:4px;margin-bottom:4px;">
+          <select id="ai-img-ratio" class="rp-input" style="flex:1;font-size:10px;padding:5px;">
+            <option value="1:1">1:1 Square</option>
+            <option value="4:3">4:3 Landscape</option>
+            <option value="3:4">3:4 Portrait</option>
+            <option value="16:9">16:9 Widescreen</option>
+          </select>
         </div>
+        <label class="rp-label">Negative Prompt</label>
+        <textarea id="ai-img-neg" placeholder="e.g. blurry, text, watermarks, cartoon" class="rp-input" style="height:40px;resize:vertical;margin-bottom:6px;font-family:inherit;"></textarea>
+        <button onclick="generateAiImage()" id="ai-img-btn" class="btn-ui accent" style="width:100%;font-size:11px;padding:8px;margin-bottom:4px;" disabled>Generate Image</button>
       </div>
-      <textarea id="ai-img-prompt" placeholder="e.g. a close-up of a grilled salmon dish with lemon, restaurant lighting" class="rp-input" style="height:56px;resize:vertical;margin-bottom:4px;font-family:inherit;"></textarea>
-      <button onclick="enhanceAiPrompt('image')" class="btn-ui" style="font-size:10px;padding:4px 8px;margin-bottom:6px;width:100%;">✨ Enhance Prompt</button>
-      <div style="display:flex;gap:4px;margin-bottom:4px;">
-        <select id="ai-img-ratio" class="rp-input" style="flex:1;font-size:10px;padding:5px;">
-          <option value="1:1">1:1 Square</option>
-          <option value="4:3">4:3 Landscape</option>
-          <option value="3:4">3:4 Portrait</option>
-          <option value="16:9">16:9 Widescreen</option>
+
+      <!-- KLING IMAGE PANEL (new) -->
+      <div id="ai-img-kling-panel" style="display:none;">
+        <label class="rp-label">Model</label>
+        <select id="kling-img-model" class="rp-input" style="margin-bottom:8px;font-size:10px;padding:5px;">
+          <option value="kling-v1">kling-v1 (1 point)</option>
+          <option value="kling-v1-5">kling-v1-5</option>
+          <option value="kling-v1-6">kling-v1-6</option>
         </select>
+        <label class="rp-label">Aspect Ratio</label>
+        <div id="kling-img-ratio-btns" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">
+          <button class="btn-ui kling-ratio-btn active-ratio" data-ratio="1:1" onclick="selectKlingRatio(this,'1:1')" style="font-size:10px;padding:4px 8px;">1:1</button>
+          <button class="btn-ui kling-ratio-btn" data-ratio="16:9" onclick="selectKlingRatio(this,'16:9')" style="font-size:10px;padding:4px 8px;">16:9</button>
+          <button class="btn-ui kling-ratio-btn" data-ratio="9:16" onclick="selectKlingRatio(this,'9:16')" style="font-size:10px;padding:4px 8px;">9:16</button>
+          <button class="btn-ui kling-ratio-btn" data-ratio="4:3" onclick="selectKlingRatio(this,'4:3')" style="font-size:10px;padding:4px 8px;">4:3</button>
+          <button class="btn-ui kling-ratio-btn" data-ratio="3:4" onclick="selectKlingRatio(this,'3:4')" style="font-size:10px;padding:4px 8px;">3:4</button>
+          <button class="btn-ui kling-ratio-btn" data-ratio="3:2" onclick="selectKlingRatio(this,'3:2')" style="font-size:10px;padding:4px 8px;">3:2</button>
+          <button class="btn-ui kling-ratio-btn" data-ratio="2:3" onclick="selectKlingRatio(this,'2:3')" style="font-size:10px;padding:4px 8px;">2:3</button>
+        </div>
+        <label class="rp-label">Prompt</label>
+        <textarea id="kling-img-prompt" placeholder="e.g. a close-up of grilled salmon with lemon, restaurant lighting" class="rp-input" style="height:56px;resize:vertical;margin-bottom:4px;font-family:inherit;"></textarea>
+        <label class="rp-label">Negative Prompt</label>
+        <textarea id="kling-img-neg" placeholder="e.g. blurry, text, watermarks, cartoon" class="rp-input" style="height:40px;resize:vertical;margin-bottom:6px;font-family:inherit;"></textarea>
+        <button onclick="generateKlingImage()" id="kling-img-btn" class="btn-ui accent" style="width:100%;font-size:11px;padding:8px;margin-bottom:4px;" disabled>Generate with Kling</button>
+        <div id="kling-img-progress" style="display:none;font-size:10px;color:#888;text-align:center;margin-bottom:6px;">⏳ <span id="kling-img-status">Submitting to Kling…</span></div>
       </div>
-      <label class="rp-label">Negative Prompt</label>
-      <textarea id="ai-img-neg" placeholder="e.g. blurry, text, watermarks, cartoon" class="rp-input" style="height:40px;resize:vertical;margin-bottom:6px;font-family:inherit;"></textarea>
-      <button onclick="generateAiImage()" id="ai-img-btn" class="btn-ui accent" style="width:100%;font-size:11px;padding:8px;margin-bottom:4px;" disabled>Generate Image</button>
+
+      <!-- SHARED RESULT PANEL (used by both providers) -->
       <div id="ai-img-preview" style="display:none;margin-bottom:6px;">
         <img id="ai-img-thumb" style="width:100%;border-radius:6px;border:1px solid #333;">
         <div style="display:flex;gap:4px;margin-top:4px;">
           <button onclick="uploadAiToCloudinary('image')" class="btn-ui" style="flex:1;font-size:10px;padding:5px;">Upload to Cloudinary</button>
           <button onclick="placeAiImageOnCanvas()" class="btn-ui accent" style="flex:1;font-size:10px;padding:5px;">Place on Canvas</button>
+        </div>
+        <div style="display:flex;gap:4px;margin-top:4px;">
+          <button onclick="saveAiImageToAssets(window._lastAiImageB64, 'AI Generated Image')" class="btn-ui" style="flex:1;font-size:10px;padding:5px;">💾 Save to Assets</button>
         </div>
         <div id="ai-img-url-row" style="display:none;margin-top:4px;">
           <input type="text" id="ai-img-url" class="rp-input" style="font-size:10px;margin-bottom:4px;" readonly>
@@ -3853,8 +3892,8 @@ async function saveAiCredentials() {
     cloudKey:     (document.getElementById('ai-cloud-key').value     || '').trim(),
     cloudSecret:  (document.getElementById('ai-cloud-secret').value  || '').trim(),
     stabilityKey: (document.getElementById('ai-stability-key').value || '').trim(),
-    klingKey:     (document.getElementById('ai-kling-key').value     || '').trim(),
-    klingSecret:  (document.getElementById('ai-kling-secret').value  || '').trim()
+    kling_key:    (document.getElementById('ai-kling-key').value      || '').trim(),
+    kling_secret: (document.getElementById('ai-kling-secret').value || '').trim()
   };
   try {
     const res = await fetch('/api/menu', {
@@ -3864,6 +3903,8 @@ async function saveAiCredentials() {
     });
     if (res.ok) {
       showToast('✅ Credentials saved permanently!');
+      document.getElementById('ai-img-btn').disabled = false;
+      document.getElementById('kling-img-btn').disabled = false;
     } else {
       showToast('⚠️ Could not save credentials to server');
     }
@@ -4015,6 +4056,151 @@ function showImg2ImgPreview(b64) {
   const img = document.getElementById('img2img-preview');
   if (wrap && img) { img.src = b64; wrap.style.display = 'block'; }
 }
+
+    // ── Kling Image Provider State ──────────────────────────────
+    let _klingImgRatio = '1:1';
+    let _currentImgProvider = 'stability'; // 'stability' or 'kling'
+
+    function setImgProvider(provider) {
+      _currentImgProvider = provider;
+      document.getElementById('ai-img-stability-panel').style.display = provider === 'stability' ? 'block' : 'none';
+      document.getElementById('ai-img-kling-panel').style.display    = provider === 'kling'     ? 'block' : 'none';
+      document.getElementById('btn-img-prov-stability').className = 'btn-ui' + (provider === 'stability' ? ' primary' : '');
+      document.getElementById('btn-img-prov-kling').className     = 'btn-ui' + (provider === 'kling'     ? ' primary' : '');
+    }
+
+    function selectKlingRatio(btn, ratio) {
+      _klingImgRatio = ratio;
+      document.querySelectorAll('.kling-ratio-btn').forEach(b => {
+        b.classList.remove('primary');
+      });
+      btn.classList.add('primary');
+    }
+
+    async function generateKlingImage() {
+      const creds = docV2.aiCredentials || {};
+      const api_key    = creds.kling_key    || '';
+      const api_secret = creds.kling_secret || '';
+      const prompt     = (document.getElementById('kling-img-prompt').value || '').trim();
+      const neg        = (document.getElementById('kling-img-neg').value    || '').trim();
+      const model_name = document.getElementById('kling-img-model').value || 'kling-v1';
+
+      if (!api_key || !api_secret) {
+        showToast('⚠️ Kling API Key and Secret required. Enter them in Credentials.');
+        return;
+      }
+      if (!prompt) {
+        showToast('⚠️ Please enter a prompt.');
+        return;
+      }
+
+      const btn = document.getElementById('kling-img-btn');
+      btn.disabled = true;
+      btn.textContent = '⏳ Generating…';
+      document.getElementById('kling-img-progress').style.display = 'block';
+      document.getElementById('kling-img-status').textContent = 'Submitting to Kling…';
+      document.getElementById('ai-img-preview').style.display = 'none';
+
+      try {
+        const submitResp = await fetch('/api/ai/generate-kling-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: prompt,
+            negative_prompt: neg,
+            model_name: model_name,
+            aspect_ratio: _klingImgRatio,
+            n: 1,
+            credentials: { api_key: api_key, api_secret: api_secret }
+          })
+        });
+        const submitData = await submitResp.json();
+        if (submitData.error) {
+          showToast('❌ ' + submitData.error);
+          btn.disabled = false;
+          btn.textContent = 'Generate with Kling';
+          document.getElementById('kling-img-progress').style.display = 'none';
+          return;
+        }
+
+        const task_id = submitData.task_id;
+        document.getElementById('kling-img-status').textContent = 'Processing… (task: ' + task_id + ')';
+
+        // Poll for result
+        let attempts = 0;
+        const maxAttempts = 60;
+        const pollInterval = setInterval(async () => {
+          attempts++;
+          if (attempts > maxAttempts) {
+            clearInterval(pollInterval);
+            showToast('⏱️ Kling image timed out. Try again.');
+            btn.disabled = false;
+            btn.textContent = 'Generate with Kling';
+            document.getElementById('kling-img-progress').style.display = 'none';
+            return;
+          }
+          try {
+            const pollResp = await fetch('/api/ai/kling-image-status/' + task_id, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ api_key: api_key, api_secret: api_secret })
+            });
+            const pollData = await pollResp.json();
+            if (pollData.error) {
+              clearInterval(pollInterval);
+              showToast('❌ ' + pollData.error);
+              btn.disabled = false;
+              btn.textContent = 'Generate with Kling';
+              document.getElementById('kling-img-progress').style.display = 'none';
+              return;
+            }
+            document.getElementById('kling-img-status').textContent = 'Status: ' + pollData.status + ' (' + pollData.progress + '%)';
+            if (pollData.status === 'succeed' && pollData.image_url) {
+              clearInterval(pollInterval);
+              document.getElementById('kling-img-progress').style.display = 'none';
+              btn.disabled = false;
+              btn.textContent = 'Generate with Kling';
+              // Display result in shared preview panel
+              // Fetch image as base64 so placeAiImageOnCanvas works
+              try {
+                const imgResp = await fetch(pollData.image_url);
+                const blob = await imgResp.blob();
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  const b64 = reader.result;
+                  window._lastAiImageB64 = b64.split(',')[1];
+                  document.getElementById('ai-img-thumb').src = b64;
+                  document.getElementById('ai-img-preview').style.display = 'block';
+                  showToast('✅ Kling image ready!');
+                };
+                reader.readAsDataURL(blob);
+              } catch(fetchErr) {
+                // If CORS blocks fetch, just show URL directly
+                document.getElementById('ai-img-thumb').src = pollData.image_url;
+                document.getElementById('ai-img-url').value = pollData.image_url;
+                document.getElementById('ai-img-url-row').style.display = 'block';
+                document.getElementById('ai-img-preview').style.display = 'block';
+                showToast('✅ Kling image ready!');
+              }
+            } else if (pollData.status === 'failed') {
+              clearInterval(pollInterval);
+              showToast('❌ Kling image generation failed.');
+              btn.disabled = false;
+              btn.textContent = 'Generate with Kling';
+              document.getElementById('kling-img-progress').style.display = 'none';
+            }
+          } catch(pollErr) {
+            // Network error during poll — keep trying
+          }
+        }, 3000);
+
+      } catch(e) {
+        showToast('❌ Error: ' + e.message);
+        btn.disabled = false;
+        btn.textContent = 'Generate with Kling';
+        document.getElementById('kling-img-progress').style.display = 'none';
+      }
+    }
 
 async function generateAiImage() {
   const creds = getAiCredentials();

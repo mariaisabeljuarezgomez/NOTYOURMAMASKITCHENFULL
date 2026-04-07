@@ -557,6 +557,100 @@ def generate_image_to_image():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/ai/generate-kling-image", methods=["POST"])
+def generate_kling_image():
+    try:
+        data = request.json or {}
+        prompt = data.get("prompt", "")
+        negative_prompt = data.get("negative_prompt", "")
+        model_name = data.get("model_name", "kling-v1")
+        aspect_ratio = data.get("aspect_ratio", "1:1")
+        n = data.get("n", 1)
+        creds = data.get("credentials", {})
+        api_key = creds.get("api_key", "")
+        api_secret = creds.get("api_secret", "")
+
+        ALLOWED_MODELS = {"kling-v1", "kling-v1-5", "kling-v1-6"}
+        ALLOWED_RATIOS = {"1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3"}
+
+        if not prompt or not api_key or not api_secret:
+            return jsonify({"error": "Missing prompt or Kling credentials"}), 400
+        if model_name not in ALLOWED_MODELS:
+            model_name = "kling-v1"
+        if aspect_ratio not in ALLOWED_RATIOS:
+            aspect_ratio = "1:1"
+
+        token = generate_kling_token(api_key, api_secret)
+        client = _http()
+        if not client:
+            return jsonify({"error": "No HTTP client available"}), 500
+
+        payload = {
+            "model_name": model_name,
+            "prompt": prompt,
+            "n": n,
+            "aspect_ratio": aspect_ratio
+        }
+        if negative_prompt:
+            payload["negative_prompt"] = negative_prompt
+
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
+
+        resp = client.post(
+            "https://api.klingai.com/v1/images/generations",
+            headers=headers,
+            json=payload,
+            timeout=30
+        )
+
+        if resp.status_code in (200, 201, 202):
+            resp_data = resp.json()
+            task_id = resp_data.get("data", {}).get("task_id") or resp_data.get("task_id") or "pending"
+            return jsonify({"task_id": task_id})
+        try:
+            kling_err = resp.json()
+        except Exception:
+            kling_err = resp.text
+        return jsonify({"error": f"Kling image submission failed {resp.status_code}: {kling_err}"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/ai/kling-image-status/<task_id>", methods=["POST"])
+def kling_image_status(task_id):
+    try:
+        data = request.json or {}
+        api_key = data.get("api_key", "")
+        api_secret = data.get("api_secret", "")
+        if not all([api_key, api_secret]):
+            return jsonify({"error": "Missing credentials"}), 400
+        token = generate_kling_token(api_key, api_secret)
+        client = _http()
+        if not client:
+            return jsonify({"error": "No HTTP client available"}), 500
+        status_url = f"https://api.klingai.com/v1/images/generations/{task_id}"
+        headers = {"Authorization": f"Bearer {token}"}
+        stat_resp = client.get(status_url, headers=headers, timeout=20)
+        if stat_resp.status_code == 200:
+            sd = stat_resp.json().get("data", {})
+            status_str = sd.get("task_status", "submitted")
+            images = sd.get("task_result", {}).get("images", [])
+            image_url = images[0].get("url", "") if images else ""
+            progress_map = {"submitted": 0, "processing": 50, "succeed": 100, "failed": 0}
+            progress = progress_map.get(status_str, 0)
+            error = None
+            if status_str == "failed":
+                error = "Kling AI image generation failed"
+            resp_body = {"status": status_str, "image_url": image_url, "progress": progress}
+            if error:
+                resp_body["error"] = error
+            return jsonify(resp_body)
+        return jsonify({"status": "pending", "progress": 0}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/api/ai/generate-video", methods=["POST"])
 def generate_video():
     try:
