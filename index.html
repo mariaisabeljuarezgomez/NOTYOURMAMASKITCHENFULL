@@ -4404,7 +4404,8 @@ async function generateAiVideo() {
         cfg_scale: parseFloat(document.getElementById('ai-vid-cfg').value),
         reference_image_b64: document.getElementById('ai-vid-pin-start').checked ? refB64 : null,
         reference_image_mime: aiState.vidRefMimeType || 'image/jpeg',
-        credentials: creds.kling
+        credentials: creds.kling,
+        cloudinary_credentials: creds.cloudinary
       })
     });
     const data = await res.json();
