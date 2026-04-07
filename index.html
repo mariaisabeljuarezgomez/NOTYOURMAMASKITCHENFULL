@@ -802,7 +802,10 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         </div>
         <div id="ai-img-url-row" style="display:none;margin-top:4px;">
           <input type="text" id="ai-img-url" class="rp-input" style="font-size:10px;margin-bottom:4px;" readonly>
-          <button onclick="copyAiUrl('ai-img-url')" class="btn-ui" style="width:100%;font-size:10px;padding:4px;">Copy URL</button>
+          <div style="display:flex;gap:4px;">
+            <button onclick="copyAiUrl('ai-img-url')" class="btn-ui" style="flex:1;font-size:10px;padding:4px;">📋 Copy URL</button>
+            <button onclick="downloadAiFile('image')" class="btn-ui accent" style="flex:1;font-size:10px;padding:4px;">⬇️ Download</button>
+          </div>
         </div>
       </div>
     </div>
@@ -895,9 +898,12 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
           <button onclick="uploadAiToCloudinary('video')" class="btn-ui" style="flex:1;font-size:10px;padding:5px;">Upload to Cloudinary</button>
         </div>
           <div id="ai-vid-url-row" style="display:none;margin-top:4px;">
-          <input type="text" id="ai-vid-url" class="rp-input" style="font-size:10px;margin-bottom:4px;" readonly>
-          <button onclick="copyAiUrl('ai-vid-url')" class="btn-ui" style="width:100%;font-size:10px;padding:4px;">Copy URL</button>
-        </div>
+            <input type="text" id="ai-vid-url" class="rp-input" style="font-size:10px;margin-bottom:4px;" readonly>
+            <div style="display:flex;gap:4px;">
+              <button onclick="copyAiUrl('ai-vid-url')" class="btn-ui" style="flex:1;font-size:10px;padding:4px;">📋 Copy URL</button>
+              <button onclick="downloadAiFile('video')" class="btn-ui accent" style="flex:1;font-size:10px;padding:4px;">⬇️ Download</button>
+            </div>
+          </div>
         <div id="ai-vid-apply-row" style="display:none;margin-top:6px;">
           <div style="font-size:9px;color:#888;font-weight:800;text-transform:uppercase;margin-bottom:4px;">⚡ Apply Directly To Viewer</div>
           <div style="display:flex;gap:4px;">
@@ -4853,6 +4859,37 @@ function copyAiUrl(inputId) {
   const val = document.getElementById(inputId).value;
   if (!val) return;
   navigator.clipboard.writeText(val).then(() => showToast('✅ URL copied to clipboard')).catch(() => showToast('❌ Copy failed'));
+}
+
+async function downloadAiFile(fileType) {
+  const inputId = fileType === 'video' ? 'ai-vid-url' : 'ai-img-url';
+  const url = document.getElementById(inputId).value;
+  if (!url) { showToast('⚠️ No URL to download — generate first'); return; }
+  
+  showToast('⏳ Preparing download...');
+  try {
+    // Use /api/proxy-download so CORS doesn't block external URLs
+    const res = await fetch('/api/proxy-download', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: url })
+    });
+    if (!res.ok) throw new Error('Proxy fetch failed');
+    const blob = await res.blob();
+    const ext  = fileType === 'video' ? 'mp4' : 'png';
+    const filename = 'ai-' + fileType + '-' + Date.now() + '.' + ext;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+    showToast('✅ Download started: ' + filename);
+  } catch(e) {
+    // Fallback: open in new tab so user can save manually
+    window.open(url, '_blank');
+    showToast('💡 Opened in new tab — right-click → Save As to download');
+  }
 }
 
 function handleAiVidRefUpload(input) {

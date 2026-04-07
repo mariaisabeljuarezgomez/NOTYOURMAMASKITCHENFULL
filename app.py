@@ -957,6 +957,32 @@ def cloudinary_upload():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/proxy-download", methods=["POST"])
+def proxy_download():
+    try:
+        data = request.json or {}
+        url = data.get("url", "").strip()
+        if not url or not url.startswith("http"):
+            return jsonify({"error": "Invalid URL"}), 400
+        client = _http()
+        if not client:
+            return jsonify({"error": "No HTTP client"}), 500
+        resp = client.get(url, timeout=60)
+        if resp.status_code != 200:
+            return jsonify({"error": "Failed to fetch file"}), 400
+        content_type = resp.headers.get("Content-Type", "application/octet-stream")
+        from flask import Response
+        return Response(
+            resp.content,
+            status=200,
+            headers={
+                "Content-Type": content_type,
+                "Content-Disposition": "attachment"
+            }
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
