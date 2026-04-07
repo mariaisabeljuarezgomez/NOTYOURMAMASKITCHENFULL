@@ -531,7 +531,7 @@ def generate_video():
         if reference_image_b64:
             mime_type = data.get("reference_image_mime", "image/jpeg")
             payload["image"] = f"data:{mime_type};base64,{reference_image_b64}"
-        sub_resp = client.post(submit_url, headers=headers, json=payload)
+        sub_resp = client.post(submit_url, headers=headers, json=payload, timeout=30)
         if sub_resp.status_code in (200, 201, 202):
             task_data = sub_resp.json()
             task_id = task_data.get("data", {}).get("task_id") or task_data.get("task_id") or "pending"
@@ -555,7 +555,7 @@ def kling_status(task_id):
             return jsonify({"error": "No HTTP client available"}), 500
         status_url = f"https://api.klingai.com/v1/videos/{task_type}/{task_id}"
         headers = {"Authorization": f"Bearer {token}"}
-        stat_resp = client.get(status_url, headers=headers)
+        stat_resp = client.get(status_url, headers=headers, timeout=20)
         if stat_resp.status_code == 200:
             sd = stat_resp.json().get("data", {})
             status_str = sd.get("task_status", "submitted")
@@ -601,7 +601,10 @@ def cloudinary_upload():
         client = _http()
         if not client:
             return jsonify({"error": "No HTTP client available"}), 500
-        resp = client.post(upload_url, files={"file": (None, file_payload, mime_type)}, data=upload_fields)
+        upload_files = {"file": (None, file_payload, mime_type)}
+        for k, v in upload_fields.items():
+            upload_files[k] = (None, str(v))
+        resp = client.post(upload_url, files=upload_files, timeout=60)
         if resp.status_code in (200, 201):
             result = resp.json()
             return jsonify({"url": result.get("secure_url", "")})
