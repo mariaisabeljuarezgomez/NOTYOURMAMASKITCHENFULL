@@ -657,28 +657,79 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         <button onclick="generateAiImage()" id="ai-img-btn" class="btn-ui accent" style="width:100%;font-size:11px;padding:8px;margin-bottom:4px;" disabled>Generate Image</button>
       </div>
 
-      <!-- KLING IMAGE PANEL (new) -->
-      <div id="ai-img-kling-panel" style="display:none;">
-        <label class="rp-label">Model</label>
-        <select id="kling-img-model" class="rp-input" style="margin-bottom:8px;font-size:10px;padding:5px;">
-          <option value="kling-v1">kling-v1 (1 point)</option>
-          <option value="kling-v1-5">kling-v1-5</option>
-          <option value="kling-v1-6">kling-v1-6</option>
-        </select>
-        <label class="rp-label">Aspect Ratio</label>
-        <div id="kling-img-ratio-btns" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">
-          <button class="btn-ui kling-ratio-btn active-ratio" data-ratio="1:1" onclick="selectKlingRatio(this,'1:1')" style="font-size:10px;padding:4px 8px;">1:1</button>
-          <button class="btn-ui kling-ratio-btn" data-ratio="16:9" onclick="selectKlingRatio(this,'16:9')" style="font-size:10px;padding:4px 8px;">16:9</button>
-          <button class="btn-ui kling-ratio-btn" data-ratio="9:16" onclick="selectKlingRatio(this,'9:16')" style="font-size:10px;padding:4px 8px;">9:16</button>
-          <button class="btn-ui kling-ratio-btn" data-ratio="4:3" onclick="selectKlingRatio(this,'4:3')" style="font-size:10px;padding:4px 8px;">4:3</button>
-          <button class="btn-ui kling-ratio-btn" data-ratio="3:4" onclick="selectKlingRatio(this,'3:4')" style="font-size:10px;padding:4px 8px;">3:4</button>
-          <button class="btn-ui kling-ratio-btn" data-ratio="3:2" onclick="selectKlingRatio(this,'3:2')" style="font-size:10px;padding:4px 8px;">3:2</button>
-          <button class="btn-ui kling-ratio-btn" data-ratio="2:3" onclick="selectKlingRatio(this,'2:3')" style="font-size:10px;padding:4px 8px;">2:3</button>
+      <!-- KLING IMAGE PANEL (rebuilt) -->
+      <div id="ai-img-kling-panel" style="display:none;" data-kling-mode="txt2img">
+        <!-- MODE SELECTOR -->
+        <label class="rp-label">Mode</label>
+        <div id="kling-mode-btns" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;">
+          <button class="btn-ui kling-mode-btn active-mode" data-mode="txt2img" onclick="onKlingModeChange('txt2img')" style="font-size:9px;padding:4px 8px;">Text→Image</button>
+          <button class="btn-ui kling-mode-btn" data-mode="img2img" onclick="onKlingModeChange('img2img')" style="font-size:9px;padding:4px 8px;">Image→Image</button>
+          <button class="btn-ui kling-mode-btn" data-mode="multi" onclick="onKlingModeChange('multi')" style="font-size:9px;padding:4px 8px;">Multi-Image</button>
+          <button class="btn-ui kling-mode-btn" data-mode="edit" onclick="onKlingModeChange('edit')" style="font-size:9px;padding:4px 8px;">Image Editing</button>
+          <button class="btn-ui kling-mode-btn" data-mode="expand" onclick="onKlingModeChange('expand')" style="font-size:9px;padding:4px 8px;">Outpainting</button>
         </div>
+        
+        <!-- MODEL DROPDOWN -->
+        <label class="rp-label">Model</label>
+        <select id="kling-model" class="rp-input" style="margin-bottom:8px;font-size:10px;padding:5px;" onchange="onKlingModelChange()">
+          <option value="kling-v1">kling-v1 — 1 pt</option>
+          <option value="kling-v1-5">kling-v1-5 — 0 pt (promo)</option>
+          <option value="kling-v1-6">kling-v1-6 — 1 pt</option>
+          <option value="kling-v2-1">kling-v2-1 — 4 pt text / 8 pt image</option>
+          <option value="kling-v2">kling-v2 — 4 pt text / 16 pt multi</option>
+          <option value="kling-v3">kling-v3 — 0 pt (1s/2s) / see quality</option>
+          <option value="kling-v2-omni">kling-v2-omni — 0 pt (1s/2s) / 16 pt (4s)</option>
+          <option value="kling-image-v1">kling-image-v1 — standard</option>
+        </select>
+        
+        <!-- ASPECT RATIO -->
+        <label class="rp-label">Aspect Ratio</label>
+        <div id="kling-aspect-btns" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">
+          <button class="btn-ui kling-aspect-btn active-aspect" data-aspect="1:1" onclick="selectKlingAspect(this,'1:1')" style="font-size:10px;padding:4px 8px;">1:1</button>
+          <button class="btn-ui kling-aspect-btn" data-aspect="16:9" onclick="selectKlingAspect(this,'16:9')" style="font-size:10px;padding:4px 8px;">16:9</button>
+          <button class="btn-ui kling-aspect-btn" data-aspect="4:3" onclick="selectKlingAspect(this,'4:3')" style="font-size:10px;padding:4px 8px;">4:3</button>
+          <button class="btn-ui kling-aspect-btn" data-aspect="3:2" onclick="selectKlingAspect(this,'3:2')" style="font-size:10px;padding:4px 8px;">3:2</button>
+          <button class="btn-ui kling-aspect-btn" data-aspect="2:3" onclick="selectKlingAspect(this,'2:3')" style="font-size:10px;padding:4px 8px;">2:3</button>
+          <button class="btn-ui kling-aspect-btn" data-aspect="3:4" onclick="selectKlingAspect(this,'3:4')" style="font-size:10px;padding:4px 8px;">3:4</button>
+          <button class="btn-ui kling-aspect-btn" data-aspect="9:16" onclick="selectKlingAspect(this,'9:16')" style="font-size:10px;padding:4px 8px;">9:16</button>
+          <button class="btn-ui kling-aspect-btn" data-aspect="auto" onclick="selectKlingAspect(this,'auto')" style="font-size:10px;padding:4px 8px;display:none;" id="kling-aspect-auto">Auto</button>
+        </div>
+        
+        <!-- QUALITY/SPEED TOGGLE -->
+        <div id="kling-quality-toggle" style="display:none;margin-bottom:8px;">
+          <label class="rp-label">Quality / Speed</label>
+          <div style="display:flex;gap:4px;">
+            <button class="btn-ui kling-quality-btn active-quality" data-quality="1s" onclick="selectKlingQuality(this,'1s')" style="font-size:9px;padding:4px 8px;">Fast (1s)</button>
+            <button class="btn-ui kling-quality-btn" data-quality="2s" onclick="selectKlingQuality(this,'2s')" style="font-size:9px;padding:4px 8px;">Standard (2s)</button>
+            <button class="btn-ui kling-quality-btn" data-quality="4s" onclick="selectKlingQuality(this,'4s')" style="font-size:9px;padding:4px 8px;">High Quality (4s)</button>
+          </div>
+          <div id="kling-quality-warning" style="display:none;font-size:9px;color:#e74c3c;margin-top:4px;">⚠️ 16 points will be deducted</div>
+        </div>
+        
+        <!-- REFERENCE IMAGE UPLOADER -->
+        <div id="kling-ref-upload" style="display:none;margin-bottom:8px;">
+          <label class="rp-label">Reference Image(s)</label>
+          <input type="file" id="kling-ref-input" accept="image/*" style="display:none;" onchange="handleKlingRefUpload(this)">
+          <div id="kling-ref-zone" onclick="document.getElementById('kling-ref-input').click()" style="border:2px dashed #444;border-radius:8px;padding:10px;text-align:center;cursor:pointer;color:#777;font-size:10px;margin-bottom:4px;">
+            📎 Click or drag to upload
+          </div>
+          <div id="kling-ref-preview" style="display:none;position:relative;margin-bottom:4px;">
+            <img id="kling-ref-thumb" style="width:100%;border-radius:6px;border:1px solid #333;">
+            <button onclick="clearKlingRef()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.7);border:none;color:#fff;border-radius:50%;width:20px;height:20px;font-size:10px;cursor:pointer;">✕</button>
+          </div>
+        </div>
+        
         <label class="rp-label">Prompt</label>
-        <textarea id="kling-img-prompt" placeholder="e.g. a close-up of grilled salmon with lemon, restaurant lighting" class="rp-input" style="height:56px;resize:vertical;margin-bottom:4px;font-family:inherit;"></textarea>
+        <textarea id="kling-img-prompt" placeholder="e.g. grilled salmon, warm restaurant lighting" class="rp-input" style="height:56px;resize:vertical;margin-bottom:4px;font-family:inherit;"></textarea>
+        
         <label class="rp-label">Negative Prompt</label>
-        <textarea id="kling-img-neg" placeholder="e.g. blurry, text, watermarks, cartoon" class="rp-input" style="height:40px;resize:vertical;margin-bottom:6px;font-family:inherit;"></textarea>
+        <textarea id="kling-img-neg" placeholder="e.g. blurry, text, watermarks" class="rp-input" style="height:40px;resize:vertical;margin-bottom:6px;font-family:inherit;"></textarea>
+        
+        <!-- COST ESTIMATE -->
+        <div id="kling-cost-estimate" style="background:var(--accent);color:#000;padding:6px 10px;border-radius:20px;font-size:10px;font-weight:700;text-align:center;margin-bottom:8px;">
+          Estimated cost: 1 points
+        </div>
+        
         <button onclick="generateKlingImage()" id="kling-img-btn" class="btn-ui accent" style="width:100%;font-size:11px;padding:8px;margin-bottom:4px;" disabled>Generate with Kling</button>
         <div id="kling-img-progress" style="display:none;font-size:10px;color:#888;text-align:center;margin-bottom:6px;">⏳ <span id="kling-img-status">Submitting to Kling…</span></div>
       </div>
@@ -3463,6 +3514,11 @@ window.onload = async () => {
     initSmartTooltips();
     await loadUserImages();
     loadVideoHistory();
+    
+    // Init Kling panel defaults
+    window._klingQuality = '1s';
+    updateKlingCostEstimate();
+    onKlingModelChange();
 
     function fitCanvasToScreen() {
         _isFitZoom = true;
@@ -4083,13 +4139,148 @@ function showImg2ImgPreview(b64) {
       btn.classList.add('primary');
     }
 
+    // ===== KLING PANEL REBUILD FUNCTIONS =====
+    let _klingAspectRatio = '1:1';
+    window._klingRefImages = [];
+    
+    function onKlingModeChange(mode) {
+      const panel = document.querySelector('#ai-img-kling-panel');
+      panel.setAttribute('data-kling-mode', mode);
+      document.querySelectorAll('.kling-mode-btn').forEach(b => {
+        b.classList.remove('active-mode');
+        if (b.getAttribute('data-mode') === mode) b.classList.add('active-mode');
+      });
+      // Show/hide reference image uploader
+      const refUpload = document.getElementById('kling-ref-upload');
+      if (mode === 'txt2img') {
+        refUpload.style.display = 'none';
+        document.getElementById('kling-aspect-auto').style.display = 'none';
+      } else {
+        refUpload.style.display = 'block';
+        // Auto button visible for img2img, edit, expand
+        if (mode === 'img2img' || mode === 'edit' || mode === 'expand') {
+          document.getElementById('kling-aspect-auto').style.display = 'inline-flex';
+        } else {
+          document.getElementById('kling-aspect-auto').style.display = 'none';
+        }
+        // Multi mode uses multiple file input
+        const refInput = document.getElementById('kling-ref-input');
+        refInput.multiple = (mode === 'multi');
+      }
+      updateKlingCostEstimate();
+    }
+    
+    function onKlingModelChange() {
+      const model = document.getElementById('kling-model').value;
+      const qualityToggle = document.getElementById('kling-quality-toggle');
+      // Show quality toggle only for kling-v3 or kling-v2-omni
+      if (model === 'kling-v3' || model === 'kling-v2-omni') {
+        qualityToggle.style.display = 'block';
+      } else {
+        qualityToggle.style.display = 'none';
+      }
+      updateKlingCostEstimate();
+    }
+    
+    function selectKlingAspect(btn, aspect) {
+      _klingAspectRatio = aspect;
+      document.querySelectorAll('.kling-aspect-btn').forEach(b => b.classList.remove('active-aspect'));
+      btn.classList.add('active-aspect');
+      updateKlingCostEstimate();
+    }
+    
+    function selectKlingQuality(btn, quality) {
+      window._klingQuality = quality;
+      document.querySelectorAll('.kling-quality-btn').forEach(b => b.classList.remove('active-quality'));
+      btn.classList.add('active-quality');
+      // Show warning for 4s + kling-v2-omni
+      const warning = document.getElementById('kling-quality-warning');
+      const model = document.getElementById('kling-model').value;
+      if (quality === '4s' && model === 'kling-v2-omni') {
+        warning.style.display = 'block';
+      } else {
+        warning.style.display = 'none';
+      }
+      updateKlingCostEstimate();
+    }
+    
+    function updateKlingCostEstimate() {
+      const model = document.getElementById('kling-model').value;
+      const mode = document.querySelector('#ai-img-kling-panel').getAttribute('data-kling-mode') || 'txt2img';
+      const quality = window._klingQuality || '1s';
+      
+      let cost = 1; // default
+      let label = 'points';
+      
+      // Cost table
+      if (model === 'kling-v1') { cost = 1; }
+      else if (model === 'kling-v1-5') { cost = 0; label = 'FREE (promo)'; }
+      else if (model === 'kling-v1-6') { cost = 1; }
+      else if (model === 'kling-v2-1') { cost = (mode === 'txt2img' ? 4 : 8); }
+      else if (model === 'kling-v2') { cost = (mode === 'multi' ? 16 : 4); }
+      else if (model === 'kling-v3') { cost = 0; label = 'FREE'; }
+      else if (model === 'kling-v2-omni') { cost = (quality === '4s' ? 16 : 0); if (cost === 0) label = 'FREE'; }
+      else if (model === 'kling-image-v1') { cost = 1; }
+      
+      const badge = document.getElementById('kling-cost-estimate');
+      if (cost === 0) {
+        badge.textContent = 'Estimated cost: ' + label;
+      } else {
+        badge.textContent = 'Estimated cost: ' + cost + ' ' + label;
+      }
+    }
+    
+    function handleKlingRefUpload(input) {
+      const files = input.files;
+      if (!files || files.length === 0) return;
+      
+      window._klingRefImages = [];
+      const promises = Array.from(files).map(file => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            window._klingRefImages.push(e.target.result.split(',')[1]);
+            resolve();
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+      
+      Promise.all(promises).then(() => {
+        // Show preview
+        const preview = document.getElementById('kling-ref-preview');
+        const thumb = document.getElementById('kling-ref-thumb');
+        const zone = document.getElementById('kling-ref-zone');
+        if (files.length === 1) {
+          thumb.src = URL.createObjectURL(files[0]);
+        } else {
+          thumb.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="%23222" width="100" height="100"/><text x="50%" y="50%" fill="%23888" text-anchor="middle" dy=".3em">' + files.length + ' images</text></svg>';
+        }
+        zone.style.display = 'none';
+        preview.style.display = 'block';
+      });
+    }
+    
+    function clearKlingRef() {
+      window._klingRefImages = [];
+      document.getElementById('kling-ref-input').value = '';
+      document.getElementById('kling-ref-zone').style.display = 'block';
+      document.getElementById('kling-ref-preview').style.display = 'none';
+    }
+
     async function generateKlingImage() {
       const creds = docV2.aiCredentials || {};
       const api_key    = creds.kling_key    || '';
       const api_secret = creds.kling_secret || '';
       const prompt     = (document.getElementById('kling-img-prompt').value || '').trim();
       const neg        = (document.getElementById('kling-img-neg').value    || '').trim();
-      const model_name = document.getElementById('kling-img-model').value || 'kling-v1';
+      const model      = document.getElementById('kling-model').value || 'kling-v1';
+      const mode       = document.querySelector('#ai-img-kling-panel').getAttribute('data-kling-mode') || 'txt2img';
+      const aspect     = _klingAspectRatio || '1:1';
+      const quality    = window._klingQuality || '1s';
+      
+      // Get reference images if needed
+      const refImages = window._klingRefImages || [];
 
       if (!api_key || !api_secret) {
         showToast('⚠️ Kling API Key and Secret required. Enter them in Credentials.');
@@ -4114,8 +4305,11 @@ function showImg2ImgPreview(b64) {
           body: JSON.stringify({
             prompt: prompt,
             negative_prompt: neg,
-            model_name: model_name,
-            aspect_ratio: _klingImgRatio,
+            model_name: model,
+            mode: mode,
+            aspect_ratio: aspect,
+            quality: quality,
+            reference_images: refImages,
             n: 1,
             credentials: { api_key: api_key, api_secret: api_secret }
           })
