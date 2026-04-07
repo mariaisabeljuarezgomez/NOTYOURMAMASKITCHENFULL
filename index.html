@@ -3040,6 +3040,7 @@ async function save() {
     // Commit 7: Normalize save payload to settings.viewer
     const payload = {
       ...docV2,                          // spread existing root-level fields
+      version: 2,
       settings: {
         ...(docV2.settings || {}),       // preserve any other settings keys
         viewer: {
@@ -4210,18 +4211,8 @@ async function saveAiImageToAssets(b64, prompt) {
       docV2.assets.push(newAsset);
       renderAssetPanel();
       try {
-        docV2.version = 2;
-        const saveRes = await fetch('/api/menu', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(docV2)
-        });
-        if (saveRes.ok) {
-          showToast('🖼️ AI image saved to Assets panel permanently!');
-        } else {
-          markDirty();
-          showToast('🖼️ AI image added — click Save to keep it after refresh.');
-        }
+        await save();
+        showToast('🖼️ AI image saved to Assets panel permanently!');
       } catch (saveErr) {
         markDirty();
         showToast('🖼️ AI image added — click Save to keep it after refresh.');
