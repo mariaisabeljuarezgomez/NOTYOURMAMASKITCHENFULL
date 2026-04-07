@@ -182,20 +182,19 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     transform:translateX(-50%); 
     background:rgba(0,0,0,0.95); 
     backdrop-filter:blur(10px); 
-    padding:12px 18px; 
-    border-radius:24px; 
+    padding:10px 16px; 
+    border-radius:20px; 
     display:none; 
     align-items:center; 
     gap:12px; 
     z-index:2000; 
-    box-shadow:0 15px 40px rgba(0,0,0,0.8); 
+    box-shadow:0 10px 30px rgba(0,0,0,0.8); 
     border:1px solid #444; 
-    width: fit-content !important;
+    width: auto !important;
     height: auto !important;
-    max-width: none !important;
+    max-width: 95vw !important;
     min-width: 200px;
     overflow: visible;
-    flex-direction: row;
 }
 
 #bar-content {
@@ -204,7 +203,6 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     gap:10px; 
     flex-grow:1; 
     overflow: visible;
-    width: auto !important;
 }
 .ctrl-group { 
     display:flex; 
@@ -371,7 +369,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     /* Distribution Bar */
     #distribute-bar {
         position: fixed;
-        bottom: 240px;      /* sits above #selection-bar */
+        bottom: 240px;
         left: 50%;
         transform: translateX(-50%);
         display: none;
@@ -380,12 +378,12 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         z-index: 2100;
         background: rgba(0,0,0,0.95);
         border: 1px solid #c8a96a;
-        border-radius: 24px;
-        padding: 10px 18px;
-        box-shadow: 0 15px 40px rgba(0,0,0,0.8);
-        width: fit-content !important;
+        border-radius: 20px;
+        padding: 8px 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        width: auto !important;
         height: auto !important;
-        max-width: none !important;
+        max-width: 95vw !important;
         overflow: visible;
     }
     #distribute-bar.show { display: flex !important; }
@@ -1248,12 +1246,10 @@ if(barHandle) {
 	            isBarDragged = true;
 	            selBar.style.transform = 'none';
 	            selBar.style.margin = '0';
-	            selBar.style.animation = 'none';
 	            
 	            let nx = pe.clientX - offX;
 	            let ny = pe.clientY - offY;
 	
-	            // Free-Float: No vertical limits, just keep it on screen
 	            nx = Math.max(0, Math.min(nx, window.innerWidth - selBar.offsetWidth));
 	            ny = Math.max(0, Math.min(ny, window.innerHeight - selBar.offsetHeight));
 	
@@ -1261,6 +1257,7 @@ if(barHandle) {
 	            selBar.style.top = ny + 'px';
 	            selBar.style.bottom = 'auto';
 	            selBar.style.right = 'auto';
+	            selBar.style.width = 'auto';
 	        };
 
         document.onpointerup = () => {
@@ -1286,7 +1283,6 @@ if(distBarHandle) {
 	            isDistBarDragged = true;
 	            distBar.style.transform = 'none';
 	            distBar.style.margin = '0';
-	            distBar.style.animation = 'none';
 	            
 	            let nx = pe.clientX - offX;
 	            let ny = pe.clientY - offY;
@@ -1298,6 +1294,7 @@ if(distBarHandle) {
 	            distBar.style.top = ny + 'px';
 	            distBar.style.bottom = 'auto';
 	            distBar.style.right = 'auto';
+	            distBar.style.width = 'auto';
 	        };
 
         document.onpointerup = () => {
