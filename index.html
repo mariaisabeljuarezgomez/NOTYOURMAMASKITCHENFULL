@@ -4743,8 +4743,11 @@ async function uploadAiToCloudinary(fileType) {
         document.getElementById('ai-vid-url').value = data.url;
         document.getElementById('ai-vid-url-row').style.display = 'block';
         document.getElementById('ai-vid-apply-row').style.display = 'block';
-        document.getElementById('ai-vid-slot-picker').style.display = 'block';
-        showToast('☁️ Video uploaded to Cloudinary!');
+        
+        // Auto-save to history for hero slot by default
+        saveVideoHistory('hero', data.url);
+        
+        showToast('✅ Video uploaded to Cloudinary! Tap a slot below to assign it.');
       } else {
         showToast('❌ Cloudinary upload failed: ' + (data.error || 'Unknown error'));
       }

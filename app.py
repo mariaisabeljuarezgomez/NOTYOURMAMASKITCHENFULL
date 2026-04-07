@@ -882,22 +882,7 @@ def cloudinary_upload():
         if not all([cloud_name, api_key, api_secret]) or (not file_b64 and not file_url):
             return jsonify({"error": "Missing file or credentials"}), 400
 
-        if file_url and file_type == "video":
-            # Upload by URL directly to Cloudinary
-            client = _http()
-            if not client:
-                return jsonify({"error": "No HTTP client available"}), 500
-            timestamp = str(int(__import__('time').time()))
-            params = {"folder": "menu-editor", "timestamp": timestamp}
-            params["signature"] = cloudinary_sign(params, api_secret)
-            resp = client.post(
-                f"https://api.cloudinary.com/v1_1/{cloud_name}/video/upload",
-                data={**params, "file": file_url, "api_key": api_key, "resource_type": "video"}
-            )
-            rj = resp.json()
-            if "secure_url" in rj:
-                return jsonify({"url": rj["secure_url"]})
-            return jsonify({"error": rj.get("error", {}).get("message","Upload failed")}), 400
+
 
         client = _http()
         if not client:
@@ -947,7 +932,7 @@ def cloudinary_upload():
         for k, v in upload_fields.items():
             upload_files[k] = (None, str(v))
         
-        timeout_val = 120 if file_type == "video" else 60
+        timeout_val = 180 if file_type == "video" else 60
         resp = client.post(upload_url, files=upload_files, timeout=timeout_val)
         if resp.status_code in (200, 201):
             result = resp.json()
