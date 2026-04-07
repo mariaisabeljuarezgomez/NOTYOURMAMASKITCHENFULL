@@ -880,19 +880,26 @@ def cloudinary_upload():
         if not all([file_b64, cloud_name, api_key, api_secret]):
             return jsonify({"error": "Missing file or credentials"}), 400
         timestamp = int(time.time())
-        sig = cloudinary_sign({"folder": "nymk_ai", "timestamp": timestamp}, api_secret)
-        upload_url = f"https://api.cloudinary.com/v1_1/{cloud_name}/auto/upload"
+        
+        # Step 1 & 2: Build params dict for both signing AND sending
+        if file_type == "video":
+            params = {"folder": "nymk_ai", "resource_type": "video", "timestamp": timestamp}
+            upload_url = f"https://api.cloudinary.com/v1_1/{cloud_name}/video/upload"
+        else:
+            params = {"folder": "nymk_ai", "timestamp": timestamp}
+            upload_url = f"https://api.cloudinary.com/v1_1/{cloud_name}/image/upload"
+        
+        # Sign the exact params dict
+        sig = cloudinary_sign(params, api_secret)
+        
+        # Step 3 & 4: Build upload_fields from the same params dict
+        upload_fields = dict(params)
+        upload_fields["api_key"] = api_key
+        upload_fields["signature"] = sig
+        
         mime_type = "image/png" if file_type == "image" else "video/mp4"
         file_payload = f"data:{mime_type};base64,{file_b64}"
-        upload_fields = {
-            "api_key": api_key,
-            "timestamp": timestamp,
-            "signature": sig,
-            "folder": "nymk_ai"
-        }
-        if file_type == "video":
-            upload_fields["resource_type"] = "video"
-            upload_fields["eager"] = "sp_hd"
+        
         client = _http()
         if not client:
             return jsonify({"error": "No HTTP client available"}), 500
