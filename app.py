@@ -58,6 +58,7 @@ if not os.path.exists(STORAGE_BASE):
 
 DATA_FILE = os.path.join(STORAGE_BASE, "menu_data.json")
 BACKUP_DIR = os.path.join(STORAGE_BASE, "backups")
+VIDEO_HISTORY_FILE = os.path.join(STORAGE_BASE, "video_history.json")
 
 IS_PERSISTENT = STORAGE_BASE.startswith("/app/data") or os.environ.get("RAILWAY_VOLUME_MOUNTED") == "true"
 
@@ -569,6 +570,37 @@ def kling_status(task_id):
                 resp["error"] = error
             return jsonify(resp)
         return jsonify({"status": "pending", "progress": 0}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/video-history", methods=["GET"])
+def get_video_history():
+    try:
+        if not os.path.exists(VIDEO_HISTORY_FILE):
+            return jsonify({"hero": [], "left": [], "right": []}), 200
+        with open(VIDEO_HISTORY_FILE, "r", encoding="utf-8") as f:
+            return jsonify(json.load(f)), 200
+    except Exception as e:
+        return jsonify({"hero": [], "left": [], "right": [], "error": str(e)}), 500
+
+@app.route("/api/video-history", methods=["POST"])
+def save_video_history_route():
+    try:
+        data = request.json or {}
+        slot = data.get("slot", "")
+        url = data.get("url", "")
+        if slot not in ("hero", "left", "right") or not url:
+            return jsonify({"error": "Invalid slot or url"}), 400
+        history = {"hero": [], "left": [], "right": []}
+        if os.path.exists(VIDEO_HISTORY_FILE):
+            with open(VIDEO_HISTORY_FILE, "r", encoding="utf-8") as f:
+                history = json.load(f)
+        slot_list = history.get(slot, [])
+        slot_list = [url] + [u for u in slot_list if u != url]
+        history[slot] = slot_list[:3]
+        with open(VIDEO_HISTORY_FILE, "w", encoding="utf-8") as f:
+            json.dump(history, f, indent=2)
+        return jsonify({"status": "ok", "history": history[slot]}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

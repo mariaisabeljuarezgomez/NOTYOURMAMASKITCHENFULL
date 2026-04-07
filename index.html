@@ -710,6 +710,17 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
           <input type="text" id="ai-vid-url" class="rp-input" style="font-size:10px;margin-bottom:4px;" readonly>
           <button onclick="copyAiUrl('ai-vid-url')" class="btn-ui" style="width:100%;font-size:10px;padding:4px;">Copy URL</button>
         </div>
+        <div id="ai-vid-apply-row" style="display:none;margin-top:6px;">
+          <div style="font-size:9px;color:#888;font-weight:800;text-transform:uppercase;margin-bottom:4px;">⚡ Apply Directly To Viewer</div>
+          <div style="display:flex;gap:4px;">
+            <button onclick="applyVideoToSlot('hero')" class="btn-ui accent" style="flex:1;font-size:9px;padding:5px;">🎬 Hero</button>
+            <button onclick="applyVideoToSlot('left')" class="btn-ui" style="flex:1;font-size:9px;padding:5px;">◀ Left</button>
+            <button onclick="applyVideoToSlot('right')" class="btn-ui" style="flex:1;font-size:9px;padding:5px;">▶ Right</button>
+          </div>
+        </div>
+        <div id="ai-vid-history-hero" style="display:none;margin-top:6px;padding:6px;background:#1a1a1a;border-radius:6px;border:1px solid #2a2a2a;"></div>
+        <div id="ai-vid-history-left" style="display:none;margin-top:4px;padding:6px;background:#1a1a1a;border-radius:6px;border:1px solid #2a2a2a;"></div>
+        <div id="ai-vid-history-right" style="display:none;margin-top:4px;padding:6px;background:#1a1a1a;border-radius:6px;border:1px solid #2a2a2a;"></div>
       </div>
     </div>
   </div><!-- /.rp-panel#rp-panel-aistudio -->
@@ -3384,6 +3395,7 @@ window.onload = async () => {
     // Step 4: Init the rest
     initSmartTooltips();
     await loadUserImages();
+    loadVideoHistory();
 
     function fitCanvasToScreen() {
         _isFitZoom = true;
@@ -3936,6 +3948,9 @@ async function generateAiImage() {
       window._lastAiImageBlob = data.image_url;
       const lastImgBtn = document.getElementById('ai-vid-use-last-img-btn');
       if (lastImgBtn) { lastImgBtn.disabled = false; lastImgBtn.classList.add('accent'); }
+      const b64only = data.image_url.replace('data:image/png;base64,', '');
+      const promptLabel = document.getElementById('ai-img-prompt').value.trim().substring(0, 40);
+      saveAiImageToAssets(b64only, promptLabel);
       showToast('✅ Image generated');
     } else {
       showToast('❌ Image generation failed: ' + (data.error || 'Unknown error'));
@@ -3960,10 +3975,11 @@ async function uploadAiToCloudinary(fileType) {
       });
       const data = await res.json();
       if (data.url) {
+        window._lastAiImageUrl = data.url;
         aiState.generatedImageUrl = data.url;
         document.getElementById('ai-img-url').value = data.url;
         document.getElementById('ai-img-url-row').style.display = 'block';
-        showToast('✅ Uploaded to Cloudinary');
+        showToast('☁️ Image uploaded to Cloudinary!');
       } else {
         showToast('❌ Cloudinary upload failed: ' + (data.error || 'Unknown error'));
       }
@@ -3980,10 +3996,12 @@ async function uploadAiToCloudinary(fileType) {
       });
       const data = await res.json();
       if (data.url) {
+        window._lastAiVideoCloudUrl = data.url;
         aiState.generatedVideoUrl = data.url;
         document.getElementById('ai-vid-url').value = data.url;
         document.getElementById('ai-vid-url-row').style.display = 'block';
-        showToast('✅ Video uploaded to Cloudinary');
+        document.getElementById('ai-vid-apply-row').style.display = 'block';
+        showToast('☁️ Video uploaded to Cloudinary!');
       } else {
         showToast('❌ Cloudinary upload failed: ' + (data.error || 'Unknown error'));
       }
@@ -4025,6 +4043,32 @@ function placeAiImageOnCanvas() {
   showToast('✅ AI image placed on canvas');
 }
 
+async function saveAiImageToAssets(b64, prompt) {
+  const filename = 'ai-' + Date.now() + '.png';
+  try {
+    const res = await fetch('/api/upload-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename: filename, data: b64 })
+    });
+    const resp = await res.json();
+    if (resp.url) {
+      const newAsset = {
+        id: 'asset_ai_' + Date.now(),
+        kind: 'image',
+        name: prompt || 'AI Image',
+        storage: { originalUrl: resp.url, previewUrl: resp.url, thumbnailUrl: null }
+      };
+      if (!docV2.assets) docV2.assets = [];
+      docV2.assets.push(newAsset);
+      renderAssetPanel();
+      showToast('🖼️ AI image saved to Assets panel permanently!');
+    }
+  } catch(e) {
+    showToast('⚠️ Could not save to Assets — available in canvas only this session.');
+  }
+}
+
 function copyAiUrl(inputId) {
   const val = document.getElementById(inputId).value;
   if (!val) return;
@@ -4052,6 +4096,69 @@ function clearAiVidRef() {
   document.getElementById('ai-vid-ref-input').value = '';
   document.getElementById('ai-vid-ref-zone').style.display = 'block';
   document.getElementById('ai-vid-ref-preview').style.display = 'none';
+}
+
+async function applyVideoToSlot(slot) {
+  const url = window._lastAiVideoCloudUrl || document.getElementById('ai-vid-url').value;
+  if (!url) { showToast('⚠️ Upload to Cloudinary first to get a permanent URL.'); return; }
+  if (slot === 'hero') {
+    document.getElementById('hero-video-url-input').value = url;
+  } else if (slot === 'left') {
+    document.getElementById('side-panel-left-url').value = url;
+  } else if (slot === 'right') {
+    document.getElementById('side-panel-right-url').value = url;
+  }
+  saveVideoHistory(slot, url);
+  saveGlobalSettings();
+  const labels = { hero: 'Hero Video', left: 'Left Panel', right: 'Right Panel' };
+  showToast('✅ Applied to ' + labels[slot] + '! Viewer updated live.');
+}
+
+async function saveVideoHistory(slot, url) {
+  try {
+    await fetch('/api/video-history', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slot, url })
+    });
+    loadVideoHistory();
+  } catch(e) { /* silent */ }
+}
+
+async function loadVideoHistory() {
+  try {
+    const res = await fetch('/api/video-history');
+    const data = await res.json();
+    window._videoHistory = data;
+    renderVideoHistoryUI();
+  } catch(e) { window._videoHistory = {hero:[], left:[], right:[]}; }
+}
+
+function renderVideoHistoryUI() {
+  const h = window._videoHistory || {hero:[], left:[], right:[]};
+  ['hero','left','right'].forEach(slot => {
+    const container = document.getElementById('ai-vid-history-' + slot);
+    if (!container) return;
+    const list = h[slot] || [];
+    if (list.length === 0) { container.style.display = 'none'; return; }
+    container.style.display = 'block';
+    const label = {hero:'Hero', left:'Left Panel', right:'Right Panel'}[slot];
+    container.innerHTML = '<div style="font-size:9px;color:#666;font-weight:800;text-transform:uppercase;margin-bottom:4px;">↩ ' + label + ' History</div>' +
+      list.map((url, i) => {
+        const short = url.split('/').pop().substring(0,28);
+        return '<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;">' +
+          '<span style="flex:1;font-size:9px;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + url + '">' + (i===0?'▶ Current':short) + '</span>' +
+          (i>0?'<button onclick="restoreVideoSlot(\'' + slot + '\',\'' + url + '\')" class="btn-ui" style="font-size:9px;padding:3px 6px;flex-shrink:0;">↩ Restore</button>':'') +
+          '</div>';
+      }).join('');
+  });
+}
+
+function restoreVideoSlot(slot, url) {
+  if (!confirm('Restore this video to ' + slot + '?')) return;
+  window._lastAiVideoCloudUrl = url;
+  applyVideoToSlot(slot);
+  showToast('↩ Restored!');
 }
 
 function useLastAiImageAsVideoRef() {
