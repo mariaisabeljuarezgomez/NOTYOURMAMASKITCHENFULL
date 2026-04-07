@@ -10,6 +10,11 @@ import hashlib
 import hmac
 import urllib.parse
 from datetime import datetime
+from io import BytesIO
+try:
+    from PIL import Image as PILImage
+except ImportError:
+    PILImage = None
 try:
     import cloudscraper
 except ImportError:
@@ -578,7 +583,19 @@ def generate_video():
         if negative_prompt:
             payload["negative_prompt"] = negative_prompt
         if reference_image_b64:
-            mime_type = data.get("reference_image_mime", "image/jpeg")
+            # Kling image2video only accepts JPEG — convert PNG or any other format to JPEG
+            try:
+                raw_bytes = base64.b64decode(reference_image_b64)
+                if PILImage:
+                    img = PILImage.open(BytesIO(raw_bytes)).convert("RGB")
+                    buf = BytesIO()
+                    img.save(buf, format="JPEG", quality=92)
+                    reference_image_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+                    mime_type = "image/jpeg"
+                else:
+                    mime_type = data.get("reference_image_mime", "image/jpeg")
+            except Exception:
+                mime_type = data.get("reference_image_mime", "image/jpeg")
             payload["image"] = f"data:{mime_type};base64,{reference_image_b64}"
         sub_resp = client.post(submit_url, headers=headers, json=payload, timeout=30)
         if sub_resp.status_code in (200, 201, 202):
