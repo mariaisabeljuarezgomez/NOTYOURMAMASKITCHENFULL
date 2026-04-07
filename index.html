@@ -118,6 +118,61 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 .btn-ui.primary { background:var(--primary); color:#fff; border-color:transparent; }
 .btn-ui.accent { background:var(--accent); color:#000; border-color:transparent; font-weight:700; }
 
+/* ── Kling AI Studio: Active button states ── */
+
+/* Mode buttons: active = bright accent yellow fill */
+.kling-mode-btn.active-mode {
+  background: var(--accent) !important;
+  color: #000 !important;
+  border-color: transparent !important;
+  font-weight: 800 !important;
+  box-shadow: 0 0 8px rgba(241,196,15,0.6);
+}
+
+/* Aspect ratio buttons: active = primary red fill */
+.kling-aspect-btn.active-aspect {
+  background: var(--primary) !important;
+  color: #fff !important;
+  border-color: var(--accent) !important;
+  font-weight: 800 !important;
+  box-shadow: 0 0 6px rgba(149,32,29,0.5);
+}
+
+/* Quality buttons: active = accent yellow fill */
+.kling-quality-btn.active-quality {
+  background: var(--accent) !important;
+  color: #000 !important;
+  border-color: transparent !important;
+  font-weight: 800 !important;
+  box-shadow: 0 0 8px rgba(241,196,15,0.6);
+}
+
+/* Provider toggle (Stability / Kling): active = primary red + accent border */
+#btn-img-prov-stability.primary,
+#btn-img-prov-kling.primary {
+  background: var(--primary) !important;
+  color: #fff !important;
+  border: 2px solid var(--accent) !important;
+  font-weight: 800 !important;
+  box-shadow: 0 0 8px rgba(149,32,29,0.4);
+}
+
+/* Hover states for all toggle button groups */
+.kling-mode-btn:hover,
+.kling-aspect-btn:hover,
+.kling-quality-btn:hover {
+  background: #555 !important;
+  color: #fff !important;
+  border-color: #888 !important;
+}
+
+/* Active state overrides hover — keep glow on active even on hover */
+.kling-mode-btn.active-mode:hover,
+.kling-aspect-btn.active-aspect:hover,
+.kling-quality-btn.active-quality:hover {
+  filter: brightness(1.1);
+}
+
 /* Selection Bar (Contextual) */
 /* Fix 2 & 3 - Moveable Toolbar & Horizontal Scroll */
 #selection-bar { 
