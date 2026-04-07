@@ -36,21 +36,22 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 .ctrl-btn:hover { background:#444; }
 .ctrl-btn.active { background:var(--primary); border-color:var(--accent); }
 
-#top-header { position:fixed; top:0; left:0; right:0; height:110px; background:rgba(0,0,0,0.95); backdrop-filter:blur(10px); display:flex; flex-direction:column; z-index:1000; border-bottom:1px solid #333; }
+#top-header { position:fixed; top:0; left:0; right:0; height:160px; background:rgba(0,0,0,0.95); backdrop-filter:blur(10px); display:flex; flex-direction:column; z-index:1000; border-bottom:1px solid #333; }
 .header-top { height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid #222; width: 100%; }
-.top-ribbon { height: 60px; background: #111; display: flex; align-items: center; padding: 0 15px; gap: 10px; overflow-x: auto; scrollbar-width: none; width: 100%; }
-.top-ribbon::-webkit-scrollbar { display: none; }
+.top-ribbon { height: 110px; background: #111; display: flex; flex-direction: column; padding: 5px 15px; gap: 5px; width: 100%; box-sizing: border-box; }
+.ribbon-row { display: flex; align-items: center; gap: 10px; height: 50px; width: 100%; overflow-x: auto; scrollbar-width: none; }
+.ribbon-row::-webkit-scrollbar { display: none; }
 .ribbon-group { display: flex; align-items: center; gap: 6px; padding: 0 10px; border-right: 1px solid #333; height: 36px; flex-shrink: 0; }
 .ribbon-group:last-child { border-right: none; }
-.ribbon-label { font-size: 9px; color: #666; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-right: 2px; }
-.ribbon-input { background: #1a1a1a; border: 1px solid #444; color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 12px; outline: none; }
+.ribbon-label { font-size: 9px; color: #777; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-right: 2px; }
+.ribbon-input { background: #1a1a1a; border: 1px solid #444; color: var(--accent); padding: 4px 8px; border-radius: 6px; font-size: 12px; outline: none; }
 .ribbon-btn { background: #222; border: 1px solid #333; color: #fff; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; font-size: 13px; }
 .ribbon-btn:hover { background: #333; border-color: var(--accent); }
 .ribbon-btn.active { background: var(--primary); color: #fff; border-color: var(--accent); }
 #header-title { font-weight:700; font-size:16px; letter-spacing:1px; color:var(--accent); }
 .header-actions { display:flex; gap:10px; align-items:center; }
 
-#editor-viewport { position:absolute; top:110px; left:0; right:0; bottom:0; overflow:auto; background:#111; display:flex; align-items:flex-start; justify-content:center; }
+#editor-viewport { position:absolute; top:160px; left:0; right:0; bottom:0; overflow:auto; background:#111; display:flex; align-items:flex-start; justify-content:center; }
 #centering-wrapper { 
     padding: 100px; 
     display: flex; 
@@ -506,7 +507,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 <div id="smart-tooltip"></div>
 <div id="top-header">
     <div class="header-top">
-        <div id="header-title">MENU EDITOR PRO V2</div>
+        <div id="header-title">NOT YOUR MAMA'S KITCHEN — EDITOR PRO V2</div>
         <div class="header-actions">
             <button id="btn-save-header" class="btn-ui" onclick="save()" data-help="Saves your current layout to the server and browser backup" style="background:#1e8449; border-color:#2ecc71; color:#fff;">💾 Save Session</button>
             <button id="btn-undo" class="btn-ui" onclick="undo()" title="Undo Last Change" data-help="Reverses your last action (move, edit, delete, etc.)">↺ Undo Last Change</button>
@@ -515,49 +516,62 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
             <button id="btn-reload" class="btn-ui" onclick="location.reload()" data-help="Reloads the page to reset the session if needed.">↺ RELOAD</button>
         </div>
     </div>
-    
-    <div class="top-ribbon" id="top-ribbon">
-        <div class="ribbon-group">
-            <span class="ribbon-label">Font</span>
-            <select id="ribbon-font" class="ribbon-input" style="width:140px" onchange="updateStyle('fontFamily', this.value)">
-                <option value="bernard-mt-condensed-regular">Bernard MT Condensed</option>
-                <option value="century-gothic-bold">Century Gothic Bold</option>
-                <option value="century-gothic-regular">Century Gothic Regular</option>
-            </select>
-            <input type="number" id="ribbon-size" class="ribbon-input" min="8" max="500" style="width:55px" onchange="updateStyle('fontSize', parseFloat(this.value))">
-            <input type="color" id="ribbon-color" oninput="updateStyle('color', this.value)">
+    <div class="top-ribbon">
+        <!-- ROW 1: DESIGN & STYLE (Dynamic) -->
+        <div class="ribbon-row" id="ribbon-design-row">
+            <div class="ribbon-group">
+                <span class="ribbon-label">View</span>
+                <button class="ribbon-btn" onclick="zoomOut()">-</button>
+                <span id="zoom-level" style="font-size:11px; min-width:35px; text-align:center;">100%</span>
+                <button class="ribbon-btn" onclick="zoomIn()">+</button>
+            </div>
+            <div class="ribbon-group">
+                <span class="ribbon-label">Guides</span>
+                <button class="ribbon-btn" id="btn-grid-toggle" onclick="toggleGrid()" title="Toggle Grid">#</button>
+                <button class="ribbon-btn" id="btn-snap-toggle" onclick="toggleSnap()" title="Toggle Snapping">🧲</button>
+            </div>
+            <div id="ribbon-context-ctrls" style="display:flex; align-items:center; height:100%;">
+                <!-- Contextual controls (Font, Color, etc.) injected here -->
+                <div style="color:#444; font-size:11px; padding-left:20px;">Select an element to see design tools</div>
+            </div>
         </div>
-
-        <div class="ribbon-group">
-            <span class="ribbon-label">Style</span>
-            <button class="ribbon-btn" id="ribbon-bold" onclick="toggleStyle('fontWeight', 'bold', 'normal')"><b>B</b></button>
-            <button class="ribbon-btn" id="ribbon-italic" onclick="toggleStyle('fontStyle', 'italic', 'normal')"><i>I</i></button>
-            <button class="ribbon-btn" id="ribbon-underline" onclick="toggleStyle('textDecoration', 'underline', 'none')"><u>U</u></button>
-        </div>
-
-        <div class="ribbon-group">
-            <span class="ribbon-label">Align</span>
-            <button class="ribbon-btn" id="ribbon-align-left" onclick="updateStyle('textAlign', 'left')">⫷</button>
-            <button class="ribbon-btn" id="ribbon-align-center" onclick="updateStyle('textAlign', 'center')">≡</button>
-            <button class="ribbon-btn" id="ribbon-align-right" onclick="updateStyle('textAlign', 'right')">⫸</button>
-        </div>
-
-        <div class="ribbon-group">
-            <span class="ribbon-label">Case</span>
-            <button class="ribbon-btn" onclick="toggleCase('uppercase')" style="font-size:10px">AA</button>
-            <button class="ribbon-btn" onclick="toggleCase('lowercase')" style="font-size:10px">aa</button>
-        </div>
-
-        <div class="ribbon-group">
-            <span class="ribbon-label">Spacing</span>
-            <div class="ctrl-group" style="border:none;padding:0;"><label>H</label><input type="number" id="ribbon-height" class="ribbon-input" step="0.1" style="width:42px" onchange="updateStyle('lineHeight', parseFloat(this.value))"></div>
-            <div class="ctrl-group" style="border:none;padding:0;"><label>W</label><input type="number" id="ribbon-spacing" class="ribbon-input" style="width:42px" onchange="updateStyle('letterSpacing', parseInt(this.value))"></div>
-        </div>
-
-        <div class="ribbon-group">
-            <span class="ribbon-label">Distribute</span>
-            <button class="btn-ui" style="padding:4px 8px; font-size:10px" onclick="distributeVertically()">↕ Dist V</button>
-            <button class="btn-ui" style="padding:4px 8px; font-size:10px" onclick="distributeHorizontally()">↔ Dist H</button>
+        <!-- ROW 2: ALIGN & ARRANGE (Always Visible) -->
+        <div class="ribbon-row" id="ribbon-arrange-row">
+            <div class="ribbon-group">
+                <span class="ribbon-label">Position</span>
+                <div style="display:flex; gap:4px; align-items:center;">
+                    <label class="ribbon-label">X</label><input type="number" id="ribbon-pos-x" class="ribbon-input" style="width:50px" onchange="updateProp('x', parseFloat(this.value))">
+                    <label class="ribbon-label">Y</label><input type="number" id="ribbon-pos-y" class="ribbon-input" style="width:50px" onchange="updateProp('y', parseFloat(this.value))">
+                </div>
+            </div>
+            <div class="ribbon-group" id="ribbon-size-group">
+                <span class="ribbon-label">Size</span>
+                <div style="display:flex; gap:4px; align-items:center;">
+                    <label class="ribbon-label">W</label><input type="number" id="ribbon-pos-w" class="ribbon-input" style="width:50px" onchange="setSizeFromInput('width', parseFloat(this.value))">
+                    <label class="ribbon-label">H</label><input type="number" id="ribbon-pos-h" class="ribbon-input" style="width:50px" onchange="setSizeFromInput('height', parseFloat(this.value))">
+                </div>
+            </div>
+            <div class="ribbon-group">
+                <span class="ribbon-label">Align</span>
+                <button class="ribbon-btn" onclick="alignSelected('left')" title="Align Left">⬛⫷</button>
+                <button class="ribbon-btn" onclick="alignSelected('centerH')" title="Center Horizontally">↔</button>
+                <button class="ribbon-btn" onclick="alignSelected('right')" title="Align Right">⫸⬛</button>
+                <button class="ribbon-btn" onclick="alignSelected('top')" title="Align Top">⬛▲</button>
+                <button class="ribbon-btn" onclick="alignSelected('centerV')" title="Center Vertically">↕</button>
+                <button class="ribbon-btn" onclick="alignSelected('bottom')" title="Align Bottom">▼⬛</button>
+            </div>
+            <div class="ribbon-group">
+                <span class="ribbon-label">Distribute</span>
+                <button class="ribbon-btn" onclick="distributeSelected('h')" title="Distribute Horizontally">⇔ H</button>
+                <button class="ribbon-btn" onclick="distributeSelected('v')" title="Distribute Vertically">⇕ V</button>
+            </div>
+            <div class="ribbon-group">
+                <span class="ribbon-label">Nudge</span>
+                <button class="ribbon-btn" onclick="nudge(0,-2)">▲</button>
+                <button class="ribbon-btn" onclick="nudge(0,2)">▼</button>
+                <button class="ribbon-btn" onclick="nudge(-2,0)">◀</button>
+                <button class="ribbon-btn" onclick="nudge(2,0)">▶</button>
+            </div>
         </div>
     </div>
 </div>
@@ -1002,158 +1016,19 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 
 <div id="selection-bar">
     <div id="bar-handle" style="cursor:grab; padding:4px 8px; color:#666; font-size:18px; flex-shrink:0; touch-action:none;" title="Drag to move toolbar">⠿</div>
-    <div style="display:flex; gap:6px; margin-right:10px; flex-shrink:0;">
-        <div class="bar-tab active" id="tab-layer" onclick="setBarTab('layer')" data-help="Controls visibility, opacity, rotation, and layer role">LAYER</div>
-        <div class="bar-tab" id="tab-design" onclick="setBarTab('design')" data-help="Controls font, color, line height, letter spacing (text) or corner radius and stroke (shapes)">DESIGN</div>
-        <div class="bar-tab" id="tab-arrange" onclick="setBarTab('arrange')" data-help="Controls position in the layer stack and center alignment">ARRANGE</div>
-    </div>
-
-    <div id="bar-content">
-        <div id="bar-tab-layer" style="display:flex; align-items:center; gap:10px; height: 100%;">
-            <button class="ctrl-btn" id="ctrl-lock" onclick="toggleItemLock()" title="Lock Layer" data-help="Prevents the element from being moved or edited">🔓</button>
-            <button class="ctrl-btn" id="ctrl-visible" onclick="toggleVisibility()" title="Show/Hide" data-help="Hides or shows the element on the canvas">👁️</button>
-            <div class="ctrl-group"><label>Role</label><select id="sel-role" onchange="updateProp('layerRole', this.value)"><option value="content">Content</option><option value="background">Background</option><option value="overlay">Overlay</option></select></div>
+    <div id="bar-content" style="display:flex; align-items:center; gap:10px; height: 100%;">
+        <!-- Quick Actions (Always Visible) -->
+        <div style="display:flex; align-items:center; gap:8px; padding-right:10px; border-right:1px solid #333;">
+            <button class="ctrl-btn" id="ctrl-lock" onclick="toggleItemLock()" title="Lock Layer">🔓</button>
+            <button class="ctrl-btn" id="ctrl-visible" onclick="toggleVisibility()" title="Show/Hide">👁️</button>
+            <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9;" onclick="duplicateEl()" title="Duplicate Layer">📋</button>
+            <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c;" onclick="deleteEl()" title="Delete Layer">🗑</button>
+        </div>
+        <!-- Contextual Quick Settings -->
+        <div id="bar-quick-settings" style="display:flex; align-items:center; gap:10px;">
             <div class="ctrl-group"><label>Opac</label><input type="range" id="sel-opacity" min="0" max="100" style="width:40px" oninput="updateProp('opacity', this.value/100)"></div>
             <div class="ctrl-group"><label>Rot</label><input type="range" id="sel-rotate" min="0" max="359" style="width:40px" oninput="updateProp('rotation', parseInt(this.value))"></div>
         </div>
-
-        <div id="bar-tab-design" style="display:none; align-items:center; gap:10px; height: 100%;">
-            <div id="geo-style-ctrls" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                <div class="ctrl-group" id="ctrl-grp-fill"><label>Fill</label><input type="color" id="sel-fill-color" oninput="updateShapeFill(this.value)"></div>
-                <div class="ctrl-group" id="ctrl-grp-radius"><label>Rad</label><input type="range" id="sel-radius" min="0" max="200" style="width:40px" oninput="updateProp('cornerRadius', parseInt(this.value))"></div>
-                <div class="ctrl-group"><label id="stroke-label">Stroke</label><input type="number" id="sel-stroke-w" min="0" max="50" style="width:40px" onchange="updateProp('strokeWidth', parseInt(this.value))"><input type="color" id="sel-stroke-c" oninput="updateStrokeColorLive(this.value)"></div>
-                <div class="ctrl-group" id="ctrl-grp-outline"><button id="btn-outline-toggle" class="ctrl-btn" style="font-size:10px; padding:4px 10px; white-space:nowrap; width:auto;" onclick="toggleOutlineOnly()">Outline Only</button></div>
-                <div id="line-width-presets" class="ctrl-group" style="display:none;">
-                  <label style="font-size:9px; color:#777; font-weight:700;">Width</label>
-                  <div style="display:flex; gap:4px; flex-wrap:wrap;">
-                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(0.25)">0.25</button>
-                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(0.5)">0.5</button>
-                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(1)">1</button>
-                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(1.25)">1.25</button>
-                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(1.5)">1.5</button>
-                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(2)">2</button>
-                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(3)">3</button>
-                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(4)">4</button>
-                  </div>
-                  <div style="display:flex; gap:6px; align-items:center; margin-top:4px;">
-                    <label style="font-size:9px;color:#777;font-weight:700;">Ends</label>
-                    <button id="btn-cap-butt"   class="ctrl-btn" style="width:auto;padding:2px 10px;font-size:10px;" onclick="setLineCap('butt')">Flat</button>
-                    <button id="btn-cap-round"  class="ctrl-btn" style="width:auto;padding:2px 10px;font-size:10px;" onclick="setLineCap('round')">Round</button>
-                    <button id="btn-cap-square" class="ctrl-btn" style="width:auto;padding:2px 10px;font-size:10px;" onclick="setLineCap('square')">Square</button>
-                  </div>
-                  <input type="number" id="sel-line-width-custom" min="0.1" max="50" step="0.25"
-                    style="width:50px; background:#111; border:1px solid #444; color:var(--accent); border-radius:6px; padding:4px 6px; font-size:11px; outline:none;"
-                    placeholder="px"
-                    onchange="setLineWidth(parseFloat(this.value))">
-                </div>
-            </div>
-            <div id="text-style-ctrls" style="display:none; flex-direction:column; gap:8px; padding:4px 0;">
-                <!-- ROW 1: THE ESSENTIALS -->
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <!-- FONT & COLOR -->
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <select id="sel-font" style="max-width:130px" onchange="updateStyle('fontFamily', this.value)">
-                            <option value="bernard-mt-condensed-regular">Bernard MT Condensed</option>
-                            <option value="century-gothic-bold">Century Gothic Bold</option>
-                            <option value="century-gothic-bold-italic">Century Gothic Bold Italic</option>
-                            <option value="century-gothic-regular">Century Gothic Regular</option>
-                        </select>
-                        <input type="color" id="sel-color" oninput="updateStyle('color', this.value)" title="Text Color">
-                        <input type="number" id="sel-font-size" min="4" max="400" step="1" style="width:52px" onchange="updateStyle('fontSize', parseFloat(this.value))" title="Font Size">
-                    </div>
-
-                    <!-- WORD STYLE BUTTONS -->
-                    <div class="ctrl-group" style="padding-left:10px; gap:4px; border-left:1px solid #333;">
-                        <button class="ctrl-btn" id="btn-bold" onclick="toggleStyle('fontWeight', 'bold', 'normal')" title="Bold" style="width:32px; font-weight:bold;">B</button>
-                        <button class="ctrl-btn" id="btn-italic" onclick="toggleStyle('fontStyle', 'italic', 'normal')" title="Italic" style="width:32px; font-style:italic;">I</button>
-                        <button class="ctrl-btn" id="btn-underline" onclick="toggleStyle('textDecoration', 'underline', 'none')" title="Underline" style="width:32px; text-decoration:underline;">U</button>
-                    </div>
-                </div>
-
-                <!-- ROW 2: THE DETAILS -->
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <!-- ALIGNMENT -->
-                    <div style="display:flex; align-items:center; gap:4px;">
-                        <button class="ctrl-btn" id="btn-align-left" onclick="updateStyle('textAlign', 'left')" title="Align Left" style="width:32px;">⫷</button>
-                        <button class="ctrl-btn" id="btn-align-center" onclick="updateStyle('textAlign', 'center')" title="Align Center" style="width:32px;">≡</button>
-                        <button class="ctrl-btn" id="btn-align-right" onclick="updateStyle('textAlign', 'right')" title="Align Right" style="width:32px;">⫸</button>
-                    </div>
-
-                    <!-- CASE TOGGLE -->
-                    <div class="ctrl-group" style="padding-left:10px; gap:4px; border-left:1px solid #333;">
-                        <button class="ctrl-btn" onclick="toggleCase('uppercase')" title="UPPERCASE" style="width:38px; font-size:9px;">AA</button>
-                        <button class="ctrl-btn" onclick="toggleCase('lowercase')" title="lowercase" style="width:38px; font-size:9px;">aa</button>
-                    </div>
-
-                    <!-- CANVA STYLE EFFECTS -->
-                    <div class="ctrl-group" style="padding-left:10px; gap:6px; border-left:1px solid #333;">
-                        <label style="font-size:9px; color:#777; font-weight:bold;">LIFT</label>
-                        <input type="range" id="sel-text-shadow" min="0" max="20" value="0" style="width:45px" oninput="updateStyle('textShadow', this.value)">
-                    </div>
-
-                    <!-- SPACING -->
-                    <div class="ctrl-group" style="padding-left:10px; gap:6px; border-left:1px solid #333;">
-                        <label style="font-size:9px; color:#777; font-weight:bold;">H</label>
-                        <input type="number" id="sel-l-height" step="0.1" min="0.5" max="3" style="width:42px" onchange="updateStyle('lineHeight', parseFloat(this.value))" title="Line Height">
-                        <label style="font-size:9px; color:#777; font-weight:bold;">W</label>
-                        <input type="number" id="sel-l-spacing" min="-10" max="50" style="width:42px" onchange="updateStyle('letterSpacing', parseInt(this.value))" title="Letter Spacing">
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Video URL Field (Phase 2 Precursor) -->
-            <div class="ctrl-group video-url-group">
-                <label>🎬 Video URL (optional)</label>
-                <div class="video-url-input-wrap">
-                    <input type="text" id="sel-video-url" placeholder="https://res.cloudinary.com/..." 
-                        oninput="updateProp('videoUrl', this.value)">
-                    <button class="video-url-clear" title="Clear URL" 
-                        onclick="document.getElementById('sel-video-url').value=''; updateProp('videoUrl', '');">✕</button>
-                </div>
-                <span class="video-url-hint">Paste Cloudinary URL to show video preview on customer menu hover</span>
-            </div>
-        </div>
-
-        <div id="bar-tab-arrange" style="display:none; align-items:center; gap:10px; height: 100%;">
-            <div class="ctrl-group" style="flex-direction:column; gap:4px; align-items:flex-start;">
-              <div style="display:flex; gap:6px; align-items:center;">
-                <label style="font-size:9px;color:#777;font-weight:700;width:12px;">X</label>
-                <input type="number" id="pos-x-input" style="width:58px; background:#111; border:1px solid #444; color:var(--accent); border-radius:6px; padding:4px 6px; font-size:11px; outline:none;"
-                  onchange="setPosFromInput('x', parseFloat(this.value))">
-                <label style="font-size:9px;color:#777;font-weight:700;width:12px;">Y</label>
-                <input type="number" id="pos-y-input" style="width:58px; background:#111; border:1px solid #444; color:var(--accent); border-radius:6px; padding:4px 6px; font-size:11px; outline:none;"
-                  onchange="setPosFromInput('y', parseFloat(this.value))">
-              </div>
-              <div style="display:flex; gap:6px; align-items:center;" id="wh-inputs">
-                <label style="font-size:9px;color:#777;font-weight:700;width:12px;">W</label>
-                <input type="number" id="pos-w-input" min="1" style="width:58px; background:#111; border:1px solid #444; color:var(--accent); border-radius:6px; padding:4px 6px; font-size:11px; outline:none;"
-                  onchange="setSizeFromInput('width', parseFloat(this.value))">
-                <label style="font-size:9px;color:#777;font-weight:700;width:12px;">H</label>
-                <input type="number" id="pos-h-input" min="1" style="width:58px; background:#111; border:1px solid #444; color:var(--accent); border-radius:6px; padding:4px 6px; font-size:11px; outline:none;"
-                  onchange="setSizeFromInput('height', parseFloat(this.value))">
-              </div>
-            </div>
-            <button id="btn-center-h" class="btn-ui" style="padding:6px 12px; font-size:10px;" onclick="centerElement('h')" data-help="Snaps the element to the exact horizontal center of the menu">Center H</button>
-            <button id="btn-center-v" class="btn-ui" style="padding:6px 12px; font-size:10px;" onclick="centerElement('v')" data-help="Snaps the element to the exact vertical center of the menu">Center V</button>
-<!-- Layering buttons removed as requested — use drag-and-drop in the LAYERS panel instead -->
-            <div class="ctrl-group" style="gap:4px; flex-direction:column; align-items:center;">
-                <button class="ctrl-btn" style="width:32px;height:32px;font-size:14px;"
-                    onclick="nudge(0,-2)" title="Nudge Up">▲</button>
-                <div style="display:flex;gap:4px;">
-                    <button class="ctrl-btn" style="width:32px;height:32px;font-size:14px;"
-                        onclick="nudge(-2,0)" title="Nudge Left">◀</button>
-                    <button class="ctrl-btn" style="width:32px;height:32px;font-size:14px;"
-                        onclick="nudge(2,0)" title="Nudge Right">▶</button>
-                </div>
-                <button class="ctrl-btn" style="width:32px;height:32px;font-size:14px;"
-                    onclick="nudge(0,2)" title="Nudge Down">▼</button>
-            </div>
-        </div>
-    </div>
-    <div style="display:flex; gap:6px; flex-shrink:0; margin-left:10px; border-left:1px solid #444; padding-left:10px; align-items:center; height: 100%;">
-        <button id="btn-set-bg" class="ctrl-btn set-bg" style="padding:4px 8px; font-size:10px;" onclick="setSelectedAsBackground()" title="Promote this image to full-page locked background" data-help="Sets the selected image as the full-page menu background">🖼️ BG</button>
-        <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9; padding:4px 8px; font-size:10px;" onclick="duplicateEl()" title="Duplicate Layer" data-help="Makes an exact copy of the selected layer — text, image, or shape">📋</button>
-        <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c; padding:4px 8px; font-size:10px;" onclick="deleteEl()" title="Delete Layer" data-help="Permanently removes the selected element from the menu">🗑</button>
     </div>
 </div>
 
@@ -2118,185 +1993,98 @@ function updateDistributeBar() {
 
 function updateSelectionBar() {
     const multiIds = docV2.editorState.selectedElementIds || [];
+    const ribbonContext = document.getElementById('ribbon-context-ctrls');
+    
     if (multiIds.length > 1) {
-        console.log("MULTI SELECT BAR ACTIVE, count:", multiIds.length);
         selBar.classList.add('show');
+        document.getElementById('bar-quick-settings').style.display = 'none';
         
-        const tabLayer = document.getElementById('bar-tab-layer');
-        if(tabLayer) tabLayer.style.display = 'none';
+        // Update Ribbon for Multi-Select
+        ribbonContext.innerHTML = `<div class="ribbon-group">
+            <span class="ribbon-label">Multi-Select</span>
+            <span style="font-size:11px; color:var(--accent); font-weight:bold;">${multiIds.length} items</span>
+        </div>`;
         
-        const tabDesign = document.getElementById('bar-tab-design');
-        if(tabDesign) tabDesign.style.display = 'none';
-        
-        const tabArrange = document.getElementById('bar-tab-arrange');
-        if(tabArrange) tabArrange.style.display = 'flex';
-
-        const textCtrls = document.getElementById('text-style-ctrls');
-        if(textCtrls) textCtrls.style.display = 'none';
-
-        const geoCtrls = document.getElementById('geo-style-ctrls');
-        if(geoCtrls) geoCtrls.style.display = 'none';
-        
-        let msBlock = document.getElementById('multi-select-actions');
-        if (!msBlock) {
-            const div = document.createElement('div');
-            div.id = 'multi-select-actions';
-            div.style.cssText = 'display:flex; align-items:center; gap:10px; width:100%; justify-content:center; padding:5px 0;';
-            div.innerHTML = `<div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center;">
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('left')"    title="Align Left Edges">⬛ Left</button>
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('right')"   title="Align Right Edges">⬛ Right</button>
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('top')"     title="Align Top Edges">⬛ Top</button>
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('bottom')"  title="Align Bottom Edges">⬛ Bottom</button>
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('centerH')" title="Center Horizontally">↔ Ctr H</button>
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('centerV')" title="Center Vertically">↕ Ctr V</button>
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="distributeSelected('h')"  title="Distribute Horizontally">⇔ Dist H</button>
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="distributeSelected('v')"  title="Distribute Vertically">⇕ Dist V</button>
-</div>`;
-            document.getElementById('bar-content').appendChild(div);
-            msBlock = div;
-        }
-        msBlock.style.display = 'flex';
+        // Update Arrange inputs in Ribbon (blank for multi)
+        document.getElementById('ribbon-pos-x').value = '';
+        document.getElementById('ribbon-pos-y').value = '';
+        document.getElementById('ribbon-pos-w').value = '';
+        document.getElementById('ribbon-pos-h').value = '';
         return;
     }
     
-    const msBlock = document.getElementById('multi-select-actions');
-    if (msBlock) msBlock.style.display = 'none';
-
-    console.log("UpdateSelectionBar. ID:", selectedId);
-    if(!selectedId) return;
+    if (!selectedId) {
+        selBar.classList.remove('show');
+        ribbonContext.innerHTML = `<div style="color:#444; font-size:11px; padding-left:20px;">Select an element to see design tools</div>`;
+        return;
+    }
     
     const item = docV2.elements.find(e => e.id === selectedId);
-
-    if(!item) { 
-        console.warn("Item not found for selection:", selectedId);
-        deselect(); 
-        return; 
-    }
+    if (!item) { deselect(); return; }
     
-    console.log("Showing Selection Bar for type:", item.type);
     selBar.classList.add('show');
-    
-    const textCtrls = document.getElementById('text-style-ctrls');
-    if (textCtrls) {
-        textCtrls.style.display = (item.type === 'text' ? 'flex' : 'none');
-    }
-    document.getElementById('geo-style-ctrls').style.display = (item.type==='text'?'none':'flex');
-    
+    document.getElementById('bar-quick-settings').style.display = 'flex';
     document.getElementById('sel-opacity').value = (item.opacity ?? 1) * 100;
     document.getElementById('sel-rotate').value = item.rotation || 0;
-    if(item.type!=='text') {
-        // Fill/radius/outline controls visibility
-        const isLine = item.type === 'line';
-        const isStar = item.type === 'shape' && item.shapeType === 'star';
-        const fillGrp = document.getElementById('ctrl-grp-fill');
-        const radGrp = document.getElementById('ctrl-grp-radius');
-        const outlineGrp = document.getElementById('ctrl-grp-outline');
-        const linePresets = document.getElementById('line-width-presets');
-        const strokeLabel = document.getElementById('stroke-label');
-        if (fillGrp) fillGrp.style.display = isLine ? 'none' : '';
-        if (radGrp) radGrp.style.display = (isLine || isStar) ? 'none' : '';
-        if (outlineGrp) outlineGrp.style.display = isLine ? 'none' : '';
-        if (linePresets) linePresets.style.display = isLine ? '' : 'none';
-        if (strokeLabel) strokeLabel.textContent = isLine ? 'Color' : 'Stroke';
-        if (!isLine && !isStar) {
-            document.getElementById('sel-radius').value = item.cornerRadius || 0;
-        }
-        document.getElementById('sel-stroke-w').value = item.strokeWidth || 0;
-        document.getElementById('sel-stroke-c').value = item.strokeColor || '#c8a96a';
-        document.getElementById('sel-stroke-c').oninput = (e) => updateProp('strokeColor', e.target.value);
-        // Sync fill color picker
-        const fillInput = document.getElementById('sel-fill-color');
-        if (fillInput) fillInput.value = (item.style && item.style.fill && item.style.fill !== 'transparent') ? item.style.fill : '#333333';
-        // Sync outline-only toggle
-        const outlineBtn = document.getElementById('btn-outline-toggle');
-        if (outlineBtn) outlineBtn.style.background = (item.style && (item.style.fill === 'transparent' || item.style.fill === 'none' || !item.style.fill)) ? 'var(--primary)' : '#333';
-        // Line-specific: set width custom input and highlight matching preset
-        if (isLine) {
-            const lwCustom = document.getElementById('sel-line-width-custom');
-            if (lwCustom) lwCustom.value = item.strokeWidth || 1;
-            // Highlight matching preset button
-            if (linePresets) {
-                linePresets.querySelectorAll('.ctrl-btn').forEach(btn => {
-                    btn.classList.toggle('active', parseFloat(btn.textContent) === (item.strokeWidth || 1));
-                });
-            }
-            ['butt','round','square'].forEach(cap => {
-                const btn = document.getElementById('btn-cap-' + cap);
-                if (btn) btn.classList.toggle('active', (item.lineCap || 'butt') === cap);
-            });
-        }
-    }
-    document.getElementById('ctrl-lock').innerText = item.locked ? '🔒' : '🔓';
-    document.getElementById('ctrl-lock').classList.toggle('active', item.locked);
-    document.getElementById('ctrl-visible').innerText = item.visible ? '👁️' : '🙈';
-    document.getElementById('ctrl-visible').classList.toggle('active', !item.visible);
-    document.getElementById('sel-role').value = item.layerRole || 'content';
-    document.getElementById('sel-video-url').value = item.videoUrl || '';
     
-    if(item.type==='text') {
-        // V2 Rule: Support both top-level and style object
-        const fontFamily = (item.fontFamily || (item.style && item.style.fontFamily) || 'century-gothic-regular').replace(/['"]/g, '');
-        const color = item.color || (item.style && item.style.color) || '#000000';
-        const lineHeight = item.lineHeight || (item.style && item.style.lineHeight) || 1.1;
-        const letterSpacing = item.letterSpacing || (item.style && item.style.letterSpacing) || 0;
+    // Update Ribbon Arrange Inputs
+    document.getElementById('ribbon-pos-x').value = Math.round(item.x);
+    document.getElementById('ribbon-pos-y').value = Math.round(item.y);
+    document.getElementById('ribbon-pos-w').value = Math.round(item.width || 0);
+    document.getElementById('ribbon-pos-h').value = Math.round(item.height || 0);
+    document.getElementById('ribbon-size-group').style.display = (item.type === 'line' ? 'none' : 'flex');
 
-        document.getElementById('sel-font').value = fontFamily;
-        document.getElementById('sel-color').value = color;
-        document.getElementById('sel-l-height').value = lineHeight;
-        document.getElementById('sel-l-spacing').value = letterSpacing;
-        
-        // Sync Pro Typography Toggles
-        const fontWeight = item.fontWeight || (item.style && item.style.fontWeight) || 'normal';
-        const fontStyle = item.fontStyle || (item.style && item.style.fontStyle) || 'normal';
-        const textDecoration = item.textDecoration || (item.style && item.style.textDecoration) || 'none';
-        const textAlign = item.textAlign || (item.style && item.style.textAlign) || 'left';
-        const textShadow = item.textShadow || (item.style && item.style.textShadow) || 0;
-
-        document.getElementById('btn-bold').classList.toggle('active', fontWeight === 'bold');
-        document.getElementById('btn-italic').classList.toggle('active', fontStyle === 'italic');
-        document.getElementById('btn-underline').classList.toggle('active', textDecoration === 'underline');
-        
-        document.getElementById('btn-align-left').classList.toggle('active', textAlign === 'left');
-        document.getElementById('btn-align-center').classList.toggle('active', textAlign === 'center');
-        document.getElementById('btn-align-right').classList.toggle('active', textAlign === 'right');
-        
-        document.getElementById('sel-text-shadow').value = textShadow;
-        
-        const fsInput = document.getElementById('sel-font-size');
-        if (fsInput) fsInput.value = Math.round(item.style.fontSize || 16);
-        
-        const twInput = document.getElementById('sel-text-width');
-        if (twInput) twInput.value = item.width ? Math.round(item.width) : '';
-        // Default text elements to DESIGN tab if unlocked
-        if(item.type === 'text' && !_activeBarTab) _activeBarTab = 'design';
-        setBarTab(_activeBarTab || 'layer');
+    // Update Ribbon Contextual Design Tools
+    if (item.type === 'text') {
+        ribbonContext.innerHTML = `
+            <div class="ribbon-group">
+                <span class="ribbon-label">Font</span>
+                <select class="ribbon-input" style="width:140px" onchange="updateStyle('fontFamily', this.value)">
+                    <option value="bernard-mt-condensed-regular" ${item.style?.fontFamily==='bernard-mt-condensed-regular'?'selected':''}>Bernard MT Condensed</option>
+                    <option value="century-gothic-bold" ${item.style?.fontFamily==='century-gothic-bold'?'selected':''}>Century Gothic Bold</option>
+                    <option value="century-gothic-regular" ${item.style?.fontFamily==='century-gothic-regular'?'selected':''}>Century Gothic Regular</option>
+                </select>
+                <input type="number" class="ribbon-input" value="${item.style?.fontSize || 14}" style="width:55px" onchange="updateStyle('fontSize', parseFloat(this.value))">
+                <input type="color" value="${item.style?.color || '#000000'}" oninput="updateStyle('color', this.value)">
+            </div>
+            <div class="ribbon-group">
+                <span class="ribbon-label">Style</span>
+                <button class="ribbon-btn ${item.style?.fontWeight==='bold'?'active':''}" onclick="toggleStyle('fontWeight', 'bold', 'normal')"><b>B</b></button>
+                <button class="ribbon-btn ${item.style?.fontStyle==='italic'?'active':''}" onclick="toggleStyle('fontStyle', 'italic', 'normal')"><i>I</i></button>
+                <button class="ribbon-btn ${item.style?.textDecoration==='underline'?'active':''}" onclick="toggleStyle('textDecoration', 'underline', 'none')"><u>U</u></button>
+            </div>
+            <div class="ribbon-group">
+                <span class="ribbon-label">Align</span>
+                <button class="ribbon-btn ${item.style?.textAlign==='left'?'active':''}" onclick="updateStyle('textAlign', 'left')">⫷</button>
+                <button class="ribbon-btn ${item.style?.textAlign==='center'?'active':''}" onclick="updateStyle('textAlign', 'center')">≡</button>
+                <button class="ribbon-btn ${item.style?.textAlign==='right'?'active':''}" onclick="updateStyle('textAlign', 'right')">⫸</button>
+            </div>
+            <div class="ribbon-group">
+                <span class="ribbon-label">Spacing</span>
+                <div style="display:flex; gap:4px; align-items:center;">
+                    <label class="ribbon-label">H</label><input type="number" class="ribbon-input" step="0.1" value="${item.style?.lineHeight || 1.2}" style="width:42px" onchange="updateStyle('lineHeight', parseFloat(this.value))">
+                    <label class="ribbon-label">W</label><input type="number" class="ribbon-input" value="${item.style?.letterSpacing || 0}" style="width:42px" onchange="updateStyle('letterSpacing', parseInt(this.value))">
+                </div>
+            </div>
+        `;
+    } else if (item.type === 'shape' || item.type === 'image') {
+        const isLine = item.type === 'line';
+        ribbonContext.innerHTML = `
+            <div class="ribbon-group">
+                <span class="ribbon-label">Fill</span>
+                <input type="color" value="${item.fillColor || '#ffffff'}" oninput="updateShapeFill(this.value)" ${isLine?'disabled':''}>
+            </div>
+            <div class="ribbon-group">
+                <span class="ribbon-label">Stroke</span>
+                <input type="number" class="ribbon-input" value="${item.strokeWidth || 0}" style="width:45px" onchange="updateProp('strokeWidth', parseInt(this.value))">
+                <input type="color" value="${item.strokeColor || '#000000'}" oninput="updateStrokeColorLive(this.value)">
+            </div>
+            <div class="ribbon-group">
+                <span class="ribbon-label">Radius</span>
+                <input type="number" class="ribbon-input" value="${item.cornerRadius || 0}" style="width:45px" onchange="updateProp('cornerRadius', parseInt(this.value))">
+            </div>
+        `;
     }
-
-    const btnSetBg = document.getElementById('btn-set-bg');
-    if (btnSetBg) {
-        btnSetBg.style.display = (item?.type === 'image') ? 'block' : 'none';
-    }
-
-    // X/Y/W/H position + size inputs (Arrange tab)
-    const xIn = document.getElementById('pos-x-input');
-    const yIn = document.getElementById('pos-y-input');
-    const wIn = document.getElementById('pos-w-input');
-    const hIn = document.getElementById('pos-h-input');
-    const whRow = document.getElementById('wh-inputs');
-    if (xIn) xIn.value = Math.round(item.x);
-    if (yIn) yIn.value = Math.round(item.y);
-    // Only show W/H for shapes, images, and lines — not text
-    if (whRow) whRow.style.display = (item.type === 'text') ? 'none' : 'flex';
-    if (item.type !== 'text') {
-        const el = document.getElementById(selectedId);
-        if (wIn) wIn.value = Math.round(item.width || (el ? el.offsetWidth : 0));
-        if (hIn) hIn.value = Math.round(item.height || (el ? el.offsetHeight : 0));
-    }
-
-    // Auto-open Design tab for shapes and lines
-    if ((item.type === 'shape' || item.type === 'line') && !_activeBarTab) _activeBarTab = 'design';
-    setBarTab(_activeBarTab || 'layer');
-
     renderLayerList();
 }
 
