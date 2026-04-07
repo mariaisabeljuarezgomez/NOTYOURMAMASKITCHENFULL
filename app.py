@@ -586,12 +586,19 @@ def generate_kling_image():
         model_name = data.get("model_name", "kling-v1")
         aspect_ratio = data.get("aspect_ratio", "1:1")
         n = data.get("n", 1)
+        mode = data.get("mode", "txt2img")
+        quality = data.get("quality", "1s")
+        reference_images = data.get("reference_images", [])
         creds = data.get("credentials", {})
         api_key = creds.get("api_key", "")
         api_secret = creds.get("api_secret", "")
 
-        ALLOWED_MODELS = {"kling-v1", "kling-v1-5", "kling-v1-6"}
-        ALLOWED_RATIOS = {"1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3"}
+        ALLOWED_MODELS = {
+            "kling-v1", "kling-v1-5", "kling-v1-6",
+            "kling-v2-1", "kling-v2", "kling-v3",
+            "kling-v2-omni", "kling-image-v1"
+        }
+        ALLOWED_RATIOS = {"1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "auto"}
 
         if not prompt or not api_key or not api_secret:
             return jsonify({"error": "Missing prompt or Kling credentials"}), 400
@@ -613,6 +620,18 @@ def generate_kling_image():
         }
         if negative_prompt:
             payload["negative_prompt"] = negative_prompt
+
+        # Handle reference images based on mode
+        if reference_images and mode != "txt2img":
+            # Clean base64: strip any data:image/...;base64, prefix
+            clean_refs = [
+                {"image": b64.split(",")[-1] if "," in b64 else b64}
+                for b64 in reference_images[:4]
+            ]
+            if mode == "img2img" or mode == "edit" or mode == "expand":
+                payload["image"] = clean_refs[0]["image"]
+            elif mode == "multi":
+                payload["image_list"] = clean_refs
 
         headers = {
             "Authorization": f"Bearer {token}",

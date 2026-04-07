@@ -4554,6 +4554,20 @@ async function uploadAiToCloudinary(fileType) {
 function placeAiImageOnCanvas() {
   const url = window._lastAiImageUrl || aiState.generatedImageUrl || aiState.generatedImage;
   if (!url) { showToast('❌ No image to place — generate one first'); return; }
+  
+  // Calculate dimensions based on aspect ratio
+  const aspectMap = {
+    '1:1':   [300, 300],
+    '16:9':  [400, 225],
+    '9:16':  [225, 400],
+    '4:3':   [400, 300],
+    '3:4':   [300, 400],
+    '3:2':   [390, 260],
+    '2:3':   [260, 390]
+  };
+  const aspectKey = window._klingAspectRatio || '1:1';
+  const [elW, elH] = aspectMap[aspectKey] || [300, 300];
+  
   const vpRect = viewport.getBoundingClientRect();
   const scalerRect = scaler.getBoundingClientRect();
   const cx = (vpRect.left + vpRect.width / 2 - scalerRect.left) / zoomScale;
@@ -4564,9 +4578,9 @@ function placeAiImageOnCanvas() {
     type: 'image',
     src: url,
     assetId: window._lastAiAssetId || '',
-    x: Math.max(50, Math.min(BASE_W - 400, cx - 150)),
-    y: Math.max(50, Math.min(BASE_H - 400, cy - 150)),
-    width: 300, height: 300,
+    x: Math.max(50, Math.min(BASE_W - 400, cx - elW/2)),
+    y: Math.max(50, Math.min(BASE_H - 400, cy - elH/2)),
+    width: elW, height: elH,
     zIndex: maxZ + 1, opacity: 1, rotation: 0,
     visible: true, locked: false, layerRole: 'content'
   };
