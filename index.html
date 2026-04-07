@@ -1409,17 +1409,23 @@ function render() {
             border: 'none' // Stroke handled by inner elements for shapes
         });
         
-        if(d.style) {
-            if(d.style.fontFamily) el.style.fontFamily = d.style.fontFamily;
-            if(d.style.fontSize) el.style.fontSize = d.style.fontSize+'px';
-            if(d.style.color) el.style.color = d.style.color;
-            if(d.style.lineHeight) el.style.lineHeight = d.style.lineHeight;
-            if(d.style.letterSpacing) el.style.letterSpacing = d.style.letterSpacing + 'px';
-            if(d.style.fill) {
-                const target = el.querySelector('.shape-inner') || el;
-                target.style.backgroundColor = d.style.fill;
-                if (d.type === 'shape') el.style.backgroundColor = 'transparent';
-            }
+        // Support both V2 top-level fields AND V1 style object
+        const color = d.color || d.style?.color;
+        const fontFamily = d.fontFamily || d.style?.fontFamily;
+        const fontSize = d.fontSize || d.style?.fontSize;
+        const lineHeight = d.lineHeight || d.style?.lineHeight;
+        const letterSpacing = d.letterSpacing || d.style?.letterSpacing;
+        const fill = d.fillColor || d.style?.fill;
+
+        if(fontFamily) el.style.fontFamily = fontFamily;
+        if(fontSize) el.style.fontSize = fontSize + 'px';
+        if(color) el.style.color = color;
+        if(lineHeight) el.style.lineHeight = lineHeight;
+        if(letterSpacing) el.style.letterSpacing = letterSpacing + 'px';
+        if(fill) {
+            const target = el.querySelector('.shape-inner') || el;
+            target.style.backgroundColor = fill;
+        }
         }
         if (d.type === 'text') {
             if (d.width) {
@@ -2264,7 +2270,20 @@ function sync() {
 }
 
 function updateProp(k, v) { if(!selectedId) return; pushState(); let item = docV2.elements.find(e=>e.id===selectedId); if(item) { item[k]=v; render(); } }
-function updateStyle(k, v) { if(!selectedId) return; pushState(); let item = docV2.elements.find(e=>e.id===selectedId); if(item && item.style) { item.style[k]=v; render(); } }
+function updateStyle(k, v) { 
+    if(!selectedId) return; 
+    pushState(); 
+    let item = docV2.elements.find(e=>e.id===selectedId); 
+    if(item) { 
+        if(!item.style) item.style = {};
+        item.style[k] = v;
+        // RULE: V2 field mapping (ensure top-level fields are updated for V2 consistency)
+        if(k === 'color') item.color = v;
+        if(k === 'fontSize') item.fontSize = v;
+        if(k === 'fontFamily') item.fontFamily = v;
+        render(); 
+    } 
+}
 
 function applyTextWidth(w) {
     if (!selectedId) return;
