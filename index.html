@@ -433,7 +433,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 #editor-viewport { left: 220px !important; right: 260px !important; width: auto !important; }
 
 /* LEFT SIDEBAR */
-#left-sidebar { position:fixed; top:110px; left:0; width:220px; bottom:0; background:#1e1e1e; border-right:1px solid #333; display:flex; flex-direction:column; z-index:950; overflow:hidden; transition:transform 0.3s cubic-bezier(0.19,1,0.22,1); }
+#left-sidebar { position:fixed; top:160px; left:0; width:220px; bottom:0; background:#1e1e1e; border-right:1px solid #333; display:flex; flex-direction:column; z-index:950; overflow:hidden; transition:transform 0.3s cubic-bezier(0.19,1,0.22,1); }
 #left-sidebar.collapsed { transform:translateX(-220px); }
 #left-sidebar-toggle { position:absolute; top:50%; right:-14px; transform:translateY(-50%); width:14px; height:48px; background:#333; border:1px solid #444; border-left:none; color:#aaa; font-size:12px; cursor:pointer; border-radius:0 6px 6px 0; display:flex; align-items:center; justify-content:center; z-index:10; transition:background 0.2s; }
 #left-sidebar-toggle:hover { background:#444; color:#fff; }
@@ -468,7 +468,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 .asset-del-btn:hover { background: #e74c3c; transform: scale(1.1); }
 
 /* RIGHT PANEL */
-#right-panel { position:fixed; top:110px; right:0; width:260px; bottom:0; background:#1e1e1e; border-left:1px solid #333; display:flex; flex-direction:column; z-index:950; overflow:hidden; transition:transform 0.3s cubic-bezier(0.19,1,0.22,1); }
+#right-panel { position:fixed; top:160px; right:0; width:260px; bottom:0; background:#1e1e1e; border-left:1px solid #333; display:flex; flex-direction:column; z-index:950; overflow:hidden; transition:transform 0.3s cubic-bezier(0.19,1,0.22,1); }
 #right-panel.collapsed { transform:translateX(260px); }
 #right-panel-toggle { position:absolute; top:50%; left:-14px; transform:translateY(-50%); width:14px; height:48px; background:#333; border:1px solid #444; border-right:none; color:#aaa; font-size:12px; cursor:pointer; border-radius:6px 0 0 6px; display:flex; align-items:center; justify-content:center; z-index:10; transition:background 0.2s; }
 #right-panel-toggle:hover { background:#444; color:#fff; }
@@ -1357,7 +1357,7 @@ function render() {
             opacity: d.opacity ?? 1,
             transform: `rotate(${d.rotation||0}deg)`,
             borderRadius: d.type === 'line' ? '0' : (d.cornerRadius||0)+'px',
-            border: 'none' // Stroke handled by inner elements for shapes
+            border: (d.type === 'shape' && d.strokeWidth > 0) ? `${d.strokeWidth}px solid ${d.strokeColor || '#c8a96a'}` : 'none'
         });
         
         // Support both V2 top-level fields AND V1 style object
@@ -2197,7 +2197,20 @@ function sync() {
     });
 }
 
-function updateProp(k, v) { if(!selectedId) return; pushState(); let item = docV2.elements.find(e=>e.id===selectedId); if(item) { item[k]=v; render(); } }
+function updateProp(k, v) { 
+    if(!selectedId) return; 
+    pushState(); 
+    let item = docV2.elements.find(e=>e.id===selectedId); 
+    if(item) { 
+        item[k]=v; 
+        // V2 Rule: Sync strokeWidth/strokeColor to style for backward compatibility
+        if(!item.style) item.style = {};
+        if(k === 'strokeWidth') item.style.borderWidth = v;
+        if(k === 'strokeColor') item.style.borderColor = v;
+        if(k === 'cornerRadius') item.style.borderRadius = v;
+        render(); 
+    } 
+}
 function updateStyle(k, v) { 
     if(!selectedId) return; 
     pushState(); 
@@ -2757,6 +2770,7 @@ function addCircle() {
         zIndex: maxZ + 1, opacity: 1, rotation: 0,
         visible: true, locked: false, layerRole: 'content',
         strokeWidth: 0, strokeColor: '#c8a96a', cornerRadius: 75,
+        fillColor: '#c8a96a',
         style: { fill: '#c8a96a' }
     });
     render();
