@@ -871,14 +871,34 @@ def save_video_history_route():
 def cloudinary_upload():
     try:
         data = request.json or {}
+        file_b64 = data.get("file_b64", "")
         file_url = data.get("file_url", "")
         file_type = data.get("file_type", "image")
         creds = data.get("credentials", {})
         cloud_name = creds.get("cloud_name", "")
         api_key = creds.get("api_key", "")
         api_secret = creds.get("api_secret", "")
-        if not all([cloud_name, api_key, api_secret]) or not (file_b64 or file_url):
+        
+        if not all([cloud_name, api_key, api_secret]) or (not file_b64 and not file_url):
             return jsonify({"error": "Missing file or credentials"}), 400
+
+        if file_url and file_type == "video":
+            # Upload by URL directly to Cloudinary
+            client = _http()
+            if not client:
+                return jsonify({"error": "No HTTP client available"}), 500
+            timestamp = str(int(__import__('time').time()))
+            params = {"folder": "menu-editor", "resource_type": "video",
+                      "timestamp": timestamp, "type": "auto"}
+            params["signature"] = cloudinary_sign(params, api_secret)
+            resp = client.post(
+                f"https://api.cloudinary.com/v1_1/{cloud_name}/video/upload",
+                data={**params, "file": file_url, "api_key": api_key}
+            )
+            rj = resp.json()
+            if "secure_url" in rj:
+                return jsonify({"url": rj["secure_url"]})
+            return jsonify({"error": rj.get("error", {}).get("message","Upload failed")}), 400
 
         client = _http()
         if not client:

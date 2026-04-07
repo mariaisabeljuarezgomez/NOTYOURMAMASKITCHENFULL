@@ -894,17 +894,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         <div style="display:flex;gap:4px;margin-top:4px;">
           <button onclick="uploadAiToCloudinary('video')" class="btn-ui" style="flex:1;font-size:10px;padding:5px;">Upload to Cloudinary</button>
         </div>
-        <div id="ai-vid-slot-picker" style="margin-top:6px;">
-          <div style="font-size:9px;color:#aaa;font-weight:800;text-transform:uppercase;margin-bottom:4px;">
-            📺 Replace Viewer Video:
-          </div>
-          <div style="display:flex;flex-direction:column;gap:4px;">
-            <button onclick="applyVideoToSlot('hero')" class="btn-ui accent" style="width:100%;font-size:10px;padding:6px;text-align:left;">🎬 Replace Hero Video</button>
-            <button onclick="applyVideoToSlot('left')" class="btn-ui" style="width:100%;font-size:10px;padding:6px;text-align:left;">◀ Replace Left Panel Video</button>
-            <button onclick="applyVideoToSlot('right')" class="btn-ui" style="width:100%;font-size:10px;padding:6px;text-align:left;">▶ Replace Right Panel Video</button>
-          </div>
-        </div>
-        <div id="ai-vid-url-row" style="display:none;margin-top:4px;">
+          <div id="ai-vid-url-row" style="display:none;margin-top:4px;">
           <input type="text" id="ai-vid-url" class="rp-input" style="font-size:10px;margin-bottom:4px;" readonly>
           <button onclick="copyAiUrl('ai-vid-url')" class="btn-ui" style="width:100%;font-size:10px;padding:4px;">Copy URL</button>
         </div>
@@ -5157,24 +5147,6 @@ function pollKlingStatus() {
       // keep polling
     }
   }, 5000);
-}
-
-async function sendAiVideoToSlot(slot) {
-  const url = window._lastAiVideoUrl;
-  if (!url) { showToast('⚠️ No video URL — upload to Cloudinary first'); return; }
-
-  if (slot === 'hero')  docV2.heroVideoUrl = url;
-  if (slot === 'left')  { if (!docV2.sidePanelLeft)  docV2.sidePanelLeft  = {}; docV2.sidePanelLeft.videoUrl  = url; }
-  if (slot === 'right') { if (!docV2.sidePanelRight) docV2.sidePanelRight = {}; docV2.sidePanelRight.videoUrl = url; }
-
-  // Sync the right-panel inputs so saveGlobalSettings() sees updated values
-  if (slot === 'hero')  document.getElementById('hero-video-url-input').value = url;
-  if (slot === 'left')  document.getElementById('side-panel-left-url').value  = url;
-  if (slot === 'right') document.getElementById('side-panel-right-url').value = url;
-
-  // Persist immediately using the existing save path
-  saveGlobalSettings();
-  showToast('✅ ' + slot + ' video updated in viewer');
 }
 
 function showBrandedModal2(title, body, buttons) {
