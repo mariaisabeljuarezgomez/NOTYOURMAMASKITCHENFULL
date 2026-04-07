@@ -71,6 +71,9 @@ IS_PERSISTENT = STORAGE_BASE.startswith("/app/data") or os.environ.get("RAILWAY_
 IMAGES_DIR = os.path.join(os.path.dirname(__file__), "Images")
 os.makedirs(IMAGES_DIR, exist_ok=True)
 
+USER_IMAGES_DIR = os.path.join(STORAGE_BASE, "user_images")
+os.makedirs(USER_IMAGES_DIR, exist_ok=True)
+
 PROTECTED_ASSETS = {
     "Asset1.png", "Asset2.png", "Asset3.png", "Asset4.png",
     "Asset6.png", "Asset7.png", "Asset8.png", "Asset9.png",
@@ -316,23 +319,32 @@ def upload_image():
             return jsonify({"error": "Invalid base64 image data"}), 400
         if not any(decoded[:len(sig)] == sig for sig in MAGIC_BYTES):
             return jsonify({"error": "File content does not match a supported image type"}), 400
-        filepath = os.path.join(IMAGES_DIR, filename)
+        # AI-generated images (prefixed "ai-") go to the persistent volume.
+        # All other uploads stay in IMAGES_DIR (template asset folder).
+        if filename.startswith("ai-"):
+            save_dir = USER_IMAGES_DIR
+            url_prefix = "/user-images"
+        else:
+            save_dir = IMAGES_DIR
+            url_prefix = "/Images"
+        filepath = os.path.join(save_dir, filename)
         if os.path.exists(filepath):
             name, ext = os.path.splitext(filename)
             counter = 1
-            while os.path.exists(os.path.join(IMAGES_DIR, f"{name}_{counter}{ext}")):
+            while os.path.exists(os.path.join(save_dir, f"{name}_{counter}{ext}")):
                 counter += 1
                 if counter > 999:
                     return jsonify({"error": "Too many files with the same name"}), 409
             filename = f"{name}_{counter}{ext}"
-            filepath = os.path.join(IMAGES_DIR, filename)
+            filepath = os.path.join(save_dir, filename)
         with open(filepath, "wb") as f:
             f.write(decoded)
+        final_url = f"{url_prefix}/{filename}"
         return jsonify({
             "status": "ok",
             "filename": filename,
-            "url": f"/Images/{filename}",
-            "storage": {"originalUrl": f"/Images/{filename}"}
+            "url": final_url,
+            "storage": {"originalUrl": final_url}
         }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -344,6 +356,8 @@ def delete_asset(filename):
         if filename in PROTECTED_ASSETS:
             return jsonify({"error": "Cannot delete template asset"}), 403
         filepath = os.path.join(IMAGES_DIR, filename)
+        if not os.path.exists(filepath):
+            filepath = os.path.join(USER_IMAGES_DIR, filename)
         if os.path.exists(filepath):
             os.remove(filepath)
             return jsonify({"status": "deleted"}), 200
@@ -364,6 +378,12 @@ def list_images():
 @app.route("/Images/<string:filename>")
 def serve_root_image(filename):
     response = send_from_directory(IMAGES_DIR, filename)
+    response.headers["Cache-Control"] = "max-age=604800, public"
+    return response
+
+@app.route("/user-images/<string:filename>")
+def serve_user_image(filename):
+    response = send_from_directory(USER_IMAGES_DIR, filename)
     response.headers["Cache-Control"] = "max-age=604800, public"
     return response
 
