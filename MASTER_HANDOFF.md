@@ -1,4 +1,26 @@
 # Dine In Menu Editor Pro — MASTER HANDOFF
+
+## ⛔ RULE #1 — NEVER VIOLATED — SERVER SAVE PATTERN
+
+The server's /api/menu POST route WILL REJECT (400 Bad Request) any
+body that is not the complete docV2 object.
+
+docV2 always has: { version: 2, elements: [...], ... }
+
+EVERY function that saves anything to the server MUST:
+1. Mutate docV2 directly (e.g. docV2.assets, docV2.aiCredentials)
+2. POST the ENTIRE docV2 object — never a subset or partial object
+3. Use this exact pattern:
+
+   await fetch('/api/menu', {
+     method: 'POST',
+     headers: { 'Content-Type': 'application/json' },
+     body: JSON.stringify(docV2)   // ← ALWAYS full docV2, never partial
+   });
+
+Violations of this rule cause silent 400 errors and data loss.
+
+---
 **Last Updated:** March 29, 2026  
 **Prepared by:** MARIAS DIGITAL DESIGNS  
 **Live URL:** https://web-production-3e17d.up.railway.app/  
