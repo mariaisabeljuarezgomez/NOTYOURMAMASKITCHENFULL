@@ -4961,11 +4961,12 @@ function useLastAiImageAsVideoRef() {
 
 function setVidRefFromUrl(src) {
   // Use let/const or global scope correctly
-  if (src.includes(',')) {
+  if (src && src.includes(',')) {
     aiState.vidRefB64 = src.split(',')[1];
+  } else if (src && (src.startsWith('http://') || src.startsWith('https://'))) {
+    // If it's a URL, do not store it as base64 data
+    aiState.vidRefB64 = null;
   } else {
-    // If it's already a B64 string or a URL, handle accordingly.
-    // Most AI images are data URIs here.
     aiState.vidRefB64 = src;
   }
   aiState.vidRefMimeType = 'image/png';
@@ -5072,6 +5073,12 @@ async function generateAiVideo() {
   try {
     let refB64 = aiState.vidRefB64;
     if (refB64 && refB64.includes(',')) refB64 = refB64.split(',')[1];
+    
+    // Hardening: Never send a Cloudinary/HTTP URL as base64
+    if (refB64 && (refB64.startsWith('http://') || refB64.startsWith('https://'))) {
+      showToast('⚠️ Reference image is a URL, not base64. Use Upload or canvas source.');
+      refB64 = null;
+    }
     const res = await fetch('/api/ai/generate-video', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
