@@ -1981,7 +1981,12 @@ function updateDistributeBar() {
   const bar = document.getElementById('distribute-bar');
   const ids = docV2.editorState.selectedElementIds || [];
   if (!bar) return;
-  if (ids.length < 2) { 
+  
+  // Rule: Show bar if 2+ items selected OR if a single text element is selected
+  const singleTextSelected = (ids.length === 1 || (ids.length === 0 && selectedId)) && 
+                             (docV2.elements.find(e => e.id === (ids[0] || selectedId))?.type === 'text');
+
+  if (ids.length < 2 && !singleTextSelected) { 
       bar.classList.remove('show');
       return; 
   }
