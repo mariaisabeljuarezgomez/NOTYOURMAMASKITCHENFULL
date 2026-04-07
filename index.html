@@ -705,6 +705,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
             <option value="4:3">4:3 Landscape</option>
             <option value="3:4">3:4 Portrait</option>
             <option value="16:9">16:9 Widescreen</option>
+            <option value="9:16">9:16 Vertical</option>
           </select>
         </div>
         <label class="rp-label">Negative Prompt</label>
@@ -3017,6 +3018,49 @@ async function renderAssetPanel() {
             img.height = 80;
             img.onclick = () => addFromAsset(asset.id, url);
             
+            // Add "Use as Kling reference" button for ALL assets
+            const refBtn = document.createElement('button');
+            refBtn.innerHTML = '🖼️';
+            refBtn.className = 'asset-del-btn';
+            refBtn.title = 'Use as Kling image reference';
+            refBtn.style.cssText = 'right:auto;left:4px;background:rgba(0,80,120,0.85);';
+            refBtn.onclick = async (e) => {
+              e.stopPropagation();
+              try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const reader = new FileReader();
+                reader.onloadend = function() {
+                  const b64full = reader.result;
+                  const b64 = b64full.split(',')[1];
+                  window._klingRefImages = [b64];
+                  const thumb = document.getElementById('kling-ref-thumb');
+                  const preview = document.getElementById('kling-ref-preview');
+                  const zone = document.getElementById('kling-ref-zone');
+                  if (thumb && preview && zone) {
+                    thumb.src = b64full;
+                    preview.style.display = 'block';
+                    zone.style.display = 'none';
+                  }
+                  const imgPanel = document.getElementById('ai-img-body');
+                  if (imgPanel && imgPanel.style.display === 'none') {
+                    toggleAiAccordion('img');
+                  }
+                  setImgProvider('kling');
+                  const klingPanel = document.getElementById('ai-img-kling-panel');
+                  const currentMode = klingPanel ? klingPanel.getAttribute('data-kling-mode') : 'txt2img';
+                  if (currentMode === 'txt2img') {
+                    onKlingModeChange('img2img');
+                  }
+                  showToast('🖼️ Asset set as Kling reference!');
+                };
+                reader.readAsDataURL(blob);
+              } catch(err) {
+                showToast('❌ Could not load asset: ' + err.message);
+              }
+            };
+            container.appendChild(refBtn);
+
             container.appendChild(img);
 
             // Add delete button ONLY if not protected
@@ -4868,11 +4912,50 @@ function sendCanvasImageToVideoRef(el) {
   showToast('🎬 Image set as video reference — AI Studio opened!');
 }
 
+async function sendCanvasImageToKlingRef(el) {
+  const img = el ? el.querySelector('img') : null;
+  if (!img || !img.src) { showToast('❌ No image source found'); return; }
+  try {
+    const response = await fetch(img.src);
+    const blob = await response.blob();
+    const reader = new FileReader();
+    reader.onloadend = function() {
+      const b64full = reader.result;
+      const b64 = b64full.split(',')[1];
+      window._klingRefImages = [b64];
+      const thumb = document.getElementById('kling-ref-thumb');
+      const preview = document.getElementById('kling-ref-preview');
+      const zone = document.getElementById('kling-ref-zone');
+      if (thumb && preview && zone) {
+        thumb.src = b64full;
+        preview.style.display = 'block';
+        zone.style.display = 'none';
+      }
+      const imgPanel = document.getElementById('ai-img-body');
+      if (imgPanel && imgPanel.style.display === 'none') {
+        toggleAiAccordion('img');
+      }
+      setImgProvider('kling');
+      const klingPanel = document.getElementById('ai-img-kling-panel');
+      const currentMode = klingPanel ? klingPanel.getAttribute('data-kling-mode') : 'txt2img';
+      if (currentMode === 'txt2img') {
+        onKlingModeChange('img2img');
+      }
+      showToast('🖼️ Image set as Kling reference — AI Studio opened!');
+    };
+    reader.readAsDataURL(blob);
+  } catch(err) {
+    showToast('❌ Could not load image: ' + err.message);
+  }
+}
+
 function showCanvasCtxMenu(x, y, hasImg) {
   const menu = document.getElementById('canvas-ctx-menu');
   if (!menu) return;
   const imgItem = document.getElementById('ctx-use-video-ref');
   if (imgItem) imgItem.style.display = hasImg ? 'block' : 'none';
+  const klingItem = document.getElementById('ctx-use-kling-ref');
+  if (klingItem) klingItem.style.display = hasImg ? 'block' : 'none';
   menu.style.left = Math.min(x, window.innerWidth - 190) + 'px';
   menu.style.top = Math.min(y, window.innerHeight - 120) + 'px';
   menu.style.display = 'block';
@@ -5046,6 +5129,7 @@ document.getElementById('ai-vid-ref-zone')?.addEventListener('drop', e => {
 
 <div id="canvas-ctx-menu" style="display:none;position:fixed;z-index:10000;background:#1e1e1e;border:1px solid #444;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.6);min-width:180px;padding:4px 0;">
   <div id="ctx-use-video-ref" style="padding:10px 14px;font-size:12px;cursor:pointer;border-radius:4px;display:none;" onmouseover="this.style.background='#333'" onmouseout="this.style.background='transparent'" onclick="var el=document.querySelector('.editable-element.image-wrapper._ctx-target');if(el){el.classList.remove('_ctx-target');sendCanvasImageToVideoRef(el);}">🎬 Use as Video Reference</div>
+  <div id="ctx-use-kling-ref" style="padding:10px 14px;font-size:12px;cursor:pointer;border-radius:4px;display:none;" onmouseover="this.style.background='#333'" onmouseout="this.style.background='transparent'" onclick="var el=document.querySelector('.editable-element.image-wrapper._ctx-target');if(el){el.classList.remove('_ctx-target');sendCanvasImageToKlingRef(el);}hideCanvasCtxMenu();">🖼️ Use as Kling Reference</div>
   <div style="padding:10px 14px;font-size:12px;cursor:pointer;border-radius:4px;" onmouseover="this.style.background='#333'" onmouseout="this.style.background='transparent'" onclick="var el=document.querySelector('.editable-element.image-wrapper._ctx-target');if(el){navigator.clipboard.writeText(el.querySelector('img')?.src||'').then(function(){hideCanvasCtxMenu();showToast('✅ URL copied');}).catch(function(){showToast('❌ Copy failed')});el.classList.remove('_ctx-target');}">📋 Copy Image URL</div>
   <div style="padding:10px 14px;font-size:12px;cursor:pointer;border-radius:4px;" onmouseover="this.style.background='#333'" onmouseout="this.style.background='transparent'" onclick="hideCanvasCtxMenu()">✕ Cancel</div>
 </div>
