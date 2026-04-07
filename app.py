@@ -871,14 +871,19 @@ def save_video_history_route():
 def cloudinary_upload():
     try:
         data = request.json or {}
-        file_b64 = data.get("file_b64", "")
+        file_url = data.get("file_url", "")
         file_type = data.get("file_type", "image")
         creds = data.get("credentials", {})
         cloud_name = creds.get("cloud_name", "")
         api_key = creds.get("api_key", "")
         api_secret = creds.get("api_secret", "")
-        if not all([file_b64, cloud_name, api_key, api_secret]):
+        if not all([cloud_name, api_key, api_secret]) or not (file_b64 or file_url):
             return jsonify({"error": "Missing file or credentials"}), 400
+
+        client = _http()
+        if not client:
+            return jsonify({"error": "No HTTP client available"}), 500
+
         timestamp = int(time.time())
         
         # Step 1 & 2: Build params dict for both signing AND sending
@@ -897,22 +902,33 @@ def cloudinary_upload():
         upload_fields["api_key"] = api_key
         upload_fields["signature"] = sig
         
-        # For video: decode base64 and send as raw binary stream, not data URI
+        # Resolve raw bytes from B64 or URL
         import base64 as _b64_mod
+        if file_url:
+            # Fetch the URL bytes directly
+            u_resp = client.get(file_url, timeout=30)
+            if u_resp.status_code != 200:
+                return jsonify({"error": f"Failed to fetch source file from URL: {file_url}"}), 400
+            raw_bytes = u_resp.content
+        else:
+            # Decode base64
+            try:
+                if "," in file_b64:
+                    file_b64 = file_b64.split(",")[1]
+                raw_bytes = _b64_mod.b64decode(file_b64)
+            except Exception:
+                return jsonify({"error": "Invalid base64 data"}), 400
+
+        # Build upload_files dictionary
         if file_type == "video":
-            raw_bytes = _b64_mod.b64decode(file_b64)
             upload_files = {"file": ("upload.mp4", raw_bytes, "video/mp4")}
         else:
-            file_payload = f"data:image/png;base64,{file_b64}"
-            upload_files = {"file": (None, file_payload, "image/png")}
+            upload_files = {"file": ("upload.png", raw_bytes, "image/png")}
         
         for k, v in upload_fields.items():
             upload_files[k] = (None, str(v))
         
         timeout_val = 120 if file_type == "video" else 60
-        client = _http()
-        if not client:
-            return jsonify({"error": "No HTTP client available"}), 500
         resp = client.post(upload_url, files=upload_files, timeout=timeout_val)
         if resp.status_code in (200, 201):
             result = resp.json()

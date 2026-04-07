@@ -899,9 +899,9 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
             📺 Replace Viewer Video:
           </div>
           <div style="display:flex;flex-direction:column;gap:4px;">
-            <button onclick="sendAiVideoToSlot('hero')" class="btn-ui accent" style="width:100%;font-size:10px;padding:6px;text-align:left;">🎬 Replace Hero Video</button>
-            <button onclick="sendAiVideoToSlot('left')" class="btn-ui" style="width:100%;font-size:10px;padding:6px;text-align:left;">◀ Replace Left Panel Video</button>
-            <button onclick="sendAiVideoToSlot('right')" class="btn-ui" style="width:100%;font-size:10px;padding:6px;text-align:left;">▶ Replace Right Panel Video</button>
+            <button onclick="applyVideoToSlot('hero')" class="btn-ui accent" style="width:100%;font-size:10px;padding:6px;text-align:left;">🎬 Replace Hero Video</button>
+            <button onclick="applyVideoToSlot('left')" class="btn-ui" style="width:100%;font-size:10px;padding:6px;text-align:left;">◀ Replace Left Panel Video</button>
+            <button onclick="applyVideoToSlot('right')" class="btn-ui" style="width:100%;font-size:10px;padding:6px;text-align:left;">▶ Replace Right Panel Video</button>
           </div>
         </div>
         <div id="ai-vid-url-row" style="display:none;margin-top:4px;">
@@ -4737,7 +4737,7 @@ async function uploadAiToCloudinary(fileType) {
       const res = await fetch('/api/ai/cloudinary-upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file_b64: aiState.generatedVideoUrl, file_type: 'video', credentials: creds.cloudinary })
+        body: JSON.stringify({ file_url: aiState.generatedVideoUrl, file_type: 'video', credentials: creds.cloudinary })
       });
       const data = await res.json();
       if (data.url) {
@@ -5141,6 +5141,9 @@ function pollKlingStatus() {
         document.getElementById('ai-vid-btn').disabled = false;
         document.getElementById('ai-vid-btn').textContent = 'Generate Video';
         document.getElementById('ai-vid-url-row').style.display = 'none';
+        document.getElementById('ai-vid-url').value = data.video_url; // FALLBACK for applyVideoToSlot
+        document.getElementById('ai-vid-apply-row').style.display = 'block';
+        document.getElementById('ai-vid-slot-picker').style.display = 'block';
         showToast('✅ Video ready');
       } else if (data.status === 'failed') {
         clearInterval(aiState.vidPollingInterval);
