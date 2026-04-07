@@ -192,7 +192,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     transform:translateX(-50%); 
     background:rgba(0,0,0,0.95); 
     backdrop-filter:blur(10px); 
-    padding:6px 16px; 
+    padding:0 16px; 
     border-radius:20px; 
     display:none; 
     align-items:center; 
@@ -201,10 +201,10 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     box-shadow:0 10px 30px rgba(0,0,0,0.8); 
     border:1px solid #444; 
     width: auto !important;
-    height: 48px !important;
+    height: 52px !important;
     max-width: 95vw !important;
     min-width: 200px;
-    overflow: visible;
+    overflow: hidden;
 }
 
 #bar-content {
@@ -212,8 +212,12 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     align-items:center; 
     gap:10px; 
     flex-grow:1; 
-    overflow: visible;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    height: 100%;
 }
+#bar-content::-webkit-scrollbar { display: none; }
 .ctrl-group { 
     display:flex; 
     align-items:center; 
@@ -1004,8 +1008,8 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         <div class="bar-tab" id="tab-arrange" onclick="setBarTab('arrange')" data-help="Controls position in the layer stack and center alignment">ARRANGE</div>
     </div>
 
-    <div id="bar-content" style="display:flex; align-items:center; gap:10px; flex-grow:1; overflow-x:auto; scrollbar-width:none;">
-        <div id="bar-tab-layer" style="display:flex; align-items:center; gap:10px;">
+    <div id="bar-content">
+        <div id="bar-tab-layer" style="display:flex; align-items:center; gap:10px; height: 100%;">
             <button class="ctrl-btn" id="ctrl-lock" onclick="toggleItemLock()" title="Lock Layer" data-help="Prevents the element from being moved or edited">🔓</button>
             <button class="ctrl-btn" id="ctrl-visible" onclick="toggleVisibility()" title="Show/Hide" data-help="Hides or shows the element on the canvas">👁️</button>
             <div class="ctrl-group"><label>Role</label><select id="sel-role" onchange="updateProp('layerRole', this.value)"><option value="content">Content</option><option value="background">Background</option><option value="overlay">Overlay</option></select></div>
@@ -1013,7 +1017,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
             <div class="ctrl-group"><label>Rot</label><input type="range" id="sel-rotate" min="0" max="359" style="width:40px" oninput="updateProp('rotation', parseInt(this.value))"></div>
         </div>
 
-        <div id="bar-tab-design" style="display:none; align-items:center; gap:10px;">
+        <div id="bar-tab-design" style="display:none; align-items:center; gap:10px; height: 100%;">
             <div id="geo-style-ctrls" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                 <div class="ctrl-group" id="ctrl-grp-fill"><label>Fill</label><input type="color" id="sel-fill-color" oninput="updateShapeFill(this.value)"></div>
                 <div class="ctrl-group" id="ctrl-grp-radius"><label>Rad</label><input type="range" id="sel-radius" min="0" max="200" style="width:40px" oninput="updateProp('cornerRadius', parseInt(this.value))"></div>
@@ -1110,7 +1114,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
             </div>
         </div>
 
-        <div id="bar-tab-arrange" style="display:none; align-items:center; gap:10px;">
+        <div id="bar-tab-arrange" style="display:none; align-items:center; gap:10px; height: 100%;">
             <div class="ctrl-group" style="flex-direction:column; gap:4px; align-items:flex-start;">
               <div style="display:flex; gap:6px; align-items:center;">
                 <label style="font-size:9px;color:#777;font-weight:700;width:12px;">X</label>
@@ -1151,7 +1155,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
             </div>
         </div>
     </div>
-    <div style="display:flex; gap:6px; flex-shrink:0; margin-left:10px; border-left:1px solid #444; padding-left:10px;">
+    <div style="display:flex; gap:6px; flex-shrink:0; margin-left:10px; border-left:1px solid #444; padding-left:10px; align-items:center; height: 100%;">
         <button id="btn-set-bg" class="ctrl-btn set-bg" style="padding:4px 8px; font-size:10px;" onclick="setSelectedAsBackground()" title="Promote this image to full-page locked background" data-help="Sets the selected image as the full-page menu background">🖼️ BG</button>
         <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9; padding:4px 8px; font-size:10px;" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); render(); showToast('Duplicated ' + ids.length + ' elements');}else{duplicateEl();}" title="Duplicate Layer" data-help="Makes an exact copy of the selected layer — text, image, or shape">📋</button>
         <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c; padding:4px 8px; font-size:10px;" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds];ids.forEach(id=>{selectedId=id;deleteEl(true,true);});docV2.editorState.selectedElementIds=[];deselect();render();}else{deleteEl();}" title="Delete Layer" data-help="Permanently removes the selected element from the menu">🗑</button>
