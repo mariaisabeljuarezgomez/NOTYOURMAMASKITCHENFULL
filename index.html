@@ -3357,15 +3357,19 @@ function loadGlobalSettings() {
     fetch('/api/menu?t=' + Date.now())
         .then(r => r.json())
         .then(data => {
-            if (data.heroVideoUrl !== undefined) document.getElementById('hero-video-url-input').value = data.heroVideoUrl || '';
-            if (data.sidePanelLeft) {
-                document.getElementById('side-panel-left-url').value = data.sidePanelLeft.videoUrl || '';
-                document.getElementById('side-panel-left-label').value = data.sidePanelLeft.label || '';
-            }
-            if (data.sidePanelRight) {
-                document.getElementById('side-panel-right-url').value = data.sidePanelRight.videoUrl || '';
-                document.getElementById('side-panel-right-label').value = data.sidePanelRight.label || '';
-            }
+            // RULE: Support both legacy top-level AND new docV2.settings.viewer path
+            const viewer = (data.settings && data.settings.viewer) || {};
+            
+            const heroUrl = viewer.heroVideoUrl || data.heroVideoUrl || '';
+            document.getElementById('hero-video-url-input').value = heroUrl;
+
+            const lSettings = viewer.sidePanelLeft || data.sidePanelLeft || {};
+            document.getElementById('side-panel-left-url').value = lSettings.videoUrl || '';
+            document.getElementById('side-panel-left-label').value = lSettings.label || '';
+
+            const rSettings = viewer.sidePanelRight || data.sidePanelRight || {};
+            document.getElementById('side-panel-right-url').value = rSettings.videoUrl || '';
+            document.getElementById('side-panel-right-label').value = rSettings.label || '';
         }).catch(() => {});
 }
 
