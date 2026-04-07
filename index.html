@@ -3025,10 +3025,9 @@ function _mergeLoadedDoc(s) {
     layoutLocked = docV2.settings?.layoutLocked ?? true;
     zoomScale = docV2.editorState?.zoom || 1;
     syncZoomControlsVisibility();
-    // Reset selection after any doc load — stale IDs from the old session
-    // would otherwise bleed into the new state and corrupt multi-select / render.
     selectedId = null;
     docV2.editorState.selectedElementIds = [];
+    restoreAiCredentials(docV2);
 }
 
 async function save() {
@@ -3846,9 +3845,30 @@ function getAiCredentials() {
 }
 
 function saveAiCredentials() {
-  const creds = getAiCredentials();
-  localStorage.setItem(AI_CRED_KEY, JSON.stringify(creds));
-  showToast('✅ Credentials saved');
+  if (!docV2.aiCredentials) docV2.aiCredentials = {};
+  docV2.aiCredentials.cloudName = document.getElementById('ai-cloud-name').value.trim();
+  docV2.aiCredentials.cloudKey = document.getElementById('ai-cloud-key').value.trim();
+  docV2.aiCredentials.cloudSecret = document.getElementById('ai-cloud-secret').value.trim();
+  docV2.aiCredentials.stabilityKey = document.getElementById('ai-stability-key').value.trim();
+  docV2.aiCredentials.klingKey = document.getElementById('ai-kling-key').value.trim();
+  docV2.aiCredentials.klingSecret = document.getElementById('ai-kling-secret').value.trim();
+  markDirty();
+  fetch('/api/menu', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(docV2)
+  }).then(() => showToast('✅ Credentials saved')).catch(() => showToast('❌ Save failed'));
+}
+
+function restoreAiCredentials(doc) {
+  const c = doc.aiCredentials;
+  if (!c) return;
+  if (c.cloudName) document.getElementById('ai-cloud-name').value = c.cloudName;
+  if (c.cloudKey) document.getElementById('ai-cloud-key').value = c.cloudKey;
+  if (c.cloudSecret) document.getElementById('ai-cloud-secret').value = c.cloudSecret;
+  if (c.stabilityKey) document.getElementById('ai-stability-key').value = c.stabilityKey;
+  if (c.klingKey) document.getElementById('ai-kling-key').value = c.klingKey;
+  if (c.klingSecret) document.getElementById('ai-kling-secret').value = c.klingSecret;
 }
 
 function loadAiCredentials() {
