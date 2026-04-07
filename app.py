@@ -520,6 +520,7 @@ def generate_image_to_image():
         files = {
             "prompt": (None, prompt),
             "output_format": (None, "png"),
+            "mode": (None, "image-to-image"),
             "strength": (None, str(strength)),
             "image": ("image.png", image_bytes, "image/png"),
         }
