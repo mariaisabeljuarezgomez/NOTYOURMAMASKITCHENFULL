@@ -3844,20 +3844,30 @@ function getAiCredentials() {
   };
 }
 
-function saveAiCredentials() {
-  if (!docV2.aiCredentials) docV2.aiCredentials = {};
-  docV2.aiCredentials.cloudName = document.getElementById('ai-cloud-name').value.trim();
-  docV2.aiCredentials.cloudKey = document.getElementById('ai-cloud-key').value.trim();
-  docV2.aiCredentials.cloudSecret = document.getElementById('ai-cloud-secret').value.trim();
-  docV2.aiCredentials.stabilityKey = document.getElementById('ai-stability-key').value.trim();
-  docV2.aiCredentials.klingKey = document.getElementById('ai-kling-key').value.trim();
-  docV2.aiCredentials.klingSecret = document.getElementById('ai-kling-secret').value.trim();
-  markDirty();
-  fetch('/api/menu', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(docV2)
-  }).then(() => showToast('✅ Credentials saved')).catch(() => showToast('❌ Save failed'));
+async function saveAiCredentials() {
+  if (!docV2) { showToast('⚠️ App not ready — try again in a moment'); return; }
+  docV2.aiCredentials = {
+    cloudName:    (document.getElementById('ai-cloud-name').value    || '').trim(),
+    cloudKey:     (document.getElementById('ai-cloud-key').value     || '').trim(),
+    cloudSecret:  (document.getElementById('ai-cloud-secret').value  || '').trim(),
+    stabilityKey: (document.getElementById('ai-stability-key').value || '').trim(),
+    klingKey:     (document.getElementById('ai-kling-key').value     || '').trim(),
+    klingSecret:  (document.getElementById('ai-kling-secret').value  || '').trim()
+  };
+  try {
+    const res = await fetch('/api/menu', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(docV2)
+    });
+    if (res.ok) {
+      showToast('✅ Credentials saved permanently!');
+    } else {
+      showToast('⚠️ Could not save credentials to server');
+    }
+  } catch (e) {
+    showToast('⚠️ Network error saving credentials');
+  }
 }
 
 function restoreAiCredentials(doc) {
