@@ -897,16 +897,20 @@ def cloudinary_upload():
         upload_fields["api_key"] = api_key
         upload_fields["signature"] = sig
         
-        mime_type = "image/png" if file_type == "image" else "video/mp4"
-        file_payload = f"data:{mime_type};base64,{file_b64}"
+        # For video: decode base64 and send as raw binary stream, not data URI
+        import base64 as _b64_mod
+        if file_type == "video":
+            raw_bytes = _b64_mod.b64decode(file_b64)
+            upload_files = {"file": ("upload.mp4", raw_bytes, "video/mp4")}
+        else:
+            file_payload = f"data:image/png;base64,{file_b64}"
+            upload_files = {"file": (None, file_payload, "image/png")}
         
-        client = _http()
-        if not client:
-            return jsonify({"error": "No HTTP client available"}), 500
-        upload_files = {"file": (None, file_payload, mime_type)}
         for k, v in upload_fields.items():
             upload_files[k] = (None, str(v))
-        resp = client.post(upload_url, files=upload_files, timeout=60)
+        
+        timeout_val = 120 if file_type == "video" else 60
+        resp = client.post(upload_url, files=upload_files, timeout=timeout_val)
         if resp.status_code in (200, 201):
             result = resp.json()
             return jsonify({"url": result.get("secure_url", "")})

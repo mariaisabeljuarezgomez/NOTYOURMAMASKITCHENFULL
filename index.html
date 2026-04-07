@@ -4742,10 +4742,12 @@ async function uploadAiToCloudinary(fileType) {
       const data = await res.json();
       if (data.url) {
         window._lastAiVideoCloudUrl = data.url;
+        window._lastGeneratedVideoUrl = data.url;
         aiState.generatedVideoUrl = data.url;
         document.getElementById('ai-vid-url').value = data.url;
         document.getElementById('ai-vid-url-row').style.display = 'block';
         document.getElementById('ai-vid-apply-row').style.display = 'block';
+        document.getElementById('ai-vid-slot-picker').style.display = 'block';
         showToast('☁️ Video uploaded to Cloudinary!');
       } else {
         showToast('❌ Cloudinary upload failed: ' + (data.error || 'Unknown error'));
