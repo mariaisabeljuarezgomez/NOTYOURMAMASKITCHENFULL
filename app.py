@@ -573,21 +573,30 @@ def generate_video():
         headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
         res_map = {"1920x1080": "16:9", "1080x1920": "9:16", "1080x1080": "1:1"}
         aspect = res_map.get(resolution, "16:9")
-        payload = {
-            "prompt": prompt,
-            "duration": int(duration),
-            "aspect_ratio": aspect,
-            "cfg_scale": cfg_scale,
-            "model_name": data.get("model_name", "kling-v1")
-        }
+        if is_image2video:
+            payload = {
+                "prompt": prompt,
+                "duration": str(duration),
+                "aspect_ratio": aspect,
+                "model_name": data.get("model_name", "kling-v1")
+            }
+        else:
+            payload = {
+                "prompt": prompt,
+                "duration": str(duration),
+                "aspect_ratio": aspect,
+                "cfg_scale": cfg_scale,
+                "model_name": data.get("model_name", "kling-v1")
+            }
+
         if negative_prompt:
             payload["negative_prompt"] = negative_prompt
+
         # camera_motion is only valid for text2video — strip it for image2video
         camera_motion = data.get("camera_motion", "none")
         if task_type == "text2video" and camera_motion and camera_motion != "none":
             payload["camera_motion"] = camera_motion
         if reference_image_b64:
-            # Kling image2video only accepts JPEG — convert PNG or any other format to JPEG
             try:
                 raw_bytes = base64.b64decode(reference_image_b64)
                 if PILImage:
@@ -595,11 +604,8 @@ def generate_video():
                     buf = BytesIO()
                     img.save(buf, format="JPEG", quality=92)
                     reference_image_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
-                    mime_type = "image/jpeg"
-                else:
-                    mime_type = data.get("reference_image_mime", "image/jpeg")
             except Exception:
-                mime_type = data.get("reference_image_mime", "image/jpeg")
+                pass
             payload["image_url"] = reference_image_b64
         sub_resp = client.post(submit_url, headers=headers, json=payload, timeout=30)
         if sub_resp.status_code in (200, 201, 202):
