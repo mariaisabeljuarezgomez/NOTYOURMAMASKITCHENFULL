@@ -4580,10 +4580,10 @@ function showImg2ImgPreview(b64) {
               } catch(fetchErr) {
                 // If CORS blocks fetch, just show URL directly
                 document.getElementById('ai-img-thumb').src = pollData.image_url;
-                document.getElementById('ai-img-url').value = pollData.image_url;
-                document.getElementById('ai-img-url-row').style.display = 'block';
-                document.getElementById('ai-img-preview').style.display = 'block';
-                showToast('✅ Kling image ready!');
+        document.getElementById('ai-img-url').value = pollData.image_url;
+        document.getElementById('ai-img-url-row').style.display = 'block';
+        document.getElementById('ai-img-preview').style.display = 'block';
+        showToast('✅ Kling image ready!');
                 // Auto-save to Railway assets (URL-based)
                 saveAiImageToAssets(null, 'Kling AI Image', pollData.image_url);
                 window._lastAiImageUrl = pollData.image_url;
@@ -5169,8 +5169,8 @@ function pollKlingStatus() {
         document.getElementById('ai-vid-progress').style.display = 'none';
         document.getElementById('ai-vid-btn').disabled = false;
         document.getElementById('ai-vid-btn').textContent = 'Generate Video';
-        document.getElementById('ai-vid-url-row').style.display = 'none';
         document.getElementById('ai-vid-url').value = data.video_url; // FALLBACK for applyVideoToSlot
+        document.getElementById('ai-vid-url-row').style.display = 'block';
         document.getElementById('ai-vid-apply-row').style.display = 'block';
         document.getElementById('ai-vid-slot-picker').style.display = 'block';
         showToast('✅ Video ready — Uploading to Cloudinary…');
