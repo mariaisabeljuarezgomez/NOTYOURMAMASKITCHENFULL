@@ -182,8 +182,8 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     transform:translateX(-50%); 
     background:rgba(0,0,0,0.95); 
     backdrop-filter:blur(10px); 
-    padding:12px 20px; 
-    border-radius:50px; 
+    padding:10px 16px; 
+    border-radius:24px; 
     display:none; 
     align-items:center; 
     gap:12px; 
@@ -191,10 +191,9 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     box-shadow:0 15px 40px rgba(0,0,0,0.8); 
     border:1px solid #444; 
     flex-wrap:nowrap; 
-    max-width: 90vw; 
-    overflow-x: auto; 
-    scrollbar-width: none; 
-    -webkit-overflow-scrolling: touch;
+    max-width: 95vw; 
+    min-width: fit-content;
+    overflow: visible;
 }
 
 @media (max-width: 768px) {
@@ -999,51 +998,57 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
                     onchange="setLineWidth(parseFloat(this.value))">
                 </div>
             </div>
-            <div id="text-style-ctrls" style="display:none; align-items:center; gap:10px; flex-wrap:wrap;">
-                <!-- FONT & COLOR -->
-                <div style="display:flex; align-items:center; gap:6px;">
-                    <select id="sel-font" style="max-width:120px" onchange="updateStyle('fontFamily', this.value)">
-                        <option value="bernard-mt-condensed-regular">Bernard MT Condensed</option>
-                        <option value="century-gothic-bold">Century Gothic Bold</option>
-                        <option value="century-gothic-bold-italic">Century Gothic Bold Italic</option>
-                        <option value="century-gothic-regular">Century Gothic Regular</option>
-                    </select>
-                    <input type="color" id="sel-color" oninput="updateStyle('color', this.value)" title="Text Color">
-                    <input type="number" id="sel-font-size" min="4" max="400" step="1" style="width:50px" onchange="updateStyle('fontSize', parseFloat(this.value))" title="Font Size">
+            <div id="text-style-ctrls" style="display:none; flex-direction:column; gap:8px; padding:4px 0;">
+                <!-- ROW 1: THE ESSENTIALS -->
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <!-- FONT & COLOR -->
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <select id="sel-font" style="max-width:130px" onchange="updateStyle('fontFamily', this.value)">
+                            <option value="bernard-mt-condensed-regular">Bernard MT Condensed</option>
+                            <option value="century-gothic-bold">Century Gothic Bold</option>
+                            <option value="century-gothic-bold-italic">Century Gothic Bold Italic</option>
+                            <option value="century-gothic-regular">Century Gothic Regular</option>
+                        </select>
+                        <input type="color" id="sel-color" oninput="updateStyle('color', this.value)" title="Text Color">
+                        <input type="number" id="sel-font-size" min="4" max="400" step="1" style="width:52px" onchange="updateStyle('fontSize', parseFloat(this.value))" title="Font Size">
+                    </div>
+
+                    <!-- WORD STYLE BUTTONS -->
+                    <div class="ctrl-group" style="padding-left:10px; gap:4px; border-left:1px solid #333;">
+                        <button class="ctrl-btn" id="btn-bold" onclick="toggleStyle('fontWeight', 'bold', 'normal')" title="Bold" style="width:32px; font-weight:bold;">B</button>
+                        <button class="ctrl-btn" id="btn-italic" onclick="toggleStyle('fontStyle', 'italic', 'normal')" title="Italic" style="width:32px; font-style:italic;">I</button>
+                        <button class="ctrl-btn" id="btn-underline" onclick="toggleStyle('textDecoration', 'underline', 'none')" title="Underline" style="width:32px; text-decoration:underline;">U</button>
+                    </div>
                 </div>
 
-                <!-- WORD STYLE BUTTONS -->
-                <div class="ctrl-group" style="padding-left:8px; gap:4px;">
-                    <button class="ctrl-btn" id="btn-bold" onclick="toggleStyle('fontWeight', 'bold', 'normal')" title="Bold" style="width:30px; font-weight:bold;">B</button>
-                    <button class="ctrl-btn" id="btn-italic" onclick="toggleStyle('fontStyle', 'italic', 'normal')" title="Italic" style="width:30px; font-style:italic;">I</button>
-                    <button class="ctrl-btn" id="btn-underline" onclick="toggleStyle('textDecoration', 'underline', 'none')" title="Underline" style="width:30px; text-decoration:underline;">U</button>
-                </div>
+                <!-- ROW 2: THE DETAILS -->
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <!-- ALIGNMENT -->
+                    <div style="display:flex; align-items:center; gap:4px;">
+                        <button class="ctrl-btn" id="btn-align-left" onclick="updateStyle('textAlign', 'left')" title="Align Left" style="width:32px;">⫷</button>
+                        <button class="ctrl-btn" id="btn-align-center" onclick="updateStyle('textAlign', 'center')" title="Align Center" style="width:32px;">≡</button>
+                        <button class="ctrl-btn" id="btn-align-right" onclick="updateStyle('textAlign', 'right')" title="Align Right" style="width:32px;">⫸</button>
+                    </div>
 
-                <!-- ALIGNMENT -->
-                <div class="ctrl-group" style="padding-left:8px; gap:4px;">
-                    <button class="ctrl-btn" id="btn-align-left" onclick="updateStyle('textAlign', 'left')" title="Align Left" style="width:30px;">⫷</button>
-                    <button class="ctrl-btn" id="btn-align-center" onclick="updateStyle('textAlign', 'center')" title="Align Center" style="width:30px;">≡</button>
-                    <button class="ctrl-btn" id="btn-align-right" onclick="updateStyle('textAlign', 'right')" title="Align Right" style="width:30px;">⫸</button>
-                </div>
+                    <!-- CASE TOGGLE -->
+                    <div class="ctrl-group" style="padding-left:10px; gap:4px; border-left:1px solid #333;">
+                        <button class="ctrl-btn" onclick="toggleCase('uppercase')" title="UPPERCASE" style="width:38px; font-size:9px;">AA</button>
+                        <button class="ctrl-btn" onclick="toggleCase('lowercase')" title="lowercase" style="width:38px; font-size:9px;">aa</button>
+                    </div>
 
-                <!-- CASE TOGGLE -->
-                <div class="ctrl-group" style="padding-left:8px; gap:4px;">
-                    <button class="ctrl-btn" onclick="toggleCase('uppercase')" title="UPPERCASE" style="width:35px; font-size:9px;">AA</button>
-                    <button class="ctrl-btn" onclick="toggleCase('lowercase')" title="lowercase" style="width:35px; font-size:9px;">aa</button>
-                </div>
+                    <!-- CANVA STYLE EFFECTS -->
+                    <div class="ctrl-group" style="padding-left:10px; gap:6px; border-left:1px solid #333;">
+                        <label style="font-size:9px; color:#777; font-weight:bold;">LIFT</label>
+                        <input type="range" id="sel-text-shadow" min="0" max="20" value="0" style="width:45px" oninput="updateStyle('textShadow', this.value)">
+                    </div>
 
-                <!-- CANVA STYLE EFFECTS -->
-                <div class="ctrl-group" style="padding-left:8px; gap:6px;">
-                    <label style="font-size:9px; color:#777;">LIFT</label>
-                    <input type="range" id="sel-text-shadow" min="0" max="20" value="0" style="width:40px" oninput="updateStyle('textShadow', this.value)">
-                </div>
-
-                <!-- SPACING -->
-                <div class="ctrl-group" style="padding-left:8px; gap:6px;">
-                    <label style="font-size:9px; color:#777;">H</label>
-                    <input type="number" id="sel-l-height" step="0.1" min="0.5" max="3" style="width:40px" onchange="updateStyle('lineHeight', parseFloat(this.value))" title="Line Height">
-                    <label style="font-size:9px; color:#777;">W</label>
-                    <input type="number" id="sel-l-spacing" min="-10" max="50" style="width:40px" onchange="updateStyle('letterSpacing', parseInt(this.value))" title="Letter Spacing">
+                    <!-- SPACING -->
+                    <div class="ctrl-group" style="padding-left:10px; gap:6px; border-left:1px solid #333;">
+                        <label style="font-size:9px; color:#777; font-weight:bold;">H</label>
+                        <input type="number" id="sel-l-height" step="0.1" min="0.5" max="3" style="width:42px" onchange="updateStyle('lineHeight', parseFloat(this.value))" title="Line Height">
+                        <label style="font-size:9px; color:#777; font-weight:bold;">W</label>
+                        <input type="number" id="sel-l-spacing" min="-10" max="50" style="width:42px" onchange="updateStyle('letterSpacing', parseInt(this.value))" title="Letter Spacing">
+                    </div>
                 </div>
             </div>
             
@@ -2109,7 +2114,10 @@ function updateSelectionBar() {
     console.log("Showing Selection Bar for type:", item.type);
     selBar.classList.add('show');
     
-    document.getElementById('text-style-ctrls').style.display = (item.type==='text'?'flex':'none');
+    const textCtrls = document.getElementById('text-style-ctrls');
+    if (textCtrls) {
+        textCtrls.style.display = (item.type === 'text' ? 'flex' : 'none');
+    }
     document.getElementById('geo-style-ctrls').style.display = (item.type==='text'?'none':'flex');
     
     document.getElementById('sel-opacity').value = (item.opacity ?? 1) * 100;
