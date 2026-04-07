@@ -2920,11 +2920,12 @@ async function importImg(input) {
     let r = new FileReader();
     r.onload = async (e) => {
         const base64Data = await trimTransparentPixels(e.target.result);
+        const safeName = f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
         try {
             const res = await fetch('/api/upload-image', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ data: base64Data, filename: f.name })
+                body: JSON.stringify({ data: base64Data, filename: safeName })
             });
             const json = await res.json();
             if (json.status === "ok") {
@@ -2945,12 +2946,12 @@ async function importBackground(input) {
     let r = new FileReader();
     r.onload = async (e) => {
         const src = e.target.result;
-        const filename = 'bg_' + Date.now() + '_' + f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const safeName = 'bg_' + Date.now() + '_' + f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
         try {
             const res = await fetch('/api/upload-image', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ filename, data: src })
+                body: JSON.stringify({ filename: safeName, data: src })
             });
             const json = await res.json();
             if (json.url) {
@@ -3151,15 +3152,21 @@ async function deleteAssetFromServer(filename) {
         const json = await res.json();
         if (res.ok && json.status === 'deleted') {
             // Remove ONLY this asset from docV2.assets by matching filename in originalUrl
-            // DO NOT call loadUserImages() — that would wipe AI-generated assets
             if (Array.isArray(docV2.assets)) {
                 docV2.assets = docV2.assets.filter(a => {
                     const url = a.storage?.originalUrl || '';
-                    const assetFilename = url.split('/').pop().split('?')[0];
+                    const assetFilename = decodeURIComponent(url.split('/').pop().split('?')[0]);
                     return assetFilename !== filename;
                 });
             }
-            // Persist updated docV2 (minus deleted asset) to server
+            // RULE: Also remove any elements on the canvas that use this broken asset
+            docV2.elements = docV2.elements.filter(el => {
+                if (el.type !== 'image' || !el.src) return true;
+                const elFilename = decodeURIComponent(el.src.split('/').pop().split('?')[0]);
+                return elFilename !== filename;
+            });
+            
+            // Persist updated docV2 to server
             try {
                 await fetch('/api/menu', {
                     method: 'POST',
@@ -3167,12 +3174,13 @@ async function deleteAssetFromServer(filename) {
                     body: JSON.stringify(docV2)
                 });
             } catch(saveErr) {
-                markDirty();
+                console.error("Failed to sync docV2 after asset deletion:", saveErr);
             }
+            render();
             renderAssetPanel();
-            showToast('🗑️ Asset deleted.');
+            showToast('✅ Asset deleted and removed from canvas');
         } else {
-            showToast('Delete failed: ' + (json.error || res.status));
+            showToast('❌ Delete failed: ' + (json.error || res.status));
         }
     } catch(err) {
         showToast('Delete error: ' + err.message);
