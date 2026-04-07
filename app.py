@@ -31,8 +31,9 @@ def generate_kling_token(api_key: str, api_secret: str) -> str:
     """Generate Kling AI JWT token for authentication."""
     import jwt
     now = int(time.time())
+    headers = {"alg": "HS256", "typ": "JWT"}
     payload = {"iss": api_key, "exp": now + 1800, "nbf": now - 5}
-    return jwt.encode(payload, api_secret, algorithm="HS256")
+    return jwt.encode(payload, api_secret, algorithm="HS256", headers=headers)
 
 def cloudinary_sign(params_dict, api_secret):
     """Generate Cloudinary auth signature: sorted params + api_secret, SHA-256."""
