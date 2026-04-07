@@ -999,26 +999,52 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
                     onchange="setLineWidth(parseFloat(this.value))">
                 </div>
             </div>
-            <div id="text-style-ctrls" style="display:none; align-items:center; gap:10px;">
-                <select id="sel-font" style="max-width:100px" onchange="updateStyle('fontFamily', this.value)"><option value="bernard-mt-condensed-regular">Bernard Mt Condensed Regular</option>
-<option value="century-gothic-bold">Century Gothic Bold</option>
-<option value="century-gothic-bold-italic">Century Gothic Bold Italic</option>
-<option value="century-gothic-regular">Century Gothic Regular</option>
-</select>
-                <input type="color" id="sel-color" oninput="updateStyle('color', this.value)">
-                <div class="ctrl-group">
-                  <label>Size</label>
-                  <input type="number" id="sel-font-size" min="4" max="400" step="1" style="width:52px"
-                    onchange="updateStyle('fontSize', parseFloat(this.value))">
+            <div id="text-style-ctrls" style="display:none; align-items:center; gap:10px; flex-wrap:wrap;">
+                <!-- FONT & COLOR -->
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <select id="sel-font" style="max-width:120px" onchange="updateStyle('fontFamily', this.value)">
+                        <option value="bernard-mt-condensed-regular">Bernard MT Condensed</option>
+                        <option value="century-gothic-bold">Century Gothic Bold</option>
+                        <option value="century-gothic-bold-italic">Century Gothic Bold Italic</option>
+                        <option value="century-gothic-regular">Century Gothic Regular</option>
+                    </select>
+                    <input type="color" id="sel-color" oninput="updateStyle('color', this.value)" title="Text Color">
+                    <input type="number" id="sel-font-size" min="4" max="400" step="1" style="width:50px" onchange="updateStyle('fontSize', parseFloat(this.value))" title="Font Size">
                 </div>
-                <div class="ctrl-group">
-                  <label>Width</label>
-                  <input type="number" id="sel-text-width" min="0" max="900" step="10" style="width:52px"
-                    placeholder="auto"
-                    onchange="applyTextWidth(parseInt(this.value))">
+
+                <!-- WORD STYLE BUTTONS -->
+                <div class="ctrl-group" style="padding-left:8px; gap:4px;">
+                    <button class="ctrl-btn" id="btn-bold" onclick="toggleStyle('fontWeight', 'bold', 'normal')" title="Bold" style="width:30px; font-weight:bold;">B</button>
+                    <button class="ctrl-btn" id="btn-italic" onclick="toggleStyle('fontStyle', 'italic', 'normal')" title="Italic" style="width:30px; font-style:italic;">I</button>
+                    <button class="ctrl-btn" id="btn-underline" onclick="toggleStyle('textDecoration', 'underline', 'none')" title="Underline" style="width:30px; text-decoration:underline;">U</button>
                 </div>
-                <div class="ctrl-group"><label>L.H.</label><input type="number" id="sel-l-height" step="0.1" min="0.5" max="3" style="width:40px" onchange="updateStyle('lineHeight', parseFloat(this.value))"></div>
-                <div class="ctrl-group"><label>L.S.</label><input type="number" id="sel-l-spacing" min="-10" max="50" style="width:40px" onchange="updateStyle('letterSpacing', parseInt(this.value))"></div>
+
+                <!-- ALIGNMENT -->
+                <div class="ctrl-group" style="padding-left:8px; gap:4px;">
+                    <button class="ctrl-btn" id="btn-align-left" onclick="updateStyle('textAlign', 'left')" title="Align Left" style="width:30px;">⫷</button>
+                    <button class="ctrl-btn" id="btn-align-center" onclick="updateStyle('textAlign', 'center')" title="Align Center" style="width:30px;">≡</button>
+                    <button class="ctrl-btn" id="btn-align-right" onclick="updateStyle('textAlign', 'right')" title="Align Right" style="width:30px;">⫸</button>
+                </div>
+
+                <!-- CASE TOGGLE -->
+                <div class="ctrl-group" style="padding-left:8px; gap:4px;">
+                    <button class="ctrl-btn" onclick="toggleCase('uppercase')" title="UPPERCASE" style="width:35px; font-size:9px;">AA</button>
+                    <button class="ctrl-btn" onclick="toggleCase('lowercase')" title="lowercase" style="width:35px; font-size:9px;">aa</button>
+                </div>
+
+                <!-- CANVA STYLE EFFECTS -->
+                <div class="ctrl-group" style="padding-left:8px; gap:6px;">
+                    <label style="font-size:9px; color:#777;">LIFT</label>
+                    <input type="range" id="sel-text-shadow" min="0" max="20" value="0" style="width:40px" oninput="updateStyle('textShadow', this.value)">
+                </div>
+
+                <!-- SPACING -->
+                <div class="ctrl-group" style="padding-left:8px; gap:6px;">
+                    <label style="font-size:9px; color:#777;">H</label>
+                    <input type="number" id="sel-l-height" step="0.1" min="0.5" max="3" style="width:40px" onchange="updateStyle('lineHeight', parseFloat(this.value))" title="Line Height">
+                    <label style="font-size:9px; color:#777;">W</label>
+                    <input type="number" id="sel-l-spacing" min="-10" max="50" style="width:40px" onchange="updateStyle('letterSpacing', parseInt(this.value))" title="Letter Spacing">
+                </div>
             </div>
             
             <!-- Video URL Field (Phase 2 Precursor) -->
@@ -1414,11 +1440,16 @@ function render() {
         });
         
         // Support both V2 top-level fields AND V1 style object
-        const color = d.color || d.style?.color;
+         const color = d.color || d.style?.color;
         const fontFamily = d.fontFamily || d.style?.fontFamily;
         const fontSize = d.fontSize || d.style?.fontSize;
         const lineHeight = d.lineHeight || d.style?.lineHeight;
         const letterSpacing = d.letterSpacing || d.style?.letterSpacing;
+        const fontWeight = d.fontWeight || d.style?.fontWeight;
+        const fontStyle = d.fontStyle || d.style?.fontStyle;
+        const textDecoration = d.textDecoration || d.style?.textDecoration;
+        const textAlign = d.textAlign || d.style?.textAlign;
+        const textShadow = d.textShadow || d.style?.textShadow;
         const fill = d.fillColor || d.style?.fill;
 
         if(fontFamily) el.style.fontFamily = fontFamily;
@@ -1426,11 +1457,16 @@ function render() {
         if(color) el.style.color = color;
         if(lineHeight) el.style.lineHeight = lineHeight;
         if(letterSpacing) el.style.letterSpacing = letterSpacing + 'px';
-        if(fill) {
-            const target = el.querySelector('.shape-inner') || el;
-            target.style.backgroundColor = fill;
+        if(fontWeight) el.style.fontWeight = fontWeight;
+        if(fontStyle) el.style.fontStyle = fontStyle;
+        if(textDecoration) el.style.textDecoration = textDecoration;
+        if(textAlign) el.style.textAlign = textAlign;
+        if(textShadow && textShadow > 0) {
+            el.style.textShadow = `0 ${textShadow/2}px ${textShadow}px rgba(0,0,0,0.5)`;
+        } else {
+            el.style.textShadow = 'none';
         }
-
+        if(fill) el.style.backgroundColor = fill;
         if (d.type === 'text') {
             if (d.width) {
                 el.style.width = d.width + 'px';
@@ -2139,6 +2175,23 @@ function updateSelectionBar() {
         document.getElementById('sel-l-height').value = lineHeight;
         document.getElementById('sel-l-spacing').value = letterSpacing;
         
+        // Sync Pro Typography Toggles
+        const fontWeight = item.fontWeight || (item.style && item.style.fontWeight) || 'normal';
+        const fontStyle = item.fontStyle || (item.style && item.style.fontStyle) || 'normal';
+        const textDecoration = item.textDecoration || (item.style && item.style.textDecoration) || 'none';
+        const textAlign = item.textAlign || (item.style && item.style.textAlign) || 'left';
+        const textShadow = item.textShadow || (item.style && item.style.textShadow) || 0;
+
+        document.getElementById('btn-bold').classList.toggle('active', fontWeight === 'bold');
+        document.getElementById('btn-italic').classList.toggle('active', fontStyle === 'italic');
+        document.getElementById('btn-underline').classList.toggle('active', textDecoration === 'underline');
+        
+        document.getElementById('btn-align-left').classList.toggle('active', textAlign === 'left');
+        document.getElementById('btn-align-center').classList.toggle('active', textAlign === 'center');
+        document.getElementById('btn-align-right').classList.toggle('active', textAlign === 'right');
+        
+        document.getElementById('sel-text-shadow').value = textShadow;
+        
         const fsInput = document.getElementById('sel-font-size');
         if (fsInput) fsInput.value = Math.round(item.style.fontSize || 16);
         
@@ -2298,6 +2351,11 @@ function updateStyle(k, v) {
         if(k === 'fontFamily') item.fontFamily = v;
         if(k === 'lineHeight') item.lineHeight = v;
         if(k === 'letterSpacing') item.letterSpacing = v;
+        if(k === 'fontWeight') item.fontWeight = v;
+        if(k === 'fontStyle') item.fontStyle = v;
+        if(k === 'textDecoration') item.textDecoration = v;
+        if(k === 'textAlign') item.textAlign = v;
+        if(k === 'textShadow') item.textShadow = v;
         
         render(); 
         // Force live color update to DOM for instant feedback
@@ -2306,6 +2364,27 @@ function updateStyle(k, v) {
             if(el) el.style.color = v;
         }
     } 
+}
+
+function toggleStyle(k, vOn, vOff) {
+    if(!selectedId) return;
+    let item = docV2.elements.find(e=>e.id===selectedId);
+    if(item) {
+        const current = item.style[k] || item[k] || vOff;
+        const newVal = (current === vOn) ? vOff : vOn;
+        updateStyle(k, newVal);
+    }
+}
+
+function toggleCase(mode) {
+    if(!selectedId) return;
+    let item = docV2.elements.find(e=>e.id===selectedId);
+    if(item && item.type === 'text') {
+        pushState();
+        if(mode === 'uppercase') item.text = item.text.toUpperCase();
+        else if(mode === 'lowercase') item.text = item.text.toLowerCase();
+        render();
+    }
 }
 
 function applyTextWidth(w) {
