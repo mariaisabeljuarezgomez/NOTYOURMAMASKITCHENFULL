@@ -3768,6 +3768,7 @@ let aiState = {
   vidRefB64: null,
   vidRefMimeType: null,
   vidTaskId: null,
+  vidTaskType: null,
   vidPollingInterval: null
 };
 
@@ -4077,6 +4078,7 @@ async function generateAiVideo() {
     const data = await res.json();
     if (data.task_id) {
       aiState.vidTaskId = data.task_id;
+      aiState.vidTaskType = data.task_type || 'text2video';
       pollKlingStatus();
     } else {
       showToast('❌ Video generation failed: ' + (data.error || 'Unknown error'));
@@ -4100,13 +4102,13 @@ function pollKlingStatus() {
       const res = await fetch(`/api/ai/kling-status/${aiState.vidTaskId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ api_key: creds.kling.api_key, api_secret: creds.kling.api_secret })
+        body: JSON.stringify({ api_key: creds.kling.api_key, api_secret: creds.kling.api_secret, task_type: aiState.vidTaskType || 'text2video' })
       });
       const data = await res.json();
       if (data.progress !== undefined) {
         document.getElementById('ai-vid-status').textContent = `⏳ ${data.status} (${data.progress}%)`;
       }
-      if (data.status === 'done' && data.video_url) {
+      if (data.status === 'succeed' && data.video_url) {
         clearInterval(aiState.vidPollingInterval);
         aiState.vidPollingInterval = null;
         aiState.generatedVideoUrl = data.video_url;

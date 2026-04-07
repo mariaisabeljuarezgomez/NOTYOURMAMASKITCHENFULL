@@ -22,6 +22,13 @@ def _http():
         return cloudscraper.create_scraper()
     return _requests.Session()
 
+def generate_kling_token(api_key: str, api_secret: str) -> str:
+    """Generate Kling AI JWT token for authentication."""
+    import jwt
+    now = int(time.time())
+    payload = {"iss": api_key, "exp": now + 1800, "nbf": now - 5}
+    return jwt.encode(payload, api_secret, algorithm="HS256")
+
 def cloudinary_sign(params_dict, api_secret):
     """Generate Cloudinary auth signature: sorted params + api_secret, SHA-256."""
     sorted_params = "&".join(f"{k}={v}" for k, v in sorted(params_dict.items()))
@@ -414,14 +421,13 @@ def test_kling():
         api_secret = data.get("api_secret", "")
         if not all([api_key, api_secret]):
             return jsonify({"error": "Missing credentials"}), 400
-        test_url = "https://api.klingai.com/v1/oauth/token"
+        token = generate_kling_token(api_key, api_secret)
         client = _http()
         if not client:
             return jsonify({"error": "No HTTP client available"}), 500
-        resp = client.post(test_url, json={
-            "api_key": api_key, "api_secret": api_secret
-        })
-        if resp.status_code in (200, 401, 403):
+        test_url = "https://api.klingai.com/v1/videos/text2video?pageNum=1&pageSize=1"
+        resp = client.get(test_url, headers={"Authorization": f"Bearer {token}"})
+        if resp.status_code in (200, 401):
             return jsonify({"status": "ok"})
         return jsonify({"error": "Invalid credentials or connection failed"}), 400
     except Exception as e:
@@ -492,37 +498,33 @@ def generate_video():
         api_secret = creds.get("api_secret", "")
         if not all([prompt, api_key, api_secret]):
             return jsonify({"error": "Missing prompt or credentials"}), 400
-        token_url = "https://api.klingai.com/v1/oauth/token"
+        token = generate_kling_token(api_key, api_secret)
         client = _http()
         if not client:
             return jsonify({"error": "No HTTP client available"}), 500
-        token_resp = client.post(token_url, json={
-            "api_key": api_key, "api_secret": api_secret, "grant_type": "client_credentials"
-        })
-        if token_resp.status_code != 200:
-            return jsonify({"error": "Kling AI authentication failed"}), 400
-        token_data = token_resp.json()
-        access_token = token_data.get("access_token", "")
-        submit_url = "https://api.klingai.com/v1/videos/text2video"
-        headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
+        is_image2video = bool(reference_image_b64)
+        task_type = "image2video" if is_image2video else "text2video"
+        submit_url = f"https://api.klingai.com/v1/videos/{task_type}"
+        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
         res_map = {"1920x1080": "16:9", "1080x1920": "9:16", "1080x1080": "1:1"}
         aspect = res_map.get(resolution, "16:9")
         payload = {
             "prompt": prompt,
             "duration": duration,
             "aspect_ratio": aspect,
-            "cfg_scale": cfg_scale
+            "cfg_scale": cfg_scale,
+            "model_name": data.get("model_name", "kling-v1")
         }
         if negative_prompt:
             payload["negative_prompt"] = negative_prompt
         if reference_image_b64:
             mime_type = data.get("reference_image_mime", "image/jpeg")
-            payload["reference_image"] = f"data:{mime_type};base64,{reference_image_b64}"
+            payload["image"] = f"data:{mime_type};base64,{reference_image_b64}"
         sub_resp = client.post(submit_url, headers=headers, json=payload)
         if sub_resp.status_code in (200, 201, 202):
             task_data = sub_resp.json()
             task_id = task_data.get("data", {}).get("task_id") or task_data.get("task_id") or "pending"
-            return jsonify({"task_id": task_id})
+            return jsonify({"task_id": task_id, "task_type": task_type})
         return jsonify({"error": "Video generation submission failed"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -533,26 +535,23 @@ def kling_status(task_id):
         data = request.json or {}
         api_key = data.get("api_key", "")
         api_secret = data.get("api_secret", "")
+        task_type = data.get("task_type", "text2video")
         if not all([api_key, api_secret]):
             return jsonify({"error": "Missing credentials"}), 400
-        token_url = "https://api.klingai.com/v1/oauth/token"
+        token = generate_kling_token(api_key, api_secret)
         client = _http()
         if not client:
             return jsonify({"error": "No HTTP client available"}), 500
-        token_resp = client.post(token_url, json={
-            "api_key": api_key, "api_secret": api_secret, "grant_type": "client_credentials"
-        })
-        if token_resp.status_code != 200:
-            return jsonify({"status": "failed", "error": "Kling AI auth failed"}), 400
-        access_token = token_resp.json().get("access_token", "")
-        status_url = f"https://api.klingai.com/v1/videos/text2video/{task_id}"
-        headers = {"Authorization": f"Bearer {access_token}"}
+        status_url = f"https://api.klingai.com/v1/videos/{task_type}/{task_id}"
+        headers = {"Authorization": f"Bearer {token}"}
         stat_resp = client.get(status_url, headers=headers)
         if stat_resp.status_code == 200:
             sd = stat_resp.json().get("data", {})
-            status_str = sd.get("status", "pending")
-            video_url = sd.get("video_url", "")
-            progress = sd.get("progress", 50) if status_str == "processing" else (100 if status_str == "done" else 0)
+            status_str = sd.get("task_status", "submitted")
+            videos = sd.get("task_result", {}).get("videos", [])
+            video_url = videos[0].get("url", "") if videos else ""
+            progress_map = {"submitted": 0, "processing": 50, "succeed": 100, "failed": 0}
+            progress = progress_map.get(status_str, 0)
             error = sd.get("error") or ("Kling AI video generation failed" if status_str == "failed" else None)
             resp = {"status": status_str, "video_url": video_url, "progress": progress}
             if error:
