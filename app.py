@@ -97,8 +97,6 @@ def prune_backups(backup_dir, keep=20):
 def validate_schema(data):
     if not isinstance(data, dict):
         return False
-    if data.get("version") != 2:
-        return False
     return isinstance(data.get("elements"), list)
 
 @app.route("/")
