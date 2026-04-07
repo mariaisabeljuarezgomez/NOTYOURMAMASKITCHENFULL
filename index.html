@@ -4743,6 +4743,7 @@ async function uploadAiToCloudinary(fileType) {
       if (data.url) {
         window._lastAiVideoCloudUrl = data.url;
         window._lastGeneratedVideoUrl = data.url;
+        window._lastAiVideoUrl = data.url;
         aiState.generatedVideoUrl = data.url;
         document.getElementById('ai-vid-url').value = data.url;
         document.getElementById('ai-vid-url-row').style.display = 'block';
@@ -5156,48 +5157,21 @@ function pollKlingStatus() {
 }
 
 async function sendAiVideoToSlot(slot) {
-  const url = aiState.generatedVideoUrl;
-  if (!url) {
-    showToast('⚠️ No video URL. Upload to Cloudinary first.');
-    return;
-  }
-  const slotMap = {
-    hero:  'heroVideoUrl',
-    left:  'sidePanelLeftUrl',
-    right: 'sidePanelRightUrl'
-  };
-  const labelMap = {
-    hero:  'Hero Video',
-    left:  'Left Panel Video',
-    right: 'Right Panel Video'
-  };
-  const inputMap = {
-    hero:  'hero-video-url-input',
-    left:  'side-panel-left-url',
-    right: 'side-panel-right-url'
-  };
-  const field = slotMap[slot];
-  if (!field) return;
-  if (!docV2.settings) docV2.settings = {};
-  docV2.settings[field] = url;
-  const inputEl = document.getElementById(inputMap[slot]);
-  if (inputEl) inputEl.value = url;
-  try {
-    const res = await fetch('/api/menu', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(docV2)
-    });
-    if (res.ok) {
-      showToast('✅ ' + labelMap[slot] + ' updated in Viewer!');
-    } else {
-      markDirty();
-      showToast('⚠️ Save failed — use 💾 Save Session to retry.');
-    }
-  } catch (err) {
-    markDirty();
-    showToast('⚠️ Network error — use 💾 Save Session to retry.');
-  }
+  const url = window._lastAiVideoUrl;
+  if (!url) { showToast('⚠️ No video URL — upload to Cloudinary first'); return; }
+
+  if (slot === 'hero')  docV2.heroVideoUrl = url;
+  if (slot === 'left')  { if (!docV2.sidePanelLeft)  docV2.sidePanelLeft  = {}; docV2.sidePanelLeft.videoUrl  = url; }
+  if (slot === 'right') { if (!docV2.sidePanelRight) docV2.sidePanelRight = {}; docV2.sidePanelRight.videoUrl = url; }
+
+  // Sync the right-panel inputs so saveGlobalSettings() sees updated values
+  if (slot === 'hero')  document.getElementById('hero-video-url-input').value = url;
+  if (slot === 'left')  document.getElementById('side-panel-left-url').value  = url;
+  if (slot === 'right') document.getElementById('side-panel-right-url').value = url;
+
+  // Persist immediately using the existing save path
+  saveGlobalSettings();
+  showToast('✅ ' + slot + ' video updated in viewer');
 }
 
 function showBrandedModal2(title, body, buttons) {

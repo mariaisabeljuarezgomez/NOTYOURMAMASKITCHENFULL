@@ -910,6 +910,9 @@ def cloudinary_upload():
             upload_files[k] = (None, str(v))
         
         timeout_val = 120 if file_type == "video" else 60
+        client = _http()
+        if not client:
+            return jsonify({"error": "No HTTP client available"}), 500
         resp = client.post(upload_url, files=upload_files, timeout=timeout_val)
         if resp.status_code in (200, 201):
             result = resp.json()
