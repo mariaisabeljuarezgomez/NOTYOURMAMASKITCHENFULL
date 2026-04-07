@@ -4359,6 +4359,8 @@ async function generateAiVideo() {
   document.getElementById('ai-vid-status').textContent = 'Submitting to Kling…';
   document.getElementById('ai-vid-preview').style.display = 'none';
   try {
+    const refB64 = aiState.vidRefB64;
+    if (refB64 && refB64.includes(',')) refB64 = refB64.split(',')[1];
     const res = await fetch('/api/ai/generate-video', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -4369,7 +4371,7 @@ async function generateAiVideo() {
         resolution: document.getElementById('ai-vid-resolution').value,
         camera_motion: document.getElementById('ai-vid-camera').value,
         cfg_scale: parseFloat(document.getElementById('ai-vid-cfg').value),
-        reference_image_b64: document.getElementById('ai-vid-pin-start').checked ? aiState.vidRefB64 : null,
+        reference_image_b64: document.getElementById('ai-vid-pin-start').checked ? refB64 : null,
         reference_image_mime: aiState.vidRefMimeType || 'image/jpeg',
         credentials: creds.kling
       })
