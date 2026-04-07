@@ -582,6 +582,10 @@ def generate_video():
         }
         if negative_prompt:
             payload["negative_prompt"] = negative_prompt
+        # camera_motion is only valid for text2video — strip it for image2video
+        camera_motion = data.get("camera_motion", "none")
+        if task_type == "text2video" and camera_motion and camera_motion != "none":
+            payload["camera_motion"] = camera_motion
         if reference_image_b64:
             # Kling image2video only accepts JPEG — convert PNG or any other format to JPEG
             try:
