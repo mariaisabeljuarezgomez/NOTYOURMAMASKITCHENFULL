@@ -1657,7 +1657,7 @@ function renderLayerList() {
 
         div.innerHTML = `<span style="cursor:grab; color:#555; font-size:14px; padding-right:6px; flex-shrink:0;" title="Drag to reorder">⠿</span>
             <div style="font-size:12px; width:20px; text-align:center;">${icon}</div>
-            <div class="layer-name" style="flex:1; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center;">${roleTag}<span class="layer-rename-span" data-elid="${item.id}" title="Double-click to rename (editor only)" style="flex:1; min-width:20px; min-height:14px; display:inline-block;"></span></div>
+            <div class="layer-name" style="flex:1; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center;">${roleTag}<span class="layer-rename-span" data-elid="${item.id}" title="Double-click to rename (editor only)" style="flex:1; min-width:50px; min-height:18px; display:inline-block; cursor:text;"></span></div>
             <button class="layer-btn" title="${item.visible ? 'Visible' : 'Hidden — click to show'}"
                 onclick="toggleVisById(event, '${item.id}')"
                 style="font-size:11px; opacity:${item.visible ? '1' : '0.4'};">
@@ -2559,6 +2559,68 @@ function updateZ(dir) {
     if (newIdx < 0 || newIdx >= docV2.elements.length) return;
     const [item] = docV2.elements.splice(idx, 1);
     docV2.elements.splice(newIdx, 0, item);
+    resequenceZIndex();
+    render();
+    renderLayerList();
+    showToast('Layer order updated');
+}
+
+function bringToFront() {
+    const multiIds = docV2.editorState.selectedElementIds || [];
+    if (multiIds.length > 1) {
+        pushState();
+        const selectedEls = multiIds
+            .map(id => docV2.elements.find(e => e.id === id))
+            .filter(Boolean)
+            .sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
+        
+        const selectedSet = new Set(multiIds);
+        const nonSelected = docV2.elements.filter(e => !selectedSet.has(e.id));
+        
+        docV2.elements = [...nonSelected, ...selectedEls];
+        resequenceZIndex();
+        render();
+        renderLayerList();
+        showToast('Layer order updated');
+        return;
+    }
+    if (!selectedId) return;
+    pushState();
+    const idx = docV2.elements.findIndex(e => e.id === selectedId);
+    if (idx === -1 || idx === docV2.elements.length - 1) return;
+    const [item] = docV2.elements.splice(idx, 1);
+    docV2.elements.push(item);
+    resequenceZIndex();
+    render();
+    renderLayerList();
+    showToast('Layer order updated');
+}
+
+function sendToBack() {
+    const multiIds = docV2.editorState.selectedElementIds || [];
+    if (multiIds.length > 1) {
+        pushState();
+        const selectedEls = multiIds
+            .map(id => docV2.elements.find(e => e.id === id))
+            .filter(Boolean)
+            .sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
+        
+        const selectedSet = new Set(multiIds);
+        const nonSelected = docV2.elements.filter(e => !selectedSet.has(e.id));
+        
+        docV2.elements = [...selectedEls, ...nonSelected];
+        resequenceZIndex();
+        render();
+        renderLayerList();
+        showToast('Layer order updated');
+        return;
+    }
+    if (!selectedId) return;
+    pushState();
+    const idx = docV2.elements.findIndex(e => e.id === selectedId);
+    if (idx === -1 || idx === 0) return;
+    const [item] = docV2.elements.splice(idx, 1);
+    docV2.elements.unshift(item);
     resequenceZIndex();
     render();
     renderLayerList();
