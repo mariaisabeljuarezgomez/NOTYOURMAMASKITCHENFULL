@@ -2116,7 +2116,7 @@ function updateSelectionBar() {
         ribbonContext.innerHTML = `
             <div class="ribbon-group">
                 <span class="ribbon-label">Fill</span>
-                <input type="color" value="${fillVal}" oninput="updateShapeFill(this.value)" ${isLine?'disabled':''}>
+                <input type="color" value="${item.fillColor || item.style?.fill || '#ffffff'}" oninput="updateShapeFill(this.value)" ${isLine?'disabled':''}>
             </div>
             <div class="ribbon-group">
                 <span class="ribbon-label">Border</span>
@@ -2784,6 +2784,7 @@ function addRect() {
             zIndex: maxZ + 1, opacity: 100, rotation: 0,
             visible: true, locked: false, layerRole: 'content',
             fillColor: '#1a1a1a',
+            style: { fill: '#1a1a1a' },
             borderColor: '#000000', borderWidth: 0, borderRadius: 0
         });
         render();
@@ -2908,6 +2909,8 @@ function updateShapeFill(v) {
         return; 
     }
 
+    if(!item.style) item.style = {};
+    item.style.fill = v;
     item.fillColor = v;
 
     const domNode = document.getElementById(selectedId);
