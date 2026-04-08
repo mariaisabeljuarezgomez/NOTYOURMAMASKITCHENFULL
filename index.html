@@ -2969,59 +2969,29 @@ function setAsBackground(src) {
     showToast('✅ Background replaced and locked');
 }
 
-async function setSelectedAsBackground() {
+function setSelectedAsBackground() {
     if (!selectedId) return showToast("Select an image first");
-
     const item = docV2.elements.find(e => e.id === selectedId);
     if (!item || item.type !== 'image') return showToast("Only images can become backgrounds");
 
-    pushState(); // Save before change
-    // Hide legacy background
+    pushState();
     docV2.settings.legacyBgVisible = false;
 
-    // Find or create background layer
-    let bgLayer = docV2.elements.find(e => e.type === 'image' && e.layerRole === 'background');
-    if (!bgLayer) {
-        const minZ = Math.min(...docV2.elements.map(e => e.zIndex || 10));
-        bgLayer = {
-            id: 'bg_upload_' + Date.now(),
-            type: 'image',
-            layerRole: 'background',
-            assetId: 'asset_015',
-            src: item.src,
-            x: 0, y: 0,
-            width: BASE_W, height: BASE_H,
-            opacity: 1, rotation: 0,
-            visible: true, locked: true,
-            zIndex: minZ - 1
-        };
-        docV2.elements.push(bgLayer);
-    }
-
-    // Copy image src to background, set full-page bounds
-    bgLayer.src = item.src;
-    bgLayer.assetId = 'asset_015';
-    bgLayer.x = 0;
-    bgLayer.y = 0;
-    bgLayer.width = BASE_W;
-    bgLayer.height = BASE_H;
-    bgLayer.opacity = 1;
-    bgLayer.rotation = 0;
-    bgLayer.visible = true;
+    // Promote IN-PLACE — item stays moveable and selected
+    item.isSystemBackground = true;
     item.layerRole = 'background';
+    item.locked = false;
     item.x = 0;
     item.y = 0;
     item.width = BASE_W;
     item.height = BASE_H;
-    item.rotation = 0;
-    item.visible = true;
-    item.locked = false;
-    const minZ = Math.min(...docV2.elements.map(e => e.zIndex || 10));
-    item.zIndex = minZ <= 0 ? minZ - 1 : 0;
-    selectedId = item.id;
+    item.zIndex = 1;
+
+    selectedId = item.id; // keep selected
+
     render();
     renderLayerList();
-    showToast("✅ Image set as background layer — still moveable & selectable!");
+    showToast("✅ Image promoted to moveable background");
 }
 
 async function renderAssetPanel() {
