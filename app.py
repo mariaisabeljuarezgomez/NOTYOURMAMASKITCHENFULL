@@ -11,6 +11,8 @@ import hmac
 import urllib.parse
 from datetime import datetime
 from io import BytesIO
+import psycopg2
+from psycopg2.extras import RealDictCursor
 try:
     from PIL import Image as PILImage
 except ImportError:
@@ -74,6 +76,52 @@ os.makedirs(IMAGES_DIR, exist_ok=True)
 USER_IMAGES_DIR = os.path.join(STORAGE_BASE, "user_images")
 os.makedirs(USER_IMAGES_DIR, exist_ok=True)
 
+# --- DATABASE CONFIGURATION ---
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+def get_db_connection():
+    if not DATABASE_URL:
+        return None
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        return conn
+    except Exception as e:
+        print(f"[DB] Connection failed: {e}")
+        return None
+
+def init_db():
+    conn = get_db_connection()
+    if not conn:
+        return
+    try:
+        with conn.cursor() as cur:
+            # Create sessions table
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS sessions (
+                    id SERIAL PRIMARY KEY,
+                    canvas_json JSONB NOT NULL,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            """)
+            # Create assets table
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS assets (
+                    id TEXT PRIMARY KEY,
+                    name TEXT,
+                    cloudinary_url TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            """)
+            conn.commit()
+            print("[DB] Tables initialized successfully")
+    except Exception as e:
+        print(f"[DB] Initialization failed: {e}")
+    finally:
+        conn.close()
+
+# Initialize DB on startup
+init_db()
+
 PROTECTED_ASSETS = {
     "Asset1.png", "Asset2.png", "Asset3.png", "Asset4.png",
     "Asset6.png", "Asset7.png", "Asset8.png", "Asset9.png",
@@ -112,7 +160,24 @@ def index():
 
 @app.route("/api/menu", methods=["GET"])
 def get_menu():
-    status_info = {"is_persistent": IS_PERSISTENT, "storage_base": STORAGE_BASE}
+    status_info = {"is_persistent": IS_PERSISTENT, "storage_base": STORAGE_BASE, "db_active": False}
+    
+    # Try Database first
+    conn = get_db_connection()
+    if conn:
+        try:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("SELECT canvas_json FROM sessions ORDER BY id DESC LIMIT 1")
+                row = cur.fetchone()
+                if row:
+                    status_info["db_active"] = True
+                    return jsonify({**row['canvas_json'], "status": status_info})
+        except Exception as e:
+            print(f"[DB] Fetch failed: {e}")
+        finally:
+            conn.close()
+
+    # Fallback to JSON file
     if not os.path.exists(DATA_FILE):
         return jsonify({"elements": [], "zoom": 1, "scroll": {"x": 0, "y": 0}, "info": "initial", "status": status_info}), 200
     try:
@@ -131,6 +196,22 @@ def save_menu():
         return jsonify({"error": "Request body is required"}), 400
     if not validate_schema(data):
         return jsonify({"error": "Invalid schema"}), 400
+    
+    db_success = False
+    # Try Database first
+    conn = get_db_connection()
+    if conn:
+        try:
+            with conn.cursor() as cur:
+                cur.execute("INSERT INTO sessions (canvas_json) VALUES (%s)", (json.dumps(data),))
+                conn.commit()
+                db_success = True
+        except Exception as e:
+            print(f"[DB] Save failed: {e}")
+        finally:
+            conn.close()
+
+    # Always fallback/sync to JSON file for safety
     try:
         timestamp = None
         if not os.path.exists(BACKUP_DIR):
@@ -144,9 +225,13 @@ def save_menu():
             json.dump(data, f, indent=4)
         os.replace(temp_file, DATA_FILE)
         prune_backups(BACKUP_DIR)
-        return jsonify({"status": "success", "backup": f"menu_data_{timestamp}.json" if timestamp else None}), 200
+        return jsonify({
+            "status": "success", 
+            "db_saved": db_success,
+            "backup": f"menu_data_{timestamp}.json" if timestamp else None
+        }), 200
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e), "db_saved": db_success}), 500
 
 @app.route("/api/menu/reset", methods=["POST"])
 def reset_menu():
@@ -302,58 +387,77 @@ def upload_image():
         data = request.json
         if not data:
             return jsonify({"error": "Request body is required"}), 400
+        
         filename = os.path.basename(data.get("filename", f"upload_{int(datetime.now().timestamp())}.png"))
         allowed_extensions = {".png", ".jpg", ".jpeg", ".webp"}
         ext = os.path.splitext(filename)[1].lower()
         if ext not in allowed_extensions:
             return jsonify({"error": "Invalid file type"}), 400
-        # Support both 'image' and 'data' keys for maximum compatibility
+            
         img_data = data.get("data") or data.get("image", "")
         if not img_data:
             return jsonify({"error": "No image data provided"}), 400
+            
         if "," in img_data:
             img_data = img_data.split(",")[1]
+            
         try:
             decoded = base64.b64decode(img_data)
         except Exception:
             return jsonify({"error": "Invalid base64 image data"}), 400
+            
         if not any(decoded[:len(sig)] == sig for sig in MAGIC_BYTES):
             return jsonify({"error": "File content does not match a supported image type"}), 400
-        # AI-generated images (prefixed "ai-") go to the persistent volume.
-        # All other uploads stay in IMAGES_DIR (template asset folder).
-        if filename.startswith("ai-"):
-            save_dir = USER_IMAGES_DIR
-            url_prefix = "/user-images"
-        else:
-            save_dir = IMAGES_DIR
-            url_prefix = "/Images"
-        filepath = os.path.join(save_dir, filename)
-        if os.path.exists(filepath):
-            name, ext = os.path.splitext(filename)
-            counter = 1
-            while os.path.exists(os.path.join(save_dir, f"{name}_{counter}{ext}")):
-                counter += 1
-                if counter > 999:
-                    return jsonify({"error": "Too many files with the same name"}), 409
-            filename = f"{name}_{counter}{ext}"
-            filepath = os.path.join(save_dir, filename)
-        with open(filepath, "wb") as f:
-            f.write(decoded)
-        
-        # FIX: For non-AI uploads, return the base64 data URI as the primary URL.
-        # This ensures the asset persists in the session JSON even if Railway wipes the file.
-        final_url = f"{url_prefix}/{filename}"
-        if not filename.startswith("ai-"):
-            # Re-construct the data URI from the original input if possible, or from decoded bytes
-            mime_type = "image/png"
-            if ext == ".jpg" or ext == ".jpeg": mime_type = "image/jpeg"
-            elif ext == ".webp": mime_type = "image/webp"
-            
-            # We use the base64 data as the source of truth for persistence
-            data_uri = f"data:{mime_type};base64,{img_data}"
-            final_url = data_uri
 
-        # Trigger migration automatically after successful upload
+        # NEW: Upload to Cloudinary immediately for all uploads
+        # We use the existing credentials from the request if provided, otherwise we look for env vars
+        creds = data.get("credentials") or {
+            "cloud_name": os.environ.get("CLOUDINARY_CLOUD_NAME"),
+            "api_key": os.environ.get("CLOUDINARY_API_KEY"),
+            "api_secret": os.environ.get("CLOUDINARY_API_SECRET")
+        }
+        
+        if not all([creds.get("cloud_name"), creds.get("api_key"), creds.get("api_secret")]):
+            return jsonify({"error": "Cloudinary credentials missing"}), 400
+
+        client = _http()
+        timestamp = int(time.time())
+        params = {"folder": "nymk_uploads", "timestamp": timestamp}
+        sig = cloudinary_sign(params, creds["api_secret"])
+        
+        upload_files = {
+            "file": (filename, decoded, f"image/{ext[1:] if ext[1:] != 'jpg' else 'jpeg'}"),
+            "api_key": (None, creds["api_key"]),
+            "timestamp": (None, str(timestamp)),
+            "signature": (None, sig),
+            "folder": (None, "nymk_uploads")
+        }
+        
+        upload_url = f"https://api.cloudinary.com/v1_1/{creds['cloud_name']}/image/upload"
+        resp = client.post(upload_url, files=upload_files, timeout=60)
+        
+        if resp.status_code not in (200, 201):
+            return jsonify({"error": f"Cloudinary upload failed: {resp.text}"}), 400
+            
+        cloudinary_url = resp.json().get("secure_url")
+        asset_id = f"asset_{int(time.time())}"
+        
+        # Store in Database
+        conn = get_db_connection()
+        if conn:
+            try:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "INSERT INTO assets (id, name, cloudinary_url) VALUES (%s, %s, %s)",
+                        (asset_id, filename, cloudinary_url)
+                    )
+                    conn.commit()
+            except Exception as e:
+                print(f"[DB] Asset save failed: {e}")
+            finally:
+                conn.close()
+
+        # Trigger migration automatically
         try:
             migrate_asset_internal()
         except Exception as migrate_err:
@@ -362,8 +466,9 @@ def upload_image():
         return jsonify({
             "status": "ok",
             "filename": filename,
-            "url": final_url,
-            "storage": {"originalUrl": final_url}
+            "url": cloudinary_url,
+            "assetId": asset_id,
+            "storage": {"originalUrl": cloudinary_url}
         }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
