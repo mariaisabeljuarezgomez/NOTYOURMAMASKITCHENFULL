@@ -114,6 +114,20 @@ def init_db():
             """)
             conn.commit()
             print("[DB] Tables initialized successfully")
+
+            # One-time migration: If DB is empty but JSON exists, migrate it
+            cur.execute("SELECT COUNT(*) FROM sessions")
+            if cur.fetchone()[0] == 0 and os.path.exists(DATA_FILE):
+                try:
+                    with open(DATA_FILE, "r", encoding="utf-8") as f:
+                        json_data = json.load(f)
+                    if validate_schema(json_data):
+                        cur.execute("INSERT INTO sessions (canvas_json) VALUES (%s)", (json.dumps(json_data),))
+                        conn.commit()
+                        print("[DB] Successfully migrated existing menu_data.json to PostgreSQL")
+                except Exception as migrate_err:
+                    print(f"[DB] Migration from JSON failed: {migrate_err}")
+
     except Exception as e:
         print(f"[DB] Initialization failed: {e}")
     finally:
