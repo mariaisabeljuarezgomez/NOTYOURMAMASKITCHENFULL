@@ -2207,7 +2207,6 @@ function onCanvasMousedown(e) {
     const hits = docV2.elements.filter(el => {
       if (el.locked) return false;
       // Allow background selection in lasso
-      // if (el.isSystemBackground === true) return false;
       const ex2 = el.x + (el.width || 80);
       const ey2 = el.y + (el.height || 20);
       return el.x < lx2 && ex2 > lx1 && el.y < ly2 && ey2 > ly1;
