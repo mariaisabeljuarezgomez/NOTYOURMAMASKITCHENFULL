@@ -545,6 +545,40 @@ def migrate_asset_route():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/repair-images", methods=["POST"])
+def repair_images():
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"error": "No DB"}), 500
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("SELECT id, canvas_json FROM sessions ORDER BY id DESC LIMIT 1")
+            row = cur.fetchone()
+            if not row:
+                return jsonify({"error": "No session found"}), 404
+            data = row['canvas_json']
+            fixed = 0
+            for el in data.get("elements", []):
+                src = el.get("src", "")
+                if src and not src.startswith("http") and not src.startswith("data:"):
+                    el["src"] = ""
+                    el["assetId"] = ""
+                    fixed += 1
+            for a in data.get("assets", []):
+                url = (a.get("storage") or {}).get("originalUrl", "") or a.get("src","")
+                if url and not url.startswith("http") and not url.startswith("data:"):
+                    if a.get("storage"):
+                        a["storage"]["originalUrl"] = ""
+                    a["src"] = ""
+                    fixed += 1
+            cur.execute("INSERT INTO sessions (canvas_json) VALUES (%s)", (json.dumps(data),))
+            conn.commit()
+        return jsonify({"status": "ok", "fixed": fixed}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
 @app.route("/api/delete-asset/<filename>", methods=["DELETE"])
 def delete_asset(filename):
     try:
