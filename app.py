@@ -339,7 +339,20 @@ def upload_image():
             filepath = os.path.join(save_dir, filename)
         with open(filepath, "wb") as f:
             f.write(decoded)
+        
+        # FIX: For non-AI uploads, return the base64 data URI as the primary URL.
+        # This ensures the asset persists in the session JSON even if Railway wipes the file.
         final_url = f"{url_prefix}/{filename}"
+        if not filename.startswith("ai-"):
+            # Re-construct the data URI from the original input if possible, or from decoded bytes
+            mime_type = "image/png"
+            if ext == ".jpg" or ext == ".jpeg": mime_type = "image/jpeg"
+            elif ext == ".webp": mime_type = "image/webp"
+            
+            # We use the base64 data as the source of truth for persistence
+            data_uri = f"data:{mime_type};base64,{img_data}"
+            final_url = data_uri
+
         return jsonify({
             "status": "ok",
             "filename": filename,
