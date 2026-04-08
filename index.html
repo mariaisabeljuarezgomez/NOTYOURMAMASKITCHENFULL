@@ -1288,9 +1288,10 @@ function render() {
             let resolvedSrc = d.src || '';
             if (d.assetId) {
                 const asset = (docV2.assets || []).find(a => a.id === d.assetId);
-                if (asset) resolvedSrc = asset.storage.previewUrl || asset.storage.originalUrl;
+                if (asset) resolvedSrc = asset.storage?.previewUrl || asset.storage?.originalUrl || d.src || '';
             }
             imgEl.src = resolvedSrc;
+            imgEl.onerror = () => { imgEl.style.opacity = '0.3'; imgEl.alt = '⚠️ Asset not found: ' + resolvedSrc; };
             
             imgEl.style.width = '100%';
             imgEl.style.height = '100%';
@@ -1346,7 +1347,7 @@ function render() {
         }
 
         if(d.locked) el.classList.add('locked');
-        if(!d.visible) el.classList.add('hidden-editor');
+        if(d.visible === false) el.classList.add('hidden-editor');
         if(selectedId === d.id) el.classList.add('selected');
         if((docV2.editorState.selectedElementIds || []).includes(d.id)) el.classList.add('multi-selected');
         
