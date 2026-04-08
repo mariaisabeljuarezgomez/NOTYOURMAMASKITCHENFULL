@@ -353,12 +353,70 @@ def upload_image():
             data_uri = f"data:{mime_type};base64,{img_data}"
             final_url = data_uri
 
+        # Trigger migration automatically after successful upload
+        try:
+            migrate_asset_internal()
+        except Exception as migrate_err:
+            print(f"Auto-migration failed: {migrate_err}")
+
         return jsonify({
             "status": "ok",
             "filename": filename,
             "url": final_url,
             "storage": {"originalUrl": final_url}
         }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+def migrate_asset_internal():
+    """Internal logic to migrate broken Asset2_1.png references to the latest asset."""
+    if not os.path.exists(DATA_FILE):
+        return False
+    
+    with open(DATA_FILE, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    
+    assets = data.get("assets", [])
+    if not assets:
+        return False
+    
+    # The "new" asset is the most recent one in the registry
+    new_asset = assets[-1]
+    new_id = new_asset.get("id")
+    new_url = (new_asset.get("storage") or {}).get("originalUrl") or new_asset.get("src")
+    
+    if not new_id or not new_url:
+        return False
+
+    modified = False
+    elements = data.get("elements", [])
+    for el in elements:
+        # Check for broken filename in src OR old assetId references
+        # We specifically target "Asset2_1.png" as requested
+        src = el.get("src", "")
+        asset_id = el.get("assetId", "")
+        
+        is_broken_src = "Asset2_1.png" in src
+        # If we don't have the old broken asset ID, we rely on the src check
+        # But we also update any element that might be pointing to a missing asset if it matches the broken pattern
+        
+        if is_broken_src:
+            el["src"] = new_url
+            el["assetId"] = new_id
+            modified = True
+            
+    if modified:
+        with open(DATA_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=4)
+        return True
+    return False
+
+@app.route("/api/migrate-asset", methods=["POST"])
+def migrate_asset_route():
+    """Public endpoint to manually trigger the Asset2_1.png migration."""
+    try:
+        success = migrate_asset_internal()
+        return jsonify({"status": "success" if success else "no_changes"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
