@@ -1184,7 +1184,7 @@ function undo() {
     // If the selected element was removed in the undone state, deselect
     if(selectedId) {
         const item = docV2.elements.find(e => e.id === selectedId);
-        if(!item || item.locked || (docV2.settings?.backgroundLayerLocked && item.layerRole === 'background')) {
+        if(!item || item.locked || item.isSystemBackground === true) {
             selectedId = null;
         }
     }
@@ -1296,7 +1296,7 @@ function render() {
     const bg = document.getElementById('menu-bg'); 
     if(bg) {
         bg.classList.toggle('legacy-bg-hidden', docV2.settings?.legacyBgVisible === false);
-        const bgEl = docV2.elements.find(e => e.layerRole === 'background');
+        const bgEl = docV2.elements.find(e => e.isSystemBackground === true);
         let newSrc = 'menu-bg-preview.jpg';
         if (bgEl && bgEl.src && bgEl.src !== '' && !bgEl.src.endsWith('menu-bg-preview.jpg') && !bgEl.src.endsWith('menu-bg.png')) {
             newSrc = bgEl.src;
@@ -1535,7 +1535,7 @@ function renderLayerList() {
 
         div.onclick = (e) => { 
             e.stopPropagation(); 
-            if (item.locked || (docV2.settings?.backgroundLayerLocked && item.layerRole === 'background')) return;
+            if (item.isSystemBackground === true) return;
             selectById(item.id); 
         };
         
@@ -1624,7 +1624,7 @@ function injectResizeHandles(el) {
             h.onpointerdown = (e) => {
                 e.stopPropagation(); e.preventDefault();
                 h.setPointerCapture(e.pointerId);
-                if (item.locked || (docV2.settings.backgroundLayerLocked && item.layerRole === 'background')) return;
+                if (item.isSystemBackground === true) return;
                 pushState();
                 const startMX = e.clientX, startMY = e.clientY;
                 const startPX = item[ep.xProp] || 0, startPY = item[ep.yProp] || 0;
@@ -1673,7 +1673,7 @@ function injectResizeHandles(el) {
         h.onpointerdown = (e) => {
             e.stopPropagation(); e.preventDefault();
             h.setPointerCapture(e.pointerId);
-            if (!item || item.locked || (docV2.settings.backgroundLayerLocked && item.layerRole === 'background')) return;
+            if (!item || item.locked || item.isSystemBackground === true) return;
             pushState();
             const startX = e.clientX, startY = e.clientY;
             const startW = item.width || el.offsetWidth || 100;
@@ -1747,7 +1747,7 @@ function attach(el) {
         // e.stopPropagation(); removed to allow bubbling to viewport lasso listener
         const _itemData = d(el);
         // If locked or background role — completely ignore click, do not select
-        if (!_itemData || _itemData.locked || (docV2.settings.backgroundLayerLocked && _itemData.layerRole === 'background')) {
+        if (_itemData.isSystemBackground === true) {
             deselect();
             return;
         }
@@ -2211,7 +2211,7 @@ function onCanvasMousedown(e) {
     const ly2 = (Math.max(ue.clientY, startY) - sRect.top)  / scale;
     const hits = docV2.elements.filter(el => {
       if (el.locked) return false;
-      if (docV2.settings?.backgroundLayerLocked && el.layerRole === 'background') return false;
+      if (el.isSystemBackground === true) return false;
       const ex2 = el.x + (el.width || 80);
       const ey2 = el.y + (el.height || 20);
       return el.x < lx2 && ex2 > lx1 && el.y < ly2 && ey2 > ly1;
@@ -2941,6 +2941,7 @@ function setAsBackground(src) {
         bgLayer.x = 0; bgLayer.y = 0;
         bgLayer.width = BASE_W; bgLayer.height = BASE_H;
         bgLayer.locked = true;
+        bgLayer.isSystemBackground = true;
         bgLayer.visible = true;
         bgLayer.opacity = 1;
         bgLayer.rotation = 0;
@@ -2958,6 +2959,7 @@ function setAsBackground(src) {
             rotation: 0,
             visible: true,
             locked: true,
+            isSystemBackground: true,
             layerRole: 'background'
         };
         docV2.elements.push(bgLayer);
@@ -3006,13 +3008,20 @@ async function setSelectedAsBackground() {
     bgLayer.opacity = 1;
     bgLayer.rotation = 0;
     bgLayer.visible = true;
-    bgLayer.locked = true;
-
-    // Deselect original image (it stays according to user request)
-    selectedId = null;
-
+    item.layerRole = 'background';
+    item.x = 0;
+    item.y = 0;
+    item.width = BASE_W;
+    item.height = BASE_H;
+    item.rotation = 0;
+    item.visible = true;
+    item.locked = false;
+    const minZ = Math.min(...docV2.elements.map(e => e.zIndex || 10));
+    item.zIndex = minZ <= 0 ? minZ - 1 : 0;
+    selectedId = item.id;
     render();
-    showToast("✅ Selected image promoted to background (locked)");
+    renderLayerList();
+    showToast("✅ Image set as background layer — still moveable & selectable!");
 }
 
 async function renderAssetPanel() {
@@ -3485,7 +3494,7 @@ async function exportPng() {
         canvas.width = TARGET_W;
         canvas.height = Math.round(BASE_H * S);
         const ctx = canvas.getContext('2d');
-        const bgEl = docV2.elements.find(e => e.layerRole === 'background');
+        const bgEl = docV2.elements.find(e => e.isSystemBackground === true);
         let bgSrc = "menu-bg.png";
         if (bgEl && bgEl.src && bgEl.src !== '' && !bgEl.src.endsWith('menu-bg-preview.jpg') && !bgEl.src.endsWith('menu-bg.png')) {
             bgSrc = bgEl.src;
@@ -3818,7 +3827,7 @@ window.addEventListener('keydown', (e) => {
         const selectable = docV2.elements.filter(el =>
             !el.locked &&
             el.visible &&
-            !(docV2.settings.backgroundLayerLocked && el.layerRole === 'background')
+            !(el.isSystemBackground === true)
         );
         if (selectable.length > 0) {
             docV2.editorState.selectedElementIds = selectable.map(el => el.id);
