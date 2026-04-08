@@ -127,7 +127,7 @@ def init_db():
                         print(f"[DB] Attempting migration from {migration_path}")
                         with open(migration_path, "r", encoding="utf-8") as f:
                             json_data = json.load(f)
-                        if validate_schema(json_data):
+                        if isinstance(json_data, dict) and isinstance(json_data.get("elements"), list):
                             cur.execute("INSERT INTO sessions (canvas_json) VALUES (%s)", (json.dumps(json_data),))
                             conn.commit()
                             print(f"[DB] Successfully migrated {migration_path} to PostgreSQL")
