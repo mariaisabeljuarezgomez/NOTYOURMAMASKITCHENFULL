@@ -21,7 +21,7 @@ EVERY function that saves anything to the server MUST:
 Violations of this rule cause silent 400 errors and data loss.
 
 ---
-**Last Updated:** March 29, 2026  
+**Last Updated:** April 8, 2026  
 **Prepared by:** MARIAS DIGITAL DESIGNS  
 **Live URL:** https://web-production-3e17d.up.railway.app/  
 **GitHub Repo:** https://github.com/mariaisabeljuarezgomez/NOTYOURMAMASKITCHENFULL  
@@ -380,6 +380,75 @@ Users need both: stepwise undo for immediate mistakes, and full restore for deli
 
 ---
 
+## 6B. ⛔ CRITICAL SAFETY RULES FOR ALL AGENTS — READ BEFORE TOUCHING ANY ELEMENT, IMAGE, OR ASSET
+
+These two rules exist because past agent mistakes caused permanent data loss and broken sessions. Both rules are NON-NEGOTIABLE.
+
+---
+
+### RULE A — NEVER RENAME, REPLACE, OR RE-ASSIGN `assetId` OR `id` WITHOUT A FULL IMPACT AUDIT
+
+**Why this exists:**
+Every element in `docV2.elements[]` has two identity fields:
+- `id` — the unique runtime identity of that element (e.g. `"el_1710645000000_abc"`). The undo stack, selection state, layer panel, and all editor functions reference elements exclusively by this id. Renaming it mid-session destroys undo history, breaks selection, and causes ghost elements.
+- `assetId` — the registry key linking an element to its source asset (e.g. `"asset_007"`). The asset panel, export pipeline, and save/load round-trip all use this key to resolve image `src`. If you change `assetId` without updating the corresponding entry in `docV2.assets[]`, the image becomes a broken reference permanently — even after Save/Load.
+
+**The rule:**
+> ⛔ NEVER change an element's `id` or `assetId` unless you are explicitly performing a migration task AND you have audited every reference to that id/assetId in the full codebase first.
+
+**What you must check before renaming:**
+1. Search `index.html` for ALL uses of that `id` string — undo stack snapshots, selectedId, multi-select arrays, layer panel renders
+2. Search `docV2.assets[]` for the matching `assetId` entry — the `src`, `filename`, and `cloudUrl` fields must stay in sync
+3. If the session is currently live (Railway), a rename that doesn't match the server-saved JSON will silently break Load Session on next page load
+
+**Safe pattern:**
+- Add new fields, don't rename existing ones
+- If you must rename, write a one-time migration function that updates ALL references atomically in a single `pushState()` → mutate → `render()` pass
+
+---
+
+### RULE B — BACKGROUND LAYER IDENTITY: TWO TYPES EXIST, THEY BEHAVE DIFFERENTLY
+
+**Why this exists:**
+The background system has two distinct element types that share `layerRole: 'background'` but have completely different behavior contracts. Confusing them caused a full editor lockout bug (April 2026) where user-promoted background images became permanently unselectable and uneditable.
+
+**The two background types:**
+
+| Property | System Background | User Background Layer |
+|---|---|---|
+| Created by | **Replace Background** button | **🖼️ BG** button (setSelectedAsBackground) |
+| `isSystemBackground` | `true` | absent / `false` |
+| `locked` | `true` | `false` |
+| Selectable in editor | ❌ No | ✅ Yes |
+| Routes through `#menu-bg` img tag | ✅ Yes | ❌ No — renders as normal element |
+| Moveable / resizable | ❌ No | ✅ Yes |
+| Deleteable by user | ❌ Only via Replace BG | ✅ Yes |
+
+**The rule:**
+> ⛔ NEVER use `layerRole === 'background'` as the sole guard for locking, hiding, or blocking interaction. You MUST check `isSystemBackground === true` instead. Elements with `layerRole: 'background'` but WITHOUT `isSystemBackground: true` are regular moveable elements that happen to sit at the bottom of the z-stack.
+
+**Guard pattern all agents must use:**
+```javascript
+// ✅ CORRECT — only blocks the true system background
+if (item.isSystemBackground === true) return;
+
+// ❌ WRONG — blocks ALL background-role elements including user-moveable ones
+if (docV2.settings.backgroundLayerLocked && item.layerRole === 'background') return;
+```
+
+**Where this pattern is enforced (April 2026 patch):**
+- `undo()` re-selection guard
+- `render()` bg src routing (only `isSystemBackground` elements route through `#menu-bg`)
+- `renderLayerList()` click guard
+- `onCanvasMousedown()` selection guard
+- Resize handle drag guard
+- Lasso selection filter
+- Select-All filter
+- `setAsBackground()` — always sets `isSystemBackground: true`
+- `setSelectedAsBackground()` — never sets `isSystemBackground`
+
+---
+
 ## 7. UI Vocabulary — Standard Terms (Never Substitute Synonyms)
 
 | Official Term | Meaning |
@@ -413,6 +482,8 @@ Users need both: stepwise undo for immediate mistakes, and full restore for deli
 10. **Marking a task done before verifying on GitHub** — use direct file read, not code search
 11. **Patching index.html and not updating this doc** — documentation drift caused a week of wasted work
 12. **Making mobile gestures "smart but ambiguous"** — the conservative lock model is a strength
+13. **Using `layerRole === 'background'` as a lock/block guard** — always use `isSystemBackground === true` instead. The background role alone no longer implies locking.
+14. **Renaming element `id` or `assetId` without a full reference audit** — the undo stack, asset registry, selection state, and server-saved JSON all reference these by exact string match. A rename without auditing all usages silently breaks sessions.
 
 ---
 
@@ -467,11 +538,15 @@ Users need both: stepwise undo for immediate mistakes, and full restore for deli
   "src": "/user-images/logo.png",
   "assetId": "asset_007",
   "originalWidth": 800,
-  "originalHeight": 600
+  "originalHeight": 600,
+  "layerRole": "background",
+  "isSystemBackground": true
 }
 ```
 - `src` is the export source of truth — always same-origin
-- `assetId` references the asset registry entry
+- `assetId` references the asset registry entry — **never rename without full impact audit (see Rule A in Section 6B)**
+- `layerRole: "background"` marks the element as a background layer for z-ordering
+- `isSystemBackground: true` — ONLY present on elements created by the **Replace Background** button. This flag is what ALL editor guards check to decide whether to lock/hide the element. Elements with `layerRole: 'background'` but WITHOUT this flag are fully moveable user-promoted background images. See Section 6B Rule B.
 
 ### 9.5 Shape/Rectangle Element (extends base)
 ```json
