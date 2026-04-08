@@ -3005,7 +3005,10 @@ async function trimTransparentPixels(src) {
             out.getContext('2d').drawImage(canvas, left, top, trimW, trimH, 0, 0, trimW, trimH);
             resolve(out.toDataURL('image/png'));
         };
-        img.onerror = () => resolve(src);
+        img.onerror = () => {
+            console.error("Trim failed, using original src (caution: may be transient blob)");
+            resolve(src);
+        };
         img.crossOrigin = 'anonymous';
         img.src = src;
     });
@@ -3081,7 +3084,7 @@ async function importImg(input) {
                 return;
             }
         } catch(err) { console.error(err); }
-        // Fallback to legacy behavior if server fails
+        // Fallback to legacy behavior if server fails. base64Data is already persistent.
         addFromAsset(null, base64Data);
     };
     r.readAsDataURL(f);
@@ -3231,6 +3234,7 @@ async function renderAssetPanel() {
             img.setAttribute('loading', 'lazy');
             img.width = 80;
             img.height = 80;
+            // Ensure we use a persistent URL (server path or base64), never a temporary blob URL
             img.onclick = () => addFromAsset(asset.id, url);
             
             // Add "Use as Kling reference" button for ALL assets
