@@ -1624,7 +1624,6 @@ function injectResizeHandles(el) {
             h.onpointerdown = (e) => {
                 e.stopPropagation(); e.preventDefault();
                 h.setPointerCapture(e.pointerId);
-                // if (item.isSystemBackground === true) return;
                 pushState();
                 const startMX = e.clientX, startMY = e.clientY;
                 const startPX = item[ep.xProp] || 0, startPY = item[ep.yProp] || 0;
@@ -1746,11 +1745,7 @@ function attach(el) {
         console.log("Element Mousedown:", el.id);
         // e.stopPropagation(); removed to allow bubbling to viewport lasso listener
         const _itemData = d(el);
-        // Background images are now selectable
-        // if (_itemData.isSystemBackground === true) {
-        //    deselect();
-        //    return;
-        // }
+
         
         docV2.editorState.selectedElementIds = docV2.editorState.selectedElementIds || [];
         if (e.shiftKey) {
