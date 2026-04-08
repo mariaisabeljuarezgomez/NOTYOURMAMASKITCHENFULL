@@ -115,18 +115,24 @@ def init_db():
             conn.commit()
             print("[DB] Tables initialized successfully")
 
-            # One-time migration: If DB is empty but JSON exists, migrate it
+            # One-time migration: If DB is empty, try to migrate from Railway volume
             cur.execute("SELECT COUNT(*) FROM sessions")
-            if cur.fetchone()[0] == 0 and os.path.exists(DATA_FILE):
-                try:
-                    with open(DATA_FILE, "r", encoding="utf-8") as f:
-                        json_data = json.load(f)
-                    if validate_schema(json_data):
-                        cur.execute("INSERT INTO sessions (canvas_json) VALUES (%s)", (json.dumps(json_data),))
-                        conn.commit()
-                        print("[DB] Successfully migrated existing menu_data.json to PostgreSQL")
-                except Exception as migrate_err:
-                    print(f"[DB] Migration from JSON failed: {migrate_err}")
+            if cur.fetchone()[0] == 0:
+                # Prioritize the Railway volume path specifically
+                railway_volume_path = "/app/data/menu_data.json"
+                migration_path = railway_volume_path if os.path.exists(railway_volume_path) else DATA_FILE
+                
+                if os.path.exists(migration_path):
+                    try:
+                        print(f"[DB] Attempting migration from {migration_path}")
+                        with open(migration_path, "r", encoding="utf-8") as f:
+                            json_data = json.load(f)
+                        if validate_schema(json_data):
+                            cur.execute("INSERT INTO sessions (canvas_json) VALUES (%s)", (json.dumps(json_data),))
+                            conn.commit()
+                            print(f"[DB] Successfully migrated {migration_path} to PostgreSQL")
+                    except Exception as migrate_err:
+                        print(f"[DB] Migration from {migration_path} failed: {migrate_err}")
 
     except Exception as e:
         print(f"[DB] Initialization failed: {e}")
