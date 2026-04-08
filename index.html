@@ -3374,7 +3374,7 @@ async function loadUserImages() {
                         (docV2.assets || []).filter(a => a.id.startsWith('asset_0')).length + i + 1
                     ).padStart(3, '0'),
                 kind: 'image',
-                name: img.filename.replace(/\.[^/.]+$/, ''),
+                name: img.filename.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9._-]/g, '_'),
                 storage: {
                     originalUrl: img.url,
                     previewUrl: null,        // ALWAYS null — never set to real URL
@@ -5055,7 +5055,7 @@ async function saveAiImageToAssets(b64, prompt, urlOverride) {
     const newAsset = {
       id: 'asset_ai_' + Date.now(),
       kind: 'image',
-      name: prompt ? prompt.substring(0, 40) : 'AI Image',
+      name: prompt ? prompt.substring(0, 40).replace(/[^a-zA-Z0-9._-]/g, '_') : 'AI_Image',
       storage: { originalUrl: assetUrl, previewUrl: null, thumbnailUrl: null }
     };
     if (!docV2.assets) docV2.assets = [];
