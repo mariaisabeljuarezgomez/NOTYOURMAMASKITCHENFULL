@@ -36,35 +36,11 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 .ctrl-btn:hover { background:#444; }
 .ctrl-btn.active { background:var(--primary); border-color:var(--accent); }
 
-#top-header { position:fixed; top:0; left:0; right:0; height:160px; background:rgba(0,0,0,0.95); backdrop-filter:blur(10px); display:flex; flex-direction:column; z-index:1000; border-bottom:1px solid #333; }
-.header-top { height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid #222; width: 100%; }
-.top-ribbon { height: 110px; background: #111; display: flex; flex-direction: column; padding: 5px 15px; gap: 5px; width: 100%; box-sizing: border-box; }
-.ribbon-row { display: flex; align-items: center; gap: 10px; height: 50px; width: 100%; overflow-x: auto; scrollbar-width: none; }
-.ribbon-row::-webkit-scrollbar { display: none; }
-.ribbon-group { display: flex; align-items: center; gap: 6px; padding: 0 10px; border-right: 1px solid #333; height: 36px; flex-shrink: 0; }
-.ribbon-group:last-child { border-right: none; }
-.ribbon-label { font-size: 9px; color: #777; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-right: 2px; }
-.ribbon-input { background: #1a1a1a; border: 1px solid #444; color: var(--accent); padding: 4px 8px; border-radius: 6px; font-size: 12px; outline: none; }
-.ribbon-btn { background: #222; border: 1px solid #333; color: #fff; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; font-size: 13px; }
-.ribbon-btn:hover { background: #333; border-color: var(--accent); }
-.ribbon-btn.active { background: var(--primary); color: #fff; border-color: var(--accent); }
+#top-header { position:fixed; top:0; left:0; right:0; height:60px; background:rgba(0,0,0,0.9); backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index:1000; border-bottom:1px solid #333; }
 #header-title { font-weight:700; font-size:16px; letter-spacing:1px; color:var(--accent); }
 .header-actions { display:flex; gap:10px; align-items:center; }
 
-#editor-viewport { 
-    position:absolute; 
-    top:160px; 
-    left:0; 
-    right:0; 
-    bottom:0; 
-    overflow:auto; 
-    background:#111; 
-    background-image: radial-gradient(circle, #333 1px, transparent 1px);
-    background-size: 30px 30px;
-    display:flex; 
-    align-items:flex-start; 
-    justify-content:center; 
-}
+#editor-viewport { position:absolute; top:60px; left:0; right:0; bottom:0; overflow:auto; background:#111; display:flex; align-items:flex-start; justify-content:center; }
 #centering-wrapper { 
     padding: 100px; 
     display: flex; 
@@ -97,14 +73,13 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 .resize-handle {
     display: none;
     position: absolute;
-    width: 12px;
-    height: 12px;
-    background: #fff;
-    border: 2px solid var(--accent);
-    border-radius: 3px;
+    width: 20px;
+    height: 20px;
+    background: #f1c40f;
+    border: 2px solid #000;
+    border-radius: 50%;
     z-index: 9999;
     box-sizing: border-box;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 .editable-element.selected .resize-handle { display: block; }
 
@@ -200,26 +175,37 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 
 /* Selection Bar (Contextual) */
 /* Fix 2 & 3 - Moveable Toolbar & Horizontal Scroll */
-    #selection-bar { 
+#selection-bar { 
     position:fixed; 
     bottom:120px; 
     left:50%; 
     transform:translateX(-50%); 
-    background:rgba(20,20,20,0.75); 
-    backdrop-filter:blur(15px); 
-    padding:0 20px; 
-    border-radius:26px; 
+    background:rgba(0,0,0,0.95); 
+    backdrop-filter:blur(10px); 
+    padding:12px 20px; 
+    border-radius:50px; 
     display:none; 
     align-items:center; 
     gap:12px; 
     z-index:2000; 
-    box-shadow:0 10px 30px rgba(0,0,0,0.8); 
+    box-shadow:0 15px 40px rgba(0,0,0,0.8); 
     border:1px solid #444; 
-    width: auto !important;
-    height: 52px !important;
-    max-width: 95vw !important;
-    min-width: 200px;
-    overflow: hidden;
+    flex-wrap:nowrap; 
+    max-width: 90vw; 
+    overflow-x: auto; 
+    scrollbar-width: none; 
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+    #selection-bar {
+        left: 2vw !important;
+        right: 2vw !important;
+        transform: none !important;
+        width: 96vw;
+        bottom: 100px;
+        border-radius: 16px;
+    }
 }
 
 #bar-content {
@@ -227,12 +213,11 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     align-items:center; 
     gap:10px; 
     flex-grow:1; 
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none;
-    height: 100%;
+    overflow-x:auto; 
+    scrollbar-width:none;
+    -webkit-overflow-scrolling: touch; 
+    min-width: max-content;
 }
-#bar-content::-webkit-scrollbar { display: none; }
 .ctrl-group { 
     display:flex; 
     align-items:center; 
@@ -396,26 +381,26 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     }
 
     /* Distribution Bar */
-        #distribute-bar {
+    #distribute-bar {
         position: fixed;
-        bottom: 180px;
+        bottom: 180px;      /* sits above #selection-bar which is at bottom:120px */
         left: 50%;
         transform: translateX(-50%);
         display: none;
         align-items: center;
         gap: 10px;
         z-index: 2100;
-        background: rgba(0,0,0,0.95);
+        background: rgba(0,0,0,0.85);
         border: 1px solid #c8a96a;
-        border-radius: 20px;
-        padding: 4px 16px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-        width: auto !important;
-        height: 40px !important;
-        max-width: 95vw !important;
-        overflow: visible;
+        border-radius: 50px;
+        padding: 10px 18px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+        max-width: 90vw;
+        overflow-x: auto;
+        scrollbar-width: none;
     }
     #distribute-bar.show { display: flex !important; }
+    #distribute-bar::-webkit-scrollbar { display: none; }
     #distribute-bar input {
         background: #111;
         border: 1px solid #444;
@@ -447,7 +432,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 #editor-viewport { left: 220px !important; right: 260px !important; width: auto !important; }
 
 /* LEFT SIDEBAR */
-#left-sidebar { position:fixed; top:160px; left:0; width:220px; bottom:0; background:#1e1e1e; border-right:1px solid #333; display:flex; flex-direction:column; z-index:950; overflow:hidden; transition:transform 0.3s cubic-bezier(0.19,1,0.22,1); }
+#left-sidebar { position:fixed; top:60px; left:0; width:220px; bottom:0; background:#1e1e1e; border-right:1px solid #333; display:flex; flex-direction:column; z-index:950; overflow:hidden; transition:transform 0.3s cubic-bezier(0.19,1,0.22,1); }
 #left-sidebar.collapsed { transform:translateX(-220px); }
 #left-sidebar-toggle { position:absolute; top:50%; right:-14px; transform:translateY(-50%); width:14px; height:48px; background:#333; border:1px solid #444; border-left:none; color:#aaa; font-size:12px; cursor:pointer; border-radius:0 6px 6px 0; display:flex; align-items:center; justify-content:center; z-index:10; transition:background 0.2s; }
 #left-sidebar-toggle:hover { background:#444; color:#fff; }
@@ -457,7 +442,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 .ls-tab:hover { color:#ccc; background:#252525; }
 .ls-tab.active { color:var(--accent); border-bottom-color:var(--accent); background:#252525; }
 .ls-panel { flex:1; overflow-y:auto; padding:12px 10px; scrollbar-width:thin; scrollbar-color:#444 #1e1e1e; }
-.ls-section-title { font-size:11px; font-weight:800; color:#888; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid #333; }
+.ls-section-title { font-size:9px; font-weight:800; color:#666; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid #2a2a2a; }
 .ls-action-btn { width:100%; display:flex; align-items:center; gap:10px; padding:9px 10px; background:#2a2a2a; border:1px solid #333; border-radius:8px; color:#ccc; cursor:pointer; font-size:12px; font-weight:600; margin-bottom:6px; transition:0.2s; text-align:left; }
 .ls-action-btn:hover { background:#333; color:#fff; }
 .ls-action-btn.accent { background:var(--accent); color:#000; border-color:transparent; font-weight:700; }
@@ -482,7 +467,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 .asset-del-btn:hover { background: #e74c3c; transform: scale(1.1); }
 
 /* RIGHT PANEL */
-#right-panel { position:fixed; top:160px; right:0; width:260px; bottom:0; background:#1e1e1e; border-left:1px solid #333; display:flex; flex-direction:column; z-index:950; overflow:hidden; transition:transform 0.3s cubic-bezier(0.19,1,0.22,1); }
+#right-panel { position:fixed; top:60px; right:0; width:260px; bottom:0; background:#1e1e1e; border-left:1px solid #333; display:flex; flex-direction:column; z-index:950; overflow:hidden; transition:transform 0.3s cubic-bezier(0.19,1,0.22,1); }
 #right-panel.collapsed { transform:translateX(260px); }
 #right-panel-toggle { position:absolute; top:50%; left:-14px; transform:translateY(-50%); width:14px; height:48px; background:#333; border:1px solid #444; border-right:none; color:#aaa; font-size:12px; cursor:pointer; border-radius:6px 0 0 6px; display:flex; align-items:center; justify-content:center; z-index:10; transition:background 0.2s; }
 #right-panel-toggle:hover { background:#444; color:#fff; }
@@ -492,10 +477,10 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 .rp-tab:hover { color:#ccc; background:#252525; }
 .rp-tab.active { color:var(--accent); border-bottom-color:var(--accent); background:#252525; }
 .rp-panel { flex:1; overflow-y:auto; padding:14px 12px; scrollbar-width:thin; scrollbar-color:#444 #1e1e1e; }
-.rp-section-title { font-size:11px; font-weight:800; color:#888; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid #333; }
-.rp-label { display:block; font-size:10px; color:#999; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px; margin-top:10px; }
-.rp-input { width:100%; background:#111; border:1px solid #333; color:var(--accent); padding:10px 12px; border-radius:10px; font-size:11px; outline:none; box-sizing:border-box; transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-.rp-input:focus, .ribbon-input:focus { border-color:var(--accent); background:#000; box-shadow: inset 0 0 0 2px rgba(241,196,15,0.3); }
+.rp-section-title { font-size:9px; font-weight:800; color:#666; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid #2a2a2a; }
+.rp-label { display:block; font-size:9px; color:#777; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+.rp-input { width:100%; background:#111; border:1px solid #444; color:var(--accent); padding:8px 10px; border-radius:8px; font-size:11px; outline:none; box-sizing:border-box; }
+.rp-input:focus { border-color:var(--accent); background:#000; }
 .rp-clear-btn { margin-top:6px; background:#2a2a2a; border:1px solid #444; color:#888; border-radius:6px; padding:5px 12px; font-size:10px; cursor:pointer; transition:0.2s; }
 .rp-clear-btn:hover { background:#c0392b; color:#fff; border-color:transparent; }
 .rp-save-btn { width:100%; margin-top:20px; background:var(--primary); color:#fff; border:none; border-radius:8px; padding:12px; font-size:11px; font-weight:700; cursor:pointer; transition:0.2s; }
@@ -520,73 +505,12 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 <div id="toast-container"></div>
 <div id="smart-tooltip"></div>
 <div id="top-header">
-    <div class="header-top">
-        <div id="header-title">NOT YOUR MAMA'S KITCHEN — EDITOR PRO V2</div>
-        <div class="header-actions">
-            <button id="btn-save-header" class="btn-ui" onclick="save()" data-help="Saves your current layout to the server and browser backup" style="background:#1e8449; border-color:#2ecc71; color:#fff;">💾 Save Session</button>
-            <button id="btn-undo" class="btn-ui" onclick="undo()" title="Undo Last Change" data-help="Reverses your last action (move, edit, delete, etc.)">↺ Undo Last Change</button>
-            <button id="btn-lock-bg" class="btn-ui" onclick="toggleBgLock()" data-help="Toggle the background layer lock to move or delete promoted background images.">🔒 Unlock BG</button>
-            <button id="btn-lock-global" class="btn-ui primary" onclick="toggleGlobalLock()" data-help="When locked, elements cannot be moved or edited — click to unlock for editing">🔒 Layout Locked</button>
-            <button id="btn-reload" class="btn-ui" onclick="location.reload()" data-help="Reloads the page to reset the session if needed.">↺ RELOAD</button>
-        </div>
-    </div>
-    <div class="top-ribbon">
-        <!-- ROW 1: DESIGN & STYLE (Dynamic) -->
-        <div class="ribbon-row" id="ribbon-design-row">
-            <div class="ribbon-group">
-                <span class="ribbon-label">View</span>
-                <button class="ribbon-btn" onclick="zoomOut()">-</button>
-                <span id="zoom-level" style="font-size:11px; min-width:35px; text-align:center;">100%</span>
-                <button class="ribbon-btn" onclick="zoomIn()">+</button>
-            </div>
-            <div class="ribbon-group">
-                <span class="ribbon-label">Guides</span>
-                <button class="ribbon-btn" id="btn-grid-toggle" onclick="toggleGrid()" title="Toggle Grid">#</button>
-                <button class="ribbon-btn" id="btn-snap-toggle" onclick="toggleSnap()" title="Toggle Snapping">🧲</button>
-            </div>
-            <div id="ribbon-context-ctrls" style="display:flex; align-items:center; height:100%;">
-                <!-- Contextual controls (Font, Color, etc.) injected here -->
-                <div style="color:#444; font-size:11px; padding-left:20px;">Select an element to see design tools</div>
-            </div>
-        </div>
-        <!-- ROW 2: ALIGN & ARRANGE (Always Visible) -->
-        <div class="ribbon-row" id="ribbon-arrange-row">
-            <div class="ribbon-group">
-                <span class="ribbon-label">Position</span>
-                <div style="display:flex; gap:4px; align-items:center;">
-                    <label class="ribbon-label">X</label><input type="number" id="ribbon-pos-x" class="ribbon-input" style="width:50px" onchange="updateProp('x', parseFloat(this.value))">
-                    <label class="ribbon-label">Y</label><input type="number" id="ribbon-pos-y" class="ribbon-input" style="width:50px" onchange="updateProp('y', parseFloat(this.value))">
-                </div>
-            </div>
-            <div class="ribbon-group" id="ribbon-size-group">
-                <span class="ribbon-label">Size</span>
-                <div style="display:flex; gap:4px; align-items:center;">
-                    <label class="ribbon-label">W</label><input type="number" id="ribbon-pos-w" class="ribbon-input" style="width:50px" onchange="setSizeFromInput('width', parseFloat(this.value))">
-                    <label class="ribbon-label">H</label><input type="number" id="ribbon-pos-h" class="ribbon-input" style="width:50px" onchange="setSizeFromInput('height', parseFloat(this.value))">
-                </div>
-            </div>
-            <div class="ribbon-group">
-                <span class="ribbon-label">Align</span>
-                <button class="ribbon-btn" onclick="alignSelected('left')" title="Align Left">⬛⫷</button>
-                <button class="ribbon-btn" onclick="alignSelected('centerH')" title="Center Horizontally">↔</button>
-                <button class="ribbon-btn" onclick="alignSelected('right')" title="Align Right">⫸⬛</button>
-                <button class="ribbon-btn" onclick="alignSelected('top')" title="Align Top">⬛▲</button>
-                <button class="ribbon-btn" onclick="alignSelected('centerV')" title="Center Vertically">↕</button>
-                <button class="ribbon-btn" onclick="alignSelected('bottom')" title="Align Bottom">▼⬛</button>
-            </div>
-            <div class="ribbon-group">
-                <span class="ribbon-label">Distribute</span>
-                <button class="ribbon-btn" onclick="distributeSelected('h')" title="Distribute Horizontally">⇔ H</button>
-                <button class="ribbon-btn" onclick="distributeSelected('v')" title="Distribute Vertically">⇕ V</button>
-            </div>
-            <div class="ribbon-group">
-                <span class="ribbon-label">Nudge</span>
-                <button class="ribbon-btn" onclick="nudge(0,-2)">▲</button>
-                <button class="ribbon-btn" onclick="nudge(0,2)">▼</button>
-                <button class="ribbon-btn" onclick="nudge(-2,0)">◀</button>
-                <button class="ribbon-btn" onclick="nudge(2,0)">▶</button>
-            </div>
-        </div>
+    <div id="header-title">MENU EDITOR PRO V2</div>
+    <div class="header-actions">
+        <button id="btn-save-header" class="btn-ui" onclick="save()" data-help="Saves your current layout to the server and browser backup" style="background:#1e8449; border-color:#2ecc71; color:#fff;">💾 Save Session</button>
+        <button id="btn-undo" class="btn-ui" onclick="undo()" title="Undo Last Change" data-help="Reverses your last action (move, edit, delete, etc.)">↺ Undo Last Change</button>
+        <button id="btn-lock-global" class="btn-ui primary" onclick="toggleGlobalLock()" data-help="When locked, elements cannot be moved or edited — click to unlock for editing">🔒 Layout Locked</button>
+        <button id="btn-reload" class="btn-ui" onclick="location.reload()" data-help="Reloads the page to reset the session if needed.">↺ RELOAD</button>
     </div>
 </div>
 
@@ -1030,19 +954,131 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 
 <div id="selection-bar">
     <div id="bar-handle" style="cursor:grab; padding:4px 8px; color:#666; font-size:18px; flex-shrink:0; touch-action:none;" title="Drag to move toolbar">⠿</div>
-    <div id="bar-content" style="display:flex; align-items:center; gap:10px; height: 100%;">
-        <!-- Quick Actions (Always Visible) -->
-        <div style="display:flex; align-items:center; gap:8px; padding-right:10px; border-right:1px solid #333;">
-            <button class="ctrl-btn" id="ctrl-lock" onclick="toggleItemLock()" title="Lock Layer">🔓</button>
-            <button class="ctrl-btn" id="ctrl-visible" onclick="toggleVisibility()" title="Show/Hide">👁️</button>
-            <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9;" onclick="duplicateEl()" title="Duplicate Layer">📋</button>
-            <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c;" onclick="deleteEl()" title="Delete Layer">🗑</button>
-        </div>
-        <!-- Contextual Quick Settings -->
-        <div id="bar-quick-settings" style="display:flex; align-items:center; gap:10px;">
+    <div style="display:flex; gap:6px; margin-right:10px; flex-shrink:0;">
+        <div class="bar-tab active" id="tab-layer" onclick="setBarTab('layer')" data-help="Controls visibility, opacity, rotation, and layer role">LAYER</div>
+        <div class="bar-tab" id="tab-design" onclick="setBarTab('design')" data-help="Controls font, color, line height, letter spacing (text) or corner radius and stroke (shapes)">DESIGN</div>
+        <div class="bar-tab" id="tab-arrange" onclick="setBarTab('arrange')" data-help="Controls position in the layer stack and center alignment">ARRANGE</div>
+    </div>
+
+    <div id="bar-content" style="display:flex; align-items:center; gap:10px; flex-grow:1; overflow-x:auto; scrollbar-width:none;">
+        <div id="bar-tab-layer" style="display:flex; align-items:center; gap:10px;">
+            <button class="ctrl-btn" id="ctrl-lock" onclick="toggleItemLock()" title="Lock Layer" data-help="Prevents the element from being moved or edited">🔓</button>
+            <button class="ctrl-btn" id="ctrl-visible" onclick="toggleVisibility()" title="Show/Hide" data-help="Hides or shows the element on the canvas">👁️</button>
+            <div class="ctrl-group"><label>Role</label><select id="sel-role" onchange="updateProp('layerRole', this.value)"><option value="content">Content</option><option value="background">Background</option><option value="overlay">Overlay</option></select></div>
             <div class="ctrl-group"><label>Opac</label><input type="range" id="sel-opacity" min="0" max="100" style="width:40px" oninput="updateProp('opacity', this.value/100)"></div>
             <div class="ctrl-group"><label>Rot</label><input type="range" id="sel-rotate" min="0" max="359" style="width:40px" oninput="updateProp('rotation', parseInt(this.value))"></div>
         </div>
+
+        <div id="bar-tab-design" style="display:none; align-items:center; gap:10px;">
+            <div id="geo-style-ctrls" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <div class="ctrl-group" id="ctrl-grp-fill"><label>Fill</label><input type="color" id="sel-fill-color" oninput="updateShapeFill(this.value)"></div>
+                <div class="ctrl-group" id="ctrl-grp-radius"><label>Rad</label><input type="range" id="sel-radius" min="0" max="200" style="width:40px" oninput="updateProp('cornerRadius', parseInt(this.value))"></div>
+                <div class="ctrl-group"><label id="stroke-label">Stroke</label><input type="number" id="sel-stroke-w" min="0" max="50" style="width:40px" onchange="updateProp('strokeWidth', parseInt(this.value))"><input type="color" id="sel-stroke-c" oninput="updateStrokeColorLive(this.value)"></div>
+                <div class="ctrl-group" id="ctrl-grp-outline"><button id="btn-outline-toggle" class="ctrl-btn" style="font-size:10px; padding:4px 10px; white-space:nowrap; width:auto;" onclick="toggleOutlineOnly()">Outline Only</button></div>
+                <div id="line-width-presets" class="ctrl-group" style="display:none;">
+                  <label style="font-size:9px; color:#777; font-weight:700;">Width</label>
+                  <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(0.25)">0.25</button>
+                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(0.5)">0.5</button>
+                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(1)">1</button>
+                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(1.25)">1.25</button>
+                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(1.5)">1.5</button>
+                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(2)">2</button>
+                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(3)">3</button>
+                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(4)">4</button>
+                  </div>
+                  <div style="display:flex; gap:6px; align-items:center; margin-top:4px;">
+                    <label style="font-size:9px;color:#777;font-weight:700;">Ends</label>
+                    <button id="btn-cap-butt"   class="ctrl-btn" style="width:auto;padding:2px 10px;font-size:10px;" onclick="setLineCap('butt')">Flat</button>
+                    <button id="btn-cap-round"  class="ctrl-btn" style="width:auto;padding:2px 10px;font-size:10px;" onclick="setLineCap('round')">Round</button>
+                    <button id="btn-cap-square" class="ctrl-btn" style="width:auto;padding:2px 10px;font-size:10px;" onclick="setLineCap('square')">Square</button>
+                  </div>
+                  <input type="number" id="sel-line-width-custom" min="0.1" max="50" step="0.25"
+                    style="width:50px; background:#111; border:1px solid #444; color:var(--accent); border-radius:6px; padding:4px 6px; font-size:11px; outline:none;"
+                    placeholder="px"
+                    onchange="setLineWidth(parseFloat(this.value))">
+                </div>
+            </div>
+            <div id="text-style-ctrls" style="display:none; align-items:center; gap:10px;">
+                <select id="sel-font" style="max-width:100px" onchange="updateStyle('fontFamily', this.value)"><option value="bernard-mt-condensed-regular">Bernard Mt Condensed Regular</option>
+<option value="century-gothic-bold">Century Gothic Bold</option>
+<option value="century-gothic-bold-italic">Century Gothic Bold Italic</option>
+<option value="century-gothic-regular">Century Gothic Regular</option>
+</select>
+                <input type="color" id="sel-color" onchange="updateStyle('color', this.value)">
+                <div class="ctrl-group">
+                  <label>Size</label>
+                  <input type="number" id="sel-font-size" min="4" max="400" step="1" style="width:52px"
+                    onchange="updateStyle('fontSize', parseFloat(this.value))">
+                </div>
+                <div class="ctrl-group">
+                  <label>Width</label>
+                  <input type="number" id="sel-text-width" min="0" max="900" step="10" style="width:52px"
+                    placeholder="auto"
+                    onchange="applyTextWidth(parseInt(this.value))">
+                </div>
+                <div class="ctrl-group"><label>L.H.</label><input type="number" id="sel-l-height" step="0.1" min="0.5" max="3" style="width:40px" onchange="updateStyle('lineHeight', parseFloat(this.value))"></div>
+                <div class="ctrl-group"><label>L.S.</label><input type="number" id="sel-l-spacing" min="-10" max="50" style="width:40px" onchange="updateStyle('letterSpacing', parseInt(this.value))"></div>
+            </div>
+            
+            <!-- Video URL Field (Phase 2 Precursor) -->
+            <div class="ctrl-group video-url-group">
+                <label>🎬 Video URL (optional)</label>
+                <div class="video-url-input-wrap">
+                    <input type="text" id="sel-video-url" placeholder="https://res.cloudinary.com/..." 
+                        oninput="updateProp('videoUrl', this.value)">
+                    <button class="video-url-clear" title="Clear URL" 
+                        onclick="document.getElementById('sel-video-url').value=''; updateProp('videoUrl', '');">✕</button>
+                </div>
+                <span class="video-url-hint">Paste Cloudinary URL to show video preview on customer menu hover</span>
+            </div>
+        </div>
+
+        <div id="bar-tab-arrange" style="display:none; align-items:center; gap:10px;">
+            <div class="ctrl-group" style="flex-direction:column; gap:4px; align-items:flex-start;">
+              <div style="display:flex; gap:6px; align-items:center;">
+                <label style="font-size:9px;color:#777;font-weight:700;width:12px;">X</label>
+                <input type="number" id="pos-x-input" style="width:58px; background:#111; border:1px solid #444; color:var(--accent); border-radius:6px; padding:4px 6px; font-size:11px; outline:none;"
+                  onchange="setPosFromInput('x', parseFloat(this.value))">
+                <label style="font-size:9px;color:#777;font-weight:700;width:12px;">Y</label>
+                <input type="number" id="pos-y-input" style="width:58px; background:#111; border:1px solid #444; color:var(--accent); border-radius:6px; padding:4px 6px; font-size:11px; outline:none;"
+                  onchange="setPosFromInput('y', parseFloat(this.value))">
+              </div>
+              <div style="display:flex; gap:6px; align-items:center;" id="wh-inputs">
+                <label style="font-size:9px;color:#777;font-weight:700;width:12px;">W</label>
+                <input type="number" id="pos-w-input" min="1" style="width:58px; background:#111; border:1px solid #444; color:var(--accent); border-radius:6px; padding:4px 6px; font-size:11px; outline:none;"
+                  onchange="setSizeFromInput('width', parseFloat(this.value))">
+                <label style="font-size:9px;color:#777;font-weight:700;width:12px;">H</label>
+                <input type="number" id="pos-h-input" min="1" style="width:58px; background:#111; border:1px solid #444; color:var(--accent); border-radius:6px; padding:4px 6px; font-size:11px; outline:none;"
+                  onchange="setSizeFromInput('height', parseFloat(this.value))">
+              </div>
+            </div>
+            <button id="btn-center-h" class="btn-ui" style="padding:6px 12px; font-size:10px;" onclick="centerElement('h')" data-help="Snaps the element to the exact horizontal center of the menu">Center H</button>
+            <button id="btn-center-v" class="btn-ui" style="padding:6px 12px; font-size:10px;" onclick="centerElement('v')" data-help="Snaps the element to the exact vertical center of the menu">Center V</button>
+            <div class="ctrl-group">
+                <button id="btn-layer-up" class="ctrl-btn" style="width:30px; height:30px" onclick="updateZ(1)" title="Layer Up" data-help="Moves the element forward in the stacking order">⬆️</button>
+                <button id="btn-layer-down" class="ctrl-btn" style="width:30px; height:30px" onclick="updateZ(-1)" title="Layer Down" data-help="Moves the element backward in the stacking order">⬇️</button>
+                <button id="btn-layer-front" class="ctrl-btn" style="width:30px; height:30px; font-size:12px;" onclick="bringToFront()" title="To Front" data-help="Sends element all the way to the very top of the layer stack">⇈</button>
+                <button id="btn-layer-back" class="ctrl-btn" style="width:30px; height:30px; font-size:12px;" onclick="sendToBack()" title="To Back" data-help="Sends element all the way to the very bottom of the layer stack">⇊</button>
+            </div>
+            <div class="ctrl-group" style="gap:4px; flex-direction:column; align-items:center;">
+                <button class="ctrl-btn" style="width:32px;height:32px;font-size:14px;"
+                    onclick="nudge(0,-2)" title="Nudge Up">▲</button>
+                <div style="display:flex;gap:4px;">
+                    <button class="ctrl-btn" style="width:32px;height:32px;font-size:14px;"
+                        onclick="nudge(-2,0)" title="Nudge Left">◀</button>
+                    <button class="ctrl-btn" style="width:32px;height:32px;font-size:14px;"
+                        onclick="nudge(2,0)" title="Nudge Right">▶</button>
+                </div>
+                <button class="ctrl-btn" style="width:32px;height:32px;font-size:14px;"
+                    onclick="nudge(0,2)" title="Nudge Down">▼</button>
+            </div>
+        </div>
+    </div>
+    <div style="display:flex; gap:10px; flex-shrink:0; margin-left:10px; border-left:1px solid #444; padding-left:10px;">
+        <button id="btn-set-bg" class="ctrl-btn set-bg" onclick="setSelectedAsBackground()" title="Promote this image to full-page locked background" data-help="Sets the selected image as the full-page menu background">🖼️ BG</button>
+        <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); render(); showToast('Duplicated ' + ids.length + ' elements');}else{duplicateEl();}" title="Duplicate Layer" data-help="Makes an exact copy of the selected layer — text, image, or shape">📋</button>
+        <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c;" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds];ids.forEach(id=>{selectedId=id;deleteEl(true,true);});docV2.editorState.selectedElementIds=[];deselect();render();}else{deleteEl();}" title="Delete Layer" data-help="Permanently removes the selected element from the menu">🗑</button>
     </div>
 </div>
 
@@ -1188,23 +1224,24 @@ if(barHandle) {
         let rect = selBar.getBoundingClientRect();
         let offX = e.clientX - rect.left, offY = e.clientY - rect.top;
 
-	        document.onpointermove = (pe) => {
-	            isBarDragged = true;
-	            selBar.style.transform = 'none';
-	            selBar.style.margin = '0';
-	            
-	            let nx = pe.clientX - offX;
-	            let ny = pe.clientY - offY;
-	
-	            nx = Math.max(0, Math.min(nx, window.innerWidth - selBar.offsetWidth));
-	            ny = Math.max(0, Math.min(ny, window.innerHeight - selBar.offsetHeight));
-	
-	            selBar.style.left = nx + 'px';
-	            selBar.style.top = ny + 'px';
-	            selBar.style.bottom = 'auto';
-	            selBar.style.right = 'auto';
-	            selBar.style.width = 'auto';
-	        };
+        document.onpointermove = (pe) => {
+            if(!isBarDragged) {
+                isBarDragged = true;
+                selBar.style.transform = 'none';
+                selBar.style.margin = '0';
+                selBar.style.animation = 'none';
+            }
+            let nx = pe.clientX - offX;
+            let ny = pe.clientY - offY;
+
+            // Viewport Constraints
+            nx = Math.max(0, Math.min(nx, window.innerWidth - selBar.offsetWidth));
+            ny = Math.max(60, Math.min(ny, window.innerHeight - selBar.offsetHeight));
+
+            selBar.style.left = nx + 'px';
+            selBar.style.top = ny + 'px';
+            selBar.style.bottom = 'auto'; // Break the fixed bottom rule
+        };
 
         document.onpointerup = () => {
             document.onpointermove = null;
@@ -1225,23 +1262,21 @@ if(distBarHandle) {
         let rect = distBar.getBoundingClientRect();
         let offX = e.clientX - rect.left, offY = e.clientY - rect.top;
 
-	        document.onpointermove = (pe) => {
-	            isDistBarDragged = true;
-	            distBar.style.transform = 'none';
-	            distBar.style.margin = '0';
-	            
-	            let nx = pe.clientX - offX;
-	            let ny = pe.clientY - offY;
-	            
-	            nx = Math.max(0, Math.min(nx, window.innerWidth - distBar.offsetWidth));
-	            ny = Math.max(0, Math.min(ny, window.innerHeight - distBar.offsetHeight));
-	            
-	            distBar.style.left = nx + 'px';
-	            distBar.style.top = ny + 'px';
-	            distBar.style.bottom = 'auto';
-	            distBar.style.right = 'auto';
-	            distBar.style.width = 'auto';
-	        };
+        document.onpointermove = (pe) => {
+            if(!isDistBarDragged) {
+                isDistBarDragged = true;
+                distBar.style.transform = 'none';
+                distBar.style.margin = '0';
+                distBar.style.animation = 'none';
+            }
+            let nx = pe.clientX - offX;
+            let ny = pe.clientY - offY;
+            nx = Math.max(0, Math.min(nx, window.innerWidth - distBar.offsetWidth));
+            ny = Math.max(60, Math.min(ny, window.innerHeight - distBar.offsetHeight));
+            distBar.style.left = nx + 'px';
+            distBar.style.top = ny + 'px';
+            distBar.style.bottom = 'auto';
+        };
 
         document.onpointerup = () => {
             document.onpointermove = null;
@@ -1368,46 +1403,24 @@ function render() {
         
         Object.assign(el.style, { 
             left:d.x+'px', top:d.y+'px', zIndex:d.zIndex||10, 
-            opacity: (d.opacity !== undefined ? d.opacity : 100) / 100,
+            opacity: d.opacity ?? 1,
             transform: `rotate(${d.rotation||0}deg)`,
             borderRadius: d.type === 'line' ? '0' : (d.cornerRadius||0)+'px',
-            border: (d.type === 'shape' && d.borderWidth > 0) ? `${d.borderWidth}px solid ${d.borderColor || '#000000'}` : 'none'
+            border: 'none' // Stroke handled by inner elements for shapes
         });
         
-        // Support both V2 top-level fields AND V1 style object
-         const color = d.color || d.style?.color;
-        const fontFamily = d.fontFamily || d.style?.fontFamily;
-        const fontSize = d.fontSize || d.style?.fontSize;
-        const lineHeight = d.lineHeight || d.style?.lineHeight;
-        const letterSpacing = d.letterSpacing || d.style?.letterSpacing;
-        const fontWeight = d.fontWeight || d.style?.fontWeight;
-        const fontStyle = d.fontStyle || d.style?.fontStyle;
-        const textDecoration = d.textDecoration || d.style?.textDecoration;
-        const textAlign = d.textAlign || d.style?.textAlign;
-        const textShadow = d.textShadow || d.style?.textShadow;
-        const textTransform = d.textTransform || d.style?.textTransform;
-        
-        // Resolve fill color using V2 schema logic
-        const fill = d.fillColor || (d.style ? d.style.fill : null);
-
-        if(fontFamily) el.style.fontFamily = fontFamily;
-        if(fontSize) el.style.fontSize = fontSize + 'px';
-        if(color) el.style.color = color;
-        if(lineHeight) el.style.lineHeight = lineHeight;
-        if(letterSpacing) el.style.letterSpacing = letterSpacing + 'px';
-        if(fontWeight) el.style.fontWeight = fontWeight;
-        if(fontStyle) el.style.fontStyle = fontStyle;
-        if(textDecoration) el.style.textDecoration = textDecoration;
-        if(textAlign) el.style.textAlign = textAlign;
-        if(textTransform) el.style.textTransform = textTransform;
-        
-        if(textShadow && textShadow > 0) {
-            el.style.textShadow = `0 ${textShadow/2}px ${textShadow}px rgba(0,0,0,0.5)`;
-        } else {
-            el.style.textShadow = 'none';
+        if(d.style) {
+            if(d.style.fontFamily) el.style.fontFamily = d.style.fontFamily;
+            if(d.style.fontSize) el.style.fontSize = d.style.fontSize+'px';
+            if(d.style.color) el.style.color = d.style.color;
+            if(d.style.lineHeight) el.style.lineHeight = d.style.lineHeight;
+            if(d.style.letterSpacing) el.style.letterSpacing = d.style.letterSpacing + 'px';
+            if(d.style.fill) {
+                const target = el.querySelector('.shape-inner') || el;
+                target.style.backgroundColor = d.style.fill;
+                if (d.type === 'shape') el.style.backgroundColor = 'transparent';
+            }
         }
-        if(fill && d.type === 'text') el.style.backgroundColor = fill;
-        else el.style.backgroundColor = 'transparent';
         if (d.type === 'text') {
             if (d.width) {
                 el.style.width = d.width + 'px';
@@ -1426,55 +1439,38 @@ function render() {
         
         // Shape-type overrides after base styles applied
         if (d.type === 'shape' && d.shapeType === 'circle') {
-            const inner = el.querySelector('.shape-inner');
-            if (inner) {
-                // V2 Rule: Circle must have borderRadius 50% for perfect circle
-                inner.style.borderRadius = '50%';
-                inner.style.backgroundColor = d.fillColor || '#c8a96a';
-                inner.style.boxSizing = 'border-box';
-                // Apply border to inner element for perfect circle border
-                if ((d.borderWidth || 0) > 0) {
-                    inner.style.border = `${d.borderWidth || 0}px solid ${d.borderColor || '#000000'}`;
-                } else {
-                    inner.style.border = 'none';
-                }
-            }
+            el.querySelector('.shape-inner').style.borderRadius = '50%';
             el.style.borderRadius = '0';
-            el.style.backgroundColor = 'transparent';
-            el.style.border = 'none';
         } else if (d.type === 'shape' && d.shapeType === 'star') {
             const inner = el.querySelector('.shape-inner');
-            inner.style.backgroundColor = d.fillColor || 'transparent';
+            inner.style.backgroundColor = (d.style && d.style.fill) ? d.style.fill : 'transparent';
             inner.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
             el.style.backgroundColor = 'transparent';
-            el.style.clipPath = 'none';
+            el.style.clipPath = 'none'; // BUG 1 FIX: Handles stay visible
             el.style.borderRadius = '0';
-            if ((d.borderWidth || 0) > 0) {
-                inner.style.boxShadow = `inset 0 0 0 ${d.borderWidth}px ${d.borderColor || '#000000'}`;
+            if ((d.strokeWidth || 0) > 0) {
+                inner.style.boxShadow = `inset 0 0 0 ${d.strokeWidth}px ${d.strokeColor || '#c8a96a'}`;
             } else {
                 inner.style.boxShadow = 'none';
             }
         } else if (d.type === 'line') {
+            // Ensure line wrapper stays transparent
             el.style.backgroundColor = 'transparent';
             el.style.border = 'none';
         }
         
-        if (d.type === 'shape' && d.shapeType !== 'star' && d.shapeType !== 'circle') {
+        // Final Stroke/Outer Logic: Apply to inner for shapes
+        if (d.type === 'shape' && d.shapeType !== 'star') {
             const inner = el.querySelector('.shape-inner');
-            if (inner) {
-                inner.style.borderRadius = (d.borderRadius || 0) + 'px';
-                inner.style.backgroundColor = d.fillColor || '#c8a96a';
+            if (inner && (d.strokeWidth || 0) > 0) {
+                inner.style.border = `${d.strokeWidth}px solid ${d.strokeColor || '#000'}`;
                 inner.style.boxSizing = 'border-box';
-                if ((d.borderWidth || 0) > 0) {
-                    inner.style.border = `${d.borderWidth || 0}px solid ${d.borderColor || '#000000'}`;
-                } else {
-                    inner.style.border = 'none';
-                }
+            } else if (inner) {
+                inner.style.border = 'none';
             }
-        } else if (d.type === 'image' && (d.borderWidth || 0) > 0) {
-            el.style.border = `${d.borderWidth}px solid ${d.borderColor || '#000'}`;
+        } else if (d.type === 'image' && (d.strokeWidth || 0) > 0) {
+            el.style.border = `${d.strokeWidth}px solid ${d.strokeColor || '#000'}`;
             el.style.boxSizing = 'border-box';
-            el.style.borderRadius = (d.borderRadius || 0) + 'px';
         }
         
         elementsLayer.appendChild(el); attach(el);
@@ -1485,19 +1481,7 @@ function render() {
     updateDistributeBar();
 }
 
-function updateDistributeBar() {
-    const ids = docV2.editorState.selectedElementIds || [];
-    const bar = document.getElementById('distribute-bar');
-    if (!bar) return;
-    if (ids.length >= 3) {
-        bar.classList.add('show');
-    } else {
-        bar.classList.remove('show');
-    }
-}
-
 function renderLayerList() {
-    if (!layersPanel) return;
     layersPanel.innerHTML = '';
     // Show Top-most element at the top of the list (reverse order)
     [...docV2.elements].reverse().forEach((item, i) => {
@@ -1563,14 +1547,10 @@ function renderLayerList() {
             : '⬜';
         const roleTag = `<span style="font-size:8px; padding:2px 4px; border-radius:3px; background:#444; color:#aaa; text-transform:uppercase; margin-right:4px;">${item.layerRole || 'content'}</span>`;
 
-        // Simplified rename UI with a dedicated edit button for 100% reliability
+
         div.innerHTML = `<span style="cursor:grab; color:#555; font-size:14px; padding-right:6px; flex-shrink:0;" title="Drag to reorder">⠿</span>
             <div style="font-size:12px; width:20px; text-align:center;">${icon}</div>
-            <div class="layer-name" style="flex:1; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center;">
-                ${roleTag}
-                <span id="rename-span-${item.id}" class="layer-rename-span" style="flex:1; min-width:50px; min-height:18px; display:inline-block;">${item.name || item.id}</span>
-            </div>
-            <button class="layer-btn" title="Rename Layer" onclick="startLayerRename(event, '${item.id}')" style="font-size:10px; margin-right:4px;">✏️</button>
+            <div class="layer-name" style="flex:1; overflow:hidden; text-overflow:ellipsis;">${roleTag}<span class="layer-rename-span" data-elid="${item.id}" title="Double-click to rename (editor only)"></span></div>
             <button class="layer-btn" title="${item.visible ? 'Visible' : 'Hidden — click to show'}"
                 onclick="toggleVisById(event, '${item.id}')"
                 style="font-size:11px; opacity:${item.visible ? '1' : '0.4'};">
@@ -1583,45 +1563,40 @@ function renderLayerList() {
             </button>
         `;
         layersPanel.appendChild(div);
+
+        // Wire up rename span after it is in DOM
+        const nameSpan = div.querySelector('.layer-rename-span');
+        if (nameSpan) {
+            nameSpan.textContent = elementDisplayNames[item.id] || item.id;
+
+            nameSpan.addEventListener('dblclick', (e) => {
+                e.stopPropagation();
+                nameSpan.contentEditable = 'true';
+                nameSpan.focus();
+                const range = document.createRange();
+                range.selectNodeContents(nameSpan);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+            });
+
+            nameSpan.addEventListener('blur', () => {
+                nameSpan.contentEditable = 'false';
+                const newName = nameSpan.innerText.trim();
+                if (newName) {
+                    elementDisplayNames[item.id] = newName;
+                } else {
+                    delete elementDisplayNames[item.id];
+                    nameSpan.textContent = item.id;
+                }
+            });
+
+            nameSpan.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); nameSpan.blur(); }
+                if (e.key === 'Escape') { nameSpan.innerText = elementDisplayNames[item.id] || item.id; nameSpan.blur(); }
+                e.stopPropagation(); // prevent canvas keyboard shortcuts while typing
+            });
+        }
     });
-}
-
-function startLayerRename(e, id) {
-    e.stopPropagation();
-    const span = document.getElementById('rename-span-' + id);
-    if (!span) return;
-    span.contentEditable = 'true';
-    span.focus();
-    const range = document.createRange();
-    range.selectNodeContents(span);
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(range);
-
-    const onBlur = () => {
-        span.contentEditable = 'false';
-        const newName = span.innerText.trim();
-        const item = docV2.elements.find(el => el.id === id);
-        if (item) {
-            if (newName) item.name = newName;
-            else delete item.name;
-        }
-        span.removeEventListener('blur', onBlur);
-        span.removeEventListener('keydown', onKey);
-        renderLayerList();
-    };
-
-    const onKey = (ke) => {
-        if (ke.key === 'Enter') { ke.preventDefault(); span.blur(); }
-        if (ke.key === 'Escape') { 
-            const item = docV2.elements.find(el => el.id === id);
-            span.innerText = item ? (item.name || item.id) : id; 
-            span.blur(); 
-        }
-        ke.stopPropagation();
-    };
-
-    span.addEventListener('blur', onBlur);
-    span.addEventListener('keydown', onKey);
 }
 
 function injectResizeHandles(el) {
@@ -1636,10 +1611,15 @@ function injectResizeHandles(el) {
             const h = document.createElement('div');
             h.className = 'resize-handle';
             h.style.position = 'absolute';
+            h.style.width = '20px';
+            h.style.height = '20px';
+            h.style.borderRadius = '50%';
+            h.style.background = '#f1c40f';
+            h.style.border = '2px solid #000';
             h.style.cursor = 'crosshair';
             h.title = ep.key === 'A' ? 'Drag endpoint A' : 'Drag endpoint B';
-            h.style.left = (item[ep.xProp] || 0) - 6 + 'px';
-            h.style.top  = (item[ep.yProp] || 0) - 6 + 'px';
+            h.style.left = (item[ep.xProp] || 0) - 7 + 'px';
+            h.style.top  = (item[ep.yProp] || 0) - 7 + 'px';
             h.style.zIndex = '10000';
             h.onpointerdown = (e) => {
                 e.stopPropagation(); e.preventDefault();
@@ -1683,11 +1663,12 @@ function injectResizeHandles(el) {
         h.className = 'resize-handle';
         const isN = corner.includes('n'), isW = corner.includes('w');
         Object.assign(h.style, {
-            position: 'absolute',
-            zIndex: '9999',
+            position: 'absolute', width: '20px', height: '20px',
+            background: '#f1c40f', border: '2px solid #000', borderRadius: '50%',
+            zIndex: '9999', boxSizing: 'border-box',
             cursor: corner+'-resize',
-            top: isN ? '-6px' : 'auto', bottom: isN ? 'auto' : '-6px',
-            left: isW ? '-6px' : 'auto', right: isW ? 'auto' : '-6px',
+            top: isN ? '-10px' : 'auto', bottom: isN ? 'auto' : '-10px',
+            left: isW ? '-10px' : 'auto', right: isW ? 'auto' : '-10px',
         });
         h.onpointerdown = (e) => {
             e.stopPropagation(); e.preventDefault();
@@ -1994,13 +1975,7 @@ function updateDistributeBar() {
   const bar = document.getElementById('distribute-bar');
   const ids = docV2.editorState.selectedElementIds || [];
   if (!bar) return;
-  
-  // Rule: Show bar if 2+ items selected OR if a single text element is selected
-  const currentId = (ids.length === 1) ? ids[0] : selectedId;
-  const item = docV2.elements.find(e => e.id === currentId);
-  const singleTextSelected = item && item.type === 'text';
-
-  if (ids.length < 2 && !singleTextSelected) { 
+  if (ids.length < 2) { 
       bar.classList.remove('show');
       return; 
   }
@@ -2022,113 +1997,162 @@ function updateDistributeBar() {
 
 function updateSelectionBar() {
     const multiIds = docV2.editorState.selectedElementIds || [];
-    const ribbonContext = document.getElementById('ribbon-context-ctrls');
-    
     if (multiIds.length > 1) {
+        console.log("MULTI SELECT BAR ACTIVE, count:", multiIds.length);
         selBar.classList.add('show');
-        document.getElementById('bar-quick-settings').style.display = 'none';
         
-        // Update Ribbon for Multi-Select
-        ribbonContext.innerHTML = `<div class="ribbon-group">
-            <span class="ribbon-label">Multi-Select</span>
-            <span style="font-size:11px; color:var(--accent); font-weight:bold;">${multiIds.length} items</span>
-        </div>`;
+        const tabLayer = document.getElementById('bar-tab-layer');
+        if(tabLayer) tabLayer.style.display = 'none';
         
-        // Update Arrange inputs in Ribbon (blank for multi)
-        document.getElementById('ribbon-pos-x').value = '';
-        document.getElementById('ribbon-pos-y').value = '';
-        document.getElementById('ribbon-pos-w').value = '';
-        document.getElementById('ribbon-pos-h').value = '';
+        const tabDesign = document.getElementById('bar-tab-design');
+        if(tabDesign) tabDesign.style.display = 'none';
+        
+        const tabArrange = document.getElementById('bar-tab-arrange');
+        if(tabArrange) tabArrange.style.display = 'none';
+
+        const textCtrls = document.getElementById('text-style-ctrls');
+        if(textCtrls) textCtrls.style.display = 'none';
+
+        const geoCtrls = document.getElementById('geo-style-ctrls');
+        if(geoCtrls) geoCtrls.style.display = 'none';
+        
+        let msBlock = document.getElementById('multi-select-actions');
+        if (!msBlock) {
+            const div = document.createElement('div');
+            div.id = 'multi-select-actions';
+            div.style.cssText = 'display:flex; align-items:center; gap:10px; width:100%; justify-content:center; padding:5px 0;';
+            div.innerHTML = `<button class="ctrl-btn" style="background:#c0392b; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; deleteEl(true,true);}); docV2.editorState.selectedElementIds=[]; deselect(); render();">🗑️ Delete All (<span id="ms-del-count"></span>)</button><button class="ctrl-btn" style="background:#2980b9; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); render(); showToast('Duplicated ' + ids.length + ' elements');">📋 Duplicate All (<span id="ms-dup-count"></span>)</button>
+<div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:6px;">
+  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('left')"    title="Align Left Edges">⬛ Left</button>
+  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('right')"   title="Align Right Edges">⬛ Right</button>
+  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('top')"     title="Align Top Edges">⬛ Top</button>
+  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('bottom')"  title="Align Bottom Edges">⬛ Bottom</button>
+  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('centerH')" title="Center Horizontally">↔ Ctr H</button>
+  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('centerV')" title="Center Vertically">↕ Ctr V</button>
+  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="distributeSelected('h')"  title="Distribute Horizontally">⇔ Dist H</button>
+  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="distributeSelected('v')"  title="Distribute Vertically">⇕ Dist V</button>
+</div>`;
+            document.getElementById('bar-content').appendChild(div);
+            msBlock = div;
+        }
+        document.getElementById('ms-del-count').innerText = multiIds.length;
+        document.getElementById('ms-dup-count').innerText = multiIds.length;
+        msBlock.style.display = 'flex';
         return;
     }
     
-    if (!selectedId) {
-        selBar.classList.remove('show');
-        ribbonContext.innerHTML = `<div style="color:#444; font-size:11px; padding-left:20px;">Select an element to see design tools</div>`;
-        return;
-    }
+    const msBlock = document.getElementById('multi-select-actions');
+    if (msBlock) msBlock.style.display = 'none';
+
+    console.log("UpdateSelectionBar. ID:", selectedId);
+    if(!selectedId) return;
     
     const item = docV2.elements.find(e => e.id === selectedId);
-    if (!item) { deselect(); return; }
-    
-    selBar.classList.add('show');
-    document.getElementById('bar-quick-settings').style.display = 'flex';
-    document.getElementById('sel-opacity').value = item.opacity ?? 100;
-    document.getElementById('sel-rotate').value = item.rotation || 0;
-    
-    // Update Ribbon Arrange Inputs
-    document.getElementById('ribbon-pos-x').value = Math.round(item.x);
-    document.getElementById('ribbon-pos-y').value = Math.round(item.y);
-    document.getElementById('ribbon-pos-w').value = Math.round(item.width || 0);
-    document.getElementById('ribbon-pos-h').value = Math.round(item.height || 0);
-    document.getElementById('ribbon-size-group').style.display = (item.type === 'line' ? 'none' : 'flex');
 
-    // Update Ribbon Contextual Design Tools
-    if (item.type === 'text') {
-        ribbonContext.innerHTML = `
-            <div class="ribbon-group">
-                <span class="ribbon-label">Font</span>
-                <select class="ribbon-input" style="width:140px" onchange="updateStyle('fontFamily', this.value)">
-                    <option value="bernard-mt-condensed-regular" ${item.style?.fontFamily==='bernard-mt-condensed-regular'?'selected':''}>Bernard MT Condensed</option>
-                    <option value="century-gothic-bold" ${item.style?.fontFamily==='century-gothic-bold'?'selected':''}>Century Gothic Bold</option>
-                    <option value="century-gothic-regular" ${item.style?.fontFamily==='century-gothic-regular'?'selected':''}>Century Gothic Regular</option>
-                </select>
-                <input type="number" class="ribbon-input" value="${item.style?.fontSize || 14}" style="width:55px" onchange="updateStyle('fontSize', parseFloat(this.value))">
-                <input type="color" value="${item.style?.color || '#000000'}" oninput="updateStyle('color', this.value)">
-            </div>
-            <div class="ribbon-group">
-                <span class="ribbon-label">Style</span>
-                <button class="ribbon-btn ${item.style?.fontWeight==='bold'?'active':''}" onclick="toggleStyle('fontWeight', 'bold', 'normal')"><b>B</b></button>
-                <button class="ribbon-btn ${item.style?.fontStyle==='italic'?'active':''}" onclick="toggleStyle('fontStyle', 'italic', 'normal')"><i>I</i></button>
-                <button class="ribbon-btn ${item.style?.textDecoration==='underline'?'active':''}" onclick="toggleStyle('textDecoration', 'underline', 'none')"><u>U</u></button>
-                <button class="ribbon-btn ${item.style?.textTransform==='uppercase'?'active':''}" onclick="toggleStyle('textTransform', 'uppercase', 'none')" title="All Caps">AA</button>
-            </div>
-            <div class="ribbon-group">
-                <span class="ribbon-label">Align</span>
-                <button class="ribbon-btn ${item.style?.textAlign==='left'?'active':''}" onclick="updateStyle('textAlign', 'left')">⫷</button>
-                <button class="ribbon-btn ${item.style?.textAlign==='center'?'active':''}" onclick="updateStyle('textAlign', 'center')">≡</button>
-                <button class="ribbon-btn ${item.style?.textAlign==='right'?'active':''}" onclick="updateStyle('textAlign', 'right')">⫸</button>
-            </div>
-            <div class="ribbon-group">
-                <span class="ribbon-label">Spacing</span>
-                <div style="display:flex; gap:8px; align-items:center;">
-                    <div style="display:flex; flex-direction:column; gap:2px;">
-                        <span style="font-size:8px; color:#666;">LINE</span>
-                        <input type="range" min="0.8" max="2.5" step="0.1" value="${item.style?.lineHeight || 1.1}" style="width:60px" oninput="updateStyle('lineHeight', parseFloat(this.value))">
-                    </div>
-                    <div style="display:flex; flex-direction:column; gap:2px;">
-                        <span style="font-size:8px; color:#666;">LETTER</span>
-                        <input type="range" min="-5" max="30" step="1" value="${item.style?.letterSpacing || 0}" style="width:60px" oninput="updateStyle('letterSpacing', parseInt(this.value))">
-                    </div>
-                </div>
-            </div>
-            <div class="ribbon-group">
-                <span class="ribbon-label">Effects</span>
-                <button class="ribbon-btn ${(item.style?.textShadow||0)>0?'active':''}" onclick="toggleStyle('textShadow', 6, 0)" title="Toggle Text Shadow">S</button>
-            </div>
-        `;
-    } else if (item.type === 'shape' || item.type === 'image') {
-        const isLine = item.type === 'line';
-        const fillVal = item.fillColor || '#1a1a1a';
-        const bWidth = item.borderWidth || 0;
-        const bColor = item.borderColor || '#000000';
-        
-        ribbonContext.innerHTML = `
-            <div class="ribbon-group">
-                <span class="ribbon-label">Fill</span>
-                <input type="color" value="${item.fillColor || item.style?.fill || '#ffffff'}" oninput="updateShapeFill(this.value)" ${isLine?'disabled':''}>
-            </div>
-            <div class="ribbon-group">
-                <span class="ribbon-label">Border</span>
-                <input type="number" class="ribbon-input" value="${bWidth}" style="width:45px" onchange="updateShapeBorder(parseInt(this.value))">
-                <input type="color" value="${bColor}" oninput="updateShapeBorderColor(this.value)">
-            </div>
-            <div class="ribbon-group">
-                <span class="ribbon-label">Radius</span>
-                <input type="number" class="ribbon-input" value="${item.borderRadius || 0}" style="width:45px" onchange="updateProp('borderRadius', parseInt(this.value))">
-            </div>
-        `;
+    if(!item) { 
+        console.warn("Item not found for selection:", selectedId);
+        deselect(); 
+        return; 
     }
+    
+    console.log("Showing Selection Bar for type:", item.type);
+    selBar.classList.add('show');
+    
+    document.getElementById('text-style-ctrls').style.display = (item.type==='text'?'flex':'none');
+    document.getElementById('geo-style-ctrls').style.display = (item.type==='text'?'none':'flex');
+    
+    document.getElementById('sel-opacity').value = (item.opacity ?? 1) * 100;
+    document.getElementById('sel-rotate').value = item.rotation || 0;
+    if(item.type!=='text') {
+        // Fill/radius/outline controls visibility
+        const isLine = item.type === 'line';
+        const isStar = item.type === 'shape' && item.shapeType === 'star';
+        const fillGrp = document.getElementById('ctrl-grp-fill');
+        const radGrp = document.getElementById('ctrl-grp-radius');
+        const outlineGrp = document.getElementById('ctrl-grp-outline');
+        const linePresets = document.getElementById('line-width-presets');
+        const strokeLabel = document.getElementById('stroke-label');
+        if (fillGrp) fillGrp.style.display = isLine ? 'none' : '';
+        if (radGrp) radGrp.style.display = (isLine || isStar) ? 'none' : '';
+        if (outlineGrp) outlineGrp.style.display = isLine ? 'none' : '';
+        if (linePresets) linePresets.style.display = isLine ? '' : 'none';
+        if (strokeLabel) strokeLabel.textContent = isLine ? 'Color' : 'Stroke';
+        if (!isLine && !isStar) {
+            document.getElementById('sel-radius').value = item.cornerRadius || 0;
+        }
+        document.getElementById('sel-stroke-w').value = item.strokeWidth || 0;
+        document.getElementById('sel-stroke-c').value = item.strokeColor || '#c8a96a';
+        document.getElementById('sel-stroke-c').oninput = (e) => updateProp('strokeColor', e.target.value);
+        // Sync fill color picker
+        const fillInput = document.getElementById('sel-fill-color');
+        if (fillInput) fillInput.value = (item.style && item.style.fill && item.style.fill !== 'transparent') ? item.style.fill : '#333333';
+        // Sync outline-only toggle
+        const outlineBtn = document.getElementById('btn-outline-toggle');
+        if (outlineBtn) outlineBtn.style.background = (item.style && (item.style.fill === 'transparent' || item.style.fill === 'none' || !item.style.fill)) ? 'var(--primary)' : '#333';
+        // Line-specific: set width custom input and highlight matching preset
+        if (isLine) {
+            const lwCustom = document.getElementById('sel-line-width-custom');
+            if (lwCustom) lwCustom.value = item.strokeWidth || 1;
+            // Highlight matching preset button
+            if (linePresets) {
+                linePresets.querySelectorAll('.ctrl-btn').forEach(btn => {
+                    btn.classList.toggle('active', parseFloat(btn.textContent) === (item.strokeWidth || 1));
+                });
+            }
+            ['butt','round','square'].forEach(cap => {
+                const btn = document.getElementById('btn-cap-' + cap);
+                if (btn) btn.classList.toggle('active', (item.lineCap || 'butt') === cap);
+            });
+        }
+    }
+    document.getElementById('ctrl-lock').innerText = item.locked ? '🔒' : '🔓';
+    document.getElementById('ctrl-lock').classList.toggle('active', item.locked);
+    document.getElementById('ctrl-visible').innerText = item.visible ? '👁️' : '🙈';
+    document.getElementById('ctrl-visible').classList.toggle('active', !item.visible);
+    document.getElementById('sel-role').value = item.layerRole || 'content';
+    document.getElementById('sel-video-url').value = item.videoUrl || '';
+    
+    if(item.type==='text') {
+        document.getElementById('sel-font').value = item.style.fontFamily.replace(/['"]/g, '');
+        document.getElementById('sel-color').value = item.style.color;
+        document.getElementById('sel-l-height').value = item.style.lineHeight || 1.1;
+        document.getElementById('sel-l-spacing').value = item.style.letterSpacing || 0;
+        
+        const fsInput = document.getElementById('sel-font-size');
+        if (fsInput) fsInput.value = Math.round(item.style.fontSize || 16);
+        
+        const twInput = document.getElementById('sel-text-width');
+        if (twInput) twInput.value = item.width ? Math.round(item.width) : '';
+        // Default text elements to DESIGN tab if unlocked
+        if(item.type === 'text' && !_activeBarTab) _activeBarTab = 'design';
+        setBarTab(_activeBarTab || 'layer');
+    }
+
+    const btnSetBg = document.getElementById('btn-set-bg');
+    if (btnSetBg) {
+        btnSetBg.style.display = (item?.type === 'image') ? 'block' : 'none';
+    }
+
+    // X/Y/W/H position + size inputs (Arrange tab)
+    const xIn = document.getElementById('pos-x-input');
+    const yIn = document.getElementById('pos-y-input');
+    const wIn = document.getElementById('pos-w-input');
+    const hIn = document.getElementById('pos-h-input');
+    const whRow = document.getElementById('wh-inputs');
+    if (xIn) xIn.value = Math.round(item.x);
+    if (yIn) yIn.value = Math.round(item.y);
+    // Only show W/H for shapes, images, and lines — not text
+    if (whRow) whRow.style.display = (item.type === 'text') ? 'none' : 'flex';
+    if (item.type !== 'text') {
+        const el = document.getElementById(selectedId);
+        if (wIn) wIn.value = Math.round(item.width || (el ? el.offsetWidth : 0));
+        if (hIn) hIn.value = Math.round(item.height || (el ? el.offsetHeight : 0));
+    }
+
+    // Auto-open Design tab for shapes and lines
+    if ((item.type === 'shape' || item.type === 'line') && !_activeBarTab) _activeBarTab = 'design';
+    setBarTab(_activeBarTab || 'layer');
+
     renderLayerList();
 }
 
@@ -2142,8 +2166,6 @@ function deselect() {
     document.querySelectorAll('.multi-selected').forEach(el => el.classList.remove('multi-selected'));
     document.querySelectorAll('.selected-multi').forEach(el => el.classList.remove('selected-multi'));
     if (selBar) selBar.classList.remove('show');
-    const distBar = document.getElementById('distribute-bar');
-    if (distBar) distBar.classList.remove('show');
     renderLayerList();
 }
 
@@ -2241,75 +2263,8 @@ function sync() {
     });
 }
 
-function updateProp(k, v) { 
-    if(!selectedId) return; 
-    pushState(); 
-    let item = docV2.elements.find(e=>e.id===selectedId); 
-    if(item) { 
-        item[k]=v; 
-        // V2 Rule: Sync strokeWidth/strokeColor for shapes and lines
-        if(!item.style) item.style = {};
-        if(k === 'strokeWidth' || k === 'borderWidth') {
-            item.borderWidth = v;
-            if(item.type === 'line') item.strokeWidth = v;
-        }
-        if(k === 'strokeColor' || k === 'borderColor') {
-            item.borderColor = v;
-            if(item.type === 'line') item.strokeColor = v;
-        }
-        if(k === 'cornerRadius' || k === 'borderRadius') item.borderRadius = v;
-        render(); 
-    } 
-}
-function updateStyle(k, v) { 
-    if(!selectedId) return; 
-    pushState(); 
-    let item = docV2.elements.find(e=>e.id===selectedId); 
-    if(item) { 
-        if(!item.style) item.style = {};
-        item.style[k] = v;
-        // RULE: V2 field mapping (ensure top-level fields are updated for V2 consistency)
-        if(k === 'color') item.color = v;
-        if(k === 'fontSize') item.fontSize = v;
-        if(k === 'fontFamily') item.fontFamily = v;
-        if(k === 'lineHeight') item.lineHeight = v;
-        if(k === 'letterSpacing') item.letterSpacing = v;
-        if(k === 'fontWeight') item.fontWeight = v;
-        if(k === 'fontStyle') item.fontStyle = v;
-        if(k === 'textDecoration') item.textDecoration = v;
-        if(k === 'textAlign') item.textAlign = v;
-        if(k === 'textShadow') item.textShadow = v;
-        if(k === 'textTransform') item.textTransform = v;
-        
-        render(); 
-        // Force live color update to DOM for instant feedback
-        if(k === 'color') {
-            const el = document.getElementById(selectedId);
-            if(el) el.style.color = v;
-        }
-    } 
-}
-
-function toggleStyle(k, vOn, vOff) {
-    if(!selectedId) return;
-    let item = docV2.elements.find(e=>e.id===selectedId);
-    if(item) {
-        const current = item.style[k] || item[k] || vOff;
-        const newVal = (current === vOn) ? vOff : vOn;
-        updateStyle(k, newVal);
-    }
-}
-
-function toggleCase(mode) {
-    if(!selectedId) return;
-    let item = docV2.elements.find(e=>e.id===selectedId);
-    if(item && item.type === 'text') {
-        pushState();
-        if(mode === 'uppercase') item.text = item.text.toUpperCase();
-        else if(mode === 'lowercase') item.text = item.text.toLowerCase();
-        render();
-    }
-}
+function updateProp(k, v) { if(!selectedId) return; pushState(); let item = docV2.elements.find(e=>e.id===selectedId); if(item) { item[k]=v; render(); } }
+function updateStyle(k, v) { if(!selectedId) return; pushState(); let item = docV2.elements.find(e=>e.id===selectedId); if(item && item.style) { item.style[k]=v; render(); } }
 
 function applyTextWidth(w) {
     if (!selectedId) return;
@@ -2336,32 +2291,6 @@ function toggleGlobalLock() {
     render();
 }
 
-function toggleBgLock() {
-    if (!docV2.settings) docV2.settings = {};
-    docV2.settings.backgroundLayerLocked = !docV2.settings.backgroundLayerLocked;
-
-    // Unlock any background elements directly so they can be manipulated
-    if (!docV2.settings.backgroundLayerLocked) {
-        docV2.elements.forEach(el => {
-            if (el.layerRole === 'background') {
-                el.locked = false;
-            }
-        });
-    } else {
-        docV2.elements.forEach(el => {
-            if (el.layerRole === 'background') {
-                el.locked = true;
-            }
-        });
-    }
-
-    const btn = document.getElementById('btn-lock-bg');
-    btn.innerText = docV2.settings.backgroundLayerLocked ? '🔒 Unlock BG' : '🔓 Lock BG';
-    btn.classList.toggle('lock-unlocked', !docV2.settings.backgroundLayerLocked);
-    showToast(docV2.settings.backgroundLayerLocked ? 'Background Layer Locked' : 'Background Layer Unlocked - you can now select/delete the background image');
-    render();
-}
-
 function syncZoomControlsVisibility() {
     const zoomControls = document.getElementById('zoom-controls');
     if(zoomControls) zoomControls.style.display = layoutLocked ? 'none' : 'flex';
@@ -2377,31 +2306,14 @@ function updateZ(dir) {
     const multiIds = docV2.editorState.selectedElementIds || [];
     if (multiIds.length > 1) {
         pushState();
-        // Sort selected by current index to move them as a block
-        const selectedIndices = multiIds
-            .map(id => docV2.elements.findIndex(e => e.id === id))
-            .filter(idx => idx !== -1)
-            .sort((a, b) => a - b);
-        
-        if (dir > 0) {
-            // Moving up: process from top down
-            for (let i = selectedIndices.length - 1; i >= 0; i--) {
-                const idx = selectedIndices[i];
-                if (idx < docV2.elements.length - 1) {
-                    const [item] = docV2.elements.splice(idx, 1);
-                    docV2.elements.splice(idx + 1, 0, item);
-                }
-            }
-        } else {
-            // Moving down: process from bottom up
-            for (let i = 0; i < selectedIndices.length; i++) {
-                const idx = selectedIndices[i];
-                if (idx > 0) {
-                    const [item] = docV2.elements.splice(idx, 1);
-                    docV2.elements.splice(idx - 1, 0, item);
-                }
-            }
-        }
+        multiIds.forEach(id => {
+            const idx = docV2.elements.findIndex(e => e.id === id);
+            if (idx === -1) return;
+            const newIdx = idx + dir;
+            if (newIdx < 0 || newIdx >= docV2.elements.length) return;
+            const [item] = docV2.elements.splice(idx, 1);
+            docV2.elements.splice(newIdx, 0, item);
+        });
         resequenceZIndex();
         render();
         renderLayerList();
@@ -2416,68 +2328,6 @@ function updateZ(dir) {
     if (newIdx < 0 || newIdx >= docV2.elements.length) return;
     const [item] = docV2.elements.splice(idx, 1);
     docV2.elements.splice(newIdx, 0, item);
-    resequenceZIndex();
-    render();
-    renderLayerList();
-    showToast('Layer order updated');
-}
-
-function bringToFront() {
-    const multiIds = docV2.editorState.selectedElementIds || [];
-    if (multiIds.length > 1) {
-        pushState();
-        const selectedEls = multiIds
-            .map(id => docV2.elements.find(e => e.id === id))
-            .filter(Boolean)
-            .sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
-        
-        const selectedSet = new Set(multiIds);
-        const nonSelected = docV2.elements.filter(e => !selectedSet.has(e.id));
-        
-        docV2.elements = [...nonSelected, ...selectedEls];
-        resequenceZIndex();
-        render();
-        renderLayerList();
-        showToast('Layer order updated');
-        return;
-    }
-    if (!selectedId) return;
-    pushState();
-    const idx = docV2.elements.findIndex(e => e.id === selectedId);
-    if (idx === -1 || idx === docV2.elements.length - 1) return;
-    const [item] = docV2.elements.splice(idx, 1);
-    docV2.elements.push(item);
-    resequenceZIndex();
-    render();
-    renderLayerList();
-    showToast('Layer order updated');
-}
-
-function sendToBack() {
-    const multiIds = docV2.editorState.selectedElementIds || [];
-    if (multiIds.length > 1) {
-        pushState();
-        const selectedEls = multiIds
-            .map(id => docV2.elements.find(e => e.id === id))
-            .filter(Boolean)
-            .sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
-        
-        const selectedSet = new Set(multiIds);
-        const nonSelected = docV2.elements.filter(e => !selectedSet.has(e.id));
-        
-        docV2.elements = [...selectedEls, ...nonSelected];
-        resequenceZIndex();
-        render();
-        renderLayerList();
-        showToast('Layer order updated');
-        return;
-    }
-    if (!selectedId) return;
-    pushState();
-    const idx = docV2.elements.findIndex(e => e.id === selectedId);
-    if (idx === -1 || idx === 0) return;
-    const [item] = docV2.elements.splice(idx, 1);
-    docV2.elements.unshift(item);
     resequenceZIndex();
     render();
     renderLayerList();
@@ -2695,7 +2545,6 @@ function deleteEl(skipPush, noRender) {
         deselect();
         render();
     }
-    save();
 }
 
 function addText() { 
@@ -2708,7 +2557,7 @@ function addText() {
     const x = Math.max(50, Math.min(BASE_W - 200, cx));
     const y = Math.max(50, Math.min(BASE_H - 100, cy));
     const maxZ = docV2.elements.reduce((m, e) => Math.max(m, e.zIndex || 0), 0);
-    docV2.elements.push({id, type:'text', text:'New Text', x, y, zIndex: maxZ + 1, opacity:100, rotation:0, visible:true, locked:false, layerRole:'content', style:{fontFamily:'century-gothic-bold', fontSize:24, color:'#000', lineHeight:1.1, letterSpacing:0} }); 
+    docV2.elements.push({id, type:'text', text:'New Text', x, y, zIndex: maxZ + 1, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fontFamily:'century-gothic-bold', fontSize:24, color:'#000', lineHeight:1.1, letterSpacing:0} }); 
     render(); 
     selectById(id); 
 }
@@ -2779,15 +2628,7 @@ function addRect() {
         pushState();
         const id = 'rect_' + Date.now();
         const maxZ = docV2.elements.reduce((m, e) => Math.max(m, e.zIndex || 0), 0);
-        docV2.elements.push({
-            id, type: 'shape', shapeType: 'rect',
-            x: finX, y: finY, width: finW, height: finH,
-            zIndex: maxZ + 1, opacity: 100, rotation: 0,
-            visible: true, locked: false, layerRole: 'content',
-            fillColor: '#1a1a1a',
-            style: { fill: '#1a1a1a' },
-            borderColor: '#000000', borderWidth: 0, borderRadius: 0
-        });
+        docV2.elements.push({id, type:'shape', x:finX, y:finY, width:finW, height:finH, zIndex: maxZ + 1, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fill:'#333333'} });
         render();
         selectById(id);
     }
@@ -2812,7 +2653,7 @@ function addLine() {
         x2: 400, y2: 0,
         width: 400, height: 4, // BUG 3 FIX: Visibility
         strokeColor: '#c8a96a', strokeWidth: 4, lineCap: 'butt', // BUG 3 FIX: Visibility
-        zIndex: maxZ + 1, opacity: 100, rotation: 0,
+        zIndex: maxZ + 1, opacity: 1, rotation: 0,
         visible: true, locked: false, layerRole: 'content'
     });
     render();
@@ -2827,10 +2668,10 @@ function addCircle() {
     docV2.elements.push({
         id, type: 'shape', shapeType: 'circle',
         x: 300, y: 300, width: 150, height: 150,
-        zIndex: maxZ + 1, opacity: 100, rotation: 0,
+        zIndex: maxZ + 1, opacity: 1, rotation: 0,
         visible: true, locked: false, layerRole: 'content',
-        borderWidth: 0, borderColor: '#000000', borderRadius: 75,
-        fillColor: '#1a1a1a'
+        strokeWidth: 0, strokeColor: '#c8a96a', cornerRadius: 75,
+        style: { fill: '#c8a96a' }
     });
     render();
     setTimeout(() => { selectById(id); setBarTab('design'); }, 50);
@@ -2840,14 +2681,14 @@ function addCircle() {
 function addStar() {
     pushState();
     const id = 'star_' + Date.now();
-    const maxZ = docV2.elements.length ? Math.max(...docV2.elements.map(e => e.zIndex || 0)) : 0;
+    const maxZ = docV2.elements.reduce((m, e) => Math.max(m, e.zIndex || 0), 0);
     docV2.elements.push({
         id, type: 'shape', shapeType: 'star',
         x: 300, y: 300, width: 150, height: 150,
-        zIndex: maxZ + 1, opacity: 100, rotation: 0,
+        zIndex: maxZ + 1, opacity: 1, rotation: 0,
         visible: true, locked: false, layerRole: 'content',
-        borderWidth: 0, borderColor: '#000000', borderRadius: 0,
-        fillColor: '#1a1a1a'
+        strokeWidth: 0, strokeColor: '#c8a96a', cornerRadius: 0,
+        style: { fill: '#c8a96a' }
     });
     render();
     setTimeout(() => { selectById(id); setBarTab('design'); }, 50);
@@ -2910,9 +2751,9 @@ function updateShapeFill(v) {
         return; 
     }
 
-    if(!item.style) item.style = {};
+    if (!item.style) item.style = {};
     item.style.fill = v;
-    item.fillColor = v;
+    item.style.fillColor = v; 
 
     const domNode = document.getElementById(selectedId);
     if (domNode) {
@@ -2923,43 +2764,21 @@ function updateShapeFill(v) {
     sync();
 }
 
-function updateShapeBorder(v) {
-    if (!selectedId) return;
-    pushState();
-    const item = docV2.elements.find(e => e.id === selectedId);
-    if (!item) return;
-    item.borderWidth = v;
-    render();
-}
-
-function updateShapeBorderColor(v) {
-    if (!selectedId) return;
-    const item = docV2.elements.find(e => e.id === selectedId);
-    if (!item) return;
-    item.borderColor = v;
-    const domNode = document.getElementById(selectedId);
-    if (domNode) {
-        const inner = domNode.querySelector('.shape-inner');
-        if (inner) inner.style.borderColor = v;
-        else domNode.style.borderColor = v;
-        
-        // Also update outer border if it exists (rect fallbacks)
-        domNode.style.borderColor = v;
-    }
-}
-
 function toggleOutlineOnly() {
     if (!selectedId) return;
     pushState();
     const item = docV2.elements.find(e => e.id === selectedId);
     if (!item) return;
-    const currentFill = item.fillColor;
+    if (!item.style) item.style = {};
+    const currentFill = item.style.fill;
     if (!currentFill || currentFill === 'transparent' || currentFill === 'none') {
-        item.fillColor = '#333333';
+        // Restore fill
+        item.style.fill = '#333333';
     } else {
-        item.fillColor = 'transparent';
-        if (!item.borderWidth || item.borderWidth < 2) item.borderWidth = 2;
-        if (!item.borderColor) item.borderColor = '#c8a96a';
+        // Set to outline-only
+        item.style.fill = 'transparent';
+        if (!item.strokeWidth || item.strokeWidth < 2) item.strokeWidth = 2;
+        if (!item.strokeColor) item.strokeColor = '#c8a96a';
     }
     render();
     sync();
@@ -3006,10 +2825,7 @@ async function trimTransparentPixels(src) {
             out.getContext('2d').drawImage(canvas, left, top, trimW, trimH, 0, 0, trimW, trimH);
             resolve(out.toDataURL('image/png'));
         };
-        img.onerror = () => {
-            console.error("Trim failed, using original src (caution: may be transient blob)");
-            resolve(src);
-        };
+        img.onerror = () => resolve(src);
         img.crossOrigin = 'anonymous';
         img.src = src;
     });
@@ -3038,7 +2854,7 @@ async function addFromTray(src, skipPush) {
         assetId: matchedAsset ? matchedAsset.id : null,
         x, y,
         width: 300, height: 300,
-        zIndex: maxZ + 1, opacity: 100, rotation: 0,
+        zIndex: maxZ + 1, opacity: 1, rotation: 0,
         visible: true, locked: false, layerRole: 'content'
     };
     docV2.elements.push(newElement);
@@ -3071,12 +2887,11 @@ async function importImg(input) {
     let r = new FileReader();
     r.onload = async (e) => {
         const base64Data = await trimTransparentPixels(e.target.result);
-        const safeName = f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
         try {
             const res = await fetch('/api/upload-image', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ data: base64Data, filename: safeName })
+                body: JSON.stringify({ data: base64Data, filename: f.name })
             });
             const json = await res.json();
             if (json.status === "ok") {
@@ -3085,7 +2900,7 @@ async function importImg(input) {
                 return;
             }
         } catch(err) { console.error(err); }
-        // Fallback to legacy behavior if server fails. base64Data is already persistent.
+        // Fallback to legacy behavior if server fails
         addFromAsset(null, base64Data);
     };
     r.readAsDataURL(f);
@@ -3097,12 +2912,12 @@ async function importBackground(input) {
     let r = new FileReader();
     r.onload = async (e) => {
         const src = e.target.result;
-        const safeName = 'bg_' + Date.now() + '_' + f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const filename = 'bg_' + Date.now() + '_' + f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
         try {
             const res = await fetch('/api/upload-image', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ filename: safeName, data: src })
+                body: JSON.stringify({ filename, data: src })
             });
             const json = await res.json();
             if (json.url) {
@@ -3121,42 +2936,35 @@ function setAsBackground(src) {
     
     let bgLayer = docV2.elements.find(e => e.type === 'image' && e.layerRole === 'background');
     if (bgLayer) {
-        // Update existing background layer with V2 schema compliance
         bgLayer.assetId = 'asset_015';
         bgLayer.src = src;
-        bgLayer.x = 0; 
-        bgLayer.y = 0;
-        bgLayer.width = BASE_W;      // Auto-fit to canvas width (908.44px)
-        bgLayer.height = BASE_H;     // Auto-fit to canvas height (1336.02px)
+        bgLayer.x = 0; bgLayer.y = 0;
+        bgLayer.width = BASE_W; bgLayer.height = BASE_H;
         bgLayer.locked = true;
         bgLayer.visible = true;
-        bgLayer.opacity = 100;       // V2 Rule: opacity stored as 0-100
+        bgLayer.opacity = 1;
         bgLayer.rotation = 0;
     } else {
-        // Create new background layer with V2 schema compliance
         const minZ = Math.min(...docV2.elements.map(e => e.zIndex || 10));
         bgLayer = {
             id: 'bg_upload_' + Date.now(),
             type: 'image',
             assetId: 'asset_015',
             src: src,
-            x: 0, 
-            y: 0,
-            width: BASE_W,              // Auto-fit to canvas width (908.44px)
-            height: BASE_H,             // Auto-fit to canvas height (1336.02px)
+            x: 0, y: 0,
+            width: BASE_W, height: BASE_H,
             zIndex: minZ - 1,
-            opacity: 100,               // V2 Rule: opacity stored as 0-100
+            opacity: 1,
             rotation: 0,
             visible: true,
             locked: true,
-            layerRole: 'background',
-            name: 'Background Image'     // V2 Rule: provide meaningful name
+            layerRole: 'background'
         };
         docV2.elements.push(bgLayer);
     }
     selectedId = null;
     render();
-    showToast('✅ Background replaced and locked — Toggle Original BG to switch');
+    showToast('✅ Background replaced and locked');
 }
 
 async function setSelectedAsBackground() {
@@ -3235,7 +3043,6 @@ async function renderAssetPanel() {
             img.setAttribute('loading', 'lazy');
             img.width = 80;
             img.height = 80;
-            // Ensure we use a persistent URL (server path or base64), never a temporary blob URL
             img.onclick = () => addFromAsset(asset.id, url);
             
             // Add "Use as Kling reference" button for ALL assets
@@ -3308,27 +3115,18 @@ async function deleteAssetFromServer(filename) {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' }
         });
-        // Force cleanup even if server says 404 (already gone)
-        const isAlreadyGone = (res.status === 404);
-        const json = (res.status !== 204) ? await res.json().catch(() => ({})) : {};
-
-        if (res.ok || isAlreadyGone) {
+        const json = await res.json();
+        if (res.ok && json.status === 'deleted') {
             // Remove ONLY this asset from docV2.assets by matching filename in originalUrl
+            // DO NOT call loadUserImages() — that would wipe AI-generated assets
             if (Array.isArray(docV2.assets)) {
                 docV2.assets = docV2.assets.filter(a => {
                     const url = a.storage?.originalUrl || '';
-                    const assetFilename = decodeURIComponent(url.split('/').pop().split('?')[0]);
+                    const assetFilename = url.split('/').pop().split('?')[0];
                     return assetFilename !== filename;
                 });
             }
-            // RULE: Also remove any elements on the canvas that use this broken asset
-            docV2.elements = docV2.elements.filter(el => {
-                if (el.type !== 'image' || !el.src) return true;
-                const elFilename = decodeURIComponent(el.src.split('/').pop().split('?')[0]);
-                return elFilename !== filename;
-            });
-            
-            // Persist updated docV2 to server
+            // Persist updated docV2 (minus deleted asset) to server
             try {
                 await fetch('/api/menu', {
                     method: 'POST',
@@ -3336,18 +3134,12 @@ async function deleteAssetFromServer(filename) {
                     body: JSON.stringify(docV2)
                 });
             } catch(saveErr) {
-                console.error("Failed to sync docV2 after asset deletion:", saveErr);
+                markDirty();
             }
-            render();
             renderAssetPanel();
-            
-            if (isAlreadyGone) {
-                showToast('ℹ️ Asset was already gone from server; cleaned up local state.');
-            } else {
-                showToast('✅ Asset deleted and removed from canvas');
-            }
+            showToast('🗑️ Asset deleted.');
         } else {
-            showToast('❌ Delete failed: ' + (json.error || res.status));
+            showToast('Delete failed: ' + (json.error || res.status));
         }
     } catch(err) {
         showToast('Delete error: ' + err.message);
@@ -3375,7 +3167,7 @@ async function loadUserImages() {
                         (docV2.assets || []).filter(a => a.id.startsWith('asset_0')).length + i + 1
                     ).padStart(3, '0'),
                 kind: 'image',
-                name: img.filename.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9._-]/g, '_'),
+                name: img.filename.replace(/\.[^/.]+$/, ''),
                 storage: {
                     originalUrl: img.url,
                     previewUrl: null,        // ALWAYS null — never set to real URL
@@ -3487,20 +3279,6 @@ function _mergeLoadedDoc(s) {
     selectedId = null;
     docV2.editorState.selectedElementIds = [];
     restoreAiCredentials(docV2);
-
-    // Sync the Unlock BG button state on load
-    if (docV2.settings) {
-        // Ensure background layer lock state defaults to true for older sessions
-        if (docV2.settings.backgroundLayerLocked === undefined) {
-            docV2.settings.backgroundLayerLocked = true;
-        }
-
-        const bgBtn = document.getElementById('btn-lock-bg');
-        if (bgBtn) {
-            bgBtn.innerText = docV2.settings.backgroundLayerLocked ? '🔒 Unlock BG' : '🔓 Lock BG';
-            bgBtn.classList.toggle('lock-unlocked', !docV2.settings.backgroundLayerLocked);
-        }
-    }
 }
 
 async function save() {
@@ -3548,22 +3326,31 @@ function saveGlobalSettings() {
     const rUrl = (document.getElementById('side-panel-right-url').value || '').trim();
     const rLabel = (document.getElementById('side-panel-right-label').value || '').trim();
 
-    // RULE #1: Mutate docV2 directly before posting
-    docV2.heroVideoUrl = heroUrl;
-    docV2.sidePanelLeft = { videoUrl: lUrl, label: lLabel };
-    docV2.sidePanelRight = { videoUrl: rUrl, label: rLabel };
-    
-    if (!docV2.settings) docV2.settings = {};
-    docV2.settings.viewer = {
-        heroVideoUrl:   heroUrl,
-        sidePanelLeft:  { videoUrl: lUrl, label: lLabel },
-        sidePanelRight: { videoUrl: rUrl, label: rLabel },
+    // Prepare updated doc
+    const updatedDoc = {
+        ...docV2,
+        heroVideoUrl: heroUrl,
+        sidePanelLeft: { videoUrl: lUrl, label: lLabel },
+        sidePanelRight: { videoUrl: rUrl, label: rLabel }
+    };
+
+    // Commit 7: Normalize save payload to settings.viewer
+    const payload = {
+        ...updatedDoc,
+        settings: {
+            ...(updatedDoc.settings || {}),
+            viewer: {
+                heroVideoUrl:   heroUrl,
+                sidePanelLeft:  { videoUrl: lUrl, label: lLabel },
+                sidePanelRight: { videoUrl: rUrl, label: rLabel },
+            }
+        }
     };
 
     fetch('/api/menu', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(docV2) // Send full mutated docV2
+        body: JSON.stringify(payload)
     })
     .then(r => {
         if (!r.ok) throw new Error('Server error');
@@ -3575,12 +3362,6 @@ function saveGlobalSettings() {
         docV2.heroVideoUrl = heroUrl;
         docV2.sidePanelLeft = { videoUrl: lUrl, label: lLabel };
         docV2.sidePanelRight = { videoUrl: rUrl, label: rLabel };
-        if (!docV2.settings) docV2.settings = {};
-        docV2.settings.viewer = {
-            heroVideoUrl: heroUrl,
-            sidePanelLeft: { videoUrl: lUrl, label: lLabel },
-            sidePanelRight: { videoUrl: rUrl, label: rLabel }
-        };
     })
     .catch(() => showToast('❌ Failed to save global settings'));
 }
@@ -3589,19 +3370,15 @@ function loadGlobalSettings() {
     fetch('/api/menu?t=' + Date.now())
         .then(r => r.json())
         .then(data => {
-            // RULE: Support both legacy top-level AND new docV2.settings.viewer path
-            const viewer = (data.settings && data.settings.viewer) || {};
-            
-            const heroUrl = viewer.heroVideoUrl || data.heroVideoUrl || '';
-            document.getElementById('hero-video-url-input').value = heroUrl;
-
-            const lSettings = viewer.sidePanelLeft || data.sidePanelLeft || {};
-            document.getElementById('side-panel-left-url').value = lSettings.videoUrl || '';
-            document.getElementById('side-panel-left-label').value = lSettings.label || '';
-
-            const rSettings = viewer.sidePanelRight || data.sidePanelRight || {};
-            document.getElementById('side-panel-right-url').value = rSettings.videoUrl || '';
-            document.getElementById('side-panel-right-label').value = rSettings.label || '';
+            if (data.heroVideoUrl !== undefined) document.getElementById('hero-video-url-input').value = data.heroVideoUrl || '';
+            if (data.sidePanelLeft) {
+                document.getElementById('side-panel-left-url').value = data.sidePanelLeft.videoUrl || '';
+                document.getElementById('side-panel-left-label').value = data.sidePanelLeft.label || '';
+            }
+            if (data.sidePanelRight) {
+                document.getElementById('side-panel-right-url').value = data.sidePanelRight.videoUrl || '';
+                document.getElementById('side-panel-right-label').value = data.sidePanelRight.label || '';
+            }
         }).catch(() => {});
 }
 
@@ -3897,7 +3674,6 @@ window.onload = async () => {
     initSmartTooltips();
     await loadUserImages();
     loadVideoHistory();
-    loadGlobalSettings();
     
     // Init Kling panel defaults
     window._klingQuality = '1s';
@@ -4263,7 +4039,7 @@ function setLsTab(tab) {
     renderAssetPanel();
   }
   if (tab === 'layers') {
-    renderLayerList();
+    if (typeof renderLayersPanel === 'function') renderLayersPanel();
   }
 }
 
@@ -5056,7 +4832,7 @@ async function saveAiImageToAssets(b64, prompt, urlOverride) {
     const newAsset = {
       id: 'asset_ai_' + Date.now(),
       kind: 'image',
-      name: prompt ? prompt.substring(0, 40).replace(/[^a-zA-Z0-9._-]/g, '_') : 'AI_Image',
+      name: prompt ? prompt.substring(0, 40) : 'AI Image',
       storage: { originalUrl: assetUrl, previewUrl: null, thumbnailUrl: null }
     };
     if (!docV2.assets) docV2.assets = [];
@@ -5395,11 +5171,9 @@ function pollKlingStatus() {
         document.getElementById('ai-vid-btn').textContent = 'Generate Video';
         document.getElementById('ai-vid-url').value = data.video_url; // FALLBACK for applyVideoToSlot
         document.getElementById('ai-vid-url-row').style.display = 'block';
-        // Hide apply buttons until Cloudinary upload finishes
-        document.getElementById('ai-vid-apply-row').style.display = 'none';
-        document.getElementById('ai-vid-slot-picker').style.display = 'none';
-
-        showToast('⏳ Video ready! Uploading to Cloudinary for permanent storage…');
+        document.getElementById('ai-vid-apply-row').style.display = 'block';
+        document.getElementById('ai-vid-slot-picker').style.display = 'block';
+        showToast('✅ Video ready — Uploading to Cloudinary…');
         // Auto-upload to Cloudinary
         uploadAiToCloudinary('video');
       } else if (data.status === 'failed') {
