@@ -1498,7 +1498,7 @@ docV2.elements.forEach(el => {
         }
     }
 });
-let layoutLocked = false, selectedId = null, zoomScale = 1, _isFitZoom = false, _activeBarTab = 'layer';
+let layoutLocked = false, selectedId = null, zoomScale = 1, _isFitZoom = false, _activeBarTab = 'layer', _canvasFitDone = false;
 let historyStack = [];
 let redoStack = [];
 const elementDisplayNames = {}; // { elementId: "My Custom Name" } — editor display only, not persisted
@@ -4299,7 +4299,9 @@ window.onload = async () => {
     onKlingModelChange();
     updateVideoModelOptions();
 
-    function fitCanvasToScreen() {
+    function fitCanvasToScreen(force = false) {
+        if (_canvasFitDone && !force) return;
+        _canvasFitDone = true;
         _isFitZoom = true;
         const editorVP = document.getElementById('editor-viewport');
         if (!editorVP) return;
@@ -4319,7 +4321,7 @@ window.onload = async () => {
         _isFitZoom = false;
     }
     window.addEventListener('resize', function() {
-        requestAnimationFrame(fitCanvasToScreen);
+        requestAnimationFrame(() => fitCanvasToScreen(true));
     });
 
     const savedZoom = docV2.editorState?._userZoom;
