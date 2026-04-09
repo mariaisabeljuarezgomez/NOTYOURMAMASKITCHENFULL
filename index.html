@@ -1542,10 +1542,24 @@ function renderLayerList() {
             showToast('Layer reordered');
         };
 
-        div.onclick = (e) => { 
+        div.onclick = (e) => {
             e.stopPropagation();
-            selectById(item.id);
-            updateSelectionBar();
+            // For locked backgrounds, bypass selectById's lock guard so the layer is
+            // visually highlighted in the panel — but drag is still blocked by attach()
+            if (item.isSystemBackground === true) {
+                if (selectedId) {
+                    const oldEl = document.getElementById(selectedId);
+                    if (oldEl) oldEl.classList.remove('selected');
+                }
+                selectedId = item.id;
+                const newEl = document.getElementById(item.id);
+                if (newEl) newEl.classList.add('selected');
+                updateSelectionBar();
+                renderLayerList();
+            } else {
+                selectById(item.id);
+                updateSelectionBar();
+            }
         };
         
         const icon = item.type==='text' ? 'T'
@@ -3014,9 +3028,10 @@ function setSelectedAsBackground() {
     pushState();
     docV2.settings.legacyBgVisible = false;
 
-    // Promote IN-PLACE — item stays moveable and selected
+    // Promote IN-PLACE — item becomes locked system background
     item.isSystemBackground = true;
     item.layerRole = 'background';
+    item.locked = true;
     item.x = 0;
     item.y = 0;
     item.width = BASE_W;
