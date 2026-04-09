@@ -2196,8 +2196,13 @@ function onCanvasClick(e) { if(isLassoing) return; if(_lassoJustFired) { _lassoJ
 function onCanvasMousedown(e) {
   if (e.button !== 0) return;
   if (layoutLocked) return;
-  // Lasso should only start from empty canvas, never from an element drag.
-  if (e.target?.closest && e.target.closest('.editable-element')) return;
+  // Lasso should only start from empty canvas or from the full-canvas background layer,
+  // never from regular element drags.
+  const _tgt = e.target?.closest ? e.target.closest('.editable-element') : null;
+  if (_tgt) {
+    const _d = (docV2.elements || []).find(el => el.id === _tgt.id) || {};
+    if (_d.isSystemBackground !== true) return;
+  }
   const lassoBox = document.getElementById('lasso-box');
   const scalerEl = document.getElementById('scaler-wrapper');
   if (!lassoBox || !scalerEl) return;
