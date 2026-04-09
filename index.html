@@ -2220,6 +2220,7 @@ function deselect() {
 }
 
 function onCanvasClick(e) {
+    if (_lassoJustFired) return;
     if (layoutLocked) return;
     const el = e.target.closest('.editable-element');
     if (el) {
