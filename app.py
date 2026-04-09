@@ -670,9 +670,8 @@ def serve_root_image(filename):
 
 @app.route("/user-images/<string:filename>")
 def serve_user_image(filename):
-    response = send_from_directory(USER_IMAGES_DIR, filename)
-    response.headers["Cache-Control"] = "max-age=604800, public"
-    return response
+    # Task M1: Removed max-age caching from user-images to ensure freshness in editor
+    return send_from_directory(USER_IMAGES_DIR, filename)
 
 @app.route('/menu')
 def customer_viewer():

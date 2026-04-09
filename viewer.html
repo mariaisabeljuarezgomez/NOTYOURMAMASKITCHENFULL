@@ -461,26 +461,26 @@
             try {
                 const res = await fetch(`${API_URL}?t=${Date.now()}`);
                 if (!res.ok) return;
-                let data = await res.json();
-                data = normalizeViewerSettings(data);
-                const hash = JSON.stringify(data);
+                let s = await res.json();
+                s = normalizeViewerSettings(s);
+                const hash = JSON.stringify(s);
                 if (hash === lastDataHash) return;
-                lastDataHash = hash; menuData = data;
+                lastDataHash = hash; menuData = s;
                 
-                (data.elements || []).forEach(el => {
+                (s.elements || []).forEach(el => {
                     if (el.type === 'image') {
                         console.log(`[DEBUG Image] id: ${el.id}, assetId: ${el.assetId}, src: ${el.src}`);
                     }
                 });
 
-                const imgs = [...new Set((data.elements||[]).filter(e=>e.type==='image').map(e => resolveImageSrc(e)))];
-                for (const s of imgs) if (s && !cachedImages[s]) cachedImages[s] = await preloadImage(s);
-                await draw(data);
-                loadHeroVideo(data);
-                loadSidePanelSettings(data);
+                const imgs = [...new Set((s.elements||[]).filter(e=>e.type==='image').map(e => resolveImageSrc(e)))];
+                for (const imgUrl of imgs) if (imgUrl && !cachedImages[imgUrl]) cachedImages[imgUrl] = await preloadImage(imgUrl);
+                await draw(s);
+                loadHeroVideo(s);
+                loadSidePanelSettings(s);
                 loading.style.display = 'none';
                 wrapper.style.display = 'inline-block';
-                if (data.status?.last_saved) document.getElementById('last-updated').textContent = `Last Sync: ${data.status.last_saved}`;
+                if (s.status?.last_saved) document.getElementById('last-updated').textContent = `Last Sync: ${s.status.last_saved}`;
             } catch(e) { console.error(e); }
         }
 

@@ -7,13 +7,13 @@
 
 // CRC32 lookup table — built once at module load, not on every call (BUG-M5 fix)
 const CRC32_TABLE = (function() {
-  const t = new Uint32Array(256);
+  const table = new Uint32Array(256);
   for (let i = 0; i < 256; i++) {
     let c = i;
     for (let j = 0; j < 8; j++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
-    t[i] = c;
+    table[i] = c;
   }
-  return t;
+  return table;
 })();
 
 function crc32(data) {
@@ -37,6 +37,16 @@ async function inject300DpiAndDownload(blob, filename) {
     fa.download = filename || 'menu-export.png';
     fa.click();
     return;
+  }
+
+  // verify IHDR signature at bytes 12–15 before assuming offset 33 is safe for pHYs insertion
+  const isIHDR = bytes[12] === 73 && bytes[13] === 72 && bytes[14] === 68 && bytes[15] === 82;
+  if (!isIHDR) {
+      const a = document.createElement('a');
+      a.download = filename;
+      a.href = URL.createObjectURL(blob);
+      a.click();
+      return;
   }
 
   // Build pHYs chunk: length(4) + type(4) + data(9) + crc(4) = 21 bytes
