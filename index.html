@@ -229,6 +229,10 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 }
 #selection-bar.show { display:flex; animation: barPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 @keyframes barPop { from { opacity:0; transform:translateX(-50%) translateY(20px) scale(0.9); } to { opacity:1; transform:translateX(-50%) translateY(0) scale(1); } }
+@media (max-width: 900px) {
+    #selection-bar.show { animation: barPopMobile 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    @keyframes barPopMobile { from { opacity:0; transform:translateY(20px) scale(0.9); } to { opacity:1; transform:none; } }
+}
 
 .bar-tab { padding: 6px 14px; border-radius: 20px; font-size: 10px; font-weight: 800; color: #888; cursor: pointer; transition: 0.2s; background: #111; border: 1px solid #222; text-transform: uppercase; }
 .bar-tab.active { background: var(--primary); color: #fff; border-color: var(--accent); box-shadow: 0 0 10px rgba(149, 32, 29, 0.5); }
@@ -1190,6 +1194,10 @@ function undo() {
         }
     }
     render();
+    // BUG 4 FIX: Re-sync lock button after undo in case lock state was restored
+    layoutLocked = !!docV2.settings.layoutLocked;
+    const _lb3 = document.getElementById('btn-lock-global');
+    if (_lb3) { _lb3.textContent = layoutLocked ? '\uD83D\uDD12 Layout Locked' : '\uD83D\uDD13 Layout Unlocked'; _lb3.classList.toggle('lock-unlocked', !layoutLocked); _lb3.classList.toggle('primary', layoutLocked); }
     showToast("Action Undone");
 }
 
@@ -2356,11 +2364,18 @@ function syncLayoutLockUI() {
 }
 
 function toggleGlobalLock() {
-    docV2.settings.layoutLocked = !docV2.settings.layoutLocked;
-    syncLayoutLockUI();
+    const newState = !layoutLocked;
+    layoutLocked = newState;
+    docV2.settings.layoutLocked = newState;
+    const _tb = document.getElementById('btn-lock-global');
+    if (_tb) {
+        _tb.textContent = newState ? '\uD83D\uDD12 Layout Locked' : '\uD83D\uDD13 Layout Unlocked';
+        _tb.classList.toggle('lock-unlocked', !newState);
+        _tb.classList.toggle('primary', newState);
+    }
     syncZoomControlsVisibility();
     render();
-    showToast(layoutLocked ? '🔒 Layout locked' : '🔓 Layout unlocked');
+    showToast(newState ? '\uD83D\uDD12 Layout locked' : '\uD83D\uDD13 Layout unlocked');
 }
 
 function syncZoomControlsVisibility() {
@@ -3446,6 +3461,10 @@ async function load() {
             renderAssetPanel();
             render();
             applyZoom(1);
+            // BUG 3 FIX: Re-sync lock button after load
+            layoutLocked = !!docV2.settings.layoutLocked;
+            const _lb2a = document.getElementById('btn-lock-global');
+            if (_lb2a) { _lb2a.textContent = layoutLocked ? '\uD83D\uDD12 Layout Locked' : '\uD83D\uDD13 Layout Unlocked'; _lb2a.classList.toggle('lock-unlocked', !layoutLocked); _lb2a.classList.toggle('primary', layoutLocked); }
             showToast('✅ Project loaded from server');
             return;
         }
@@ -3462,6 +3481,10 @@ async function load() {
                     renderAssetPanel();
                     render();
                     applyZoom(1);
+                    // BUG 3 FIX: Re-sync lock button after load
+                    layoutLocked = !!docV2.settings.layoutLocked;
+                    const _lb2b = document.getElementById('btn-lock-global');
+                    if (_lb2b) { _lb2b.textContent = layoutLocked ? '\uD83D\uDD12 Layout Locked' : '\uD83D\uDD13 Layout Unlocked'; _lb2b.classList.toggle('lock-unlocked', !layoutLocked); _lb2b.classList.toggle('primary', layoutLocked); }
                     showToast('⚠️ Loaded from local backup — server unavailable');
                     return;
                 }
@@ -3694,6 +3717,11 @@ window.onload = async () => {
     // Step 2: Render immediately with whatever state was loaded so the
     // saved layout is visible right away — do NOT wait for fonts first.
     try { render(); } catch(e) {}
+    // BUG 1 FIX: Force lock state to unlocked and sync button immediately after first render
+    layoutLocked = false;
+    docV2.settings.layoutLocked = false;
+    const _lb = document.getElementById('btn-lock-global');
+    if (_lb) { _lb.textContent = '\uD83D\uDD13 Layout Unlocked'; _lb.classList.add('lock-unlocked'); _lb.classList.remove('primary'); }
 
     // Step 3: Declare fontNames, then re-render once fonts are ready
     const fontNames = [
