@@ -1830,7 +1830,7 @@ function attach(el) {
 
         document.onmousemove = (me) => {
             if (isEditingText) return;
-            const item = docV2.elements.find(e => e.id === selectedId);
+            const item = docV2.elements.find(e => e.id === el.id);
             if (!item || item.locked) return;
             let nx = (me.clientX - rect.left)/zoomScale - ox;
             let ny = (me.clientY - rect.top)/zoomScale - oy;
@@ -1839,18 +1839,23 @@ function attach(el) {
             if(Math.abs(nx-cx)<15) { nx=cx; gcx.style.display='block'; } else gcx.style.display='none';
             if(Math.abs(ny-cy)<15) { ny=cy; gcy.style.display='block'; } else gcy.style.display='none';
 
+            const dx = nx - (parseFloat(el.style.left) || item.x);
+            const dy = ny - (parseFloat(el.style.top) || item.y);
+
             el.style.left = nx + 'px'; el.style.top = ny + 'px';
             
-            if (docV2.editorState.selectedElementIds.length > 1) {
-                const dx = parseFloat(el.style.left) - dragStartElX;
-                const dy = parseFloat(el.style.top) - dragStartElY;
-                docV2.editorState.selectedElementIds.forEach(id => {
-                    if (id === el.id) return;
-                    if (groupStartMap[id]) {
-                        const otherEl = document.getElementById(id);
+            const groupIds = docV2.editorState.selectedElementIds || [];
+            if (groupIds.length > 1 && groupIds.includes(item.id)) {
+                groupIds.forEach(gid => {
+                    if (gid === item.id) return;
+                    const gItem = docV2.elements.find(e => e.id === gid);
+                    if (gItem && !gItem.locked) {
+                        const otherEl = document.getElementById(gid);
                         if (otherEl) {
-                            otherEl.style.left = (groupStartMap[id].startX + dx) + 'px';
-                            otherEl.style.top = (groupStartMap[id].startY + dy) + 'px';
+                            const curX = parseFloat(otherEl.style.left) || gItem.x;
+                            const curY = parseFloat(otherEl.style.top) || gItem.y;
+                            otherEl.style.left = (curX + dx) + 'px';
+                            otherEl.style.top = (curY + dy) + 'px';
                         }
                     }
                 });
@@ -2172,7 +2177,7 @@ function deselect() {
     renderLayerList();
 }
 
-function onCanvasClick(e) { if(isLassoing || _lassoJustFired) return; if(e.target.id === 'menu-container' || e.target.id === 'elements-layer') deselect(); }
+function onCanvasClick(e) { if(isLassoing) return; if(_lassoJustFired) { _lassoJustFired = false; return; } if(e.target.id === 'menu-container' || e.target.id === 'elements-layer') deselect(); }
 function onCanvasMousedown(e) {
   if (e.button !== 0) return;
   if (layoutLocked) return;
@@ -2266,7 +2271,7 @@ function sync() {
     });
 }
 
-function updateProp(k, v) { if(!selectedId) return; pushState(); let item = docV2.elements.find(e=>e.id===selectedId); if(item) { item[k]=v; render(); } }
+function updateProp(k, v) { if(!selectedId) return; pushState(); let item = docV2.elements.find(e=>e.id===selectedId); if(item) { if (k === 'strokeWidth') v = parseInt(v) || 0; item[k]=v; render(); } }
 function updateStyle(k, v) { if(!selectedId) return; pushState(); let item = docV2.elements.find(e=>e.id===selectedId); if(item && item.style) { item.style[k]=v; render(); } }
 
 function applyTextWidth(w) {
@@ -2631,7 +2636,7 @@ function addRect() {
         pushState();
         const id = 'rect_' + Date.now();
         const maxZ = docV2.elements.reduce((m, e) => Math.max(m, e.zIndex || 0), 0);
-        docV2.elements.push({id, type:'shape', x:finX, y:finY, width:finW, height:finH, zIndex: maxZ + 1, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fill:'#333333'} });
+        docV2.elements.push({id, type:'shape', x:finX, y:finY, width:finW, height:finH, zIndex: maxZ + 1, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', strokeWidth: 0, strokeColor: '#000000', style:{fill:'#333333'} });
         render();
         selectById(id);
     }
@@ -2673,7 +2678,7 @@ function addCircle() {
         x: 300, y: 300, width: 150, height: 150,
         zIndex: maxZ + 1, opacity: 1, rotation: 0,
         visible: true, locked: false, layerRole: 'content',
-        strokeWidth: 0, strokeColor: '#c8a96a', cornerRadius: 75,
+        strokeWidth: 0, strokeColor: '#000000', cornerRadius: 75,
         style: { fill: '#c8a96a' }
     });
     render();
@@ -2690,7 +2695,7 @@ function addStar() {
         x: 300, y: 300, width: 150, height: 150,
         zIndex: maxZ + 1, opacity: 1, rotation: 0,
         visible: true, locked: false, layerRole: 'content',
-        strokeWidth: 0, strokeColor: '#c8a96a', cornerRadius: 0,
+        strokeWidth: 0, strokeColor: '#000000', cornerRadius: 0,
         style: { fill: '#c8a96a' }
     });
     render();
