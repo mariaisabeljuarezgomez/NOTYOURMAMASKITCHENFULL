@@ -2998,9 +2998,17 @@ function updateShapeFill(v) {
 
     const domNode = document.getElementById(selectedId);
     if (domNode) {
-        const inner = domNode.querySelector('.shape-inner');
-        if (inner) inner.style.backgroundColor = v;
-        else domNode.style.backgroundColor = v;
+        // Immediately update the live SVG polygon/circle fill without waiting for full render()
+        const svgShape = domNode.querySelector('polygon, circle, rect.shape-rect');
+        if (svgShape) {
+            svgShape.setAttribute('fill', v);
+        } else {
+            // Fallback for non-SVG shapes (plain div shapes)
+            const inner = domNode.querySelector('.shape-inner');
+            if (inner) inner.style.backgroundColor = v;
+        }
+        // Clear any leaked background color on the wrapper div
+        domNode.style.backgroundColor = 'transparent';
     }
     sync();
 }
