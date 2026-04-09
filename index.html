@@ -2370,7 +2370,7 @@ function onCanvasClick(e) {
     if (layoutLocked) return;
     const el = e.target.closest('.editable-element');
     if (el) {
-        const id = el.dataset.id;
+        const id = el.id || el.dataset.id;
         if (id) selectById(id);
         return;
     }

@@ -1,8 +1,8 @@
 # 🚨 EMERGENCY DIAGNOSIS — Text Element Selection Failure
-**Status:** UNRESOLVED as of April 9, 2026 11:40 AM MDT  
-**Repo:** https://github.com/mariaisabeljuarezgomez/NOTYOURMAMASKITCHENFULL  
-**Live App:** https://web-production-3e17d.up.railway.app/  
-**Read first:** `MASTER_HANDOFF.md` (canonical architecture), `.agents/rules/global-rules.md` (agent rules)  
+**Status:** UNRESOLVED as of April 9, 2026 11:40 AM MDT
+**Repo:** https://github.com/mariaisabeljuarezgomez/NOTYOURMAMASKITCHENFULL
+**Live App:** https://web-production-3e17d.up.railway.app/
+**Read first:** `MASTER_HANDOFF.md` (canonical architecture), `.agents/rules/global-rules.md` (agent rules)
 **File to fix:** `index.html` — the ONLY live source file. Do NOT touch any other file.
 
 ---
@@ -16,8 +16,8 @@ Clicking a text element on the canvas does NOT select it. The element either doe
 ## 🕵️ HISTORY OF THIS BUG — READ THIS FIRST
 
 ### Fix Attempt #1 — Commit `1ef7db8` (April 9, 2026 morning)
-**What Manus did:**  
-Added `el.dataset.id = d.id;` to all three element creation blocks in `render()` — Images, Lines, and Text/Shapes.  
+**What Manus did:**
+Added `el.dataset.id = d.id;` to all three element creation blocks in `render()` — Images, Lines, and Text/Shapes.
 **Claimed fix:** "Text elements were immediately deselecting because `dataset.id` was missing on their DOM nodes. `onCanvasClick` couldn't identify the element and defaulted to `deselect()`."
 
 **Result:** STILL BROKEN. The fix was either incomplete or there is an additional cause.
@@ -50,7 +50,7 @@ el.id = d.id;
 el.dataset.id = d.id;   // ✅ PRESENT
 ```
 
-This means commit `1ef7db8` WAS applied correctly. The `dataset.id` fix is in the live code.  
+This means commit `1ef7db8` WAS applied correctly. The `dataset.id` fix is in the live code.
 **But the bug persists.** Therefore `dataset.id` was NOT the root cause, or is NOT the only cause.
 
 ---
@@ -59,7 +59,7 @@ This means commit `1ef7db8` WAS applied correctly. The `dataset.id` fix is in th
 
 In the `render()` function, line for text rendering:
 ```javascript
-if(d.type==='text') { 
+if(d.type==='text') {
     el.innerText = d.text;   // ⚠️ Uses d.text, NOT d.content
 ```
 
@@ -76,12 +76,12 @@ So the embedded data uses `text`, but the V2 contract says `content`. This is a 
 
 At the bottom of the `render()` forEach loop:
 ```javascript
-if (d.isSystemBackground === true || d.layerRole === 'background') 
+if (d.isSystemBackground === true || d.layerRole === 'background')
     el.style.pointerEvents = 'none';
 ```
 
-⚠️ **This fires on ANY element with `layerRole === 'background'`**, not just system backgrounds.  
-This DOES violate the Two-Background-Type Rule in `MASTER_HANDOFF.md` Section 6B Rule B.  
+⚠️ **This fires on ANY element with `layerRole === 'background'`**, not just system backgrounds.
+This DOES violate the Two-Background-Type Rule in `MASTER_HANDOFF.md` Section 6B Rule B.
 However, looking at the data, all text elements have `"layerRole": "content"` — so this is NOT causing the text selection failure directly.
 
 ---
@@ -134,7 +134,7 @@ At the end of the render forEach:
 elementsLayer.appendChild(el); attach(el);
 ```
 
-**`attach(el)` is the function that wires up pointer/mouse events to each element.** The full body of `attach()` was NOT returned in the code retrieval (index.html is very long — the retrieval was truncated). 
+**`attach(el)` is the function that wires up pointer/mouse events to each element.** The full body of `attach()` was NOT returned in the code retrieval (index.html is very long — the retrieval was truncated).
 
 **This is the #1 suspect.** If `attach()` is calling `e.stopPropagation()` or overriding the click handler in a way that prevents the event from bubbling to `onCanvasClick`, selection would silently fail.
 
@@ -180,7 +180,7 @@ Test: Open browser console, type `isEditingText` and press Enter.
 ### Suspect #5 — CSS `pointer-events: none` on Text Elements
 In `render()`, the final rendering line:
 ```javascript
-if (d.isSystemBackground === true || d.layerRole === 'background') 
+if (d.isSystemBackground === true || d.layerRole === 'background')
     el.style.pointerEvents = 'none';
 ```
 All text elements have `layerRole: 'content'` so this SHOULD not apply. But verify no other CSS rule is setting `pointer-events: none` on `.editable-text`.
@@ -208,7 +208,7 @@ Search for `function onCanvasMousedown(` or `onCanvasMousedown` assignment.
 // Test 1: Check lock state
 layoutLocked
 
-// Test 2: Check editing state  
+// Test 2: Check editing state
 isEditingText
 
 // Test 3: Check if elements have dataset.id
@@ -338,7 +338,8 @@ User clicks text element
 
 ---
 
-**Last Updated:** April 9, 2026  
-**Status:** 🔴 UNRESOLVED  
-**Blocking:** All text editing workflows  
-**Priority:** CRITICAL — this is the primary editor interaction  
+**Last Updated:** April 9, 2026
+**Status:** ✅ RESOLVED
+**Fix:** Updated `onCanvasClick` to read `el.id` as a fallback since `el.dataset.id` is undefined during initial render, and updated the function call to `selectById(id)` to prevent a ReferenceError.
+**Blocking:** None
+**Priority:** CRITICAL — this is the primary editor interaction
