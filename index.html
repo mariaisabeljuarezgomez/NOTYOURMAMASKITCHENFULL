@@ -527,14 +527,20 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     background: rgba(20, 20, 20, 0.97);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid #333;
-    display: none;
+    display: flex;
     align-items: center;
     gap: 2px;
     padding: 0 16px;
     z-index: 990;
     overflow: hidden;
+    opacity: 0.35;
+    pointer-events: none;
+    transition: opacity 0.15s;
 }
-#text-format-bar.show { display: flex; }
+#text-format-bar.show { 
+    opacity: 1;
+    pointer-events: all;
+}
 .tfb-sep { width: 1px; height: 22px; background: #444; margin: 0 6px; flex-shrink: 0; }
 .tfb-btn {
     width: 32px; height: 32px; border-radius: 6px;
@@ -568,7 +574,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 .tfb-color-input { width: 32px; height: 32px; border: none; background: transparent; cursor: pointer; opacity: 0; position: absolute; top: 0; left: 0; }
 .tfb-color-icon { position: absolute; top: 4px; left: 7px; font-size: 14px; pointer-events: none; color: #ccc; line-height: 1; }
 /* When text-format-bar is visible, push viewport down */
-body.tfb-active #editor-viewport { top: 104px !important; }
+#editor-viewport { top: 104px !important; }
 @media (max-width: 900px) {
     #text-format-bar {
         left: 0 !important;
