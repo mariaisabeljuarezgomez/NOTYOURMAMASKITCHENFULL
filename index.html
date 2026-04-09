@@ -61,7 +61,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 .editable-element { position:absolute; cursor:pointer; transition: outline 0.1s, opacity 0.2s, border-radius 0.2s; user-select:none; z-index:auto; transform-origin: center; box-sizing: border-box; }
 .editable-element:hover { outline: 2px solid var(--accent); }
 .editable-element.selected { outline: 3px solid var(--accent) !important; outline-offset: 2px; box-shadow: 0 0 15px var(--selection); z-index: 999 !important; }
-.editable-element.selected * { pointer-events: none; }
+.editable-element.selected *:not(.resize-handle) { pointer-events: none; }
 .editable-element.locked.selected { z-index: auto !important; outline: 2px dashed #888 !important; box-shadow: none !important; }
 .editable-element.locked { cursor: default; }
 .editable-element.locked:hover { outline: none; cursor: default; }
@@ -83,7 +83,11 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     z-index: 9999;
     box-sizing: border-box;
 }
-.editable-element.selected .resize-handle { display: block; }
+.editable-element.selected .resize-handle { 
+    display: block; 
+    pointer-events: all !important;
+    cursor: nwse-resize;
+}
 
 /* Snapping Guides */
 .guide { position:absolute; pointer-events:none; border: 1px dashed var(--accent); z-index: 500; display:none; }
