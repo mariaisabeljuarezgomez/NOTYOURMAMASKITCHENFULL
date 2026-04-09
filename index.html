@@ -1749,6 +1749,10 @@ function attach(el) {
 
         
         docV2.editorState.selectedElementIds = docV2.editorState.selectedElementIds || [];
+        if (_itemData && _itemData.locked) {
+            deselect();
+            return;
+        }
         if (e.shiftKey) {
             if (docV2.editorState.selectedElementIds.includes(el.id)) {
                 docV2.editorState.selectedElementIds = docV2.editorState.selectedElementIds.filter(id => id !== el.id);
@@ -2250,7 +2254,7 @@ function toggleVisibility() {
 }
 
 function toggleVisById(e, id) { e.stopPropagation(); pushState(); const item = docV2.elements.find(i=>i.id===id); if(item) { item.visible = !item.visible; render(); } }
-function toggleLockById(e, id) { e.stopPropagation(); pushState(); const item = docV2.elements.find(i=>i.id===id); if(item) { item.locked = !item.locked; render(); } }
+function toggleLockById(e, id) { e.stopPropagation(); pushState(); const item = docV2.elements.find(i=>i.id===id); if(item) { item.locked = !item.locked; deselect(); render(); } }
 
 function setBarTab(tab) {
     _activeBarTab = tab;
