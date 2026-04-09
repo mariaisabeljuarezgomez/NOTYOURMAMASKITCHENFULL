@@ -1485,6 +1485,7 @@ function render() {
             el.style.boxSizing = 'border-box';
         }
         
+        if (d.isSystemBackground === true || d.layerRole === 'background') el.style.pointerEvents = 'none';
         elementsLayer.appendChild(el); attach(el);
         if(selectedId === d.id && (d.type === 'image' || d.type === 'shape' || d.type === 'line')) injectResizeHandles(el);
     });
