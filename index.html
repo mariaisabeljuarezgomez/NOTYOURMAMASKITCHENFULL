@@ -1324,6 +1324,7 @@ function render() {
         if (d.type === 'image') {
             el = document.createElement('div');
             el.id = d.id;
+            el.dataset.id = d.id;
             el.className = 'editable-element image-wrapper';
             el.style.position = 'absolute';
             el.style.overflow = 'visible';
@@ -1347,6 +1348,7 @@ function render() {
             // SVG line wrapper
             el = document.createElement('div');
             el.id = d.id;
+            el.dataset.id = d.id;
             el.className = 'editable-element';
             const svgW = Math.max(Math.abs((d.x2||0) - (d.x1||0)), d.strokeWidth || 1, 20);
             const svgH = Math.max(Math.abs((d.y2||0) - (d.y1||0)), d.strokeWidth || 1, 20);
@@ -1378,6 +1380,7 @@ function render() {
         } else {
             el = document.createElement('div');
             el.id = d.id;
+            el.dataset.id = d.id;
             el.className = 'editable-element ' + (d.type==='text'?'editable-text':'shape-object');
             // BUG 1 FIX: Inner container for clipping protection
             if (d.type === 'shape') {
@@ -2224,7 +2227,7 @@ function onCanvasClick(e) {
     const el = e.target.closest('.editable-element');
     if (el) {
         const id = el.dataset.id;
-        if (id) select(id);
+        if (id) selectById(id);
         return;
     }
     deselect();
@@ -3334,7 +3337,7 @@ function applyZoom(f, isAbsolute = false) {
     
     if(scalerWrapper) {
         scalerWrapper.style.transform = `scale(${zoomScale})`;
-        scalerWrapper.style.transformOrigin = 'top center';
+        scalerWrapper.style.transformOrigin = 'top left';
     }
     
     if(centeringWrapper) {
