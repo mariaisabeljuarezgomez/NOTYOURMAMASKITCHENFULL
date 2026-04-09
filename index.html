@@ -1213,6 +1213,8 @@ body.tfb-active #editor-viewport { top: 104px !important; }
 <script>
 let isEditingText = false;
 let isLassoing = false;
+let lastClickId = null;
+let lastClickTime = 0;
 let _lassoJustFired = false;
 let _groupDragStatePushed = false;
 let docV2 = { 
@@ -1943,18 +1945,34 @@ function injectResizeHandles(el) {
 
 function attach(el) {
     el.onmousedown = (e) => {
-        console.log("Element Mousedown:", el.id);
-        // e.stopPropagation(); removed to allow bubbling to viewport lasso listener
-        const _itemData = d(el);
-        // System background never drags — lasso owns it entirely (Section 6B Rule B)
-        if (_itemData && _itemData.isSystemBackground === true) return;
-
+        e.stopPropagation();
         
+        const now = Date.now();
+        const isDoubleClick = (lastClickId === el.id) && (now - lastClickTime < 400);
+        lastClickId = el.id;
+        lastClickTime = now;
+
+        const _itemData = d(el);
+        if (!_itemData || _itemData.isSystemBackground === true) return;
+
+        // Handle double-click to enter edit mode for text
+        if (isDoubleClick && _itemData.type === 'text') {
+            if (!_itemData.locked) {
+                el.contentEditable = 'true';
+                el.classList.add('editing');
+                el.focus();
+                isEditingText = true;
+                e.preventDefault();
+                return; // Don't do drag setup
+            }
+        }
+
         docV2.editorState.selectedElementIds = docV2.editorState.selectedElementIds || [];
-        if (_itemData && _itemData.locked) {
+        if (_itemData.locked) {
             deselect();
             return;
         }
+
         if (e.shiftKey) {
             if (docV2.editorState.selectedElementIds.includes(el.id)) {
                 docV2.editorState.selectedElementIds = docV2.editorState.selectedElementIds.filter(id => id !== el.id);
@@ -1972,10 +1990,10 @@ function attach(el) {
         } else {
             const alreadyInGroup = docV2.editorState.selectedElementIds.includes(el.id);
             if (!alreadyInGroup) {
-                // Always clear multi-select on a plain (non-shift) click when starting a fresh single selection.
-                // Leaving selectedElementIds dirty causes it to conflict with selectedId.
                 docV2.editorState.selectedElementIds = [];
-                selectById(el.id);
+                if (selectedId !== el.id) {
+                    selectById(el.id);
+                }
             }
         }
 
@@ -2104,6 +2122,8 @@ function attach(el) {
 }
 
 function selectById(id) {
+    // If this element is already selected, do NOT re-render
+    if (selectedId === id) return;
     const _lck = docV2.elements.find(e => e.id === id);
     if (_lck && _lck.locked) return;
     // Remove selected class from old element without full re-render
