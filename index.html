@@ -7,10 +7,10 @@
 <title>Menu Editor Pro V2 - UX Hardened</title>
 <meta name="description" content="Menu Editor Pro — Professional restaurant menu layout tool. Edit, save, and export print-ready menus with drag-and-drop text, images, and shapes.">
 <style>
-@font-face { font-family: 'bernard-mt-condensed-regular'; src: url('bernard-mt-condensed-regular.ttf') format('truetype'); font-display: swap; }
-@font-face { font-family: 'century-gothic-bold-italic'; src: url('century-gothic-bold-italic.ttf') format('truetype'); font-display: swap; }
-@font-face { font-family: 'century-gothic-bold'; src: url('century-gothic-bold.ttf') format('truetype'); font-display: swap; }
-@font-face { font-family: 'century-gothic-regular'; src: url('century-gothic-regular.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'bernard-mt-condensed-regular'; src: url('bernard-mt-condensed-regular.ttf') format('truetype'); font-display: block; }
+@font-face { font-family: 'century-gothic-bold-italic'; src: url('century-gothic-bold-italic.ttf') format('truetype'); font-display: block; }
+@font-face { font-family: 'century-gothic-bold'; src: url('century-gothic-bold.ttf') format('truetype'); font-display: block; }
+@font-face { font-family: 'century-gothic-regular'; src: url('century-gothic-regular.ttf') format('truetype'); font-display: block; }
 .editable-element.multi-selected { outline: 3px solid #2980b9; box-shadow: 0 0 15px rgba(41,128,185,0.5); }
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 :root { --primary: #95201d; --accent: #f1c40f; --bg: #1a1a1a; --surface: #2d2d2d; --selection: rgba(241, 196, 15, 0.5);
@@ -631,23 +631,23 @@ body.tfb-active #editor-viewport { top: 104px !important; }
 </div>
 <main id="editor-viewport" onclick="onViewportClick(event)">
     <div id="centering-wrapper">
-        <div id="scaler-wrapper" style="width:908.4429931640625px; height:1336.02001953125px;">
+        <div id="scaler-wrapper" style="width:908px; height:1336px;">
             <div id="menu-container" onclick="onCanvasClick(event)" onmousedown="onCanvasMousedown(event)" ontouchstart="onCanvasMousedown(event)">
                 <img id="menu-bg" src="menu-bg-preview.jpg" alt="BG" fetchpriority="high">
-                <div id="elements-layer" style="position:absolute; top:0; left:0; width:100%; height:100%;" onmousedown="onCanvasMousedown(event)" ontouchstart="onCanvasMousedown(event)"></div>
+                <div id="elements-layer" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div>
                 <div id="guide-cx" class="guide guide-v" style="left:50%"></div>
                 <div id="guide-cy" class="guide guide-h" style="top:50%"></div>
+                <div id="lasso-box" style="
+                  position:absolute;
+                  border:2px dashed #4a90e2;
+                  background:rgba(74,144,226,0.08);
+                  pointer-events:none;
+                  display:none;
+                  z-index:9999;
+                "></div>
             </div>
 </div></div>
 </main>
-<div id="lasso-box" style="
-  position:fixed;
-  border:2px dashed #4a90e2;
-  background:rgba(74,144,226,0.08);
-  pointer-events:none;
-  display:none;
-  z-index:9999;
-"></div>
 
 <!-- ===== LEFT SIDEBAR ===== -->
 <div id="left-sidebar">
@@ -2390,13 +2390,16 @@ function onCanvasMousedown(e) {
     moved = true;
     lassoActive = true;
     isLassoing = true;
-    const x = Math.min(me.clientX, startX);
-    const y = Math.min(me.clientY, startY);
+    // BUG-F4 fix: lasso-box is now position:absolute inside menu-container, use canvas-relative coords
+    const cRect = scalerEl.getBoundingClientRect();
+    const cScale = cRect.width / BASE_W;
+    const x = (Math.min(me.clientX, startX) - cRect.left) / cScale;
+    const y = (Math.min(me.clientY, startY) - cRect.top) / cScale;
     lassoBox.style.display = 'block';
     lassoBox.style.left   = x + 'px';
     lassoBox.style.top    = y + 'px';
-    lassoBox.style.width  = Math.abs(dx) + 'px';
-    lassoBox.style.height = Math.abs(dy) + 'px';
+    lassoBox.style.width  = Math.abs(dx) / cScale + 'px';
+    lassoBox.style.height = Math.abs(dy) / cScale + 'px';
     lastX = me.clientX;
     lastY = me.clientY;
   }
@@ -3531,6 +3534,7 @@ async function save() {
         }
       }
     };
+    delete payload.status; // BUG-F1 fix: strip server-injected status field before POST
 
     try {
         const r = await fetch('/api/menu', {
