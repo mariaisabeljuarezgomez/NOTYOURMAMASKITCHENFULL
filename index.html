@@ -2293,7 +2293,20 @@ function toggleVisibility() {
 }
 
 function toggleVisById(e, id) { e.stopPropagation(); pushState(); const item = docV2.elements.find(i=>i.id===id); if(item) { item.visible = !item.visible; render(); } }
-function toggleLockById(e, id) { e.stopPropagation(); pushState(); const item = docV2.elements.find(i=>i.id===id); if(item) { item.locked = !item.locked; deselect(); render(); } }
+function toggleLockById(e, id) {
+    e.stopPropagation();
+    // Section 6B Rule B: system backgrounds must always stay locked — never allow unlock
+    const item = docV2.elements.find(i => i.id === id);
+    if (!item) return;
+    if (item.isSystemBackground === true) {
+        showToast('⚠️ Background layer cannot be unlocked — use Reset to remove it');
+        return;
+    }
+    pushState();
+    item.locked = !item.locked;
+    deselect();
+    render();
+}
 
 function setBarTab(tab) {
     _activeBarTab = tab;
