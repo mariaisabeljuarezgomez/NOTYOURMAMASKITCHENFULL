@@ -813,25 +813,28 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 "></canvas>
 
 <canvas id="ruler-v" style="
-  position:fixed;
-  top:144px; /* matches #editor-viewport top */
-  left:220px; /* matches left sidebar width */
-  width:20px;
-  bottom:0;
-  display:block; z-index:100;
-  cursor:default; pointer-events:auto;
-  background:rgba(18,18,18,0.98);
-  border-right:1px solid rgba(0,255,230,0.15);
+  position: fixed;
+  top: 144px;
+  left: 220px;   /* left sidebar edge */
+  width: 20px;
+  bottom: 0;
+  z-index: 100;
+  pointer-events: auto;
+  display: block;
+  background: rgba(18,18,18,0.98);
+  border-right: 1px solid rgba(0,255,230,0.15);
 "></canvas>
 
 <div id="ruler-corner" style="
-  position:fixed;
-  top:144px; left:220px;
-  width:20px; height:20px;
-  background:rgba(12,12,12,0.99);
-  border-right:1px solid rgba(0,255,230,0.15);
-  border-bottom:1px solid rgba(0,255,230,0.15);
-  z-index:101;
+  position: fixed;
+  top: 144px;
+  left: 220px;
+  width: 20px;
+  height: 20px;
+  z-index: 101;
+  background: rgba(12,12,12,0.99);
+  border-right: 1px solid rgba(0,255,230,0.15);
+  border-bottom: 1px solid rgba(0,255,230,0.15);
 "></div>
 </div></div>
 </main>
@@ -6004,9 +6007,15 @@ function syncTextFormatBar() {
     const vpW = viewport.clientWidth;
     const vpH = viewport.clientHeight;
 
+    const DPR = window.devicePixelRatio || 1;
+
     // ── Horizontal ruler ──
-    rulerH.width = vpW;
-    rulerH.height = RULER_SIZE;
+    rulerH.width = vpW * DPR;
+    rulerH.height = RULER_SIZE * DPR;
+    rulerH.style.width = vpW + 'px';
+    rulerH.style.height = RULER_SIZE + 'px';
+    ctxH.setTransform(DPR, 0, 0, DPR, 0, 0);
+
     ctxH.fillStyle = BG_COLOR;
     ctxH.fillRect(0,0,vpW,RULER_SIZE);
 
@@ -6033,9 +6042,12 @@ function syncTextFormatBar() {
 
     // ── Vertical ruler ──
     const vH = Math.max(vpH, 400);
-    rulerV.style.height = vpH + 'px';
-    rulerV.height = vH;
-    rulerV.width = RULER_SIZE;
+    rulerV.width = RULER_SIZE * DPR;
+    rulerV.height = vH * DPR;
+    rulerV.style.width = RULER_SIZE + 'px';
+    rulerV.style.height = vH + 'px';
+    ctxV.setTransform(DPR, 0, 0, DPR, 0, 0);
+
     ctxV.fillStyle = BG_COLOR;
     ctxV.fillRect(0,0,RULER_SIZE,vH);
 
