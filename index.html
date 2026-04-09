@@ -2085,7 +2085,12 @@ function attach(el) {
 
     // FIX: stop click event from bubbling to onCanvasClick/onViewportClick after mousedown has already handled selection.
     // mousedown still bubbles (lasso needs it). Only click is stopped here.
-    el.onclick = (e) => { e.stopPropagation(); };
+    el.onclick = (e) => {
+        e.stopPropagation();
+        // Selection for ALL element types must still work via click
+        const id = el.id || el.dataset.id;
+        if (id) selectById(id);
+    };
 }
 
 function selectById(id) {
