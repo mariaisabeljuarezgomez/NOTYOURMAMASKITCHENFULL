@@ -2059,6 +2059,10 @@ function attach(el) {
     el.ontouchend = () => {
         if(document.onmouseup) document.onmouseup();
     };
+
+    // FIX: stop click event from bubbling to onCanvasClick/onViewportClick after mousedown has already handled selection.
+    // mousedown still bubbles (lasso needs it). Only click is stopped here.
+    el.onclick = (e) => { e.stopPropagation(); };
 }
 
 function selectById(id) {
