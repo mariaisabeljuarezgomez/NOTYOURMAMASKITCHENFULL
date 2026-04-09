@@ -1491,8 +1491,9 @@ function renderLayerList() {
         div.dataset.id = item.id;
         div.setAttribute('title', (item.text || item.type) + ' — ' + item.id);
 
-        // Make draggable
-        div.draggable = true;
+        // Locked backgrounds stay pinned to the bottom and cannot be dragged
+        const isLockedBackground = item.layerRole === 'background' && item.locked;
+        div.draggable = !isLockedBackground;
 
         div.ondragstart = (e) => {
             e.dataTransfer.setData('text/plain', item.id);
@@ -1527,6 +1528,11 @@ function renderLayerList() {
             pushState();
             const [moved] = docV2.elements.splice(fromIdx, 1);
             docV2.elements.splice(toIdx, 0, moved);
+            const bgIdx = docV2.elements.findIndex(el => el.layerRole === 'background' && el.locked);
+            if (bgIdx > 0) {
+                const [bg] = docV2.elements.splice(bgIdx, 1);
+                docV2.elements.unshift(bg);
+            }
             // Sync zIndex to new array order so DOM stacking matches layer list
             docV2.elements.forEach((el, idx) => { el.zIndex = idx + 1; });
             render();
@@ -1549,7 +1555,7 @@ function renderLayerList() {
         const roleTag = `<span style="font-size:8px; padding:2px 4px; border-radius:3px; background:#444; color:#aaa; text-transform:uppercase; margin-right:4px;">${item.layerRole || 'content'}</span>`;
 
 
-        div.innerHTML = `<span style="cursor:grab; color:#555; font-size:14px; padding-right:6px; flex-shrink:0;" title="Drag to reorder">⠿</span>
+        div.innerHTML = `<span style="cursor:${isLockedBackground ? 'default' : 'grab'}; color:${isLockedBackground ? '#333' : '#555'}; font-size:14px; padding-right:6px; flex-shrink:0; visibility:${isLockedBackground ? 'hidden' : 'visible'};" title="${isLockedBackground ? '' : 'Drag to reorder'}">⠿</span>
             <div style="font-size:12px; width:20px; text-align:center;">${icon}</div>
             <div class="layer-name" style="flex:1; overflow:hidden; text-overflow:ellipsis;">${roleTag}<span class="layer-rename-span" data-elid="${item.id}" title="Double-click to rename (editor only)"></span></div>
             <button class="layer-btn" title="${item.visible ? 'Visible' : 'Hidden — click to show'}"
