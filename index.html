@@ -1776,10 +1776,13 @@ function attach(el) {
             updateDistributeBar();
             return;
         } else {
-            // Always clear multi-select on a plain (non-shift) click.
-            // Leaving selectedElementIds dirty causes it to conflict with selectedId.
-            docV2.editorState.selectedElementIds = [];
-            selectById(el.id);
+            const alreadyInGroup = docV2.editorState.selectedElementIds.includes(el.id);
+            if (!alreadyInGroup) {
+                // Always clear multi-select on a plain (non-shift) click when starting a fresh single selection.
+                // Leaving selectedElementIds dirty causes it to conflict with selectedId.
+                docV2.editorState.selectedElementIds = [];
+                selectById(el.id);
+            }
         }
 
         // Always init dimensions and inject resize handles for images, shapes, and lines
