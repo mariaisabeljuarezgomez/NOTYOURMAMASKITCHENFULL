@@ -3876,7 +3876,8 @@ function _mergeLoadedDoc(s) {
     const missing = currentAssets.filter(a => !serverIds.has(a.id));
     docV2.assets = [...(docV2.assets || []), ...missing];
     if (docV2.settings && docV2.settings.layoutLocked === undefined) docV2.settings.layoutLocked = false;
-    zoomScale = docV2.editorState?.zoom || 1;
+    // Do NOT restore zoom from session — fitCanvasToScreen() will compute it fresh on init
+    // zoomScale = docV2.editorState?.zoom || 1;
     syncLayoutLockUI();
     syncZoomControlsVisibility();
     selectedId = null;
@@ -3886,7 +3887,8 @@ function _mergeLoadedDoc(s) {
 
 async function save() {
     sync();
-    docV2.editorState.zoom = docV2.editorState._userZoom ?? zoomScale;
+    // Do not persist zoom — always re-fit on load
+    // docV2.editorState.zoom = docV2.editorState._userZoom ?? zoomScale;
     docV2.settings.layoutLocked = layoutLocked;
     localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2));
     docV2.version = 2;
