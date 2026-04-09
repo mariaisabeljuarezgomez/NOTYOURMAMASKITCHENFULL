@@ -5,15 +5,20 @@
 // It contains the 300 DPI PNG metadata injection for exportPng().
 // ============================================================
 
-function crc32(data) {
-  const table = new Uint32Array(256);
+// CRC32 lookup table — built once at module load, not on every call (BUG-M5 fix)
+const CRC32_TABLE = (function() {
+  const t = new Uint32Array(256);
   for (let i = 0; i < 256; i++) {
     let c = i;
     for (let j = 0; j < 8; j++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
-    table[i] = c;
+    t[i] = c;
   }
+  return t;
+})();
+
+function crc32(data) {
   let crc = 0xFFFFFFFF;
-  for (let i = 0; i < data.length; i++) crc = table[(crc ^ data[i]) & 0xFF] ^ (crc >>> 8);
+  for (let i = 0; i < data.length; i++) crc = CRC32_TABLE[(crc ^ data[i]) & 0xFF] ^ (crc >>> 8);
   return (crc ^ 0xFFFFFFFF) >>> 0;
 }
 
@@ -21,6 +26,18 @@ async function inject300DpiAndDownload(blob, filename) {
   const PPM = 11811; // 300 DPI in pixels per meter
   const arrayBuffer = await blob.arrayBuffer();
   const bytes = new Uint8Array(arrayBuffer);
+
+  // Verify IHDR chunk is at expected offset before inserting pHYs (BUG-H5 fix)
+  // PNG signature (8 bytes) + IHDR length (4) + "IHDR" type = bytes[12..15]
+  if (!(bytes[12]===73 && bytes[13]===72 && bytes[14]===68 && bytes[15]===82)) {
+    console.warn('[export] PNG IHDR not at expected offset — skipping pHYs injection, downloading as-is');
+    const fallback = new Blob([bytes], {type:'image/png'});
+    const fa = document.createElement('a');
+    fa.href = URL.createObjectURL(fallback);
+    fa.download = filename || 'menu-export.png';
+    fa.click();
+    return;
+  }
 
   // Build pHYs chunk: length(4) + type(4) + data(9) + crc(4) = 21 bytes
   const phys = new Uint8Array(21);

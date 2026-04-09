@@ -168,7 +168,12 @@ def prune_backups(backup_dir, keep=20):
 def validate_schema(data):
     if not isinstance(data, dict):
         return False
-    return isinstance(data.get("elements"), list)
+    if not isinstance(data.get("elements"), list):
+        return False
+    # Reject V1 documents from being saved — V1 only accepted on GET for migration
+    if data.get("version") == 1:
+        return False
+    return True
 
 @app.route("/")
 def index():
@@ -191,7 +196,9 @@ def get_menu():
                 row = cur.fetchone()
                 if row:
                     status_info["db_active"] = True
-                    return jsonify({**row['canvas_json'], "status": status_info})
+                    doc = dict(row['canvas_json'])
+                    doc["status"] = status_info   # status lives in response; client must strip before save
+                    return jsonify(doc)
         except Exception as e:
             print(f"[DB] Fetch failed: {e}")
         finally:
@@ -203,7 +210,9 @@ def get_menu():
     try:
         with open(DATA_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
-            return jsonify({**data, "status": status_info})
+            doc = dict(data)
+            doc["status"] = status_info   # status lives in response; client must strip before save
+            return jsonify(doc)
     except Exception as e:
         return jsonify({"error": str(e), "status": status_info}), 500
 
@@ -214,6 +223,7 @@ def save_menu():
     data = request.json
     if data is None:
         return jsonify({"error": "Request body is required"}), 400
+    data.pop("status", None)   # strip server-injected status field before save
     if not validate_schema(data):
         return jsonify({"error": "Invalid schema"}), 400
     
