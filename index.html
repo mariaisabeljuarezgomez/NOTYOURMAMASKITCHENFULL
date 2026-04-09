@@ -2196,6 +2196,9 @@ function onCanvasClick(e) { if(isLassoing) return; if(_lassoJustFired) { _lassoJ
 function onCanvasMousedown(e) {
   if (e.button !== 0) return;
   if (layoutLocked) return;
+  // Lasso should only start from empty canvas, never from an element drag.
+  if (e.target?.closest && e.target.closest('.editable-element')) return;
+  if (e.target.id !== 'menu-container' && e.target.id !== 'elements-layer') return;
   const lassoBox = document.getElementById('lasso-box');
   const scalerEl = document.getElementById('scaler-wrapper');
   if (!lassoBox || !scalerEl) return;
