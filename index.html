@@ -1754,6 +1754,8 @@ function attach(el) {
         console.log("Element Mousedown:", el.id);
         // e.stopPropagation(); removed to allow bubbling to viewport lasso listener
         const _itemData = d(el);
+        // System background never drags — lasso owns it entirely (Section 6B Rule B)
+        if (_itemData && _itemData.isSystemBackground === true) return;
 
         
         docV2.editorState.selectedElementIds = docV2.editorState.selectedElementIds || [];
@@ -1844,6 +1846,7 @@ function attach(el) {
         const gcx = document.getElementById('guide-cx'), gcy = document.getElementById('guide-cy');
 
         document.onmousemove = (me) => {
+            if (isLassoing) return; // lasso takes priority — do not drag
             if (isEditingText) return;
             const item = docV2.elements.find(e => e.id === el.id);
             if (!item || item.locked) return;
