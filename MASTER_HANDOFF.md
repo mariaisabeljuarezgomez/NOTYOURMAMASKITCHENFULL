@@ -1151,3 +1151,55 @@ function onCanvasClick(e) {
 > **The symptom:** Drag-select works when mouse is released outside the interactive area but not inside it.
 > **The cause:** A `click` event fires after `mouseup` and a handler is clearing the selection.
 > **The fix:** A short-lived suppression flag on all click handlers that clear state.
+
+### 🪲 The dataset.id Two-Place Rule Bug (April 2026)
+**Feature:** Single-element click selection on the canvas.
+**Symptom:** Text elements (and any element type) immediately deselected when clicked.
+**Fix:** 1 line per element type — `el.dataset.id = d.id;` added to all three creation blocks in `render()`.
+**Commit:** `1ef7db8` — `fix: add dataset.id to all element types in render to fix selection failure`
+
+#### What Happened
+Clicking any text element (and potentially images or shapes) caused the element to immediately deselect. The selection visually flashed on and off so fast it appeared the click was simply not registering. The element was selectable via lasso but not via direct click.
+
+#### Root Cause
+`onCanvasClick` identifies which element the user clicked by reading `e.target.dataset.id` from the DOM node under the cursor. If that property is missing or empty, the handler cannot match the click to any element in `docV2.elements[]` and falls through to its default behavior: `deselect()`.
+
+The `render()` function builds DOM nodes for every element and appends them to the canvas container. It was setting many properties on the node (position, size, CSS classes, z-index) but was NOT setting `el.dataset.id = d.id` on all element types. It had been set for some types during an earlier patch but the coverage was incomplete — text, images, and lines were inconsistently covered.
+
+#### Why It Was Hard to Find
+- The lasso worked correctly because lasso selection uses a bounding-box hit test against `docV2.elements[]` coordinates — it never reads from DOM `dataset`.
+- Direct click selection uses a completely different path through the DOM event system, so a missing `dataset.id` only broke click-to-select, not lasso-to-select. This inconsistency made the bug look like a click-event routing problem rather than a missing data attribute.
+- The fix location (`render()`) and the failure location (`onCanvasClick`) were far apart in the code, making the connection non-obvious.
+
+#### The Fix
+Add `el.dataset.id = d.id;` inside every element creation block in `render()`. There are three blocks: Images, Lines, and Text/Shapes. All three must have it:
+
+```javascript
+// Inside render(), for EVERY element type created:
+const el = document.createElement('div');
+el.dataset.id = d.id;   // ← REQUIRED on every element type, every time
+el.style.left = ...;
+// ...
+```
+
+#### The Two-Place Rule — Mandatory Pattern Going Forward
+
+> ⛔ **THE TWO-PLACE RULE:** Any property that is read by an event handler for element identification MUST be written in every code path that creates or recreates that element.
+>
+> In this codebase, `dataset.id` is read by:
+> - `onCanvasClick` — click-to-select
+> - `onCanvasMousedown` — drag-to-move
+> - Any future hit-test or interaction handler
+>
+> `dataset.id` is written in `render()`. If you add a new element type to `render()`, you MUST add `el.dataset.id = d.id;` to that block. No exceptions.
+>
+> **The test:** After adding any new element type, click it directly. If it deselects immediately, `dataset.id` is missing from its creation block in `render()`.
+
+#### Generalized Rule for Future Developers
+
+> **Any time you add a new element type to a canvas-based editor:**
+> Trace every event handler that identifies elements by DOM attribute (e.g., `dataset.id`, `dataset.type`, `data-el-id`). For each one, verify that attribute is set in every branch of the render/create function that produces DOM nodes for that element type. A missing attribute in even one branch will create an inconsistent selection experience that only manifests for that specific element type.
+>
+> **The symptom:** One element type is click-selectable, another is not — even though the click handler looks correct.
+> **The cause:** The non-selectable type's DOM node is missing the identifying attribute the handler reads.
+> **The fix:** Add the attribute to that element type's creation block in `render()`.
