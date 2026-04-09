@@ -1450,9 +1450,11 @@ function render() {
             el.style.clipPath = 'none'; // BUG 1 FIX: Handles stay visible
             el.style.borderRadius = '0';
             if ((d.strokeWidth || 0) > 0) {
-                inner.style.boxShadow = `inset 0 0 0 ${d.strokeWidth}px ${d.strokeColor || '#c8a96a'}`;
+                inner.style.outline = `${d.strokeWidth}px solid ${d.strokeColor || '#c8a96a'}`;
+                inner.style.outlineOffset = `-${d.strokeWidth}px`;
             } else {
-                inner.style.boxShadow = 'none';
+                inner.style.outline = 'none';
+                inner.style.outlineOffset = '0';
             }
         } else if (d.type === 'line') {
             // Ensure line wrapper stays transparent
