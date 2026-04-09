@@ -437,13 +437,37 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     }
 
     /* Distribution Bar */
-#distribute-bar {
+#align-bar {
     position: fixed;
     top: 104px;
     left: 220px;
     right: 260px;
     height: 0;
-    z-index: 989;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    transition: opacity 0.2s, height 0.2s;
+    background: rgba(8,8,8,0.96);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 988;
+}
+#align-bar.show {
+    opacity: 1;
+    pointer-events: all;
+    height: 40px;
+}
+#distribute-bar {
+    position: fixed;
+    top: 144px;
+    left: 220px;
+    right: 260px;
+    height: 0;
+    z-index: 987;
     background: rgba(8,8,8,0.96) !important;
     backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(255,255,255,0.07) !important;
@@ -614,7 +638,9 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 .tfb-color-input { width: 32px; height: 32px; border: none; background: transparent; cursor: pointer; opacity: 0; position: absolute; top: 0; left: 0; }
 .tfb-color-icon { position: absolute; top: 4px; left: 7px; font-size: 14px; pointer-events: none; color: #ccc; line-height: 1; }
 /* When text-format-bar is visible, push viewport down */
-#editor-viewport { top: 144px !important; }
+#editor-viewport { top: 144px !important; transition: top 0.2s ease; }
+#editor-viewport.align-active { top: 184px !important; }
+#editor-viewport.dist-active { top: 224px !important; }
 @media (max-width: 900px) {
     #text-format-bar {
         left: 0 !important;
@@ -784,6 +810,34 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         onchange="tfbUpdateStyle('lineHeight', parseFloat(this.value))" title="Line height">
     <button class="tfb-size-btn" onclick="tfbStepLineHeight(0.1)" title="Increase line height">+</button>
 </div>
+
+<div id="align-bar">
+  <!-- Single element: align to canvas -->
+  <div id="align-bar-single" style="display:flex;align-items:center;gap:4px;">
+    <span class="tfb-label">ALIGN</span>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="alignToCanvas('left')" title="Align Left Edge">⬜L</button>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="centerElement('h')" title="Center Horizontal">⬛H</button>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="alignToCanvas('right')" title="Align Right Edge">L⬜</button>
+    <div class="tfb-sep"></div>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="alignToCanvas('top')" title="Align Top Edge">⬜T</button>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="centerElement('v')" title="Center Vertical">⬛V</button>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="alignToCanvas('bottom')" title="Align Bottom Edge">T⬜</button>
+  </div>
+  <!-- Multi element: align to each other -->
+  <div id="align-bar-multi" style="display:none;align-items:center;gap:4px;">
+    <span class="tfb-label">ALIGN TO</span>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="alignMulti('left')" title="Align Left Edges">Left</button>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="alignMulti('centerH')" title="Align Centers H">Ctr H</button>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="alignMulti('right')" title="Align Right Edges">Right</button>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="alignMulti('top')" title="Align Top Edges">Top</button>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="alignMulti('centerV')" title="Align Centers V">Ctr V</button>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="alignMulti('bottom')" title="Align Bottom Edges">Bottom</button>
+    <div class="tfb-sep"></div>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="distributeHorizontally()" title="Distribute H">↔ Dist H</button>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="distributeVertically()" title="Distribute V">↕ Dist V</button>
+  </div>
+</div>
+
 <main id="editor-viewport" onclick="onViewportClick(event)">
     <div id="centering-wrapper">
         <div id="scaler-wrapper" style="width:908px; height:1336px;">
@@ -1358,8 +1412,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
                   onchange="setSizeFromInput('height', parseFloat(this.value))">
               </div>
             </div>
-            <button id="btn-center-h" class="btn-ui" style="padding:6px 12px; font-size:10px;" onclick="centerElement('h')" data-help="Snaps the element to the exact horizontal center of the menu">Center H</button>
-            <button id="btn-center-v" class="btn-ui" style="padding:6px 12px; font-size:10px;" onclick="centerElement('v')" data-help="Snaps the element to the exact vertical center of the menu">Center V</button>
+<!-- Center buttons moved to top Align Bar -->
             <div class="ctrl-group">
                 <button id="btn-layer-up" class="ctrl-btn" style="width:30px; height:30px" onclick="updateZ(1)" title="Layer Up" data-help="Moves the element forward in the stacking order">⬆️</button>
                 <button id="btn-layer-down" class="ctrl-btn" style="width:30px; height:30px" onclick="updateZ(-1)" title="Layer Down" data-help="Moves the element backward in the stacking order">⬇️</button>
@@ -2419,11 +2472,46 @@ function updateDistributeBar() {
 }
 
 function updateSelectionBar() {
+    const alignBar = document.getElementById('align-bar');
+    const distBar = document.getElementById('distribute-bar');
+    const viewport = document.getElementById('editor-viewport');
+    
     const multiIds = docV2.editorState.selectedElementIds || [];
+    
+    // Reset top bars
+    if (alignBar) alignBar.classList.remove('show');
+    if (distBar) distBar.classList.remove('show');
+    if (viewport) {
+        viewport.classList.remove('align-active');
+        viewport.classList.remove('dist-active');
+    }
+
     if (multiIds.length >= 1) {
         console.log("MULTI SELECT BAR ACTIVE, count:", multiIds.length);
         selBar.classList.add('show');
         
+        // Show Align Bar
+        if (alignBar) {
+            alignBar.classList.add('show');
+            if (viewport) viewport.classList.add('align-active');
+            
+            const singleUI = document.getElementById('align-bar-single');
+            const multiUI = document.getElementById('align-bar-multi');
+            
+            if (multiIds.length === 1) {
+                if (singleUI) singleUI.style.display = 'flex';
+                if (multiUI) multiUI.style.display = 'none';
+            } else {
+                if (singleUI) singleUI.style.display = 'none';
+                if (multiUI) multiUI.style.display = 'flex';
+                // Also show distribute bar for 2+ elements
+                if (distBar) {
+                    distBar.classList.add('show');
+                    if (viewport) viewport.classList.add('dist-active');
+                }
+            }
+        }
+
         const tabLayer = document.getElementById('bar-tab-layer');
         if(tabLayer) tabLayer.style.display = 'none';
         
@@ -2444,23 +2532,15 @@ function updateSelectionBar() {
             const div = document.createElement('div');
             div.id = 'multi-select-actions';
             div.style.cssText = 'display:flex; align-items:center; gap:10px; width:100%; justify-content:center; padding:5px 0;';
-            div.innerHTML = `<button class="ctrl-btn" style="background:#c0392b; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; deleteEl(true,true);}); docV2.editorState.selectedElementIds=[]; deselect(); render();">🗑️ Delete All (<span id="ms-del-count"></span>)</button><button class="ctrl-btn" style="background:#2980b9; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); render(); showToast('Duplicated ' + ids.length + ' elements');">📋 Duplicate All (<span id="ms-dup-count"></span>)</button>
-<div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:6px;">
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('left')"    title="Align Left Edges">⬛ Left</button>
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('right')"   title="Align Right Edges">⬛ Right</button>
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('top')"     title="Align Top Edges">⬛ Top</button>
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('bottom')"  title="Align Bottom Edges">⬛ Bottom</button>
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('centerH')" title="Center Horizontally">↔ Ctr H</button>
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('centerV')" title="Center Vertically">↕ Ctr V</button>
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="distributeSelected('h')"  title="Distribute Horizontally">⇔ Dist H</button>
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="distributeSelected('v')"  title="Distribute Vertically">⇕ Dist V</button>
-</div>`;
+            div.innerHTML = `<button class="ctrl-btn" style="background:#c0392b; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; deleteEl(true,true);}); docV2.editorState.selectedElementIds=[]; deselect(); render();">🗑️ Delete All (<span id="ms-del-count"></span>)</button><button class="ctrl-btn" style="background:#2980b9; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); render(); showToast('Duplicated ' + ids.length + ' elements');">📋 Duplicate All (<span id="ms-dup-count"></span>)</button>`;
             document.getElementById('bar-content').appendChild(div);
             msBlock = div;
         }
         document.getElementById('ms-del-count').innerText = multiIds.length;
         document.getElementById('ms-dup-count').innerText = multiIds.length;
         msBlock.style.display = 'flex';
+        
+        if (multiIds.length >= 2) updateDistributeBar();
         return;
     }
     
@@ -2593,6 +2673,15 @@ function deselect() {
     if (selBar) selBar.classList.remove('show');
     const tfBar = document.getElementById('text-format-bar');
     if (tfBar) tfBar.classList.remove('show');
+    const alignBar = document.getElementById('align-bar');
+    if (alignBar) alignBar.classList.remove('show');
+    const distBar = document.getElementById('distribute-bar');
+    if (distBar) distBar.classList.remove('show');
+    const viewport = document.getElementById('editor-viewport');
+    if (viewport) {
+        viewport.classList.remove('align-active');
+        viewport.classList.remove('dist-active');
+    }
     document.body.classList.remove('tfb-active');
     renderLayerList();
 }
@@ -3007,10 +3096,11 @@ function sendToBack() {
     showToast('Layer order updated');
 }
 function centerElement(dir) {
-    if(!selectedId) return;
+    const id = selectedId || (docV2.editorState.selectedElementIds && docV2.editorState.selectedElementIds[0]);
+    if(!id) return;
     pushState();
-    const item = docV2.elements.find(e => e.id === selectedId);
-    const el = document.getElementById(selectedId);
+    const item = docV2.elements.find(e => e.id === id);
+    const el = document.getElementById(id);
     if(!item || !el) return;
     const w = item.width || el.offsetWidth;
     const h = item.height || el.offsetHeight;
@@ -3018,6 +3108,48 @@ function centerElement(dir) {
     if(dir==='v') item.y = (BASE_H / 2) - (h / 2);
     render();
     sync();
+}
+
+function alignMulti(direction) {
+  const ids = docV2.editorState.selectedElementIds;
+  if (ids.length < 2) return;
+  pushState();
+  const els = ids.map(id => docV2.elements.find(e => e.id === id)).filter(Boolean);
+  if (direction === 'left') {
+    const minX = Math.min(...els.map(e => e.x));
+    els.forEach(e => e.x = minX);
+  } else if (direction === 'right') {
+    const maxR = Math.max(...els.map(e => e.x + (e.width||100)));
+    els.forEach(e => e.x = maxR - (e.width||100));
+  } else if (direction === 'top') {
+    const minY = Math.min(...els.map(e => e.y));
+    els.forEach(e => e.y = minY);
+  } else if (direction === 'bottom') {
+    const maxB = Math.max(...els.map(e => e.y + (e.height||40)));
+    els.forEach(e => e.y = maxB - (e.height||40));
+  } else if (direction === 'centerH') {
+    const avgX = els.reduce((s,e) => s + e.x + (e.width||100)/2, 0) / els.length;
+    els.forEach(e => e.x = avgX - (e.width||100)/2);
+  } else if (direction === 'centerV') {
+    const avgY = els.reduce((s,e) => s + e.y + (e.height||40)/2, 0) / els.length;
+    els.forEach(e => e.y = avgY - (e.height||40)/2);
+  }
+  render();
+  showToast('Aligned: ' + direction);
+}
+
+function alignToCanvas(edge) {
+  const id = selectedId || (docV2.editorState.selectedElementIds && docV2.editorState.selectedElementIds[0]);
+  const el = docV2.elements.find(e => e.id === id);
+  if (!el) return;
+  pushState();
+  const cw = BASE_W, ch = BASE_H;
+  if (edge === 'left') el.x = 0;
+  else if (edge === 'right') el.x = cw - (el.width || 100);
+  else if (edge === 'top') el.y = 0;
+  else if (edge === 'bottom') el.y = ch - (el.height || 40);
+  render();
+  showToast('Aligned to ' + edge);
 }
 function deleteEl(skipPush, noRender) {
     if (!selectedId) return;
