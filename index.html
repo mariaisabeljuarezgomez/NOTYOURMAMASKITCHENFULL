@@ -2201,7 +2201,8 @@ function onCanvasMousedown(e) {
   const _tgt = e.target?.closest ? e.target.closest('.editable-element') : null;
   if (_tgt) {
     const _d = (docV2.elements || []).find(el => el.id === _tgt.id) || {};
-    if (_d.isSystemBackground !== true) return;
+    const _isBackgroundLayer = _d.isSystemBackground === true || _d.layerRole === 'background';
+    if (!_isBackgroundLayer) return;
   }
   const lassoBox = document.getElementById('lasso-box');
   const scalerEl = document.getElementById('scaler-wrapper');
