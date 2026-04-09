@@ -1453,18 +1453,39 @@ function render() {
             el.style.borderRadius = '0';
         } else if (d.type === 'shape' && d.shapeType === 'star') {
             const inner = el.querySelector('.shape-inner');
-            inner.style.backgroundColor = (d.style && d.style.fill) ? d.style.fill : 'transparent';
-            inner.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
+            // Clear div-based rendering — star is now drawn as SVG polygon
+            inner.style.backgroundColor = 'transparent';
+            inner.style.clipPath = 'none';
+            inner.style.outline = 'none';
+            inner.style.outlineOffset = '0';
+            inner.style.position = 'relative';
+            inner.style.width = '100%';
+            inner.style.height = '100%';
             el.style.backgroundColor = 'transparent';
             el.style.clipPath = 'none'; // BUG 1 FIX: Handles stay visible
             el.style.borderRadius = '0';
-            if ((d.strokeWidth || 0) > 0) {
-                inner.style.outline = `${d.strokeWidth}px solid ${d.strokeColor || '#c8a96a'}`;
-                inner.style.outlineOffset = `-${d.strokeWidth}px`;
-            } else {
-                inner.style.outline = 'none';
-                inner.style.outlineOffset = '0';
-            }
+            // Render star as SVG so stroke follows the polygon shape exactly
+            const starFill = (d.style && d.style.fill) ? d.style.fill : '#f1c40f';
+            const starStroke = (d.strokeWidth || 0) > 0 ? d.strokeColor || '#c8a96a' : 'none';
+            const starSW = (d.strokeWidth || 0) > 0 ? d.strokeWidth : 0;
+            // Remove any previously injected star SVG to avoid duplicates on re-render
+            const existingSvg = inner.querySelector('svg.star-svg');
+            if (existingSvg) existingSvg.remove();
+            const starSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            starSvg.setAttribute('class', 'star-svg');
+            starSvg.setAttribute('viewBox', '0 0 100 100');
+            starSvg.setAttribute('preserveAspectRatio', 'none');
+            starSvg.setAttribute('overflow', 'visible');
+            starSvg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible;';
+            const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            poly.setAttribute('points', '50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35');
+            poly.setAttribute('fill', starFill);
+            poly.setAttribute('stroke', starStroke);
+            poly.setAttribute('stroke-width', starSW > 0 ? (starSW * 1.5) : 0);
+            poly.setAttribute('stroke-linejoin', 'round');
+            poly.setAttribute('vector-effect', 'non-scaling-stroke');
+            starSvg.appendChild(poly);
+            inner.appendChild(starSvg);
         } else if (d.type === 'line') {
             // Ensure line wrapper stays transparent
             el.style.backgroundColor = 'transparent';
