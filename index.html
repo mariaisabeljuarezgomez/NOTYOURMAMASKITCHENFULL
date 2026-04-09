@@ -2217,7 +2217,16 @@ function deselect() {
     renderLayerList();
 }
 
-function onCanvasClick(e) { if(isLassoing) return; if(_lassoJustFired) { _lassoJustFired = false; return; } if(e.target.id === 'menu-container' || e.target.id === 'elements-layer') deselect(); }
+function onCanvasClick(e) {
+    if (layoutLocked) return;
+    const el = e.target.closest('.editable-element');
+    if (el) {
+        const id = el.dataset.id;
+        if (id) select(id);
+        return;
+    }
+    deselect();
+}
 function onCanvasMousedown(e) {
   if (e.button !== 0 && e.type !== 'touchstart') return;
   if (layoutLocked) return;
