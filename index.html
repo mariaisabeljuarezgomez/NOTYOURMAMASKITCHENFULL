@@ -2219,7 +2219,14 @@ function deselect() {
 
 function onCanvasClick(e) { if(isLassoing) return; if(_lassoJustFired) { _lassoJustFired = false; return; } if(e.target.id === 'menu-container' || e.target.id === 'elements-layer') deselect(); }
 function onCanvasMousedown(e) {
-  if (e.target.closest('.editable-element')) return;
+  // If pointer landed on an unlocked element and layout is unlocked, let attach() drag handler take it
+  // Locked elements fall through to lasso so they can be lasso-selected
+  const hitElement = e.target.closest('.editable-element');
+  if (hitElement) {
+    const id = hitElement.dataset.id;
+    const item = docV2.elements.find(i => i.id === id);
+    if (item && !item.locked && !layoutLocked) return;
+  }
   if (e.button !== 0 && e.type !== 'touchstart') return;
   const _tgt = e.target?.closest ? e.target.closest('.resize-handle') : null;
   if (_tgt) return;
