@@ -62,7 +62,6 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 .editable-element:hover { outline: 2px solid var(--accent); }
 .editable-element.selected { outline: 3px solid var(--accent); box-shadow: 0 0 15px var(--selection); z-index: 999 !important; }
 .editable-element.locked.selected { z-index: auto !important; outline: none !important; box-shadow: none !important; }
-.editable-element.locked.selected { z-index: auto !important; outline: none !important; box-shadow: none !important; }
 .editable-element.locked { cursor: default; }
 .editable-element.locked:hover { outline: none; cursor: default; }
 .editable-element.hidden-editor { opacity: 0.2 !important; outline: 1px dashed #666; }
@@ -1793,7 +1792,6 @@ function attach(el) {
         }
 
         if(layoutLocked) return;
-        if (_itemData && _itemData.locked) return;
         if (_itemData && _itemData.locked) return;
         
         if (docV2.editorState.selectedElementIds.length > 1) {
