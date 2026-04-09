@@ -6,6 +6,7 @@ import json
 import shutil
 import base64
 import time
+import uuid
 import hashlib
 import hmac
 import urllib.parse
@@ -168,7 +169,15 @@ def prune_backups(backup_dir, keep=20):
 def validate_schema(data):
     if not isinstance(data, dict):
         return False
-    return isinstance(data.get("elements"), list)
+    if not isinstance(data.get("elements"), list):
+        return False
+    # Reject V1 documents from being saved — V1 only accepted on GET for migration
+    if data.get("version") == 1:
+        return False
+    # BUG-B6 fix: validate individual element objects — each must be a dict with id and type
+    if not all(isinstance(e, dict) and 'id' in e and 'type' in e for e in data.get('elements', [])):
+        return False
+    return True
 
 @app.route("/")
 def index():
@@ -191,7 +200,9 @@ def get_menu():
                 row = cur.fetchone()
                 if row:
                     status_info["db_active"] = True
-                    return jsonify({**row['canvas_json'], "status": status_info})
+                    doc = dict(row['canvas_json'])
+                    doc["status"] = status_info   # status lives in response; client must strip before save
+                    return jsonify(doc)
         except Exception as e:
             print(f"[DB] Fetch failed: {e}")
         finally:
@@ -203,7 +214,9 @@ def get_menu():
     try:
         with open(DATA_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
-            return jsonify({**data, "status": status_info})
+            doc = dict(data)
+            doc["status"] = status_info   # status lives in response; client must strip before save
+            return jsonify(doc)
     except Exception as e:
         return jsonify({"error": str(e), "status": status_info}), 500
 
@@ -214,6 +227,7 @@ def save_menu():
     data = request.json
     if data is None:
         return jsonify({"error": "Request body is required"}), 400
+    data.pop("status", None)   # strip server-injected status field before save
     if not validate_schema(data):
         return jsonify({"error": "Invalid schema"}), 400
     
@@ -224,6 +238,9 @@ def save_menu():
         try:
             with conn.cursor() as cur:
                 cur.execute("INSERT INTO sessions (canvas_json) VALUES (%s)", (json.dumps(data),))
+                conn.commit()
+                # BUG-B1 fix: cap sessions table to 50 rows to prevent unbounded growth
+                cur.execute("DELETE FROM sessions WHERE id NOT IN (SELECT id FROM sessions ORDER BY id DESC LIMIT 50)")
                 conn.commit()
                 db_success = True
         except Exception as e:
@@ -264,6 +281,20 @@ def reset_menu():
             backup_path = os.path.join(BACKUP_DIR, f"menu_data_RESET_{timestamp}.json")
             shutil.copy2(DATA_FILE, backup_path)
             os.remove(DATA_FILE)
+        # BUG-B4 fix: also wipe DB sessions so DB-mode doesn't return the old poisoned state
+        try:
+            conn = get_db_connection()
+            if conn:
+                try:
+                    with conn.cursor() as cur:
+                        cur.execute("DELETE FROM sessions")
+                        conn.commit()
+                except Exception as db_err:
+                    print(f"[reset_menu] DB clear failed: {db_err}")
+                finally:
+                    conn.close()
+        except Exception:
+            pass  # DB failure must not block file-level reset
         prune_backups(BACKUP_DIR)
         return jsonify({"status": "reset_ok", "message": "Saved data cleared. Page will now always load from embedded index.html state."}), 200
     except Exception as e:
@@ -302,6 +333,19 @@ def restore_backup(filename):
             ts = datetime.now().strftime("%Y%m%d_%H%M%S")
             shutil.copy2(DATA_FILE, os.path.join(BACKUP_DIR, f"menu_data_pre_restore_{ts}.json"))
         shutil.copy2(src, DATA_FILE)
+        # BUG-B3 fix: also sync restored doc to DB so DB-mode loads see the restore
+        conn = get_db_connection()
+        if conn:
+            try:
+                with conn.cursor() as cur:
+                    cur.execute("INSERT INTO sessions (canvas_json) VALUES (%s)", (json.dumps(backup_data),))
+                    conn.commit()
+                    cur.execute("DELETE FROM sessions WHERE id NOT IN (SELECT id FROM sessions ORDER BY id DESC LIMIT 50)")
+                    conn.commit()
+            except Exception as e:
+                print(f"[restore_backup] DB sync failed: {e}")
+            finally:
+                conn.close()
         prune_backups(BACKUP_DIR)
         return jsonify({"status": "restored", "from": filename}), 200
     except Exception as e:
@@ -460,7 +504,7 @@ def upload_image():
             return jsonify({"error": f"Cloudinary upload failed: {resp.text}"}), 400
             
         cloudinary_url = resp.json().get("secure_url")
-        asset_id = f"asset_{int(time.time())}"
+        asset_id = f"asset_{uuid.uuid4().hex}"  # BUG-B5 fix: uuid prevents collision on rapid upload
         
         # Store in Database
         conn = get_db_connection()
@@ -533,6 +577,19 @@ def migrate_asset_internal():
     if modified:
         with open(DATA_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
+        # BUG-B2 fix: also sync patched doc to DB so DB-mode loads see the fix
+        conn = get_db_connection()
+        if conn:
+            try:
+                with conn.cursor() as cur:
+                    cur.execute("INSERT INTO sessions (canvas_json) VALUES (%s)", (json.dumps(data),))
+                    conn.commit()
+                    cur.execute("DELETE FROM sessions WHERE id NOT IN (SELECT id FROM sessions ORDER BY id DESC LIMIT 50)")
+                    conn.commit()
+            except Exception as e:
+                print(f"[migrate_asset_internal] DB sync failed: {e}")
+            finally:
+                conn.close()
         return True
     return False
 
@@ -613,9 +670,8 @@ def serve_root_image(filename):
 
 @app.route("/user-images/<string:filename>")
 def serve_user_image(filename):
-    response = send_from_directory(USER_IMAGES_DIR, filename)
-    response.headers["Cache-Control"] = "max-age=604800, public"
-    return response
+    # Task M1: Removed max-age caching from user-images to ensure freshness in editor
+    return send_from_directory(USER_IMAGES_DIR, filename)
 
 @app.route('/menu')
 def customer_viewer():

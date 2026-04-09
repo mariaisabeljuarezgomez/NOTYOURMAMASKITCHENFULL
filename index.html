@@ -7,10 +7,10 @@
 <title>Menu Editor Pro V2 - UX Hardened</title>
 <meta name="description" content="Menu Editor Pro — Professional restaurant menu layout tool. Edit, save, and export print-ready menus with drag-and-drop text, images, and shapes.">
 <style>
-@font-face { font-family: 'bernard-mt-condensed-regular'; src: url('bernard-mt-condensed-regular.ttf') format('truetype'); font-display: swap; }
-@font-face { font-family: 'century-gothic-bold-italic'; src: url('century-gothic-bold-italic.ttf') format('truetype'); font-display: swap; }
-@font-face { font-family: 'century-gothic-bold'; src: url('century-gothic-bold.ttf') format('truetype'); font-display: swap; }
-@font-face { font-family: 'century-gothic-regular'; src: url('century-gothic-regular.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'bernard-mt-condensed-regular'; src: url('bernard-mt-condensed-regular.ttf') format('truetype'); font-display: block; }
+@font-face { font-family: 'century-gothic-bold-italic'; src: url('century-gothic-bold-italic.ttf') format('truetype'); font-display: block; }
+@font-face { font-family: 'century-gothic-bold'; src: url('century-gothic-bold.ttf') format('truetype'); font-display: block; }
+@font-face { font-family: 'century-gothic-regular'; src: url('century-gothic-regular.ttf') format('truetype'); font-display: block; }
 .editable-element.multi-selected { outline: 3px solid #2980b9; box-shadow: 0 0 15px rgba(41,128,185,0.5); }
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 :root { --primary: #95201d; --accent: #f1c40f; --bg: #1a1a1a; --surface: #2d2d2d; --selection: rgba(241, 196, 15, 0.5);
@@ -504,6 +504,67 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
   #editor-viewport { left: 0 !important; right: 0 !important; }
   #selection-bar { left: 2vw !important; right: 2vw !important; transform: none !important; width: 96vw; }
 }
+/* ===== TEXT FORMAT BAR ===== */
+#text-format-bar {
+    position: fixed;
+    top: 60px;
+    left: 220px;
+    right: 260px;
+    height: 44px;
+    background: rgba(20, 20, 20, 0.97);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #333;
+    display: none;
+    align-items: center;
+    gap: 2px;
+    padding: 0 16px;
+    z-index: 990;
+    overflow: hidden;
+}
+#text-format-bar.show { display: flex; }
+.tfb-sep { width: 1px; height: 22px; background: #444; margin: 0 6px; flex-shrink: 0; }
+.tfb-btn {
+    width: 32px; height: 32px; border-radius: 6px;
+    background: transparent; color: #ccc;
+    border: 1px solid transparent;
+    cursor: pointer; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    transition: 0.15s; flex-shrink: 0;
+    font-family: Georgia, serif;
+}
+.tfb-btn:hover { background: #333; border-color: #555; color: #fff; }
+.tfb-btn.active { background: var(--primary); border-color: var(--accent); color: #fff; }
+.tfb-label { font-size: 9px; color: #666; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0; margin-right: 2px; }
+.tfb-select {
+    background: #1a1a1a; border: 1px solid #444; color: #ccc;
+    border-radius: 6px; padding: 4px 6px; font-size: 11px;
+    cursor: pointer; outline: none; max-width: 130px;
+}
+.tfb-select:focus { border-color: var(--accent); }
+.tfb-size-wrap { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.tfb-size-btn { width: 24px; height: 24px; border-radius: 4px; background: #333; border: 1px solid #555; color: #ccc; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.15s; }
+.tfb-size-btn:hover { background: #444; color: #fff; }
+.tfb-size-input {
+    width: 42px; height: 28px; background: #111; border: 1px solid #444;
+    color: var(--accent); border-radius: 6px; font-size: 12px; font-weight: 700;
+    text-align: center; outline: none;
+}
+.tfb-size-input:focus { border-color: var(--accent); }
+.tfb-color-wrap { position: relative; width: 32px; height: 32px; flex-shrink: 0; }
+.tfb-color-preview { width: 22px; height: 8px; border-radius: 2px; position: absolute; bottom: 4px; left: 5px; pointer-events: none; }
+.tfb-color-input { width: 32px; height: 32px; border: none; background: transparent; cursor: pointer; opacity: 0; position: absolute; top: 0; left: 0; }
+.tfb-color-icon { position: absolute; top: 4px; left: 7px; font-size: 14px; pointer-events: none; color: #ccc; line-height: 1; }
+/* When text-format-bar is visible, push viewport down */
+body.tfb-active #editor-viewport { top: 104px !important; }
+@media (max-width: 900px) {
+    #text-format-bar {
+        left: 0 !important;
+        right: 0 !important;
+        padding: 0 8px;
+        gap: 1px;
+        overflow-x: auto;
+    }
+}
 </style>
 <script src="export-utils.js" defer></script>
 </head>
@@ -519,26 +580,74 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         <button id="btn-reload" class="btn-ui" onclick="location.reload()" data-help="Reloads the page to reset the session if needed.">↺ RELOAD</button>
     </div>
 </div>
-
+<!-- ===== TEXT FORMAT BAR ===== -->
+<div id="text-format-bar">
+    <!-- Font selector -->
+    <span class="tfb-label">Font</span>
+    <select class="tfb-select" id="tfb-font" onchange="tfbUpdateStyle('fontFamily', this.value)">
+        <option value="bernard-mt-condensed-regular">Bernard Mt</option>
+        <option value="century-gothic-bold">CG Bold</option>
+        <option value="century-gothic-bold-italic">CG Bold Italic</option>
+        <option value="century-gothic-regular">CG Regular</option>
+    </select>
+    <div class="tfb-sep"></div>
+    <!-- Font size stepper -->
+    <div class="tfb-size-wrap">
+        <button class="tfb-size-btn" onclick="tfbStepSize(-1)" title="Decrease font size">−</button>
+        <input class="tfb-size-input" type="number" id="tfb-size" min="4" max="400" step="1"
+            onchange="tfbUpdateStyle('fontSize', parseFloat(this.value))"
+            title="Font size">
+        <button class="tfb-size-btn" onclick="tfbStepSize(1)" title="Increase font size">+</button>
+    </div>
+    <div class="tfb-sep"></div>
+    <!-- Bold / Italic / Underline -->
+    <button class="tfb-btn" id="tfb-bold" onclick="tfbToggleBold()" title="Bold"><b>B</b></button>
+    <button class="tfb-btn" id="tfb-italic" onclick="tfbToggleItalic()" title="Italic"><i>I</i></button>
+    <button class="tfb-btn" id="tfb-underline" onclick="tfbToggleUnderline()" title="Underline"><u>U</u></button>
+    <div class="tfb-sep"></div>
+    <!-- Text Alignment -->
+    <button class="tfb-btn" id="tfb-align-left"    onclick="tfbSetAlign('left')"    title="Align Left"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="2" width="16" height="2"/><rect x="0" y="6" width="10" height="2"/><rect x="0" y="10" width="14" height="2"/><rect x="0" y="14" width="8" height="2"/></svg></button>
+    <button class="tfb-btn" id="tfb-align-center"  onclick="tfbSetAlign('center')"  title="Align Center"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="2" width="16" height="2"/><rect x="3" y="6" width="10" height="2"/><rect x="1" y="10" width="14" height="2"/><rect x="4" y="14" width="8" height="2"/></svg></button>
+    <button class="tfb-btn" id="tfb-align-right"   onclick="tfbSetAlign('right')"   title="Align Right"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="2" width="16" height="2"/><rect x="6" y="6" width="10" height="2"/><rect x="2" y="10" width="14" height="2"/><rect x="8" y="14" width="8" height="2"/></svg></button>
+    <button class="tfb-btn" id="tfb-align-justify" onclick="tfbSetAlign('justify')" title="Justify"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="2" width="16" height="2"/><rect x="0" y="6" width="16" height="2"/><rect x="0" y="10" width="16" height="2"/><rect x="0" y="14" width="16" height="2"/></svg></button>
+    <div class="tfb-sep"></div>
+    <!-- ALL CAPS toggle -->
+    <button class="tfb-btn" id="tfb-caps" onclick="tfbToggleCaps()" title="ALL CAPS" style="font-size:10px; font-weight:800; width:auto; padding:0 8px; letter-spacing:1px;">AA</button>
+    <div class="tfb-sep"></div>
+    <!-- Text color -->
+    <div class="tfb-color-wrap" title="Text Color">
+        <span class="tfb-color-icon">A</span>
+        <div class="tfb-color-preview" id="tfb-color-preview" style="background:#ffffff;"></div>
+        <input class="tfb-color-input" type="color" id="tfb-color" value="#ffffff"
+            oninput="tfbUpdateStyle('color', this.value); document.getElementById('tfb-color-preview').style.background=this.value;">
+    </div>
+    <!-- Line height quick controls -->
+    <div class="tfb-sep"></div>
+    <span class="tfb-label">L.H.</span>
+    <button class="tfb-size-btn" onclick="tfbStepLineHeight(-0.1)" title="Decrease line height">−</button>
+    <input class="tfb-size-input" type="number" id="tfb-lh" min="0.5" max="3" step="0.1" style="width:38px;"
+        onchange="tfbUpdateStyle('lineHeight', parseFloat(this.value))" title="Line height">
+    <button class="tfb-size-btn" onclick="tfbStepLineHeight(0.1)" title="Increase line height">+</button>
+</div>
 <main id="editor-viewport" onclick="onViewportClick(event)">
     <div id="centering-wrapper">
-        <div id="scaler-wrapper" style="width:908.4429931640625px; height:1336.02001953125px;">
+        <div id="scaler-wrapper" style="width:908px; height:1336px;">
             <div id="menu-container" onclick="onCanvasClick(event)" onmousedown="onCanvasMousedown(event)" ontouchstart="onCanvasMousedown(event)">
                 <img id="menu-bg" src="menu-bg-preview.jpg" alt="BG" fetchpriority="high">
-                <div id="elements-layer" style="position:absolute; top:0; left:0; width:100%; height:100%;" onmousedown="onCanvasMousedown(event)" ontouchstart="onCanvasMousedown(event)"></div>
+                <div id="elements-layer" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div>
                 <div id="guide-cx" class="guide guide-v" style="left:50%"></div>
                 <div id="guide-cy" class="guide guide-h" style="top:50%"></div>
+                <div id="lasso-box" style="
+                  position:absolute;
+                  border:2px dashed #4a90e2;
+                  background:rgba(74,144,226,0.08);
+                  pointer-events:none;
+                  display:none;
+                  z-index:9999;
+                "></div>
             </div>
 </div></div>
 </main>
-<div id="lasso-box" style="
-  position:fixed;
-  border:2px dashed #4a90e2;
-  background:rgba(74,144,226,0.08);
-  pointer-events:none;
-  display:none;
-  z-index:9999;
-"></div>
 
 <!-- ===== LEFT SIDEBAR ===== -->
 <div id="left-sidebar">
@@ -1324,6 +1433,7 @@ function render() {
         if (d.type === 'image') {
             el = document.createElement('div');
             el.id = d.id;
+            el.dataset.id = d.id;
             el.className = 'editable-element image-wrapper';
             el.style.position = 'absolute';
             el.style.overflow = 'visible';
@@ -1347,6 +1457,7 @@ function render() {
             // SVG line wrapper
             el = document.createElement('div');
             el.id = d.id;
+            el.dataset.id = d.id;
             el.className = 'editable-element';
             const svgW = Math.max(Math.abs((d.x2||0) - (d.x1||0)), d.strokeWidth || 1, 20);
             const svgH = Math.max(Math.abs((d.y2||0) - (d.y1||0)), d.strokeWidth || 1, 20);
@@ -1378,6 +1489,7 @@ function render() {
         } else {
             el = document.createElement('div');
             el.id = d.id;
+            el.dataset.id = d.id;
             el.className = 'editable-element ' + (d.type==='text'?'editable-text':'shape-object');
             // BUG 1 FIX: Inner container for clipping protection
             if (d.type === 'shape') {
@@ -1425,6 +1537,11 @@ function render() {
             if(d.style.color) el.style.color = d.style.color;
             if(d.style.lineHeight) el.style.lineHeight = d.style.lineHeight;
             if(d.style.letterSpacing) el.style.letterSpacing = d.style.letterSpacing + 'px';
+            if(d.style.fontWeight) el.style.fontWeight = d.style.fontWeight;
+            if(d.style.fontStyle) el.style.fontStyle = d.style.fontStyle;
+            if(d.style.textDecoration) el.style.textDecoration = d.style.textDecoration;
+            if(d.style.textAlign) el.style.textAlign = d.style.textAlign;
+            if(d.style.textTransform) el.style.textTransform = d.style.textTransform;
             if(d.style.fill) {
                 const target = el.querySelector('.shape-inner') || el;
                 target.style.backgroundColor = d.style.fill;
@@ -1453,18 +1570,39 @@ function render() {
             el.style.borderRadius = '0';
         } else if (d.type === 'shape' && d.shapeType === 'star') {
             const inner = el.querySelector('.shape-inner');
-            inner.style.backgroundColor = (d.style && d.style.fill) ? d.style.fill : 'transparent';
-            inner.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
+            // Clear div-based rendering — star is now drawn as SVG polygon
+            inner.style.backgroundColor = 'transparent';
+            inner.style.clipPath = 'none';
+            inner.style.outline = 'none';
+            inner.style.outlineOffset = '0';
+            inner.style.position = 'relative';
+            inner.style.width = '100%';
+            inner.style.height = '100%';
             el.style.backgroundColor = 'transparent';
             el.style.clipPath = 'none'; // BUG 1 FIX: Handles stay visible
             el.style.borderRadius = '0';
-            if ((d.strokeWidth || 0) > 0) {
-                inner.style.outline = `${d.strokeWidth}px solid ${d.strokeColor || '#c8a96a'}`;
-                inner.style.outlineOffset = `-${d.strokeWidth}px`;
-            } else {
-                inner.style.outline = 'none';
-                inner.style.outlineOffset = '0';
-            }
+            // Render star as SVG so stroke follows the polygon shape exactly
+            const starFill = (d.style && d.style.fill) ? d.style.fill : '#f1c40f';
+            const starStroke = (d.strokeWidth || 0) > 0 ? d.strokeColor || '#c8a96a' : 'none';
+            const starSW = (d.strokeWidth || 0) > 0 ? d.strokeWidth : 0;
+            // Remove any previously injected star SVG to avoid duplicates on re-render
+            const existingSvg = inner.querySelector('svg.star-svg');
+            if (existingSvg) existingSvg.remove();
+            const starSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            starSvg.setAttribute('class', 'star-svg');
+            starSvg.setAttribute('viewBox', '0 0 100 100');
+            starSvg.setAttribute('preserveAspectRatio', 'none');
+            starSvg.setAttribute('overflow', 'visible');
+            starSvg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible;';
+            const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            poly.setAttribute('points', '50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35');
+            poly.setAttribute('fill', starFill);
+            poly.setAttribute('stroke', starStroke);
+            poly.setAttribute('stroke-width', starSW > 0 ? (starSW * 1.5) : 0);
+            poly.setAttribute('stroke-linejoin', 'round');
+            poly.setAttribute('vector-effect', 'non-scaling-stroke');
+            starSvg.appendChild(poly);
+            inner.appendChild(starSvg);
         } else if (d.type === 'line') {
             // Ensure line wrapper stays transparent
             el.style.backgroundColor = 'transparent';
@@ -1924,6 +2062,10 @@ function attach(el) {
     el.ontouchend = () => {
         if(document.onmouseup) document.onmouseup();
     };
+
+    // FIX: stop click event from bubbling to onCanvasClick/onViewportClick after mousedown has already handled selection.
+    // mousedown still bubbles (lasso needs it). Only click is stopped here.
+    el.onclick = (e) => { e.stopPropagation(); };
 }
 
 function selectById(id) {
@@ -2046,7 +2188,7 @@ function updateDistributeBar() {
 
 function updateSelectionBar() {
     const multiIds = docV2.editorState.selectedElementIds || [];
-    if (multiIds.length > 1) {
+    if (multiIds.length >= 1) {
         console.log("MULTI SELECT BAR ACTIVE, count:", multiIds.length);
         selBar.classList.add('show');
         
@@ -2204,6 +2346,7 @@ function updateSelectionBar() {
     setBarTab(_activeBarTab || 'layer');
 
     renderLayerList();
+    syncTextFormatBar();
 }
 
 function deselect() {
@@ -2216,14 +2359,18 @@ function deselect() {
     document.querySelectorAll('.multi-selected').forEach(el => el.classList.remove('multi-selected'));
     document.querySelectorAll('.selected-multi').forEach(el => el.classList.remove('selected-multi'));
     if (selBar) selBar.classList.remove('show');
+    const tfBar = document.getElementById('text-format-bar');
+    if (tfBar) tfBar.classList.remove('show');
+    document.body.classList.remove('tfb-active');
     renderLayerList();
 }
 
 function onCanvasClick(e) {
+    if (_lassoJustFired) return;
     if (layoutLocked) return;
     const el = e.target.closest('.editable-element');
     if (el) {
-        const id = el.dataset.id || el.id;
+        const id = el.id || el.dataset.id;
         if (id) selectById(id);
         return;
     }
@@ -2239,6 +2386,8 @@ function onCanvasMousedown(e) {
   const dragStartSelId = selectedId;
   const startX = e.clientX;
   const startY = e.clientY;
+  let lastX = e.clientX;
+  let lastY = e.clientY;
   let moved = false;
   let lassoActive = false;
   function onMove(me) {
@@ -2246,16 +2395,20 @@ function onCanvasMousedown(e) {
     const dy = me.clientY - startY;
     if (!moved && Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
     moved = true;
-    if (selectedId !== dragStartSelId) return;
     lassoActive = true;
     isLassoing = true;
-    const x = Math.min(me.clientX, startX);
-    const y = Math.min(me.clientY, startY);
+    // BUG-F4 fix: lasso-box is now position:absolute inside menu-container, use canvas-relative coords
+    const cRect = scalerEl.getBoundingClientRect();
+    const cScale = cRect.width / BASE_W;
+    const x = (Math.min(me.clientX, startX) - cRect.left) / cScale;
+    const y = (Math.min(me.clientY, startY) - cRect.top) / cScale;
     lassoBox.style.display = 'block';
     lassoBox.style.left   = x + 'px';
     lassoBox.style.top    = y + 'px';
-    lassoBox.style.width  = Math.abs(dx) + 'px';
-    lassoBox.style.height = Math.abs(dy) + 'px';
+    lassoBox.style.width  = Math.abs(dx) / cScale + 'px';
+    lassoBox.style.height = Math.abs(dy) / cScale + 'px';
+    lastX = me.clientX;
+    lastY = me.clientY;
   }
   function onUp(ue) {
     window.removeEventListener('mousemove', onMove);
@@ -2265,12 +2418,13 @@ function onCanvasMousedown(e) {
     if (!moved || !lassoActive) return;
     const sRect = scalerEl.getBoundingClientRect();
     const scale = sRect.width / BASE_W;
-    const lx1 = (Math.min(ue.clientX, startX) - sRect.left) / scale;
-    const ly1 = (Math.min(ue.clientY, startY) - sRect.top)  / scale;
-    const lx2 = (Math.max(ue.clientX, startX) - sRect.left) / scale;
-    const ly2 = (Math.max(ue.clientY, startY) - sRect.top)  / scale;
+    const lx1 = (Math.min(lastX, startX) - sRect.left) / scale;
+    const ly1 = (Math.min(lastY, startY) - sRect.top)  / scale;
+    const lx2 = (Math.max(lastX, startX) - sRect.left) / scale;
+    const ly2 = (Math.max(lastY, startY) - sRect.top)  / scale;
     const hits = docV2.elements.filter(el => {
       if (el.locked) return false;
+      if (el.isSystemBackground === true || el.layerRole === 'background') return false;
       // Allow background selection in lasso
       const ex2 = el.x + (el.width || 80);
       const ey2 = el.y + (el.height || 20);
@@ -2854,9 +3008,17 @@ function updateShapeFill(v) {
 
     const domNode = document.getElementById(selectedId);
     if (domNode) {
-        const inner = domNode.querySelector('.shape-inner');
-        if (inner) inner.style.backgroundColor = v;
-        else domNode.style.backgroundColor = v;
+        // Immediately update the live SVG polygon/circle fill without waiting for full render()
+        const svgShape = domNode.querySelector('polygon, circle, rect.shape-rect');
+        if (svgShape) {
+            svgShape.setAttribute('fill', v);
+        } else {
+            // Fallback for non-SVG shapes (plain div shapes)
+            const inner = domNode.querySelector('.shape-inner');
+            if (inner) inner.style.backgroundColor = v;
+        }
+        // Clear any leaked background color on the wrapper div
+        domNode.style.backgroundColor = 'transparent';
     }
     sync();
 }
@@ -3379,6 +3541,7 @@ async function save() {
         }
       }
     };
+    delete payload.status; // BUG-F1 fix: strip server-injected status field before POST
 
     try {
         const r = await fetch('/api/menu', {
@@ -5323,6 +5486,138 @@ document.getElementById('ai-vid-ref-zone')?.addEventListener('drop', e => {
     handleAiVidRefUpload(input);
   }
 });
+
+// ===== TEXT FORMAT BAR FUNCTIONS =====
+function tfbUpdateStyle(k, v) {
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (item && item.style) {
+        if (k === 'fontSize') v = parseFloat(v) || 16;
+        if (k === 'lineHeight') v = Math.round(parseFloat(v) * 10) / 10 || 1.1;
+        item.style[k] = v;
+        render();
+        syncTextFormatBar();
+    }
+}
+function tfbToggleBold() {
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item || !item.style) return;
+    const isBold = item.style.fontWeight === 'bold' || item.style.fontWeight === '700';
+    item.style.fontWeight = isBold ? 'normal' : 'bold';
+    render();
+    syncTextFormatBar();
+}
+function tfbToggleItalic() {
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item || !item.style) return;
+    const isItalic = item.style.fontStyle === 'italic';
+    item.style.fontStyle = isItalic ? 'normal' : 'italic';
+    render();
+    syncTextFormatBar();
+}
+function tfbToggleUnderline() {
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item || !item.style) return;
+    const isUnder = item.style.textDecoration === 'underline';
+    item.style.textDecoration = isUnder ? 'none' : 'underline';
+    render();
+    syncTextFormatBar();
+}
+function tfbSetAlign(align) {
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item || !item.style) return;
+    item.style.textAlign = align;
+    render();
+    syncTextFormatBar();
+}
+function tfbToggleCaps() {
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item || !item.style) return;
+    const isCaps = item.style.textTransform === 'uppercase';
+    item.style.textTransform = isCaps ? 'none' : 'uppercase';
+    render();
+    syncTextFormatBar();
+}
+function tfbStepSize(delta) {
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item || !item.style) return;
+    const current = parseFloat(item.style.fontSize) || 16;
+    const step = Math.abs(delta) === 1 ? (current >= 48 ? 4 : current >= 24 ? 2 : 1) : 1;
+    item.style.fontSize = Math.max(4, Math.min(400, current + (delta > 0 ? step : -step)));
+    render();
+    syncTextFormatBar();
+}
+function tfbStepLineHeight(delta) {
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item || !item.style) return;
+    const current = parseFloat(item.style.lineHeight) || 1.1;
+    item.style.lineHeight = Math.round(Math.max(0.5, Math.min(3, current + delta)) * 10) / 10;
+    render();
+    syncTextFormatBar();
+}
+function syncTextFormatBar() {
+    const bar = document.getElementById('text-format-bar');
+    if (!bar) return;
+    if (!selectedId) {
+        bar.classList.remove('show');
+        document.body.classList.remove('tfb-active');
+        return;
+    }
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item || item.type !== 'text') {
+        bar.classList.remove('show');
+        document.body.classList.remove('tfb-active');
+        return;
+    }
+    bar.classList.add('show');
+    document.body.classList.add('tfb-active');
+    // Font
+    const fontSel = document.getElementById('tfb-font');
+    if (fontSel) fontSel.value = (item.style.fontFamily || 'century-gothic-regular');
+    // Size
+    const sizeIn = document.getElementById('tfb-size');
+    if (sizeIn) sizeIn.value = Math.round(item.style.fontSize || 16);
+    // Bold
+    const boldBtn = document.getElementById('tfb-bold');
+    if (boldBtn) boldBtn.classList.toggle('active', item.style.fontWeight === 'bold' || item.style.fontWeight === '700');
+    // Italic
+    const italicBtn = document.getElementById('tfb-italic');
+    if (italicBtn) italicBtn.classList.toggle('active', item.style.fontStyle === 'italic');
+    // Underline
+    const underBtn = document.getElementById('tfb-underline');
+    if (underBtn) underBtn.classList.toggle('active', item.style.textDecoration === 'underline');
+    // Alignment
+    ['left','center','right','justify'].forEach(a => {
+        const btn = document.getElementById('tfb-align-' + a);
+        if (btn) btn.classList.toggle('active', (item.style.textAlign || 'left') === a);
+    });
+    // Caps
+    const capsBtn = document.getElementById('tfb-caps');
+    if (capsBtn) capsBtn.classList.toggle('active', item.style.textTransform === 'uppercase');
+    // Color
+    const colorIn = document.getElementById('tfb-color');
+    const colorPrev = document.getElementById('tfb-color-preview');
+    if (colorIn) colorIn.value = item.style.color || '#ffffff';
+    if (colorPrev) colorPrev.style.background = item.style.color || '#ffffff';
+    // Line height
+    const lhIn = document.getElementById('tfb-lh');
+    if (lhIn) lhIn.value = item.style.lineHeight || 1.1;
+}
 </script>
 
 <div id="canvas-ctx-menu" style="display:none;position:fixed;z-index:10000;background:#1e1e1e;border:1px solid #444;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.6);min-width:180px;padding:4px 0;">
