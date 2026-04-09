@@ -89,7 +89,7 @@ el.width number
 el.height number
 el.visible boolean
 el.locked boolean
-el.opacity number ← stored as 0–100. ALWAYS divide by 100 for globalAlpha.
+el.opacity — number — stored as 0–1 (CSS-native range). Pass directly to element.style.opacity and ctx.globalAlpha. The UI slider displays 0–100 and divides by 100 on input — the stored value is always 0–1. Do NOT multiply or divide when reading from docV2.elements.
 el.zIndex number
 el.role string (optional)
 
@@ -131,14 +131,33 @@ This inconsistency is known and intentional (legacy).
 DO NOT fix it unless both files are updated in the exact same commit.
 Until that refactor: always write the file-correct field name for the file you are editing.
 
+## Schema Migration State (as of April 2026)
+
+**Current state:** The live `docV2.elements` data on the server was originally saved in V1 format (`el.text` for content, `el.style.fontFamily` etc. for styles). A migration shim runs at page load to bridge V1 data into V2 field names. The shim commit is `29965b0`.
+
+**What this means for developers:**
+- `render()`, `sync()`, and `syncTextFormatBar()` still read from V1 field paths (`d.text`, `d.style.*`). This is intentional — do not change them without a full planned migration.
+- The shim ensures `el.content` and top-level style properties are always populated from V1 data on load.
+- Do NOT remove the shim. Do NOT "fix" render() to use V2 fields without also migrating all saved session data on the server.
+
+**Future migration plan (not yet scheduled):**
+When commissioned, a full V1→V2 migration requires:
+1. A one-time server-side data migration script to rewrite all saved JSON
+2. Updating `render()` to read `d.content` and top-level style properties
+3. Updating `sync()` to write to `item.content`
+4. Updating `syncTextFormatBar()` to read top-level style properties
+5. Removing the load-time shim after confirming all saved data is V2-compliant
+
+**Do not perform this migration in a single PR without explicit approval from the project owner.**
+
 ---
 
 ### OPACITY RULE — ALWAYS
 
-el.opacity is stored as 0–100 in V2.
-When setting canvas globalAlpha, always divide by 100:
+el.opacity is stored as 0–1 in V2.
+When setting canvas globalAlpha, pass it directly:
 ```javascript
-ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 100) / 100;
+ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 1);
 ```
 viewer.html already has a normalizeEl() shim that converts V1 (0–1) to V2 (0–100).
 Do not add redundant conversion logic.
@@ -1203,3 +1222,22 @@ el.style.left = ...;
 > **The symptom:** One element type is click-selectable, another is not — even though the click handler looks correct.
 > **The cause:** The non-selectable type's DOM node is missing the identifying attribute the handler reads.
 > **The fix:** Add the attribute to that element type's creation block in `render()`.
+
+### 🪲 Text Elements Invisible / Not Selectable (April 2026)
+
+**Feature:** All text elements on the canvas.
+**Symptom:** Text elements rendered invisible. Clicking canvas had no effect. Double-click to edit was broken.
+**Fix:** 15 lines — a V1→V2 field migration shim added at page load.
+**Commit SHA:** `29965b0`
+
+#### Root Cause
+
+The V2 render schema expects `el.content` for text and top-level `el.fontFamily` etc. for styles. But all saved session data on the server was written in V1 format: `el.text` for content and `el.style.fontFamily` etc. for styles. `render()` read `el.content` and found `undefined` → the element had no text → zero height → invisible → unclickable.
+
+#### The Fix
+
+A shim runs once at page load and copies V1 fields into V2 field names for every text element before `render()` is called. `render()` itself was not changed.
+
+#### Rule for Future Developers
+
+> **Never change the expected field names in `render()` without also migrating all existing saved session data on the server.** A schema change in code that doesn't match the stored data will silently break all existing elements. Always add a load-time migration shim when introducing schema changes, and keep it until all server data is confirmed migrated.
