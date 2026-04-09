@@ -1827,6 +1827,9 @@ function attach(el) {
         const gcx = document.getElementById('guide-cx'), gcy = document.getElementById('guide-cy');
 
         document.onmousemove = (me) => {
+            if (isEditingText) return;
+            const item = docV2.elements.find(e => e.id === selectedId);
+            if (!item || item.locked) return;
             let nx = (me.clientX - rect.left)/zoomScale - ox;
             let ny = (me.clientY - rect.top)/zoomScale - oy;
             
@@ -2101,6 +2104,7 @@ function updateSelectionBar() {
         }
     }
     document.getElementById('ctrl-lock').innerText = item.locked ? '🔒' : '🔓';
+    document.getElementById('ctrl-lock').textContent = item.locked ? '🔒' : '🔓';
     document.getElementById('ctrl-lock').classList.toggle('active', item.locked);
     document.getElementById('ctrl-visible').innerText = item.visible ? '👁️' : '🙈';
     document.getElementById('ctrl-visible').classList.toggle('active', !item.visible);
