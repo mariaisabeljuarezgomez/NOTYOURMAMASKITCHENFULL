@@ -1791,6 +1791,7 @@ function attach(el) {
         }
 
         if(layoutLocked) return;
+        if (_itemData && _itemData.locked) return;
         
         if (docV2.editorState.selectedElementIds.length > 1) {
             if (!_groupDragStatePushed) {
