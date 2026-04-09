@@ -40,21 +40,58 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 #header-title { font-weight:700; font-size:16px; letter-spacing:1px; color:var(--accent); }
 .header-actions { display:flex; gap:10px; align-items:center; }
 
-#editor-viewport { position:absolute; top:60px; left:0; right:0; bottom:0; overflow:auto; background:#111; display:flex; align-items:flex-start; justify-content:center; }
+#editor-viewport {
+  position:absolute;
+  top:144px !important;
+  left:0;
+  right:0;
+  bottom:0;
+  overflow:auto;
+  background-color: #0d0d0d;
+  background-image:
+    /* Subtle neon cyan grid lines */
+    linear-gradient(rgba(0,255,230,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,230,0.04) 1px, transparent 1px),
+    /* Larger grid major lines */
+    linear-gradient(rgba(0,255,230,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,230,0.07) 1px, transparent 1px),
+    /* Dot field */
+    radial-gradient(circle, rgba(0,255,230,0.18) 1px, transparent 1px);
+  background-size:
+    20px 20px,
+    20px 20px,
+    100px 100px,
+    100px 100px,
+    20px 20px;
+  background-position:
+    -0.5px -0.5px,
+    -0.5px -0.5px,
+    -0.5px -0.5px,
+    -0.5px -0.5px,
+    9px 9px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+}
 #centering-wrapper { 
     padding: 100px; 
     display: flex; 
     justify-content: center; 
     width: auto;
-}
-#scaler-wrapper { 
+}#scaler-wrapper { 
     position:relative; 
     background:#fff; 
-    box-shadow:0 10px 50px rgba(0,0,0,0.8); 
+    box-shadow:
+      0 0 0 1px rgba(0,255,230,0.08),
+      0 0 40px rgba(0,255,230,0.06),
+      0 20px 80px rgba(0,0,0,0.9),
+      0 60px 120px rgba(0,0,0,0.7) !important;
     width: 908px !important; 
     height: 1336px !important; 
-}
-#menu-container { position:absolute; top:0; left:0; width:100%; height:100%; overflow:visible; cursor: default; }
+    transform-origin: top center; 
+    margin: 40px 0;
+    flex-shrink: 0;
+}0%; overflow:visible; cursor: default; }
 #menu-bg { width:100%; height:100%; display:block; pointer-events:none; transition: opacity 0.3s; }
 .legacy-bg-hidden { opacity: 0; }
 
@@ -400,25 +437,30 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     }
 
     /* Distribution Bar */
-    #distribute-bar {
-        position: fixed;
-        bottom: 180px;      /* sits above #selection-bar which is at bottom:120px */
-        left: 50%;
-        transform: translateX(-50%);
-        display: none;
-        align-items: center;
-        gap: 10px;
-        z-index: 2100;
-        background: rgba(0,0,0,0.85);
-        border: 1px solid #c8a96a;
-        border-radius: 50px;
-        padding: 10px 18px;
-        box-shadow: 0 15px 40px rgba(0,0,0,0.8);
-        max-width: 90vw;
-        overflow-x: auto;
-        scrollbar-width: none;
-    }
-    #distribute-bar.show { display: flex !important; }
+#distribute-bar {
+    position: fixed;
+    top: 104px;
+    left: 220px;
+    right: 260px;
+    height: 0;
+    z-index: 989;
+    background: rgba(8,8,8,0.96) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, height 0.2s ease;
+}
+#distribute-bar.show {
+    opacity: 1;
+    pointer-events: all;
+    height: 40px;
+}
     #distribute-bar::-webkit-scrollbar { display: none; }
     #distribute-bar input {
         background: #111;
@@ -434,16 +476,14 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     #distribute-bar .sep { width: 1px; height: 20px; background: #444; margin: 0 4px; }
     #distribute-bar .label { font-size: 9px; color: #888; font-weight: 800; text-transform: uppercase; margin-right: -4px; }
 
-    @media (max-width: 768px) {
+    @media (max-width: 900px) {
         #distribute-bar {
-            left: 2vw !important;
-            right: 2vw !important;
+            left: 0 !important;
+            right: 0 !important;
+            top: 148px !important;
             transform: none !important;
-            width: 96vw;
-            bottom: 175px;
-            border-radius: 16px;
-            padding: 8px 12px;
-            gap: 8px;
+            width: 100%;
+            border-radius: 0;
         }
     }
 
@@ -508,7 +548,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 
 /* Bars */
 #selection-bar { bottom: 20px !important; }
-#distribute-bar { bottom: 80px !important; }
+/* #distribute-bar bottom positioning removed */
 
 /* Mobile */
 @media (max-width: 900px) {
@@ -574,7 +614,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 .tfb-color-input { width: 32px; height: 32px; border: none; background: transparent; cursor: pointer; opacity: 0; position: absolute; top: 0; left: 0; }
 .tfb-color-icon { position: absolute; top: 4px; left: 7px; font-size: 14px; pointer-events: none; color: #ccc; line-height: 1; }
 /* When text-format-bar is visible, push viewport down */
-#editor-viewport { top: 104px !important; }
+#editor-viewport { top: 144px !important; }
 @media (max-width: 900px) {
     #text-format-bar {
         left: 0 !important;
@@ -583,6 +623,102 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         gap: 1px;
         overflow-x: auto;
     }
+}
+/* Premium black-glass hover for .ctrl-btn */
+.ctrl-btn:hover {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.18) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
+  backdrop-filter: blur(6px);
+}
+
+/* Premium glass hover for .tfb-btn */
+.tfb-btn:hover {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.15) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* Premium glass hover for .ls-action-btn */
+.ls-action-btn:hover {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+}
+
+/* Glass hover for .btn-ui (top header buttons) */
+.btn-ui:hover {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.15) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.07);
+}
+
+/* Upgrade #selection-bar and #distribute-bar glass look */
+#selection-bar {
+  background: rgba(8,8,8,0.96) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.06) !important;
+}
+
+/* Upgrade top header glass */
+#top-header {
+  background: rgba(6,6,6,0.97) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 4px 20px rgba(0,0,0,0.6) !important;
+}
+
+/* Upgrade sidebars glass */
+#left-sidebar, #right-panel {
+  background: rgba(14,14,14,0.98) !important;
+  border-color: rgba(255,255,255,0.07) !important;
+}
+
+/* Ruler guide lines on canvas */
+.canvas-guide {
+  position: absolute;
+  pointer-events: all;
+  z-index: 498;
+  transition: opacity 0.2s;
+}
+.canvas-guide-h {
+  left: 0; width: 100%; height: 1px;
+  cursor: ns-resize;
+  background: rgba(0,255,230,0.55);
+  box-shadow: 0 0 4px rgba(0,255,230,0.35);
+}
+.canvas-guide-v {
+  top: 0; height: 100%; width: 1px;
+  cursor: ew-resize;
+  background: rgba(0,255,230,0.55);
+  box-shadow: 0 0 4px rgba(0,255,230,0.35);
+}
+.canvas-guide:hover {
+  background: rgba(255,80,80,0.8) !important;
+  box-shadow: 0 0 8px rgba(255,80,80,0.5) !important;
+}
+.canvas-guide .guide-delete-btn {
+  position: absolute;
+  width: 16px; height: 16px;
+  background: rgba(200,30,30,0.9);
+  color: #fff; font-size: 9px;
+  border: none; border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.15s;
+  pointer-events: all;
+}
+.canvas-guide:hover .guide-delete-btn { opacity: 1; }
+.canvas-guide-h .guide-delete-btn { right: 4px; top: -8px; }
+.canvas-guide-v .guide-delete-btn { bottom: 4px; left: -8px; }
+
+/* Adjust editor-viewport left padding to account for vertical ruler */
+#centering-wrapper { margin-left: 20px; }
+
+/* Mobile: hide rulers */
+@media (max-width: 900px) {
+  #ruler-h, #ruler-v, #ruler-corner { display: none !important; }
+  #centering-wrapper { margin-left: 0; }
+  #editor-viewport { top: 188px !important; }
 }
 </style>
 <script src="export-utils.js" defer></script>
@@ -664,7 +800,39 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
                   display:none;
                   z-index:9999;
                 "></div>
+                <div id="guide-lines-layer" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:498;overflow:visible;"></div>
             </div>
+<canvas id="ruler-h" style="
+  position:sticky; top:0; left:0;
+  width:100%; height:20px;
+  display:block; z-index:100;
+  cursor:default; pointer-events:auto;
+  background:rgba(18,18,18,0.98);
+  border-bottom:1px solid rgba(0,255,230,0.15);
+  flex-shrink:0;
+"></canvas>
+
+<canvas id="ruler-v" style="
+  position:fixed;
+  top:144px; /* matches #editor-viewport top */
+  left:220px; /* matches left sidebar width */
+  width:20px;
+  bottom:0;
+  display:block; z-index:100;
+  cursor:default; pointer-events:auto;
+  background:rgba(18,18,18,0.98);
+  border-right:1px solid rgba(0,255,230,0.15);
+"></canvas>
+
+<div id="ruler-corner" style="
+  position:fixed;
+  top:144px; left:220px;
+  width:20px; height:20px;
+  background:rgba(12,12,12,0.99);
+  border-right:1px solid rgba(0,255,230,0.15);
+  border-bottom:1px solid rgba(0,255,230,0.15);
+  z-index:101;
+"></div>
 </div></div>
 </main>
 
@@ -4269,7 +4437,103 @@ async function switchManualLang(lang) {
             });
             scopedStyles += scoped;
         });
-        body.innerHTML = `<style>${scopedStyles}</style><div class="manual-content-scope">${doc.body.innerHTML}</div>`;
+        body.innerHTML = `<style>${scopedStyles}/* Premium black-glass hover for .ctrl-btn */
+.ctrl-btn:hover {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.18) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
+  backdrop-filter: blur(6px);
+}
+
+/* Premium glass hover for .tfb-btn */
+.tfb-btn:hover {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.15) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* Premium glass hover for .ls-action-btn */
+.ls-action-btn:hover {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+}
+
+/* Glass hover for .btn-ui (top header buttons) */
+.btn-ui:hover {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.15) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.07);
+}
+
+/* Upgrade #selection-bar and #distribute-bar glass look */
+#selection-bar {
+  background: rgba(8,8,8,0.96) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.06) !important;
+}
+
+/* Upgrade top header glass */
+#top-header {
+  background: rgba(6,6,6,0.97) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 4px 20px rgba(0,0,0,0.6) !important;
+}
+
+/* Upgrade sidebars glass */
+#left-sidebar, #right-panel {
+  background: rgba(14,14,14,0.98) !important;
+  border-color: rgba(255,255,255,0.07) !important;
+}
+
+/* Ruler guide lines on canvas */
+.canvas-guide {
+  position: absolute;
+  pointer-events: all;
+  z-index: 498;
+  transition: opacity 0.2s;
+}
+.canvas-guide-h {
+  left: 0; width: 100%; height: 1px;
+  cursor: ns-resize;
+  background: rgba(0,255,230,0.55);
+  box-shadow: 0 0 4px rgba(0,255,230,0.35);
+}
+.canvas-guide-v {
+  top: 0; height: 100%; width: 1px;
+  cursor: ew-resize;
+  background: rgba(0,255,230,0.55);
+  box-shadow: 0 0 4px rgba(0,255,230,0.35);
+}
+.canvas-guide:hover {
+  background: rgba(255,80,80,0.8) !important;
+  box-shadow: 0 0 8px rgba(255,80,80,0.5) !important;
+}
+.canvas-guide .guide-delete-btn {
+  position: absolute;
+  width: 16px; height: 16px;
+  background: rgba(200,30,30,0.9);
+  color: #fff; font-size: 9px;
+  border: none; border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.15s;
+  pointer-events: all;
+}
+.canvas-guide:hover .guide-delete-btn { opacity: 1; }
+.canvas-guide-h .guide-delete-btn { right: 4px; top: -8px; }
+.canvas-guide-v .guide-delete-btn { bottom: 4px; left: -8px; }
+
+/* Adjust editor-viewport left padding to account for vertical ruler */
+#centering-wrapper { margin-left: 20px; }
+
+/* Mobile: hide rulers */
+@media (max-width: 900px) {
+  #ruler-h, #ruler-v, #ruler-corner { display: none !important; }
+  #centering-wrapper { margin-left: 0; }
+  #editor-viewport { top: 188px !important; }
+}
+</style><div class="manual-content-scope">${doc.body.innerHTML}</div>`;
         body.scrollTop = 0;
     } catch (e) {
         body.innerHTML = '<div style="padding:40px; text-align:center; color:#c0392b;">❌ Error loading manual.</div>';
@@ -5689,6 +5953,244 @@ function syncTextFormatBar() {
   <div style="padding:10px 14px;font-size:12px;cursor:pointer;border-radius:4px;" onmouseover="this.style.background='#333'" onmouseout="this.style.background='transparent'" onclick="hideCanvasCtxMenu()">✕ Cancel</div>
 </div>
 
+<script>
+(function() {
+  // ── RULER & GUIDE SYSTEM ──────────────────────────────────────────
+  // Reads canvas scroll position to draw tick marks on rulers.
+  // Pulls guides from ruler edges (drag from ruler onto canvas).
+  // Double-click guide to delete. Drag guide to reposition.
+  // Does NOT interfere with existing canvas JS (no shared variable names).
+
+  const RULER_SIZE = 20;
+  const CANVAS_W = 908;
+  const CANVAS_H = 1336;
+  const TICK_COLOR = 'rgba(0,255,230,0.55)';
+  const TICK_LABEL_COLOR = 'rgba(0,255,230,0.7)';
+  const BG_COLOR = 'rgba(18,18,18,0.98)';
+
+  let rulerGuides = []; // { id, type:'h'|'v', pos:Number (px on canvas), el }
+  let rulerGuideIdCounter = 0;
+  let draggingGuide = null;
+  let pullingGuide = null; // guide being pulled from ruler
+
+  const viewport = document.getElementById('editor-viewport');
+  const scalerWrapper = document.getElementById('scaler-wrapper');
+  const guidesLayer = document.getElementById('guide-lines-layer');
+  const rulerH = document.getElementById('ruler-h');
+  const rulerV = document.getElementById('ruler-v');
+
+  if (!viewport || !scalerWrapper || !guidesLayer || !rulerH || !rulerV) return;
+
+  const ctxH = rulerH.getContext('2d');
+  const ctxV = rulerV.getContext('2d');
+
+  function getScale() {
+    const rect = scalerWrapper.getBoundingClientRect();
+    return rect.width / CANVAS_W;
+  }
+
+  function getCanvasOriginInViewport() {
+    const rect = scalerWrapper.getBoundingClientRect();
+    const vpRect = viewport.getBoundingClientRect();
+    return {
+      x: rect.left - vpRect.left + viewport.scrollLeft,
+      y: rect.top - vpRect.top + viewport.scrollTop
+    };
+  }
+
+  function drawRulers() {
+    const scale = getScale();
+    const origin = getCanvasOriginInViewport();
+    const vpW = viewport.clientWidth;
+    const vpH = viewport.clientHeight;
+
+    // ── Horizontal ruler ──
+    rulerH.width = vpW;
+    rulerH.height = RULER_SIZE;
+    ctxH.fillStyle = BG_COLOR;
+    ctxH.fillRect(0,0,vpW,RULER_SIZE);
+
+    const scrollX = viewport.scrollLeft;
+    const startCanvasX = Math.max(0, (scrollX - origin.x) / scale);
+    const endCanvasX = Math.min(CANVAS_W, (scrollX + vpW - origin.x) / scale);
+    const step = pickStep(scale);
+
+    ctxH.fillStyle = TICK_COLOR;
+    ctxH.font = '9px Inter, sans-serif';
+    ctxH.textBaseline = 'top';
+
+    for (let cx = Math.floor(startCanvasX/step)*step; cx <= endCanvasX; cx += step) {
+      const screenX = origin.x + cx * scale - scrollX;
+      const isMajor = cx % (step * 5) === 0;
+      const tickH = isMajor ? 10 : 5;
+      ctxH.fillStyle = TICK_COLOR;
+      ctxH.fillRect(screenX, RULER_SIZE - tickH, 1, tickH);
+      if (isMajor && cx > 0) {
+        ctxH.fillStyle = TICK_LABEL_COLOR;
+        ctxH.fillText(Math.round(cx), screenX + 2, 2);
+      }
+    }
+
+    // ── Vertical ruler ──
+    const vH = Math.max(vpH, 400);
+    rulerV.style.height = vpH + 'px';
+    rulerV.height = vH;
+    rulerV.width = RULER_SIZE;
+    ctxV.fillStyle = BG_COLOR;
+    ctxV.fillRect(0,0,RULER_SIZE,vH);
+
+    const scrollY = viewport.scrollTop;
+    const startCanvasY = Math.max(0, (scrollY - origin.y) / scale);
+    const endCanvasY = Math.min(CANVAS_H, (scrollY + vpH - origin.y) / scale);
+
+    for (let cy = Math.floor(startCanvasY/step)*step; cy <= endCanvasY; cy += step) {
+      const screenY = origin.y + cy * scale - scrollY;
+      const isMajor = cy % (step * 5) === 0;
+      const tickW = isMajor ? 10 : 5;
+      ctxV.fillStyle = TICK_COLOR;
+      ctxV.fillRect(RULER_SIZE - tickW, screenY, tickW, 1);
+      if (isMajor && cy > 0) {
+        ctxV.save();
+        ctxV.fillStyle = TICK_LABEL_COLOR;
+        ctxV.translate(10, screenY - 2);
+        ctxV.rotate(-Math.PI/2);
+        ctxV.font = '9px Inter, sans-serif';
+        ctxV.textBaseline = 'top';
+        ctxV.fillText(Math.round(cy), 0, 0);
+        ctxV.restore();
+      }
+    }
+  }
+
+  function pickStep(scale) {
+    if (scale >= 1) return 10;
+    if (scale >= 0.5) return 20;
+    if (scale >= 0.25) return 50;
+    return 100;
+  }
+
+  // ── Guide rendering ──
+  function renderGuide(g) {
+    const scale = getScale();
+    const el = document.createElement('div');
+    el.className = 'canvas-guide canvas-guide-' + g.type;
+    if (g.type === 'h') {
+      el.style.top = g.pos + 'px';
+    } else {
+      el.style.left = g.pos + 'px';
+    }
+    el.dataset.gid = g.id;
+
+    // Delete button
+    const del = document.createElement('button');
+    del.className = 'guide-delete-btn';
+    del.textContent = '✕';
+    del.title = 'Delete guide';
+    del.addEventListener('pointerdown', function(e) {
+      e.stopPropagation();
+      removeGuide(g.id);
+    });
+    el.appendChild(del);
+
+    // Drag guide
+    let dragging = false, startPos = 0, startClient = 0;
+    el.addEventListener('pointerdown', function(e) {
+      if (e.target === del) return;
+      e.stopPropagation();
+      dragging = true;
+      startPos = g.pos;
+      startClient = g.type === 'h' ? e.clientY : e.clientX;
+      el.setPointerCapture(e.pointerId);
+    });
+    el.addEventListener('pointermove', function(e) {
+      if (!dragging) return;
+      const scale = getScale();
+      const delta = (g.type === 'h' ? e.clientY - startClient : e.clientX - startClient) / scale;
+      const newPos = Math.max(0, Math.min(g.type === 'h' ? CANVAS_H : CANVAS_W, startPos + delta));
+      g.pos = newPos;
+      if (g.type === 'h') el.style.top = newPos + 'px';
+      else el.style.left = newPos + 'px';
+    });
+    el.addEventListener('pointerup', function() { dragging = false; });
+
+    guidesLayer.appendChild(el);
+    g.el = el;
+  }
+
+  function removeGuide(id) {
+    const idx = rulerGuides.findIndex(g => g.id === id);
+    if (idx === -1) return;
+    const g = rulerGuides[idx];
+    if (g.el && g.el.parentNode) g.el.parentNode.removeChild(g.el);
+    rulerGuides.splice(idx, 1);
+  }
+
+  function addGuide(type, pos) {
+    const g = { id: ++rulerGuideIdCounter, type, pos, el: null };
+    rulerGuides.push(g);
+    renderGuide(g);
+    return g;
+  }
+
+  // ── Pull guide from ruler (drag from ruler onto canvas) ──
+  function getRulerCanvasPos(e, rulerEl, type) {
+    const scale = getScale();
+    const origin = getCanvasOriginInViewport();
+    const vpRect = viewport.getBoundingClientRect();
+    if (type === 'h') {
+      // dragging from horizontal ruler: guide Y position
+      const clientY = e.clientY;
+      const canvasY = (clientY - vpRect.top + viewport.scrollTop - origin.y) / scale;
+      return Math.max(0, Math.min(CANVAS_H, canvasY));
+    } else {
+      const clientX = e.clientX;
+      const canvasX = (clientX - vpRect.left + viewport.scrollLeft - origin.x) / scale;
+      return Math.max(0, Math.min(CANVAS_W, canvasX));
+    }
+  }
+
+  rulerH.addEventListener('pointerdown', function(e) {
+    const g = addGuide('h', 0);
+    const moveG = function(ev) {
+      const pos = getRulerCanvasPos(ev, rulerH, 'h');
+      g.pos = pos;
+      if (g.el) g.el.style.top = pos + 'px';
+    };
+    const upG = function() {
+      window.removeEventListener('pointermove', moveG);
+      window.removeEventListener('pointerup', upG);
+    };
+    window.addEventListener('pointermove', moveG);
+    window.addEventListener('pointerup', upG);
+    e.preventDefault();
+  });
+
+  rulerV.addEventListener('pointerdown', function(e) {
+    const g = addGuide('v', 0);
+    const moveG = function(ev) {
+      const pos = getRulerCanvasPos(ev, rulerV, 'v');
+      g.pos = pos;
+      if (g.el) g.el.style.left = pos + 'px';
+    };
+    const upG = function() {
+      window.removeEventListener('pointermove', moveG);
+      window.removeEventListener('pointerup', upG);
+    };
+    window.addEventListener('pointermove', moveG);
+    window.addEventListener('pointerup', upG);
+    e.preventDefault();
+  });
+
+  // ── Sync on scroll + resize ──
+  viewport.addEventListener('scroll', drawRulers, { passive: true });
+  window.addEventListener('resize', drawRulers);
+
+  // Initial draw after fonts/layout settle
+  setTimeout(drawRulers, 300);
+  requestAnimationFrame(drawRulers);
+
+})();
+</script>
 </body>
 </html>
 
