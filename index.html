@@ -2196,13 +2196,16 @@ function onCanvasClick(e) { if(isLassoing) return; if(_lassoJustFired) { _lassoJ
 function onCanvasMousedown(e) {
   if (e.button !== 0) return;
   if (layoutLocked) return;
-  // Lasso should only start from empty canvas or from the full-canvas background layer,
-  // never from regular element drags.
+  // Lasso should only start from empty canvas or from the system background layer.
+  // Per Section 6B Rule B: ONLY check isSystemBackground === true, never layerRole alone.
   const _tgt = e.target?.closest ? e.target.closest('.editable-element') : null;
   if (_tgt) {
-    const _d = (docV2.elements || []).find(el => el.id === _tgt.id) || {};
-    const _isBackgroundLayer = _d.isSystemBackground === true || _d.layerRole === 'background';
-    if (!_isBackgroundLayer) return;
+    const _itemData = docV2.elements.find(el => el.id === _tgt.id);
+    if (!_itemData || _itemData.isSystemBackground !== true) {
+      // Not the system background — allow normal element interaction, do NOT start lasso
+      return;
+    }
+    // It IS the system background — fall through to start lasso
   }
   const lassoBox = document.getElementById('lasso-box');
   const scalerEl = document.getElementById('scaler-wrapper');
