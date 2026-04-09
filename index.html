@@ -2270,7 +2270,7 @@ function onCanvasMousedown(e) {
     const ly2 = (Math.max(ue.clientY, startY) - sRect.top)  / scale;
     const hits = docV2.elements.filter(el => {
       if (el.locked) return false;
-      if (el.isSystemBackground === true) return false;
+      if (el.isSystemBackground === true || el.layerRole === 'background') return false;
       // Allow background selection in lasso
       const ex2 = el.x + (el.width || 80);
       const ey2 = el.y + (el.height || 20);
