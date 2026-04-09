@@ -1242,6 +1242,21 @@ const BASE_W = 908.4429931640625;
 const BASE_H = 1336.02001953125;
 const PAD = 100;
 
+// V1→V2 field migration shim — runs once on page load
+docV2.elements.forEach(el => {
+    if (el.type === 'text') {
+        if (el.content === undefined && el.text !== undefined) {
+            el.content = el.text;
+        }
+        if (el.style) {
+            if (el.fontFamily === undefined && el.style.fontFamily !== undefined) el.fontFamily = el.style.fontFamily;
+            if (el.fontSize === undefined && el.style.fontSize !== undefined) el.fontSize = el.style.fontSize;
+            if (el.color === undefined && el.style.color !== undefined) el.color = el.style.color;
+            if (el.lineHeight === undefined && el.style.lineHeight !== undefined) el.lineHeight = el.style.lineHeight;
+            if (el.letterSpacing === undefined && el.style.letterSpacing !== undefined) el.letterSpacing = el.style.letterSpacing;
+        }
+    }
+});
 let layoutLocked = false, selectedId = null, zoomScale = 1, _isFitZoom = false, _activeBarTab = 'layer';
 let historyStack = [];
 let redoStack = [];
