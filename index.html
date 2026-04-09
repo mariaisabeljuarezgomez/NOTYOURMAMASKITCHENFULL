@@ -1100,7 +1100,7 @@ let docV2 = {
       backgroundColor: "#f3f3f3"
     },
     settings: {
-      layoutLocked: true,
+      layoutLocked: false,
       backgroundLayerLocked: true,
       legacyBgVisible: true,
       snapEnabled: false,
@@ -1124,7 +1124,7 @@ const BASE_W = 908.4429931640625;
 const BASE_H = 1336.02001953125;
 const PAD = 100;
 
-let layoutLocked = true, selectedId = null, zoomScale = 1, _isFitZoom = false, _activeBarTab = 'layer';
+let layoutLocked = false, selectedId = null, zoomScale = 1, _isFitZoom = false, _activeBarTab = 'layer';
 let historyStack = [];
 let redoStack = [];
 const elementDisplayNames = {}; // { elementId: "My Custom Name" } — editor display only, not persisted
@@ -2343,16 +2343,27 @@ function applyTextWidth(w) {
     render();
 }
 
-function toggleGlobalLock() {
-    layoutLocked = !layoutLocked;
+function syncLayoutLockUI() {
     const btn = document.getElementById('btn-lock-global');
-    btn.innerText = layoutLocked ? '🔒 Layout Locked' : '🔓 Layout Unlocked';
-    btn.classList.toggle('lock-unlocked', !layoutLocked);
-    showToast(layoutLocked ? 'Layout Locked' : 'Edit Mode ON');
-    
-    syncZoomControlsVisibility();
+    layoutLocked = !!docV2.settings.layoutLocked;
+    if (!btn) return;
+    if (layoutLocked) {
+        btn.innerText = '🔒 Layout Locked';
+        btn.classList.remove('lock-unlocked');
+        btn.classList.add('primary');
+    } else {
+        btn.innerText = '🔓 Layout Unlocked';
+        btn.classList.add('lock-unlocked');
+        btn.classList.remove('primary');
+    }
+}
 
+function toggleGlobalLock() {
+    docV2.settings.layoutLocked = !docV2.settings.layoutLocked;
+    syncLayoutLockUI();
+    syncZoomControlsVisibility();
     render();
+    showToast(layoutLocked ? '🔒 Layout locked' : '🔓 Layout unlocked');
 }
 
 function syncZoomControlsVisibility() {
@@ -3316,8 +3327,9 @@ function _mergeLoadedDoc(s) {
     const serverIds = new Set((s.assets || []).map(a => a.id));
     const missing = currentAssets.filter(a => !serverIds.has(a.id));
     docV2.assets = [...(docV2.assets || []), ...missing];
-    layoutLocked = docV2.settings?.layoutLocked ?? true;
+    if (docV2.settings && docV2.settings.layoutLocked === undefined) docV2.settings.layoutLocked = false;
     zoomScale = docV2.editorState?.zoom || 1;
+    syncLayoutLockUI();
     syncZoomControlsVisibility();
     selectedId = null;
     docV2.editorState.selectedElementIds = [];
@@ -3714,6 +3726,7 @@ window.onload = async () => {
     });
 
     // Step 4: Init the rest
+    syncLayoutLockUI();
     initSmartTooltips();
     await loadUserImages();
     loadVideoHistory();
