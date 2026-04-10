@@ -72,7 +72,7 @@ def init_db():
         return
     conn = None
     try:
-        conn = psycopg2.connect(DATABASE_URL)
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cur = conn.cursor()
         cur.execute("""
             CREATE TABLE IF NOT EXISTS sessions (
@@ -130,11 +130,15 @@ def index():
     response.headers["Cache-Control"] = "no-cache, must-revalidate"
     return response
 
+@app.route('/export-utils.js')
+def serve_export_utils():
+    return send_from_directory('.', 'export-utils.js')
+
 @app.route("/api/menu", methods=["GET"])
 def get_menu():
     try:
         if DATABASE_URL:
-            conn = psycopg2.connect(DATABASE_URL)
+            conn = psycopg2.connect(DATABASE_URL, sslmode='require')
             cur = conn.cursor()
             cur.execute("SELECT data FROM sessions ORDER BY id DESC LIMIT 1")
             row = cur.fetchone()
@@ -144,6 +148,7 @@ def get_menu():
                 return jsonify(row[0])
         return jsonify(DEFAULT_MENU_DATA)
     except Exception as e:
+        print(f"get_menu ERROR: {e}", flush=True)
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/menu", methods=["POST"])
@@ -155,7 +160,7 @@ def save_menu():
         return jsonify({"error": "Invalid schema"}), 400
     
     try:
-        conn = psycopg2.connect(DATABASE_URL)
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cur = conn.cursor()
         cur.execute("INSERT INTO sessions (data) VALUES (%s)", (json.dumps(data),))
         cur.execute("DELETE FROM sessions WHERE id NOT IN (SELECT id FROM sessions ORDER BY id DESC LIMIT 50)")
@@ -171,7 +176,7 @@ def reset_menu():
     conn = None
     try:
         if DATABASE_URL:
-            conn = psycopg2.connect(DATABASE_URL)
+            conn = psycopg2.connect(DATABASE_URL, sslmode='require')
             cur = conn.cursor()
             cur.execute("DELETE FROM sessions")
             cur.execute("INSERT INTO sessions (data) VALUES (%s)", (json.dumps(DEFAULT_MENU_DATA),))
@@ -189,7 +194,7 @@ def migrate_asset():
     conn = None
     try:
         if not DATABASE_URL: return jsonify({"error": "No DB"}), 500
-        conn = psycopg2.connect(DATABASE_URL)
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cur = conn.cursor()
         cur.execute("SELECT id, data FROM sessions ORDER BY id DESC LIMIT 1")
         row = cur.fetchone()
