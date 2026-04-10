@@ -1405,7 +1405,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     </div>
     <div style="display:flex; gap:10px; flex-shrink:0; margin-left:10px; border-left:1px solid #444; padding-left:10px;">
         <button id="btn-set-bg" class="ctrl-btn set-bg" onclick="setSelectedAsBackground()" title="Promote this image to full-page locked background" data-help="Sets the selected image as the full-page menu background">🖼️ BG</button>
-        <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); render(); showToast('Duplicated ' + ids.length + ' elements');}else{duplicateEl();}" title="Duplicate Layer" data-help="Makes an exact copy of the selected layer — text, image, or shape">📋</button>
+        <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); showToast('Duplicated ' + ids.length + ' elements');}else{duplicateEl();}" title="Duplicate Layer" data-help="Makes an exact copy of the selected layer — text, image, or shape">📋</button>
         <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c;" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds];ids.forEach(id=>{selectedId=id;deleteEl(true,true);});docV2.editorState.selectedElementIds=[];deselect();render();}else{deleteEl();}" title="Delete Layer" data-help="Permanently removes the selected element from the menu">🗑</button>
     </div>
 </div>
@@ -1639,6 +1639,14 @@ function showToast(m) {
     const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = m;
     const container = document.getElementById('toast-container');
     container.appendChild(t); setTimeout(() => t.remove(), 2500);
+}
+
+function normalizeHex(c) {
+  if (!c) return "#000000";
+  if (/^#[0-9a-fA-F]{3}$/.test(c)) {
+    return "#" + c[1]+c[1]+c[2]+c[2]+c[3]+c[3];
+  }
+  return c;
 }
 
 function render() {
@@ -2496,7 +2504,7 @@ function updateSelectionBar() {
             const div = document.createElement('div');
             div.id = 'multi-select-actions';
             div.style.cssText = 'display:flex; align-items:center; gap:10px; width:100%; justify-content:center; padding:5px 0;';
-            div.innerHTML = `<button class="ctrl-btn" style="background:#c0392b; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; deleteEl(true,true);}); docV2.editorState.selectedElementIds=[]; deselect(); render();">🗑️ Delete All (<span id="ms-del-count"></span>)</button><button class="ctrl-btn" style="background:#2980b9; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); render(); showToast('Duplicated ' + ids.length + ' elements');">📋 Duplicate All (<span id="ms-dup-count"></span>)</button>`;
+            div.innerHTML = `<button class="ctrl-btn" style="background:#c0392b; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; deleteEl(true,true);}); docV2.editorState.selectedElementIds=[]; deselect();">🗑️ Delete All (<span id="ms-del-count"></span>)</button><button class="ctrl-btn" style="background:#2980b9; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); showToast('Duplicated ' + ids.length + ' elements');">📋 Duplicate All (<span id="ms-dup-count"></span>)</button>`;
             document.getElementById('bar-content').appendChild(div);
             msBlock = div;
         }
@@ -2548,11 +2556,11 @@ function updateSelectionBar() {
             document.getElementById('sel-radius').value = item.cornerRadius || 0;
         }
         document.getElementById('sel-stroke-w').value = item.strokeWidth || 0;
-        document.getElementById('sel-stroke-c').value = item.strokeColor || '#c8a96a';
+        document.getElementById('sel-stroke-c').value = normalizeHex(item.strokeColor || '#c8a96a');
         document.getElementById('sel-stroke-c').oninput = (e) => updateProp('strokeColor', e.target.value);
         // Sync fill color picker
         const fillInput = document.getElementById('sel-fill-color');
-        if (fillInput) fillInput.value = (item.style && item.style.fill && item.style.fill !== 'transparent') ? item.style.fill : '#333333';
+        if (fillInput) fillInput.value = normalizeHex((item.style && item.style.fill && item.style.fill !== 'transparent') ? item.style.fill : '#333333');
         // Sync outline-only toggle
         const outlineBtn = document.getElementById('btn-outline-toggle');
         if (outlineBtn) outlineBtn.style.background = (item.style && (item.style.fill === 'transparent' || item.style.fill === 'none' || !item.style.fill)) ? 'var(--primary)' : '#333';
@@ -2582,7 +2590,7 @@ function updateSelectionBar() {
     
     if(item.type==='text') {
         document.getElementById('sel-font').value = item.style.fontFamily.replace(/['"]/g, '');
-        document.getElementById('sel-color').value = item.style.color;
+        document.getElementById('sel-color').value = normalizeHex(item.style.color);
         document.getElementById('sel-l-height').value = item.style.lineHeight || 1.1;
         document.getElementById('sel-l-spacing').value = item.style.letterSpacing || 0;
         
