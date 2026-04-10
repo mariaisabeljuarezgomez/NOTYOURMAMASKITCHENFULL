@@ -3879,6 +3879,35 @@ const DEFAULT_MENU_DATA = {
     }
 };
 
+
+function fitCanvasToScreen(force = false) {
+    if (_canvasFitDone && !force) return;
+    _canvasFitDone = true;
+    _isFitZoom = true;
+    const editorVP = document.getElementById('editor-viewport');
+    if (!editorVP) return;
+    const vw = editorVP.clientWidth;
+    const vh = editorVP.clientHeight;
+    if (!vw || !vh) return; 
+
+    // Prioritize Width: Fill the editor area horizontally with 100px total margin
+    let targetScale = (vw - 100) / BASE_W;
+    
+    // On initial fit, don't exceed 1.0 scale to keep quality, 
+    // and don't go below 0.65 to ensure readability (allow scroll if needed)
+    zoomScale = Math.min(targetScale, 1.0);
+    zoomScale = Math.max(0.65, zoomScale);
+
+    applyZoom(zoomScale, true); 
+    _isFitZoom = false;
+    requestAnimationFrame(function() {
+        if (typeof drawRulers === 'function') drawRulers();
+    });
+}
+window.addEventListener('resize', function() {
+    requestAnimationFrame(() => fitCanvasToScreen(true));
+});
+
 function _mergeLoadedDoc(s) {
     // Deduplicate backgrounds — keep only the LAST one (Fixing stacking bug)
     if (s.elements && s.elements.length > 0) {
@@ -3917,7 +3946,7 @@ function _mergeLoadedDoc(s) {
     restoreAiCredentials(docV2);
 
     // FIX 6 — Auto-fit canvas after state restore
-    fitCanvasToScreen();
+    setTimeout(() => fitCanvasToScreen(), 0);
 }
 
 async function save() {
@@ -4219,33 +4248,6 @@ async function exportPng() {
     }
 }
 
-function fitCanvasToScreen(force = false) {
-    if (_canvasFitDone && !force) return;
-    _canvasFitDone = true;
-    _isFitZoom = true;
-    const editorVP = document.getElementById('editor-viewport');
-    if (!editorVP) return;
-    const vw = editorVP.clientWidth;
-    const vh = editorVP.clientHeight;
-    if (!vw || !vh) return; 
-
-    // Prioritize Width: Fill the editor area horizontally with 100px total margin
-    let targetScale = (vw - 100) / BASE_W;
-    
-    // On initial fit, don't exceed 1.0 scale to keep quality, 
-    // and don't go below 0.65 to ensure readability (allow scroll if needed)
-    zoomScale = Math.min(targetScale, 1.0);
-    zoomScale = Math.max(0.65, zoomScale);
-
-    applyZoom(zoomScale, true); 
-    _isFitZoom = false;
-    requestAnimationFrame(function() {
-        if (typeof drawRulers === 'function') drawRulers();
-    });
-}
-window.addEventListener('resize', function() {
-    requestAnimationFrame(() => fitCanvasToScreen(true));
-});
 
 window.onload = async () => {
     let data = null;
