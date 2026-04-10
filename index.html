@@ -869,7 +869,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 <canvas id="ruler-v" style="
   position: fixed;
   top: 144px;
-  left: 220px;   /* left sidebar edge */
+  left: 240px;   /* left sidebar edge */
   width: 20px;
   bottom: 0;
   z-index: 100;
@@ -882,7 +882,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 <div id="ruler-corner" style="
   position: fixed;
   top: 144px;
-  left: 220px;
+  left: 240px;
   width: 20px;
   height: 20px;
   z-index: 101;
@@ -4312,6 +4312,9 @@ window.onload = async () => {
 
         applyZoom(zoomScale, true); 
         _isFitZoom = false;
+        requestAnimationFrame(function() {
+            if (typeof drawRulers === 'function') drawRulers();
+        });
     }
     window.addEventListener('resize', function() {
         requestAnimationFrame(() => fitCanvasToScreen(true));
