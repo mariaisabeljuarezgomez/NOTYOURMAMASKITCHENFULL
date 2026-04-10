@@ -70,36 +70,40 @@ DEFAULT_MENU_DATA = json.loads(DEFAULT_MENU_DATA_JSON)
 def init_db():
     if not DATABASE_URL:
         return
-    conn = None
     try:
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cur = conn.cursor()
+        
+        # Ensure schema matches reality (Option B implementation)
         cur.execute("""
             CREATE TABLE IF NOT EXISTS sessions (
-                id SERIAL PRIMARY KEY,
-                data JSONB NOT NULL,
+                id TEXT PRIMARY KEY,
+                canvas_json JSONB,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS assets (
-                id TEXT PRIMARY KEY,
-                name TEXT,
-                cloudinary_url TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
         
-        # Initial seeding if empty
-        cur.execute("SELECT COUNT(*) FROM sessions")
-        if cur.fetchone()[0] == 0:
-            cur.execute("INSERT INTO sessions (data) VALUES (%s)", (json.dumps(DEFAULT_MENU_DATA),))
-            print("DB: Seeded with default menu data")
+        # Migration: If id is integer, convert to TEXT
+        cur.execute("SELECT data_type FROM information_schema.columns WHERE table_name = 'sessions' AND column_name = 'id'")
+        row = cur.fetchone()
+        if row and row[0] == 'integer':
+            cur.execute("ALTER TABLE sessions ALTER COLUMN id TYPE TEXT")
+            print("DB: Migrated id column to TEXT")
+
+        # Ensure 'main' record exists
+        cur.execute("SELECT id FROM sessions WHERE id = 'main'")
+        if not cur.fetchone():
+            # Try to swallow the latest existing record into 'main' or seed default
+            cur.execute("SELECT canvas_json FROM sessions ORDER BY updated_at DESC LIMIT 1")
+            prev = cur.fetchone()
+            canvas_data = prev[0] if prev else DEFAULT_MENU_DATA
+            cur.execute("INSERT INTO sessions (id, canvas_json) VALUES ('main', %s) ON CONFLICT (id) DO NOTHING", (json.dumps(canvas_data),))
+            print("DB: Initialized 'main' session record")
             
         conn.commit()
         cur.close()
     except Exception as e:
-        print(f"DB Error: {str(e)}")
+        print(f"init_db ERROR: {e}", flush=True)
     finally:
         if conn:
             conn.close()
@@ -140,7 +144,8 @@ def get_menu():
         if DATABASE_URL:
             conn = psycopg2.connect(DATABASE_URL, sslmode='require')
             cur = conn.cursor()
-            cur.execute("SELECT data FROM sessions ORDER BY id DESC LIMIT 1")
+            # Explicitly query the 'main' record and 'canvas_json' column
+            cur.execute("SELECT canvas_json FROM sessions WHERE id = 'main'")
             row = cur.fetchone()
             cur.close()
             conn.close()
@@ -162,13 +167,20 @@ def save_menu():
     try:
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cur = conn.cursor()
-        cur.execute("INSERT INTO sessions (data) VALUES (%s)", (json.dumps(data),))
-        cur.execute("DELETE FROM sessions WHERE id NOT IN (SELECT id FROM sessions ORDER BY id DESC LIMIT 50)")
+        # UPSERT logic using 'canvas_json' and id='main'
+        cur.execute("""
+            INSERT INTO sessions (id, canvas_json, updated_at) 
+            VALUES ('main', %s, CURRENT_TIMESTAMP)
+            ON CONFLICT (id) DO UPDATE SET 
+                canvas_json = EXCLUDED.canvas_json,
+                updated_at = CURRENT_TIMESTAMP
+        """, (json.dumps(data),))
         conn.commit()
         cur.close()
         conn.close()
         return jsonify({"status": "success"}), 200
     except Exception as e:
+        print(f"save_menu ERROR: {e}", flush=True)
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/menu/reset", methods=["POST"])
@@ -178,13 +190,13 @@ def reset_menu():
         if DATABASE_URL:
             conn = psycopg2.connect(DATABASE_URL, sslmode='require')
             cur = conn.cursor()
-            cur.execute("DELETE FROM sessions")
-            cur.execute("INSERT INTO sessions (data) VALUES (%s)", (json.dumps(DEFAULT_MENU_DATA),))
+            cur.execute("UPDATE sessions SET canvas_json = %s, updated_at = CURRENT_TIMESTAMP WHERE id = 'main'", (json.dumps(DEFAULT_MENU_DATA),))
             conn.commit()
             cur.close()
             return jsonify({"status": "success", "reset": "database"})
         return jsonify({"error": "No database connection"}), 500
     except Exception as e:
+        print(f"reset_menu ERROR: {e}", flush=True)
         return jsonify({"error": str(e)}), 500
     finally:
         if conn: conn.close()
@@ -196,10 +208,10 @@ def migrate_asset():
         if not DATABASE_URL: return jsonify({"error": "No DB"}), 500
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cur = conn.cursor()
-        cur.execute("SELECT id, data FROM sessions ORDER BY id DESC LIMIT 1")
+        cur.execute("SELECT canvas_json FROM sessions WHERE id = 'main'")
         row = cur.fetchone()
         if not row: return jsonify({"status": "no_data_to_migrate"})
-        row_id, menu_json = row
+        menu_json = row[0]
         elements = menu_json.get("elements", [])
         modified = False
         for el in elements:
@@ -207,7 +219,7 @@ def migrate_asset():
                 el["src"] = el["src"].replace("Asset2_1.png", "Asset2.png")
                 modified = True
         if modified:
-            cur.execute("UPDATE sessions SET data = %s WHERE id = %s", (json.dumps(menu_json), row_id))
+            cur.execute("UPDATE sessions SET canvas_json = %s, updated_at = CURRENT_TIMESTAMP WHERE id = 'main'", (json.dumps(menu_json),))
             conn.commit()
         cur.close()
         return jsonify({"status": "migrated" if modified else "not_needed"})
@@ -219,22 +231,31 @@ def migrate_asset():
 @app.route("/api/repair-images", methods=["POST"])
 def repair_images():
     try:
-        conn = psycopg2.connect(DATABASE_URL)
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute("SELECT id, data FROM sessions ORDER BY id DESC LIMIT 1")
+        # Use 'canvas_json' and id='main' record
+        cur.execute("SELECT canvas_json FROM sessions WHERE id = 'main'")
         row = cur.fetchone()
         if not row: return jsonify({"error": "No session found"}), 404
-        data = row['data']
+        data = row['canvas_json']
         fixed = 0
         for el in data.get("elements", []):
             src = el.get("src", "")
             if src and not src.startswith("http") and not src.startswith("data:"):
                 el["src"] = ""; el["assetId"] = ""; fixed += 1
-        cur.execute("INSERT INTO sessions (data) VALUES (%s)", (json.dumps(data),))
+        # UPSERT logic using 'canvas_json' and id='main'
+        cur.execute("""
+            INSERT INTO sessions (id, canvas_json, updated_at) 
+            VALUES ('main', %s, CURRENT_TIMESTAMP)
+            ON CONFLICT (id) DO UPDATE SET 
+                canvas_json = EXCLUDED.canvas_json,
+                updated_at = CURRENT_TIMESTAMP
+        """, (json.dumps(data),))
         conn.commit()
         cur.close(); conn.close()
         return jsonify({"status": "ok", "fixed": fixed}), 200
     except Exception as e:
+        print(f"repair_images ERROR: {e}", flush=True)
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/delete-asset/<filename>", methods=["DELETE"])
