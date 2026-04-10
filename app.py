@@ -65,7 +65,7 @@ if not os.path.exists(STORAGE_BASE):
         STORAGE_BASE = "./data"
         os.makedirs(STORAGE_BASE, exist_ok=True)
 
-DATA_FILE = os.path.join(STORAGE_BASE, "menu_data.json")
+DATA_FILE = "/data/menu.json"
 BACKUP_DIR = os.path.join(STORAGE_BASE, "backups")
 VIDEO_HISTORY_FILE = os.path.join(STORAGE_BASE, "video_history.json")
 
@@ -488,31 +488,29 @@ def upload_image():
         if not any(decoded[:len(sig)] == sig for sig in MAGIC_BYTES):
             return jsonify({"error": "File content does not match a supported image type"}), 400
 
-        # NEW: Upload to Cloudinary immediately for all uploads
-        # We use the existing credentials from the request if provided, otherwise we look for env vars
-        creds = data.get("credentials") or {
-            "cloud_name": os.environ.get("CLOUDINARY_CLOUD_NAME"),
-            "api_key": os.environ.get("CLOUDINARY_API_KEY"),
-            "api_secret": os.environ.get("CLOUDINARY_API_SECRET")
-        }
+        # Priority credentials from request body, fallback to environment variables
+        creds_req = data.get("credentials") or {}
+        cloud_name = creds_req.get("cloudName") or os.environ.get("CLOUDINARY_CLOUD_NAME")
+        cloud_key = creds_req.get("cloudKey") or os.environ.get("CLOUDINARY_API_KEY")
+        cloud_secret = creds_req.get("cloudSecret") or os.environ.get("CLOUDINARY_API_SECRET")
         
-        if not all([creds.get("cloud_name"), creds.get("api_key"), creds.get("api_secret")]):
+        if not all([cloud_name, cloud_key, cloud_secret]):
             return jsonify({"error": "Cloudinary credentials missing"}), 400
 
         client = _http()
         timestamp = int(time.time())
         params = {"folder": "nymk_uploads", "timestamp": timestamp}
-        sig = cloudinary_sign(params, creds["api_secret"])
+        sig = cloudinary_sign(params, cloud_secret)
         
         upload_files = {
             "file": (filename, decoded, f"image/{ext[1:] if ext[1:] != 'jpg' else 'jpeg'}"),
-            "api_key": (None, creds["api_key"]),
+            "api_key": (None, cloud_key),
             "timestamp": (None, str(timestamp)),
             "signature": (None, sig),
             "folder": (None, "nymk_uploads")
         }
         
-        upload_url = f"https://api.cloudinary.com/v1_1/{creds['cloud_name']}/image/upload"
+        upload_url = f"https://api.cloudinary.com/v1_1/{cloud_name}/image/upload"
         resp = client.post(upload_url, files=upload_files, timeout=60)
         
         if resp.status_code not in (200, 201):

@@ -3485,7 +3485,15 @@ async function importImg(input) {
             const res = await fetch('/api/upload-image', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ data: base64Data, filename: f.name })
+                body: JSON.stringify({ 
+                    data: base64Data, 
+                    filename: f.name,
+                    credentials: {
+                        cloudName: document.getElementById('ai-cloud-name')?.value?.trim() || '',
+                        cloudKey: document.getElementById('ai-cloud-key')?.value?.trim() || '',
+                        cloudSecret: document.getElementById('ai-cloud-secret')?.value?.trim() || ''
+                    }
+                })
             });
             const json = await res.json();
             if (json.status === "ok") {
@@ -3511,7 +3519,15 @@ async function importBackground(input) {
             const res = await fetch('/api/upload-image', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ filename, data: src })
+                body: JSON.stringify({ 
+                    filename, 
+                    data: src,
+                    credentials: {
+                        cloudName: document.getElementById('ai-cloud-name')?.value?.trim() || '',
+                        cloudKey: document.getElementById('ai-cloud-key')?.value?.trim() || '',
+                        cloudSecret: document.getElementById('ai-cloud-secret')?.value?.trim() || ''
+                    }
+                })
             });
             const json = await res.json();
             if (json.url) {
