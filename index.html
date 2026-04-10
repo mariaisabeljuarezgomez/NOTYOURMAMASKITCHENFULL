@@ -2271,9 +2271,11 @@ function attach(el) {
             pushState(); // Store state BEFORE move
         }
         
-        let rect = elementsLayer.getBoundingClientRect();
-        let ox = (e.clientX - rect.left)/zoomScale - parseFloat(el.style.left);
-        let oy = (e.clientY - rect.top)/zoomScale - parseFloat(el.style.top);
+        const scalerEl = document.getElementById('scaler-wrapper');
+        let rect = scalerEl.getBoundingClientRect();
+        const currentScale = rect.width / BASE_W;
+        let ox = (e.clientX - rect.left) / currentScale - parseFloat(el.style.left);
+        let oy = (e.clientY - rect.top) / currentScale - parseFloat(el.style.top);
         
         const groupStartMap = {};
         if (docV2.editorState.selectedElementIds.length > 1) {
@@ -2302,8 +2304,8 @@ function attach(el) {
             if (isEditingText) return;
             const item = docV2.elements.find(e => e.id === el.id);
             if (!item || item.locked) return;
-            let nx = (me.clientX - rect.left)/zoomScale - ox;
-            let ny = (me.clientY - rect.top)/zoomScale - oy;
+            let nx = (me.clientX - rect.left) / currentScale - ox;
+            let ny = (me.clientY - rect.top) / currentScale - oy;
             
             const cx = BASE_W/2 - el.offsetWidth/2, cy = BASE_H/2 - el.offsetHeight/2;
             if(Math.abs(nx-cx)<15) { nx=cx; gcx.style.display='block'; } else gcx.style.display='none';
@@ -2338,7 +2340,12 @@ function attach(el) {
             gcy.style.display='none'; 
             _groupDragStatePushed = false; 
             sync(); 
-            render(); // settled render after drag
+            // Only sync data model position, no full DOM re-render needed
+            const item = docV2.elements.find(i => i.id === el.id);
+            if (item) {
+                item.x = parseFloat(el.style.left) || item.x;
+                item.y = parseFloat(el.style.top) || item.y;
+            }
         };
     };
 
@@ -2361,14 +2368,9 @@ function attach(el) {
         if(document.onmouseup) document.onmouseup();
     };
 
+
     // FIX: stop click event from bubbling to onCanvasClick/onViewportClick after mousedown has already handled selection.
-    // mousedown still bubbles (lasso needs it). Only click is stopped here.
-    el.onclick = (e) => {
-        e.stopPropagation();
-        // Selection for ALL element types must still work via click
-        const id = el.id || el.dataset.id;
-        if (id) selectById(id);
-    };
+    // mousedown still bubbles (lasso needs it).
 }
 
 function selectById(id) {
