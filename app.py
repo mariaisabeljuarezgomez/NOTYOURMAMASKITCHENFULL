@@ -242,48 +242,28 @@ def save_menu():
     data = request.json
     if data is None:
         return jsonify({"error": "Request body is required"}), 400
-    data.pop("status", None)   # strip server-injected status field before save
+    data.pop("status", None)
     if not validate_schema(data):
         return jsonify({"error": "Invalid schema"}), 400
     
-    db_success = False
-    # Try Database first
     conn = get_db_connection()
-    if conn:
-        try:
-            with conn.cursor() as cur:
-                cur.execute("INSERT INTO sessions (canvas_json) VALUES (%s)", (json.dumps(data),))
-                conn.commit()
-                # BUG-B1 fix: cap sessions table to 50 rows to prevent unbounded growth
-                cur.execute("DELETE FROM sessions WHERE id NOT IN (SELECT id FROM sessions ORDER BY id DESC LIMIT 50)")
-                conn.commit()
-                db_success = True
-        except Exception as e:
-            print(f"[DB] Save failed: {e}")
-        finally:
-            conn.close()
-
-    # Always fallback/sync to JSON file for safety
+    if not conn:
+        # User requested 500 error if DB connection fails
+        return jsonify({"error": "Database connection failed"}), 500
+        
     try:
-        timestamp = None
-        if not os.path.exists(BACKUP_DIR):
-            os.makedirs(BACKUP_DIR)
-        if os.path.exists(DATA_FILE):
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            backup_path = os.path.join(BACKUP_DIR, f"menu_data_{timestamp}.json")
-            shutil.copy2(DATA_FILE, backup_path)
-        temp_file = DATA_FILE + ".tmp"
-        with open(temp_file, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=4)
-        os.replace(temp_file, DATA_FILE)
-        prune_backups(BACKUP_DIR)
-        return jsonify({
-            "status": "success", 
-            "db_saved": db_success,
-            "backup": f"menu_data_{timestamp}.json" if timestamp else None
-        }), 200
+        with conn.cursor() as cur:
+            cur.execute("INSERT INTO sessions (canvas_json) VALUES (%s)", (json.dumps(data),))
+            conn.commit()
+            # BUG-B1 fix: cap sessions table to 50 rows to prevent unbounded growth
+            cur.execute("DELETE FROM sessions WHERE id NOT IN (SELECT id FROM sessions ORDER BY id DESC LIMIT 50)")
+            conn.commit()
+        return jsonify({"status": "success", "db_saved": True}), 200
     except Exception as e:
-        return jsonify({"error": str(e), "db_saved": db_success}), 500
+        print(f"[DB] Save failed: {e}")
+        return jsonify({"error": "Database write failed"}), 500
+    finally:
+        conn.close()
 
 @app.route("/api/menu/reset", methods=["POST"])
 def reset_menu():
