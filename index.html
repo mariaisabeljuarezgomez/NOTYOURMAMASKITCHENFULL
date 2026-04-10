@@ -1406,7 +1406,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     <div style="display:flex; gap:10px; flex-shrink:0; margin-left:10px; border-left:1px solid #444; padding-left:10px;">
         <button id="btn-set-bg" class="ctrl-btn set-bg" onclick="setSelectedAsBackground()" title="Promote this image to full-page locked background" data-help="Sets the selected image as the full-page menu background">🖼️ BG</button>
         <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); showToast('Duplicated ' + ids.length + ' elements');}else{duplicateEl();}" title="Duplicate Layer" data-help="Makes an exact copy of the selected layer — text, image, or shape">📋</button>
-        <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c;" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds];ids.forEach(id=>{selectedId=id;deleteEl(true,true);});docV2.editorState.selectedElementIds=[];deselect();render();}else{deleteEl();}" title="Delete Layer" data-help="Permanently removes the selected element from the menu">🗑</button>
+        <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c;" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds];ids.forEach(id=>{selectedId=id;deleteEl(true,true);});docV2.editorState.selectedElementIds=[];deselect(); updateSelectionBar(); renderLayerList();}else{deleteEl();}" title="Delete Layer" data-help="Permanently removes the selected element from the menu">🗑</button>
     </div>
 </div>
 
@@ -1753,7 +1753,7 @@ function render() {
         }
         
         Object.assign(el.style, { 
-            left:d.x+'px', top:d.y+'px', zIndex:d.zIndex||10, 
+            left:d.x+'px', top:d.y+'px', zIndex: Math.max(d.zIndex || 10, 10), 
             opacity: d.opacity ?? 1,
             transform: `rotate(${d.rotation||0}deg)`,
             borderRadius: d.type === 'line' ? '0' : (d.cornerRadius||0)+'px',
@@ -2727,7 +2727,7 @@ function onCanvasMousedown(e) {
       docV2.editorState.selectedElementIds = hits.map(el => el.id);
       selectedId = null;
       _lassoJustFired = true;
-      render();
+      
       updateSelectionBar();
       updateDistributeBar();
       showToast('✅ ' + hits.length + ' element' + (hits.length > 1 ? 's' : '') + ' selected');
