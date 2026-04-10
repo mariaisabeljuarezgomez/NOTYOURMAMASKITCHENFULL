@@ -1648,9 +1648,7 @@ function render() {
     const sorted = [...docV2.elements].sort((a,b)=> (a.zIndex||10)-(b.zIndex||10));
     
     sorted.forEach(d => {
-        if (d.layerRole === 'background' && document.getElementById(d.id)) {
-            return; // background already in DOM, skip re-render
-        }
+
         let el, imgEl = null;
         if (d.type === 'image') {
             el = document.createElement('div');
@@ -3564,6 +3562,14 @@ function setSelectedAsBackground() {
 
     pushState();
 
+    // Clear any existing background role before promoting new one
+    docV2.elements.forEach(e => {
+        if (e.layerRole === 'background' && e.id !== item.id) {
+            e.layerRole = 'content';
+            e.locked = false;
+            e.isSystemBackground = false;
+        }
+    });
 
     // Promote IN-PLACE — item becomes locked system background
     item.isSystemBackground = true;
