@@ -2163,9 +2163,9 @@ function injectResizeHandles(el) {
 
 function attach(el) {
     el.onmousedown = (e) => {
+        e.stopPropagation();
         document.onmousemove = null;
         document.onmouseup = null;
-        e.stopPropagation();
 
         // FIX 2: Reset editing state if clicking a different element 
         if (isEditingText && el.id !== selectedId) {
@@ -2374,6 +2374,10 @@ function attach(el) {
 }
 
 function selectById(id) {
+    if (selectById._busy) return;
+    selectById._busy = true;
+    requestAnimationFrame(() => { selectById._busy = false; });
+    
     // If this element is already selected, do NOT re-render
     if (selectedId === id) return;
     const _lck = docV2.elements.find(e => e.id === id);
@@ -2709,14 +2713,9 @@ function deselect() {
 }
 
 function onCanvasClick(e) {
+    if (e.target !== e.currentTarget) return;
     if (_lassoJustFired) return;
     if (layoutLocked) return;
-    const el = e.target.closest('.editable-element');
-    if (el) {
-        const id = el.id || el.dataset.id;
-        if (id) selectById(id);
-        return;
-    }
     deselect();
 }
 function onCanvasMousedown(e) {
@@ -2795,7 +2794,11 @@ function onCanvasMousedown(e) {
     onUp({ clientX: te.changedTouches[0].clientX, clientY: te.changedTouches[0].clientY });
   }, { once: true });
 }
-function onViewportClick(e) { if(isLassoing || _lassoJustFired) return; if(e.target.id === 'editor-viewport' || e.target.id === 'centering-wrapper') deselect(); }
+function onViewportClick(e) { 
+    if (e.target !== e.currentTarget) return;
+    if(isLassoing || _lassoJustFired) return; 
+    deselect(); 
+}
 
 function toggleItemLock() {
     if (selectedId) toggleLockById({ stopPropagation: () => {} }, selectedId);
