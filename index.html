@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<link rel="preload" as="image" href="menu-bg-preview.jpg" fetchpriority="high">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 <title>Menu Editor Pro V2 - UX Hardened</title>
 <meta name="description" content="Menu Editor Pro — Professional restaurant menu layout tool. Edit, save, and export print-ready menus with drag-and-drop text, images, and shapes.">
 <style>
-@font-face { font-family: 'bernard-mt-condensed-regular'; src: url('bernard-mt-condensed-regular.ttf') format('truetype'); font-display: swap; }
-@font-face { font-family: 'century-gothic-bold-italic'; src: url('century-gothic-bold-italic.ttf') format('truetype'); font-display: swap; }
-@font-face { font-family: 'century-gothic-bold'; src: url('century-gothic-bold.ttf') format('truetype'); font-display: swap; }
-@font-face { font-family: 'century-gothic-regular'; src: url('century-gothic-regular.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'bernard-mt-condensed-regular'; src: url('bernard-mt-condensed-regular.ttf') format('truetype'); font-display: block; }
+@font-face { font-family: 'century-gothic-bold-italic'; src: url('century-gothic-bold-italic.ttf') format('truetype'); font-display: block; }
+@font-face { font-family: 'century-gothic-bold'; src: url('century-gothic-bold.ttf') format('truetype'); font-display: block; }
+@font-face { font-family: 'century-gothic-regular'; src: url('century-gothic-regular.ttf') format('truetype'); font-display: block; }
 .editable-element.multi-selected { outline: 3px solid #2980b9; box-shadow: 0 0 15px rgba(41,128,185,0.5); }
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 :root { --primary: #95201d; --accent: #f1c40f; --bg: #1a1a1a; --surface: #2d2d2d; --selection: rgba(241, 196, 15, 0.5);
@@ -40,28 +40,74 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 #header-title { font-weight:700; font-size:16px; letter-spacing:1px; color:var(--accent); }
 .header-actions { display:flex; gap:10px; align-items:center; }
 
-#editor-viewport { position:absolute; top:60px; left:0; right:0; bottom:0; overflow:auto; background:#111; display:flex; align-items:flex-start; justify-content:center; }
+#editor-viewport {
+  position:absolute;
+  top:144px !important;
+  left:0;
+  right:0;
+  bottom:0;
+  overflow:auto;
+  background-color: #0d0d0d;
+  background-image:
+    /* Subtle neon cyan grid lines */
+    linear-gradient(rgba(0,255,230,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,230,0.04) 1px, transparent 1px),
+    /* Larger grid major lines */
+    linear-gradient(rgba(0,255,230,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,230,0.07) 1px, transparent 1px),
+    /* Dot field */
+    radial-gradient(circle, rgba(0,255,230,0.18) 1px, transparent 1px);
+  background-size:
+    20px 20px,
+    20px 20px,
+    100px 100px,
+    100px 100px,
+    20px 20px;
+  background-position:
+    -0.5px -0.5px,
+    -0.5px -0.5px,
+    -0.5px -0.5px,
+    -0.5px -0.5px,
+    9px 9px;
+  display: flex;
+  flex-direction: row;  /* ruler-v on left, right column fills rest */
+  align-items: flex-start;
+  justify-content: flex-start;  /* change from center to flex-start */
+}
 #centering-wrapper { 
     padding: 100px; 
     display: flex; 
     justify-content: center; 
     width: auto;
-}
-#scaler-wrapper { 
+}#scaler-wrapper {
     position:relative; 
     background:#fff; 
-    box-shadow:0 10px 50px rgba(0,0,0,0.8); 
+    box-shadow:
+      0 0 0 1px rgba(0,255,230,0.08),
+      0 0 40px rgba(0,255,230,0.06),
+      0 20px 80px rgba(0,0,0,0.9),
+      0 60px 120px rgba(0,0,0,0.7) !important;
     width: 908px !important; 
     height: 1336px !important; 
-}
-#menu-container { position:absolute; top:0; left:0; width:100%; height:100%; overflow:visible; cursor: default; }
-#menu-bg { width:100%; height:100%; display:block; pointer-events:none; transition: opacity 0.3s; }
-.legacy-bg-hidden { opacity: 0; }
+    transform-origin: top center;
+    margin: 40px 0;
+    flex-shrink: 0;
+}0%; overflow:visible; cursor: default; }
+
 
 .editable-element { position:absolute; cursor:pointer; transition: outline 0.1s, opacity 0.2s, border-radius 0.2s; user-select:none; z-index:auto; transform-origin: center; box-sizing: border-box; }
 .editable-element:hover { outline: 2px solid var(--accent); }
 .editable-element.selected { outline: 3px solid var(--accent) !important; outline-offset: 2px; box-shadow: 0 0 15px var(--selection); z-index: 999 !important; }
-.editable-element.selected * { pointer-events: none; }
+.editable-element.selected *:not(.resize-handle):not(.editable-text) { pointer-events: none; }
+.editable-element .editable-text {
+    pointer-events: auto !important;
+    user-select: none;
+    cursor: pointer;
+}
+.editable-element.editing .editable-text {
+    user-select: text;
+    cursor: text;
+}
 .editable-element.locked.selected { z-index: auto !important; outline: 2px dashed #888 !important; box-shadow: none !important; }
 .editable-element.locked { cursor: default; }
 .editable-element.locked:hover { outline: none; cursor: default; }
@@ -83,7 +129,11 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     z-index: 9999;
     box-sizing: border-box;
 }
-.editable-element.selected .resize-handle { display: block; }
+.editable-element.selected .resize-handle {
+    display: block;
+    pointer-events: all !important;
+    cursor: nwse-resize;
+}
 
 /* Snapping Guides */
 .guide { position:absolute; pointer-events:none; border: 1px dashed var(--accent); z-index: 500; display:none; }
@@ -387,25 +437,54 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     }
 
     /* Distribution Bar */
-    #distribute-bar {
-        position: fixed;
-        bottom: 180px;      /* sits above #selection-bar which is at bottom:120px */
-        left: 50%;
-        transform: translateX(-50%);
-        display: none;
-        align-items: center;
-        gap: 10px;
-        z-index: 2100;
-        background: rgba(0,0,0,0.85);
-        border: 1px solid #c8a96a;
-        border-radius: 50px;
-        padding: 10px 18px;
-        box-shadow: 0 15px 40px rgba(0,0,0,0.8);
-        max-width: 90vw;
-        overflow-x: auto;
-        scrollbar-width: none;
-    }
-    #distribute-bar.show { display: flex !important; }
+#align-bar {
+    position: fixed;
+    top: 104px;
+    left: 220px;
+    right: 260px;
+    height: 0;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    transition: opacity 0.2s, height 0.2s;
+    background: rgba(8,8,8,0.96);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 988;
+}
+#align-bar.show {
+    opacity: 1;
+    pointer-events: all;
+    height: 40px;
+}
+#distribute-bar {
+    position: fixed;
+    top: 144px;
+    left: 220px;
+    right: 260px;
+    height: 0;
+    z-index: 987;
+    background: rgba(8,8,8,0.96) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, height 0.2s ease;
+}
+#distribute-bar.show {
+    opacity: 1;
+    pointer-events: all;
+    height: 40px;
+}
     #distribute-bar::-webkit-scrollbar { display: none; }
     #distribute-bar input {
         background: #111;
@@ -421,16 +500,14 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     #distribute-bar .sep { width: 1px; height: 20px; background: #444; margin: 0 4px; }
     #distribute-bar .label { font-size: 9px; color: #888; font-weight: 800; text-transform: uppercase; margin-right: -4px; }
 
-    @media (max-width: 768px) {
+    @media (max-width: 900px) {
         #distribute-bar {
-            left: 2vw !important;
-            right: 2vw !important;
+            left: 0 !important;
+            right: 0 !important;
+            top: 148px !important;
             transform: none !important;
-            width: 96vw;
-            bottom: 175px;
-            border-radius: 16px;
-            padding: 8px 12px;
-            gap: 8px;
+            width: 100%;
+            border-radius: 0;
         }
     }
 
@@ -495,7 +572,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 
 /* Bars */
 #selection-bar { bottom: 20px !important; }
-#distribute-bar { bottom: 80px !important; }
+/* #distribute-bar bottom positioning removed */
 
 /* Mobile */
 @media (max-width: 900px) {
@@ -503,6 +580,171 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
   #right-panel   { transform: translateX(260px); }
   #editor-viewport { left: 0 !important; right: 0 !important; }
   #selection-bar { left: 2vw !important; right: 2vw !important; transform: none !important; width: 96vw; }
+}
+/* ===== TEXT FORMAT BAR ===== */
+#text-format-bar {
+    position: fixed;
+    top: 60px;
+    left: 220px;
+    right: 260px;
+    height: 44px;
+    background: rgba(20, 20, 20, 0.97);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #333;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0 16px;
+    z-index: 990;
+    overflow: hidden;
+    opacity: 0.35;
+    pointer-events: none;
+    transition: opacity 0.15s;
+}
+#text-format-bar.show {
+    opacity: 1;
+    pointer-events: all;
+}
+.tfb-sep { width: 1px; height: 22px; background: #444; margin: 0 6px; flex-shrink: 0; }
+.tfb-btn {
+    width: 32px; height: 32px; border-radius: 6px;
+    background: transparent; color: #ccc;
+    border: 1px solid transparent;
+    cursor: pointer; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    transition: 0.15s; flex-shrink: 0;
+    font-family: Georgia, serif;
+}
+.tfb-btn:hover { background: #333; border-color: #555; color: #fff; }
+.tfb-btn.active { background: var(--primary); border-color: var(--accent); color: #fff; }
+.tfb-label { font-size: 9px; color: #666; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0; margin-right: 2px; }
+.tfb-select {
+    background: #1a1a1a; border: 1px solid #444; color: #ccc;
+    border-radius: 6px; padding: 4px 6px; font-size: 11px;
+    cursor: pointer; outline: none; max-width: 130px;
+}
+.tfb-select:focus { border-color: var(--accent); }
+.tfb-size-wrap { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.tfb-size-btn { width: 24px; height: 24px; border-radius: 4px; background: #333; border: 1px solid #555; color: #ccc; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.15s; }
+.tfb-size-btn:hover { background: #444; color: #fff; }
+.tfb-size-input {
+    width: 42px; height: 28px; background: #111; border: 1px solid #444;
+    color: var(--accent); border-radius: 6px; font-size: 12px; font-weight: 700;
+    text-align: center; outline: none;
+}
+.tfb-size-input:focus { border-color: var(--accent); }
+.tfb-color-wrap { position: relative; width: 32px; height: 32px; flex-shrink: 0; }
+.tfb-color-preview { width: 22px; height: 8px; border-radius: 2px; position: absolute; bottom: 4px; left: 5px; pointer-events: none; }
+.tfb-color-input { width: 32px; height: 32px; border: none; background: transparent; cursor: pointer; opacity: 0; position: absolute; top: 0; left: 0; }
+.tfb-color-icon { position: absolute; top: 4px; left: 7px; font-size: 14px; pointer-events: none; color: #ccc; line-height: 1; }
+/* When text-format-bar is visible, push viewport down */
+#editor-viewport { top: 144px !important; transition: top 0.2s ease; }
+#editor-viewport.align-active { top: 184px !important; }
+#editor-viewport.dist-active { top: 224px !important; }
+@media (max-width: 900px) {
+    #text-format-bar {
+        left: 0 !important;
+        right: 0 !important;
+        padding: 0 8px;
+        gap: 1px;
+        overflow-x: auto;
+    }
+}
+/* Premium black-glass hover for .ctrl-btn */
+.ctrl-btn:hover {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.18) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
+  backdrop-filter: blur(6px);
+}
+
+/* Premium glass hover for .tfb-btn */
+.tfb-btn:hover {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.15) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* Premium glass hover for .ls-action-btn */
+.ls-action-btn:hover {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+}
+
+/* Glass hover for .btn-ui (top header buttons) */
+.btn-ui:hover {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.15) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.07);
+}
+
+/* Upgrade #selection-bar and #distribute-bar glass look */
+#selection-bar {
+  background: rgba(8,8,8,0.96) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.06) !important;
+}
+
+/* Upgrade top header glass */
+#top-header {
+  background: rgba(6,6,6,0.97) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 4px 20px rgba(0,0,0,0.6) !important;
+}
+
+/* Upgrade sidebars glass */
+#left-sidebar, #right-panel {
+  background: rgba(14,14,14,0.98) !important;
+  border-color: rgba(255,255,255,0.07) !important;
+}
+
+/* Ruler guide lines on canvas */
+.canvas-guide {
+  position: absolute;
+  pointer-events: all;
+  z-index: 498;
+  transition: opacity 0.2s;
+}
+.canvas-guide-h {
+  left: 0; width: 100%; height: 1px;
+  cursor: ns-resize;
+  background: rgba(0,255,230,0.55);
+  box-shadow: 0 0 4px rgba(0,255,230,0.35);
+}
+.canvas-guide-v {
+  top: 0; height: 100%; width: 1px;
+  cursor: ew-resize;
+  background: rgba(0,255,230,0.55);
+  box-shadow: 0 0 4px rgba(0,255,230,0.35);
+}
+.canvas-guide:hover {
+  background: rgba(255,80,80,0.8) !important;
+  box-shadow: 0 0 8px rgba(255,80,80,0.5) !important;
+}
+.canvas-guide .guide-delete-btn {
+  position: absolute;
+  width: 16px; height: 16px;
+  background: rgba(200,30,30,0.9);
+  color: #fff; font-size: 9px;
+  border: none; border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.15s;
+  pointer-events: all;
+}
+.canvas-guide:hover .guide-delete-btn { opacity: 1; }
+.canvas-guide-h .guide-delete-btn { right: 4px; top: -8px; }
+.canvas-guide-v .guide-delete-btn { bottom: 4px; left: -8px; }
+
+/* Adjust editor-viewport left padding to account for vertical ruler */
+#centering-wrapper { margin-left: 0; }
+
+/* Mobile: hide rulers */
+@media (max-width: 900px) {
+  #ruler-h, #ruler-v, #ruler-corner { display: none !important; }
+  #centering-wrapper { margin-left: 0; }
+  #editor-viewport { top: 188px !important; }
 }
 </style>
 <script src="export-utils.js" defer></script>
@@ -519,26 +761,107 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         <button id="btn-reload" class="btn-ui" onclick="location.reload()" data-help="Reloads the page to reset the session if needed.">↺ RELOAD</button>
     </div>
 </div>
+<!-- ===== TEXT FORMAT BAR ===== -->
+<div id="text-format-bar">
+    <!-- Font selector -->
+    <span class="tfb-label">Font</span>
+    <select class="tfb-select" id="tfb-font" onchange="tfbUpdateStyle('fontFamily', this.value)">
+        <option value="bernard-mt-condensed-regular">Bernard Mt</option>
+        <option value="century-gothic-bold">CG Bold</option>
+        <option value="century-gothic-bold-italic">CG Bold Italic</option>
+        <option value="century-gothic-regular">CG Regular</option>
+    </select>
+    <div class="tfb-sep"></div>
+    <!-- Font size stepper -->
+    <div class="tfb-size-wrap">
+        <button class="tfb-size-btn" onclick="tfbStepSize(-1)" title="Decrease font size">−</button>
+        <input class="tfb-size-input" type="number" id="tfb-size" min="4" max="400" step="1"
+            onchange="tfbUpdateStyle('fontSize', parseFloat(this.value))"
+            title="Font size">
+        <button class="tfb-size-btn" onclick="tfbStepSize(1)" title="Increase font size">+</button>
+    </div>
+    <div class="tfb-sep"></div>
+    <!-- Bold / Italic / Underline -->
+    <button class="tfb-btn" id="tfb-bold" onclick="tfbToggleBold()" title="Bold"><b>B</b></button>
+    <button class="tfb-btn" id="tfb-italic" onclick="tfbToggleItalic()" title="Italic"><i>I</i></button>
+    <button class="tfb-btn" id="tfb-underline" onclick="tfbToggleUnderline()" title="Underline"><u>U</u></button>
+    <div class="tfb-sep"></div>
+    <!-- Text Alignment -->
+    <button class="tfb-btn" id="tfb-align-left"    onclick="tfbSetAlign('left')"    title="Align Left"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="2" width="16" height="2"/><rect x="0" y="6" width="10" height="2"/><rect x="0" y="10" width="14" height="2"/><rect x="0" y="14" width="8" height="2"/></svg></button>
+    <button class="tfb-btn" id="tfb-align-center"  onclick="tfbSetAlign('center')"  title="Align Center"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="2" width="16" height="2"/><rect x="3" y="6" width="10" height="2"/><rect x="1" y="10" width="14" height="2"/><rect x="4" y="14" width="8" height="2"/></svg></button>
+    <button class="tfb-btn" id="tfb-align-right"   onclick="tfbSetAlign('right')"   title="Align Right"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="2" width="16" height="2"/><rect x="6" y="6" width="10" height="2"/><rect x="2" y="10" width="14" height="2"/><rect x="8" y="14" width="8" height="2"/></svg></button>
+    <button class="tfb-btn" id="tfb-align-justify" onclick="tfbSetAlign('justify')" title="Justify"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="2" width="16" height="2"/><rect x="0" y="6" width="16" height="2"/><rect x="0" y="10" width="16" height="2"/><rect x="0" y="14" width="16" height="2"/></svg></button>
+    <div class="tfb-sep"></div>
+    <!-- ALL CAPS toggle -->
+    <button class="tfb-btn" id="tfb-caps" onclick="tfbToggleCaps()" title="ALL CAPS" style="font-size:10px; font-weight:800; width:auto; padding:0 8px; letter-spacing:1px;">AA</button>
+    <div class="tfb-sep"></div>
+    <!-- Text color -->
+    <div class="tfb-color-wrap" title="Text Color">
+        <span class="tfb-color-icon">A</span>
+        <div class="tfb-color-preview" id="tfb-color-preview" style="background:#ffffff;"></div>
+        <input class="tfb-color-input" type="color" id="tfb-color" value="#ffffff"
+            oninput="tfbUpdateStyle('color', this.value); document.getElementById('tfb-color-preview').style.background=this.value;">
+    </div>
+    <!-- Line height quick controls -->
+    <div class="tfb-sep"></div>
+    <span class="tfb-label">L.H.</span>
+    <button class="tfb-size-btn" onclick="tfbStepLineHeight(-0.1)" title="Decrease line height">−</button>
+    <input class="tfb-size-input" type="number" id="tfb-lh" min="0.5" max="3" step="0.1" style="width:38px;"
+        onchange="tfbUpdateStyle('lineHeight', parseFloat(this.value))" title="Line height">
+    <button class="tfb-size-btn" onclick="tfbStepLineHeight(0.1)" title="Increase line height">+</button>
+</div>
+
+<div id="align-bar">
+  <!-- Single element: align to canvas -->
+  <div id="align-bar-single" style="display:flex;align-items:center;gap:4px;">
+    <span class="tfb-label">ALIGN</span>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="alignToCanvas('left')" title="Align Left Edge">⬜L</button>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="centerElement('h')" title="Center Horizontal">⬛H</button>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="alignToCanvas('right')" title="Align Right Edge">L⬜</button>
+    <div class="tfb-sep"></div>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="alignToCanvas('top')" title="Align Top Edge">⬜T</button>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="centerElement('v')" title="Center Vertical">⬛V</button>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="alignToCanvas('bottom')" title="Align Bottom Edge">T⬜</button>
+  </div>
+  <!-- Multi element: align to each other -->
+  <div id="align-bar-multi" style="display:none;align-items:center;gap:4px;">
+    <span class="tfb-label">ALIGN TO</span>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="alignMulti('left')" title="Align Left Edges">Left</button>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="alignMulti('centerH')" title="Align Centers H">Ctr H</button>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="alignMulti('right')" title="Align Right Edges">Right</button>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="alignMulti('top')" title="Align Top Edges">Top</button>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="alignMulti('centerV')" title="Align Centers V">Ctr V</button>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="alignMulti('bottom')" title="Align Bottom Edges">Bottom</button>
+    <div class="tfb-sep"></div>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="distributeHorizontally()" title="Distribute H">↔ Dist H</button>
+    <button class="tfb-btn" style="padding:4px 8px;font-size:10px;width:auto;" onclick="distributeVertically()" title="Distribute V">↕ Dist V</button>
+  </div>
+</div>
 
 <main id="editor-viewport" onclick="onViewportClick(event)">
+  <canvas id="ruler-v" style="position:sticky;left:0;top:0;width:20px;height:100%;z-index:100;pointer-events:auto;float:left;background:rgba(18,18,18,0.98);border-right:1px solid rgba(0,255,230,0.15);flex-shrink:0;"></canvas>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;min-width:0;">
+    <canvas id="ruler-h" style="position:sticky;top:0;left:0;width:100%;height:20px;display:block;z-index:100;cursor:default;pointer-events:auto;background:rgba(18,18,18,0.98);border-bottom:1px solid rgba(0,255,230,0.15);flex-shrink:0;align-self:flex-start;"></canvas>
     <div id="centering-wrapper">
-        <div id="scaler-wrapper" style="width:908.4429931640625px; height:1336.02001953125px;">
+        <div id="scaler-wrapper" style="width:908px; height:1336px;">
             <div id="menu-container" onclick="onCanvasClick(event)" onmousedown="onCanvasMousedown(event)" ontouchstart="onCanvasMousedown(event)">
-                <img id="menu-bg" src="menu-bg-preview.jpg" alt="BG" fetchpriority="high">
-                <div id="elements-layer" style="position:absolute; top:0; left:0; width:100%; height:100%;" onmousedown="onCanvasMousedown(event)" ontouchstart="onCanvasMousedown(event)"></div>
+
+                <div id="elements-layer" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div>
                 <div id="guide-cx" class="guide guide-v" style="left:50%"></div>
                 <div id="guide-cy" class="guide guide-h" style="top:50%"></div>
+                <div id="lasso-box" style="
+                  position:absolute;
+                  border:2px dashed #4a90e2;
+                  background:rgba(74,144,226,0.08);
+                  pointer-events:none;
+                  display:none;
+                  z-index:9999;
+                "></div>
+                <div id="guide-lines-layer" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:498;overflow:visible;"></div>
             </div>
-</div></div>
+
+</div></div></div>
 </main>
-<div id="lasso-box" style="
-  position:fixed;
-  border:2px dashed #4a90e2;
-  background:rgba(74,144,226,0.08);
-  pointer-events:none;
-  display:none;
-  z-index:9999;
-"></div>
 
 <!-- ===== LEFT SIDEBAR ===== -->
 <div id="left-sidebar">
@@ -558,7 +881,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     <button class="ls-action-btn" onclick="addLine()"><span class="ls-btn-icon">╱</span><span class="ls-btn-label">Add Line</span></button>
     <button class="ls-action-btn" onclick="document.getElementById('in-img').click()"><span class="ls-btn-icon">📷</span><span class="ls-btn-label">Upload Img</span></button>
     <button class="ls-action-btn" onclick="document.getElementById('in-bg').click()"><span class="ls-btn-icon">🖼️</span><span class="ls-btn-label">Replace Background</span></button>
-    <button class="ls-action-btn" onclick="toggleBg()"><span class="ls-btn-icon">👁️</span><span class="ls-btn-label">Toggle Original BG</span></button>
+
     <div class="ls-section-title" style="margin-top:16px;">File</div>
     <button class="ls-action-btn accent" onclick="exportPng()"><span class="ls-btn-icon">⬇️</span><span class="ls-btn-label">Export Pro PNG</span></button>
     <button class="ls-action-btn" onclick="load()"><span class="ls-btn-icon">📂</span><span class="ls-btn-label">Load Session</span></button>
@@ -1059,8 +1382,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
                   onchange="setSizeFromInput('height', parseFloat(this.value))">
               </div>
             </div>
-            <button id="btn-center-h" class="btn-ui" style="padding:6px 12px; font-size:10px;" onclick="centerElement('h')" data-help="Snaps the element to the exact horizontal center of the menu">Center H</button>
-            <button id="btn-center-v" class="btn-ui" style="padding:6px 12px; font-size:10px;" onclick="centerElement('v')" data-help="Snaps the element to the exact vertical center of the menu">Center V</button>
+<!-- Center buttons moved to top Align Bar -->
             <div class="ctrl-group">
                 <button id="btn-layer-up" class="ctrl-btn" style="width:30px; height:30px" onclick="updateZ(1)" title="Layer Up" data-help="Moves the element forward in the stacking order">⬆️</button>
                 <button id="btn-layer-down" class="ctrl-btn" style="width:30px; height:30px" onclick="updateZ(-1)" title="Layer Down" data-help="Moves the element backward in the stacking order">⬇️</button>
@@ -1083,14 +1405,16 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     </div>
     <div style="display:flex; gap:10px; flex-shrink:0; margin-left:10px; border-left:1px solid #444; padding-left:10px;">
         <button id="btn-set-bg" class="ctrl-btn set-bg" onclick="setSelectedAsBackground()" title="Promote this image to full-page locked background" data-help="Sets the selected image as the full-page menu background">🖼️ BG</button>
-        <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); render(); showToast('Duplicated ' + ids.length + ' elements');}else{duplicateEl();}" title="Duplicate Layer" data-help="Makes an exact copy of the selected layer — text, image, or shape">📋</button>
-        <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c;" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds];ids.forEach(id=>{selectedId=id;deleteEl(true,true);});docV2.editorState.selectedElementIds=[];deselect();render();}else{deleteEl();}" title="Delete Layer" data-help="Permanently removes the selected element from the menu">🗑</button>
+        <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); showToast('Duplicated ' + ids.length + ' elements');}else{duplicateEl();}" title="Duplicate Layer" data-help="Makes an exact copy of the selected layer — text, image, or shape">📋</button>
+        <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c;" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds];ids.forEach(id=>{selectedId=id;deleteEl(true,true);});docV2.editorState.selectedElementIds=[];deselect(); updateSelectionBar(); renderLayerList();}else{deleteEl();}" title="Delete Layer" data-help="Permanently removes the selected element from the menu">🗑</button>
     </div>
 </div>
 
 <script>
 let isEditingText = false;
 let isLassoing = false;
+let lastClickId = null;
+let lastClickTime = 0;
 let _lassoJustFired = false;
 let _groupDragStatePushed = false;
 let docV2 = { 
@@ -1107,7 +1431,7 @@ let docV2 = {
     settings: {
       layoutLocked: false,
       backgroundLayerLocked: true,
-      legacyBgVisible: true,
+
       snapEnabled: false,
       gridEnabled: false
     },
@@ -1119,7 +1443,7 @@ let docV2 = {
       panY: 0
     },
     assets: [{"id": "asset_001", "kind": "image", "name": "Asset1", "storage": {"originalUrl": "/Images/Asset1.png", "previewUrl": null, "thumbnailUrl": null}, "original": {"width": null, "height": null, "mimeType": "image/png"}, "tags": [], "createdAt": null}, {"id": "asset_002", "kind": "image", "name": "Asset10", "storage": {"originalUrl": "/Images/Asset10.png", "previewUrl": null, "thumbnailUrl": null}, "original": {"width": null, "height": null, "mimeType": "image/png"}, "tags": [], "createdAt": null}, {"id": "asset_003", "kind": "image", "name": "Asset11", "storage": {"originalUrl": "/Images/Asset11.png", "previewUrl": null, "thumbnailUrl": null}, "original": {"width": null, "height": null, "mimeType": "image/png"}, "tags": [], "createdAt": null}, {"id": "asset_004", "kind": "image", "name": "Asset12", "storage": {"originalUrl": "/Images/Asset12.png", "previewUrl": null, "thumbnailUrl": null}, "original": {"width": null, "height": null, "mimeType": "image/png"}, "tags": [], "createdAt": null}, {"id": "asset_005", "kind": "image", "name": "Asset13", "storage": {"originalUrl": "/Images/Asset13.png", "previewUrl": null, "thumbnailUrl": null}, "original": {"width": null, "height": null, "mimeType": "image/png"}, "tags": [], "createdAt": null}, {"id": "asset_006", "kind": "image", "name": "Asset14", "storage": {"originalUrl": "/Images/Asset14.png", "previewUrl": null, "thumbnailUrl": null}, "original": {"width": null, "height": null, "mimeType": "image/png"}, "tags": [], "createdAt": null}, {"id": "asset_007", "kind": "image", "name": "Asset2", "storage": {"originalUrl": "/Images/Asset2.png", "previewUrl": null, "thumbnailUrl": null}, "original": {"width": null, "height": null, "mimeType": "image/png"}, "tags": [], "createdAt": null}, {"id": "asset_008", "kind": "image", "name": "Asset3", "storage": {"originalUrl": "/Images/Asset3.png", "previewUrl": null, "thumbnailUrl": null}, "original": {"width": null, "height": null, "mimeType": "image/png"}, "tags": [], "createdAt": null}, {"id": "asset_009", "kind": "image", "name": "Asset4", "storage": {"originalUrl": "/Images/Asset4.png", "previewUrl": null, "thumbnailUrl": null}, "original": {"width": null, "height": null, "mimeType": "image/png"}, "tags": [], "createdAt": null}, {"id": "asset_010", "kind": "image", "name": "Asset6", "storage": {"originalUrl": "/Images/Asset6.png", "previewUrl": null, "thumbnailUrl": null}, "original": {"width": null, "height": null, "mimeType": "image/png"}, "tags": [], "createdAt": null}, {"id": "asset_011", "kind": "image", "name": "Asset7", "storage": {"originalUrl": "/Images/Asset7.png", "previewUrl": null, "thumbnailUrl": null}, "original": {"width": null, "height": null, "mimeType": "image/png"}, "tags": [], "createdAt": null}, {"id": "asset_012", "kind": "image", "name": "Asset8", "storage": {"originalUrl": "/Images/Asset8.png", "previewUrl": null, "thumbnailUrl": null}, "original": {"width": null, "height": null, "mimeType": "image/png"}, "tags": [], "createdAt": null}, {"id": "asset_013", "kind": "image", "name": "Asset9", "storage": {"originalUrl": "/Images/Asset9.png", "previewUrl": null, "thumbnailUrl": null}, "original": {"width": null, "height": null, "mimeType": "image/png"}, "tags": [], "createdAt": null}],
-    elements: [{"id": "txt_0", "type": "text", "text": "SANDWICHES", "x": 631.39208984375, "y": 550.313720703125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-regular", "fontSize": 33.0, "color": "#ffffff", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_1", "type": "text", "text": "MAIN ENTREES", "x": 494.3760986328125, "y": 133.55673217773438, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-regular", "fontSize": 33.0, "color": "#ffffff", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_2", "type": "text", "text": "A LA CARTE", "x": 382.0440979003906, "y": 549.32373046875, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-regular", "fontSize": 33.0, "color": "#ffffff", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_3", "type": "text", "text": "WINGS", "x": 417.1890869140625, "y": 788.57373046875, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-regular", "fontSize": 33.0, "color": "#ffffff", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_4", "type": "text", "text": "Catfish", "x": 407.08349609375, "y": 189.51132202148438, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_5", "type": "text", "text": "$21.99", "x": 749.04736328125, "y": 189.51132202148438, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_6", "type": "text", "text": "$22.99", "x": 749.04736328125, "y": 216.16598510742188, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_7", "type": "text", "text": "$19.99", "x": 749.04736328125, "y": 241.38510131835938, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_8", "type": "text", "text": "$15.99", "x": 749.04736328125, "y": 268.5900573730469, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_9", "type": "text", "text": "$17.99", "x": 749.04736328125, "y": 294.9576110839844, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_10", "type": "text", "text": "$16.99", "x": 749.04736328125, "y": 321.3251647949219, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_11", "type": "text", "text": "$12.99", "x": 749.04736328125, "y": 346.8313293457031, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_12", "type": "text", "text": "$29.99", "x": 749.04736328125, "y": 372.1460876464844, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_13", "type": "text", "text": "$22.99", "x": 749.04736328125, "y": 398.7050476074219, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_14", "type": "text", "text": "Turkey Chops", "x": 407.0835266113281, "y": 216.11813354492188, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_15", "type": "text", "text": "Shrimp Plate", "x": 407.0835266113281, "y": 242.96420288085938, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_16", "type": "text", "text": "Party Wings Plate (6)", "x": 407.0835266113281, "y": 269.9777526855469, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_17", "type": "text", "text": "Fried Chicken Plate - White Meat", "x": 407.0835266113281, "y": 294.9336242675781, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_18", "type": "text", "text": "Fried Chicken Plate - Dark Meat", "x": 407.0835266113281, "y": 320.8705139160156, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_19", "type": "text", "text": "Veggie Plate", "x": 407.0835266113281, "y": 346.8074035644531, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_20", "type": "text", "text": "Oxtails w/Rice & Gravy", "x": 407.0835266113281, "y": 373.7492370605469, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_21", "type": "text", "text": "Turkey WIngs w/Rice & Gravy", "x": 407.0835266113281, "y": 398.7051086425781, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_22", "type": "text", "text": "Catfish 3 pieces", "x": 367.095703125, "y": 607.5958251953125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_23", "type": "text", "text": "$5.50", "x": 538.625244140625, "y": 588.5143432617188, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_24", "type": "text", "text": "Shrimp Po\u2019 Boy", "x": 604.43310546875, "y": 643.661865234375, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_25", "type": "text", "text": "Catfish Po\u2019 Boy", "x": 604.43310546875, "y": 668.5978393554688, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_26", "type": "text", "text": "$17.99", "x": 814.455078125, "y": 670.8505859375, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_27", "type": "text", "text": "$16.99", "x": 814.455078125, "y": 645.902587890625, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_28", "type": "text", "text": "DESSERTS", "x": 653.3687133789062, "y": 965.841064453125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-regular", "fontSize": 33.0, "color": "#ffffff", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_29", "type": "text", "text": "Peach Cobbler", "x": 603.77880859375, "y": 1006.7, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_30", "type": "text", "text": "Banana Pudding", "x": 603.77880859375, "y": 1031.7, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_31", "type": "text", "text": "Coffee Cake", "x": 603.77880859375, "y": 1056.7, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_32", "type": "text", "text": "$6.00", "x": 826.455078125, "y": 1006.7, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_33", "type": "text", "text": "$6.00", "x": 826.455078125, "y": 1031.7, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_34", "type": "text", "text": "$6.00", "x": 826.455078125, "y": 1056.7, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_35", "type": "text", "text": "SIDES", "x": 682.62841796875, "y": 738.2111206054688, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-regular", "fontSize": 33.0, "color": "#ffffff", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_36", "type": "text", "text": "Candied Yams", "x": 603.77880859375, "y": 796.0, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_37", "type": "text", "text": " ", "x": 728.1184692382812, "y": 796.0264282226562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_38", "type": "text", "text": "Cabbage", "x": 738.4916381835938, "y": 796.0, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_39", "type": "text", "text": "Mac N Cheese", "x": 603.77880859375, "y": 821.0, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_40", "type": "text", "text": " ", "x": 729.1574096679688, "y": 819.6660766601562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_41", "type": "text", "text": "Red Beans & Rice", "x": 738.330078125, "y": 821.0, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_42", "type": "text", "text": "Rice & Gravy", "x": 603.77880859375, "y": 846.0, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_43", "type": "text", "text": "Collard Greens", "x": 737.5737915039062, "y": 846.0, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_44", "type": "text", "text": "French Fries", "x": 737.57373046875, "y": 871.0, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_45", "type": "text", "text": "French Fries (Lrg)", "x": 604.5772705078125, "y": 896.0, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_46", "type": "text", "text": "Potato Salad", "x": 603.77880859375, "y": 871.0, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_47", "type": "text", "text": "$7.99", "x": 826.455078125, "y": 896.0, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_48", "type": "text", "text": "($3.99 each)", "x": 686.66552734375, "y": 776.0515747070312, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 14.93958854675293, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_49", "type": "text", "text": "$8.49", "x": 538.6328125, "y": 663.0020141601562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_50", "type": "text", "text": "$3.00", "x": 538.6328125, "y": 699.8838500976562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_51", "type": "text", "text": "$3.50", "x": 538.6328125, "y": 737.01806640625, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_52", "type": "text", "text": "$1.00", "x": 538.6328125, "y": 755.8666381835938, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_53", "type": "text", "text": "Canned Soft Drink", "x": 367.8152770996094, "y": 1010.3901977539062, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_54", "type": "text", "text": "Sweet Tea Small", "x": 367.8152770996094, "y": 1028.9283447265625, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_55", "type": "text", "text": "Sweet Tea Large", "x": 367.8152770996094, "y": 1047.46630859375, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_56", "type": "text", "text": "Lemonade Small", "x": 367.8152770996094, "y": 1066.0042724609375, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_57", "type": "text", "text": "Lemonade Large", "x": 367.8152770996094, "y": 1084.542236328125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_58", "type": "text", "text": "Arnold Palmer Sm", "x": 367.8152770996094, "y": 1103.0802001953125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_59", "type": "text", "text": "Arnold Palmer Lrg", "x": 367.8152770996094, "y": 1121.6182861328125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_60", "type": "text", "text": "BEVERAGES", "x": 379.4755859375, "y": 966.032470703125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-regular", "fontSize": 33.0, "color": "#ffffff", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_61", "type": "text", "text": "$1.75", "x": 536.6328125, "y": 1010.4033813476562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_62", "type": "text", "text": "$3.00", "x": 536.6328125, "y": 1029.2908935546875, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_63", "type": "text", "text": "$5.00", "x": 536.6328125, "y": 1048.17822265625, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_64", "type": "text", "text": "$3.00", "x": 536.6328125, "y": 1067.0655517578125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_65", "type": "text", "text": "$5.00", "x": 536.6328125, "y": 1085.9530029296875, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_66", "type": "text", "text": "$3.00", "x": 536.6328125, "y": 1104.8404541015625, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_67", "type": "text", "text": "$5.00", "x": 536.6328125, "y": 1123.727783203125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_68", "type": "text", "text": "$4.00", "x": 538.6264038085938, "y": 718.066162109375, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_69", "type": "text", "text": "$15.99", "x": 529.62353515625, "y": 607.6341552734375, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_70", "type": "text", "text": "$15.99", "x": 529.62353515625, "y": 645.0206909179688, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_71", "type": "text", "text": "$13.99", "x": 529.62353515625, "y": 681.4366455078125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_72", "type": "text", "text": "$10.99", "x": 529.62353515625, "y": 625.6091918945312, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_73", "type": "text", "text": "Shrimp 10 pieces", "x": 367.0810546875, "y": 625.6091918945312, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_74", "type": "text", "text": "Turkey Chop(2)", "x": 367.0810546875, "y": 645.0206909179688, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_75", "type": "text", "text": "NYMK Waffle", "x": 367.0810546875, "y": 662.7822265625, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_76", "type": "text", "text": "Chicken Wings (3)", "x": 367.095703125, "y": 682.5919189453125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_77", "type": "text", "text": "Leg", "x": 367.095703125, "y": 699.5449829101562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_78", "type": "text", "text": "Wing", "x": 367.095703125, "y": 718.199462890625, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_79", "type": "text", "text": "Thigh", "x": 367.095703125, "y": 736.6943969726562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_80", "type": "text", "text": "Cornbread Muffin (1)", "x": 367.09521484375, "y": 754.9776000976562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_81", "type": "text", "text": "6 Piece  -  $10.49", "x": 402.4888000488281, "y": 861.7587890625, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_82", "type": "text", "text": "12 Piece  -  $20.99", "x": 392.4898376464844, "y": 886.622802734375, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_83", "type": "text", "text": "18 Piece  -  $30.99", "x": 392.4898376464844, "y": 910.163818359375, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_84", "type": "text", "text": "Entrees served with choice of 2 sides", "x": 407.3174133300781, "y": 436.03741455078125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 16.274938583374023, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_85", "type": "text", "text": "and cornbread muffin", "x": 407.3174133300781, "y": 454.03741455078125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 16.274938583374023, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_86", "type": "text", "text": "Waffles with 3 Fried Whole Wings", "x": 130.4803466796875, "y": 501.2333984375, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 16.274938583374023, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_87", "type": "text", "text": "(served with tartar sauce, lettuce,", "x": 609.3571166992188, "y": 591.9713745117188, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 16.274938583374023, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_88", "type": "text", "text": "tomato, pickles, grilled onions,", "x": 609.3571166992188, "y": 607.973388671875, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 16.274938583374023, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_89", "type": "text", "text": "and non spicy cajun sauce)", "x": 609.3571166992188, "y": 623.9754028320312, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 16.274938583374023, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_90", "type": "text", "text": "Flavors: Plain, Hot, Honey Hot,", "x": 367.10076904296875, "y": 824.1533813476562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 16.274938583374023, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_91", "type": "text", "text": "Lemon Pepper, Sweet Thangs", "x": 367.10076904296875, "y": 842.1533813476562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 16.274938583374023, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_92", "type": "text", "text": "EVERY OTHER WEEKEND", "x": 292.9175109863281, "y": 384.487548828125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 8.702635765075684, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_93", "type": "text", "text": "WEEKENDS ONLY", "x": 301.9205627441406, "y": 410.8623046875, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 8.702635765075684, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_94", "type": "text", "text": "Chicken & Waffles", "x": 147.70309448242188, "y": 477.40283203125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 20.574399948120117, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_95", "type": "text", "text": "$12.99", "x": 249.8251953125, "y": 534.3789672851562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 23.117069244384766, "color": "#ffffff", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_96", "type": "text", "text": "@nym_kitchen", "x": 113.22360229492188, "y": 1245.208740234375, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.0, "color": "#ffffff", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_97", "type": "text", "text": "Catfish 1 piece", "x": 367.2944030761719, "y": 588.5089111328125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}], 
+    elements: [],
     meta: {
       sourceTemplate: "nymk-menu-v1",
       migrationFrom: "1.x"
@@ -1129,7 +1453,22 @@ const BASE_W = 908.4429931640625;
 const BASE_H = 1336.02001953125;
 const PAD = 100;
 
-let layoutLocked = false, selectedId = null, zoomScale = 1, _isFitZoom = false, _activeBarTab = 'layer';
+// V1→V2 field migration shim — runs once on page load
+docV2.elements.forEach(el => {
+    if (el.type === 'text') {
+        if (el.content === undefined && el.text !== undefined) {
+            el.content = el.text;
+        }
+        if (el.style) {
+            if (el.fontFamily === undefined && el.style.fontFamily !== undefined) el.fontFamily = el.style.fontFamily;
+            if (el.fontSize === undefined && el.style.fontSize !== undefined) el.fontSize = el.style.fontSize;
+            if (el.color === undefined && el.style.color !== undefined) el.color = el.style.color;
+            if (el.lineHeight === undefined && el.style.lineHeight !== undefined) el.lineHeight = el.style.lineHeight;
+            if (el.letterSpacing === undefined && el.style.letterSpacing !== undefined) el.letterSpacing = el.style.letterSpacing;
+        }
+    }
+});
+let layoutLocked = false, selectedId = null, zoomScale = 1, _isFitZoom = false, _activeBarTab = 'layer', _canvasFitDone = false;
 let historyStack = [];
 let redoStack = [];
 const elementDisplayNames = {}; // { elementId: "My Custom Name" } — editor display only, not persisted
@@ -1302,28 +1641,31 @@ function showToast(m) {
     container.appendChild(t); setTimeout(() => t.remove(), 2500);
 }
 
+function normalizeHex(c) {
+  if (!c) return "#000000";
+  if (/^#[0-9a-fA-F]{3}$/.test(c)) {
+    return "#" + c[1]+c[1]+c[2]+c[2]+c[3]+c[3];
+  }
+  return c;
+}
+
 function render() {
-    const bg = document.getElementById('menu-bg'); 
-    if(bg) {
-        bg.classList.toggle('legacy-bg-hidden', docV2.settings?.legacyBgVisible === false);
-        const bgEl = docV2.elements.find(e => e.isSystemBackground === true);
-        let newSrc = 'menu-bg-preview.jpg';
-        if (bgEl && bgEl.src && bgEl.src !== '' && !bgEl.src.endsWith('menu-bg-preview.jpg') && !bgEl.src.endsWith('menu-bg.png')) {
-            newSrc = bgEl.src;
-        }
-        if (!bg.src.endsWith(newSrc)) {
-            bg.src = newSrc;
-        }
-    }
+
     
     elementsLayer.innerHTML = ''; 
-    const sorted = [...docV2.elements].sort((a,b)=> (a.zIndex||10)-(b.zIndex||10));
+    const sorted = [...docV2.elements].sort((a, b) => {
+      if (a.isSystemBackground) return -1;
+      if (b.isSystemBackground) return 1;
+      return (a.zIndex || 10) - (b.zIndex || 10);
+    });
     
     sorted.forEach(d => {
+
         let el, imgEl = null;
         if (d.type === 'image') {
             el = document.createElement('div');
             el.id = d.id;
+            el.dataset.id = d.id;
             el.className = 'editable-element image-wrapper';
             el.style.position = 'absolute';
             el.style.overflow = 'visible';
@@ -1347,6 +1689,7 @@ function render() {
             // SVG line wrapper
             el = document.createElement('div');
             el.id = d.id;
+            el.dataset.id = d.id;
             el.className = 'editable-element';
             const svgW = Math.max(Math.abs((d.x2||0) - (d.x1||0)), d.strokeWidth || 1, 20);
             const svgH = Math.max(Math.abs((d.y2||0) - (d.y1||0)), d.strokeWidth || 1, 20);
@@ -1378,6 +1721,7 @@ function render() {
         } else {
             el = document.createElement('div');
             el.id = d.id;
+            el.dataset.id = d.id;
             el.className = 'editable-element ' + (d.type==='text'?'editable-text':'shape-object');
             // BUG 1 FIX: Inner container for clipping protection
             if (d.type === 'shape') {
@@ -1404,6 +1748,7 @@ function render() {
             el.ondblclick = (e) => {
                 if (!d.locked) {
                     el.contentEditable = "true";
+                    el.classList.add('editing');
                     el.focus();
                     isEditingText = true;
                 }
@@ -1412,12 +1757,16 @@ function render() {
         }
         
         Object.assign(el.style, { 
-            left:d.x+'px', top:d.y+'px', zIndex:d.zIndex||10, 
+            left:d.x+'px', top:d.y+'px', zIndex: Math.max(d.zIndex || 10, 10),
             opacity: d.opacity ?? 1,
             transform: `rotate(${d.rotation||0}deg)`,
             borderRadius: d.type === 'line' ? '0' : (d.cornerRadius||0)+'px',
             border: 'none' // Stroke handled by inner elements for shapes
         });
+        if (d.layerRole === 'background') {
+            el.style.zIndex = '-1';
+            el.style.pointerEvents = 'none';
+        }
         
         if(d.style) {
             if(d.style.fontFamily) el.style.fontFamily = d.style.fontFamily;
@@ -1425,6 +1774,11 @@ function render() {
             if(d.style.color) el.style.color = d.style.color;
             if(d.style.lineHeight) el.style.lineHeight = d.style.lineHeight;
             if(d.style.letterSpacing) el.style.letterSpacing = d.style.letterSpacing + 'px';
+            if(d.style.fontWeight) el.style.fontWeight = d.style.fontWeight;
+            if(d.style.fontStyle) el.style.fontStyle = d.style.fontStyle;
+            if(d.style.textDecoration) el.style.textDecoration = d.style.textDecoration;
+            if(d.style.textAlign) el.style.textAlign = d.style.textAlign;
+            if(d.style.textTransform) el.style.textTransform = d.style.textTransform;
             if(d.style.fill) {
                 const target = el.querySelector('.shape-inner') || el;
                 target.style.backgroundColor = d.style.fill;
@@ -1453,18 +1807,39 @@ function render() {
             el.style.borderRadius = '0';
         } else if (d.type === 'shape' && d.shapeType === 'star') {
             const inner = el.querySelector('.shape-inner');
-            inner.style.backgroundColor = (d.style && d.style.fill) ? d.style.fill : 'transparent';
-            inner.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
+            // Clear div-based rendering — star is now drawn as SVG polygon
+            inner.style.backgroundColor = 'transparent';
+            inner.style.clipPath = 'none';
+            inner.style.outline = 'none';
+            inner.style.outlineOffset = '0';
+            inner.style.position = 'relative';
+            inner.style.width = '100%';
+            inner.style.height = '100%';
             el.style.backgroundColor = 'transparent';
             el.style.clipPath = 'none'; // BUG 1 FIX: Handles stay visible
             el.style.borderRadius = '0';
-            if ((d.strokeWidth || 0) > 0) {
-                inner.style.outline = `${d.strokeWidth}px solid ${d.strokeColor || '#c8a96a'}`;
-                inner.style.outlineOffset = `-${d.strokeWidth}px`;
-            } else {
-                inner.style.outline = 'none';
-                inner.style.outlineOffset = '0';
-            }
+            // Render star as SVG so stroke follows the polygon shape exactly
+            const starFill = (d.style && d.style.fill) ? d.style.fill : '#f1c40f';
+            const starStroke = (d.strokeWidth || 0) > 0 ? d.strokeColor || '#c8a96a' : 'none';
+            const starSW = (d.strokeWidth || 0) > 0 ? d.strokeWidth : 0;
+            // Remove any previously injected star SVG to avoid duplicates on re-render
+            const existingSvg = inner.querySelector('svg.star-svg');
+            if (existingSvg) existingSvg.remove();
+            const starSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            starSvg.setAttribute('class', 'star-svg');
+            starSvg.setAttribute('viewBox', '0 0 100 100');
+            starSvg.setAttribute('preserveAspectRatio', 'none');
+            starSvg.setAttribute('overflow', 'visible');
+            starSvg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible;';
+            const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            poly.setAttribute('points', '50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35');
+            poly.setAttribute('fill', starFill);
+            poly.setAttribute('stroke', starStroke);
+            poly.setAttribute('stroke-width', starSW > 0 ? (starSW * 1.5) : 0);
+            poly.setAttribute('stroke-linejoin', 'round');
+            poly.setAttribute('vector-effect', 'non-scaling-stroke');
+            starSvg.appendChild(poly);
+            inner.appendChild(starSvg);
         } else if (d.type === 'line') {
             // Ensure line wrapper stays transparent
             el.style.backgroundColor = 'transparent';
@@ -1486,7 +1861,8 @@ function render() {
         }
         
         if (d.isSystemBackground === true || d.layerRole === 'background') el.style.pointerEvents = 'none';
-        elementsLayer.appendChild(el); attach(el);
+        attach(el);
+        elementsLayer.appendChild(el);
         if(selectedId === d.id && (d.type === 'image' || d.type === 'shape' || d.type === 'line')) injectResizeHandles(el);
     });
     renderLayerList();
@@ -1775,39 +2151,63 @@ function injectResizeHandles(el) {
 
 function attach(el) {
     el.onmousedown = (e) => {
-        console.log("Element Mousedown:", el.id);
-        // e.stopPropagation(); removed to allow bubbling to viewport lasso listener
-        const _itemData = d(el);
-        // System background never drags — lasso owns it entirely (Section 6B Rule B)
-        if (_itemData && _itemData.isSystemBackground === true) return;
+        document.onmousemove = null;
+        document.onmouseup = null;
+        e.stopPropagation();
 
-        
+        const now = Date.now();
+        const isDoubleClick = (lastClickId === el.id) && (now - lastClickTime < 400);
+        lastClickId = el.id;
+        lastClickTime = now;
+
+        const _itemData = d(el);
+        if (!_itemData || _itemData.isSystemBackground === true) return;
+
+        // Handle double-click to enter edit mode for text
+        if (isDoubleClick && _itemData.type === 'text') {
+            if (!_itemData.locked) {
+                el.contentEditable = 'true';
+                el.classList.add('editing');
+                el.focus();
+                isEditingText = true;
+                e.preventDefault();
+                return; // Don't do drag setup
+            }
+        }
+
         docV2.editorState.selectedElementIds = docV2.editorState.selectedElementIds || [];
-        if (_itemData && _itemData.locked) {
+        if (_itemData.locked) {
             deselect();
             return;
         }
+
         if (e.shiftKey) {
             if (docV2.editorState.selectedElementIds.includes(el.id)) {
                 docV2.editorState.selectedElementIds = docV2.editorState.selectedElementIds.filter(id => id !== el.id);
+                const selEl = document.getElementById(el.id);
+                if (selEl) selEl.classList.remove('selected');
             } else {
                 if (selectedId && !docV2.editorState.selectedElementIds.includes(selectedId)) {
                     docV2.editorState.selectedElementIds.push(selectedId);
+                    const prevEl = document.getElementById(selectedId);
+                    if (prevEl) prevEl.classList.add('selected');
                 }
                 docV2.editorState.selectedElementIds.push(el.id);
+                const selEl = document.getElementById(el.id);
+                if (selEl) selEl.classList.add('selected');
             }
             selectedId = null;
-            render();
             updateSelectionBar();
             updateDistributeBar();
+            renderLayerList();
             return;
         } else {
             const alreadyInGroup = docV2.editorState.selectedElementIds.includes(el.id);
             if (!alreadyInGroup) {
-                // Always clear multi-select on a plain (non-shift) click when starting a fresh single selection.
-                // Leaving selectedElementIds dirty causes it to conflict with selectedId.
                 docV2.editorState.selectedElementIds = [];
-                selectById(el.id);
+                if (selectedId !== el.id) {
+                    selectById(el.id);
+                }
             }
         }
 
@@ -1924,9 +2324,20 @@ function attach(el) {
     el.ontouchend = () => {
         if(document.onmouseup) document.onmouseup();
     };
+
+    // FIX: stop click event from bubbling to onCanvasClick/onViewportClick after mousedown has already handled selection.
+    // mousedown still bubbles (lasso needs it). Only click is stopped here.
+    el.onclick = (e) => {
+        e.stopPropagation();
+        // Selection for ALL element types must still work via click
+        const id = el.id || el.dataset.id;
+        if (id) selectById(id);
+    };
 }
 
 function selectById(id) {
+    // If this element is already selected, do NOT re-render
+    if (selectedId === id) return;
     const _lck = docV2.elements.find(e => e.id === id);
     if (_lck && _lck.locked) return;
     // Remove selected class from old element without full re-render
@@ -2045,11 +2456,46 @@ function updateDistributeBar() {
 }
 
 function updateSelectionBar() {
+    const alignBar = document.getElementById('align-bar');
+    const distBar = document.getElementById('distribute-bar');
+    const viewport = document.getElementById('editor-viewport');
+
     const multiIds = docV2.editorState.selectedElementIds || [];
-    if (multiIds.length > 1) {
+
+    // Reset top bars
+    if (alignBar) alignBar.classList.remove('show');
+    if (distBar) distBar.classList.remove('show');
+    if (viewport) {
+        viewport.classList.remove('align-active');
+        viewport.classList.remove('dist-active');
+    }
+
+    if (multiIds.length >= 1) {
         console.log("MULTI SELECT BAR ACTIVE, count:", multiIds.length);
         selBar.classList.add('show');
         
+        // Show Align Bar
+        if (alignBar) {
+            alignBar.classList.add('show');
+            if (viewport) viewport.classList.add('align-active');
+
+            const singleUI = document.getElementById('align-bar-single');
+            const multiUI = document.getElementById('align-bar-multi');
+
+            if (multiIds.length === 1) {
+                if (singleUI) singleUI.style.display = 'flex';
+                if (multiUI) multiUI.style.display = 'none';
+            } else {
+                if (singleUI) singleUI.style.display = 'none';
+                if (multiUI) multiUI.style.display = 'flex';
+                // Also show distribute bar for 2+ elements
+                if (distBar) {
+                    distBar.classList.add('show');
+                    if (viewport) viewport.classList.add('dist-active');
+                }
+            }
+        }
+
         const tabLayer = document.getElementById('bar-tab-layer');
         if(tabLayer) tabLayer.style.display = 'none';
         
@@ -2070,23 +2516,15 @@ function updateSelectionBar() {
             const div = document.createElement('div');
             div.id = 'multi-select-actions';
             div.style.cssText = 'display:flex; align-items:center; gap:10px; width:100%; justify-content:center; padding:5px 0;';
-            div.innerHTML = `<button class="ctrl-btn" style="background:#c0392b; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; deleteEl(true,true);}); docV2.editorState.selectedElementIds=[]; deselect(); render();">🗑️ Delete All (<span id="ms-del-count"></span>)</button><button class="ctrl-btn" style="background:#2980b9; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); render(); showToast('Duplicated ' + ids.length + ' elements');">📋 Duplicate All (<span id="ms-dup-count"></span>)</button>
-<div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:6px;">
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('left')"    title="Align Left Edges">⬛ Left</button>
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('right')"   title="Align Right Edges">⬛ Right</button>
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('top')"     title="Align Top Edges">⬛ Top</button>
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('bottom')"  title="Align Bottom Edges">⬛ Bottom</button>
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('centerH')" title="Center Horizontally">↔ Ctr H</button>
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="alignSelected('centerV')" title="Center Vertically">↕ Ctr V</button>
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="distributeSelected('h')"  title="Distribute Horizontally">⇔ Dist H</button>
-  <button class="ctrl-btn" style="width:auto; padding:0 10px; font-size:11px;" onclick="distributeSelected('v')"  title="Distribute Vertically">⇕ Dist V</button>
-</div>`;
+            div.innerHTML = `<button class="ctrl-btn" style="background:#c0392b; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; deleteEl(true,true);}); docV2.editorState.selectedElementIds=[]; deselect();">🗑️ Delete All (<span id="ms-del-count"></span>)</button><button class="ctrl-btn" style="background:#2980b9; width:auto; padding:0 15px;" onclick="pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); showToast('Duplicated ' + ids.length + ' elements');">📋 Duplicate All (<span id="ms-dup-count"></span>)</button>`;
             document.getElementById('bar-content').appendChild(div);
             msBlock = div;
         }
         document.getElementById('ms-del-count').innerText = multiIds.length;
         document.getElementById('ms-dup-count').innerText = multiIds.length;
         msBlock.style.display = 'flex';
+
+        if (multiIds.length >= 2) updateDistributeBar();
         return;
     }
     
@@ -2130,11 +2568,11 @@ function updateSelectionBar() {
             document.getElementById('sel-radius').value = item.cornerRadius || 0;
         }
         document.getElementById('sel-stroke-w').value = item.strokeWidth || 0;
-        document.getElementById('sel-stroke-c').value = item.strokeColor || '#c8a96a';
+        document.getElementById('sel-stroke-c').value = normalizeHex(item.strokeColor || '#c8a96a');
         document.getElementById('sel-stroke-c').oninput = (e) => updateProp('strokeColor', e.target.value);
         // Sync fill color picker
         const fillInput = document.getElementById('sel-fill-color');
-        if (fillInput) fillInput.value = (item.style && item.style.fill && item.style.fill !== 'transparent') ? item.style.fill : '#333333';
+        if (fillInput) fillInput.value = normalizeHex((item.style && item.style.fill && item.style.fill !== 'transparent') ? item.style.fill : '#333333');
         // Sync outline-only toggle
         const outlineBtn = document.getElementById('btn-outline-toggle');
         if (outlineBtn) outlineBtn.style.background = (item.style && (item.style.fill === 'transparent' || item.style.fill === 'none' || !item.style.fill)) ? 'var(--primary)' : '#333';
@@ -2164,7 +2602,7 @@ function updateSelectionBar() {
     
     if(item.type==='text') {
         document.getElementById('sel-font').value = item.style.fontFamily.replace(/['"]/g, '');
-        document.getElementById('sel-color').value = item.style.color;
+        document.getElementById('sel-color').value = normalizeHex(item.style.color);
         document.getElementById('sel-l-height').value = item.style.lineHeight || 1.1;
         document.getElementById('sel-l-spacing').value = item.style.letterSpacing || 0;
         
@@ -2204,6 +2642,7 @@ function updateSelectionBar() {
     setBarTab(_activeBarTab || 'layer');
 
     renderLayerList();
+    syncTextFormatBar();
 }
 
 function deselect() {
@@ -2216,15 +2655,28 @@ function deselect() {
     document.querySelectorAll('.multi-selected').forEach(el => el.classList.remove('multi-selected'));
     document.querySelectorAll('.selected-multi').forEach(el => el.classList.remove('selected-multi'));
     if (selBar) selBar.classList.remove('show');
+    const tfBar = document.getElementById('text-format-bar');
+    if (tfBar) tfBar.classList.remove('show');
+    const alignBar = document.getElementById('align-bar');
+    if (alignBar) alignBar.classList.remove('show');
+    const distBar = document.getElementById('distribute-bar');
+    if (distBar) distBar.classList.remove('show');
+    const viewport = document.getElementById('editor-viewport');
+    if (viewport) {
+        viewport.classList.remove('align-active');
+        viewport.classList.remove('dist-active');
+    }
+    document.body.classList.remove('tfb-active');
     renderLayerList();
 }
 
 function onCanvasClick(e) {
+    if (_lassoJustFired) return;
     if (layoutLocked) return;
     const el = e.target.closest('.editable-element');
     if (el) {
-        const id = el.dataset.id;
-        if (id) select(id);
+        const id = el.id || el.dataset.id;
+        if (id) selectById(id);
         return;
     }
     deselect();
@@ -2239,6 +2691,8 @@ function onCanvasMousedown(e) {
   const dragStartSelId = selectedId;
   const startX = e.clientX;
   const startY = e.clientY;
+  let lastX = e.clientX;
+  let lastY = e.clientY;
   let moved = false;
   let lassoActive = false;
   function onMove(me) {
@@ -2246,16 +2700,20 @@ function onCanvasMousedown(e) {
     const dy = me.clientY - startY;
     if (!moved && Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
     moved = true;
-    if (selectedId !== dragStartSelId) return;
     lassoActive = true;
     isLassoing = true;
-    const x = Math.min(me.clientX, startX);
-    const y = Math.min(me.clientY, startY);
+    // BUG-F4 fix: lasso-box is now position:absolute inside menu-container, use canvas-relative coords
+    const cRect = scalerEl.getBoundingClientRect();
+    const cScale = cRect.width / BASE_W;
+    const x = (Math.min(me.clientX, startX) - cRect.left) / cScale;
+    const y = (Math.min(me.clientY, startY) - cRect.top) / cScale;
     lassoBox.style.display = 'block';
     lassoBox.style.left   = x + 'px';
     lassoBox.style.top    = y + 'px';
-    lassoBox.style.width  = Math.abs(dx) + 'px';
-    lassoBox.style.height = Math.abs(dy) + 'px';
+    lassoBox.style.width  = Math.abs(dx) / cScale + 'px';
+    lassoBox.style.height = Math.abs(dy) / cScale + 'px';
+    lastX = me.clientX;
+    lastY = me.clientY;
   }
   function onUp(ue) {
     window.removeEventListener('mousemove', onMove);
@@ -2265,12 +2723,13 @@ function onCanvasMousedown(e) {
     if (!moved || !lassoActive) return;
     const sRect = scalerEl.getBoundingClientRect();
     const scale = sRect.width / BASE_W;
-    const lx1 = (Math.min(ue.clientX, startX) - sRect.left) / scale;
-    const ly1 = (Math.min(ue.clientY, startY) - sRect.top)  / scale;
-    const lx2 = (Math.max(ue.clientX, startX) - sRect.left) / scale;
-    const ly2 = (Math.max(ue.clientY, startY) - sRect.top)  / scale;
+    const lx1 = (Math.min(lastX, startX) - sRect.left) / scale;
+    const ly1 = (Math.min(lastY, startY) - sRect.top)  / scale;
+    const lx2 = (Math.max(lastX, startX) - sRect.left) / scale;
+    const ly2 = (Math.max(lastY, startY) - sRect.top)  / scale;
     const hits = docV2.elements.filter(el => {
       if (el.locked) return false;
+      if (el.isSystemBackground === true || el.layerRole === 'background') return false;
       // Allow background selection in lasso
       const ex2 = el.x + (el.width || 80);
       const ey2 = el.y + (el.height || 20);
@@ -2280,7 +2739,7 @@ function onCanvasMousedown(e) {
       docV2.editorState.selectedElementIds = hits.map(el => el.id);
       selectedId = null;
       _lassoJustFired = true;
-      render();
+
       updateSelectionBar();
       updateDistributeBar();
       showToast('✅ ' + hits.length + ' element' + (hits.length > 1 ? 's' : '') + ' selected');
@@ -2396,7 +2855,9 @@ function syncZoomControlsVisibility() {
 function resequenceZIndex() {
     // Sort elements array by current zIndex ascending, then reassign 1..N
     docV2.elements.sort((a, b) => a.zIndex - b.zIndex);
-    docV2.elements.forEach((el, idx) => { el.zIndex = idx + 1; });
+    docV2.elements.forEach((el, idx) => {
+        el.zIndex = el.layerRole === 'background' ? 0 : idx + 1;
+    });
 }
 
 function updateZ(dir) {
@@ -2524,7 +2985,7 @@ function nudge(dx, dy) {
     if (el) { el.style.left = item.x + 'px'; el.style.top = item.y + 'px'; }
     sync();
 }
-function toggleBg() { docV2.settings.legacyBgVisible = !docV2.settings.legacyBgVisible; render(); }
+
 
 function duplicateEl(skipPush, noRender) {
     if(!selectedId) return;
@@ -2551,7 +3012,7 @@ async function resetToOriginal() {
     try {
         const r = await fetch('/api/menu/reset', {method:'POST'});
         if (!r.ok) throw new Error('Server reset failed');
-        localStorage.removeItem('menu_pro_draft_v2');
+        // localStorage.removeItem called removed for V2 database persistence compliance
         location.reload();
     } catch(e) {
         showToast('❌ Reset failed — server unavailable. Your data is safe.');
@@ -2621,10 +3082,11 @@ function sendToBack() {
     showToast('Layer order updated');
 }
 function centerElement(dir) {
-    if(!selectedId) return;
+    const id = selectedId || (docV2.editorState.selectedElementIds && docV2.editorState.selectedElementIds[0]);
+    if(!id) return;
     pushState();
-    const item = docV2.elements.find(e => e.id === selectedId);
-    const el = document.getElementById(selectedId);
+    const item = docV2.elements.find(e => e.id === id);
+    const el = document.getElementById(id);
     if(!item || !el) return;
     const w = item.width || el.offsetWidth;
     const h = item.height || el.offsetHeight;
@@ -2632,6 +3094,48 @@ function centerElement(dir) {
     if(dir==='v') item.y = (BASE_H / 2) - (h / 2);
     render();
     sync();
+}
+
+function alignMulti(direction) {
+  const ids = docV2.editorState.selectedElementIds;
+  if (ids.length < 2) return;
+  pushState();
+  const els = ids.map(id => docV2.elements.find(e => e.id === id)).filter(Boolean);
+  if (direction === 'left') {
+    const minX = Math.min(...els.map(e => e.x));
+    els.forEach(e => e.x = minX);
+  } else if (direction === 'right') {
+    const maxR = Math.max(...els.map(e => e.x + (e.width||100)));
+    els.forEach(e => e.x = maxR - (e.width||100));
+  } else if (direction === 'top') {
+    const minY = Math.min(...els.map(e => e.y));
+    els.forEach(e => e.y = minY);
+  } else if (direction === 'bottom') {
+    const maxB = Math.max(...els.map(e => e.y + (e.height||40)));
+    els.forEach(e => e.y = maxB - (e.height||40));
+  } else if (direction === 'centerH') {
+    const avgX = els.reduce((s,e) => s + e.x + (e.width||100)/2, 0) / els.length;
+    els.forEach(e => e.x = avgX - (e.width||100)/2);
+  } else if (direction === 'centerV') {
+    const avgY = els.reduce((s,e) => s + e.y + (e.height||40)/2, 0) / els.length;
+    els.forEach(e => e.y = avgY - (e.height||40)/2);
+  }
+  render();
+  showToast('Aligned: ' + direction);
+}
+
+function alignToCanvas(edge) {
+  const id = selectedId || (docV2.editorState.selectedElementIds && docV2.editorState.selectedElementIds[0]);
+  const el = docV2.elements.find(e => e.id === id);
+  if (!el) return;
+  pushState();
+  const cw = BASE_W, ch = BASE_H;
+  if (edge === 'left') el.x = 0;
+  else if (edge === 'right') el.x = cw - (el.width || 100);
+  else if (edge === 'top') el.y = 0;
+  else if (edge === 'bottom') el.y = ch - (el.height || 40);
+  render();
+  showToast('Aligned to ' + edge);
 }
 function deleteEl(skipPush, noRender) {
     if (!selectedId) return;
@@ -2653,8 +3157,7 @@ function addText() {
     const cy = (vpRect.top + vpRect.height/2 - scalerRect.top) / zoomScale;
     const x = Math.max(50, Math.min(BASE_W - 200, cx));
     const y = Math.max(50, Math.min(BASE_H - 100, cy));
-    const maxZ = docV2.elements.reduce((m, e) => Math.max(m, e.zIndex || 0), 0);
-    docV2.elements.push({id, type:'text', text:'New Text', x, y, zIndex: maxZ + 1, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fontFamily:'century-gothic-bold', fontSize:24, color:'#000', lineHeight:1.1, letterSpacing:0} }); 
+    docV2.elements.push({id, type:'text', content:'New Text', x, y, width: 200, zIndex: Math.max(1, docV2.elements.filter(e => e.layerRole !== 'background').length + 1), opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fontFamily:'century-gothic-bold', fontSize:24, color:'#000000', lineHeight:1.1, letterSpacing:0} });
     render(); 
     selectById(id); 
 }
@@ -2854,9 +3357,17 @@ function updateShapeFill(v) {
 
     const domNode = document.getElementById(selectedId);
     if (domNode) {
-        const inner = domNode.querySelector('.shape-inner');
-        if (inner) inner.style.backgroundColor = v;
-        else domNode.style.backgroundColor = v;
+        // Immediately update the live SVG polygon/circle fill without waiting for full render()
+        const svgShape = domNode.querySelector('polygon, circle, rect.shape-rect');
+        if (svgShape) {
+            svgShape.setAttribute('fill', v);
+        } else {
+            // Fallback for non-SVG shapes (plain div shapes)
+            const inner = domNode.querySelector('.shape-inner');
+            if (inner) inner.style.backgroundColor = v;
+        }
+        // Clear any leaked background color on the wrapper div
+        domNode.style.backgroundColor = 'transparent';
     }
     sync();
 }
@@ -2971,11 +3482,9 @@ async function addFromTray(src, skipPush) {
         _fixEl.width  = fw;
         _fixEl.height = fh;
         render();
+        selectById(id);
     };
     _tmpImg.src = trimmedSrc;
-
-    render();
-    selectById(id);
 }
 
 async function importImg(input) {
@@ -2988,7 +3497,15 @@ async function importImg(input) {
             const res = await fetch('/api/upload-image', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ data: base64Data, filename: f.name })
+                body: JSON.stringify({
+                    data: base64Data,
+                    filename: f.name,
+                    credentials: {
+                        cloudName: document.getElementById('ai-cloud-name')?.value?.trim() || '',
+                        cloudKey: document.getElementById('ai-cloud-key')?.value?.trim() || '',
+                        cloudSecret: document.getElementById('ai-cloud-secret')?.value?.trim() || ''
+                    }
+                })
             });
             const json = await res.json();
             if (json.status === "ok") {
@@ -3004,66 +3521,80 @@ async function importImg(input) {
 }
 
 async function importBackground(input) {
-    let f = input.files[0];
-    if (!f) return;
-    let r = new FileReader();
-    r.onload = async (e) => {
-        const src = e.target.result;
-        const filename = 'bg_' + Date.now() + '_' + f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-        try {
-            const res = await fetch('/api/upload-image', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ filename, data: src })
-            });
-            const json = await res.json();
-            if (json.url) {
-                setAsBackground(json.url);
-                return;
-            }
-        } catch(e2) {}
-        setAsBackground(src);
-    };
-    r.readAsDataURL(f);
+  let f = input.files[0];
+  if (!f) return;
+  let r = new FileReader();
+  r.onload = async (e) => {
+    const src = e.target.result;
+    const filename = 'bg_' + Date.now() + '_' + f.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    try {
+      const res = await fetch('/api/upload-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename,
+          data: src,
+          credentials: {
+            cloudName: document.getElementById('ai-cloud-name')?.value?.trim(),
+            cloudKey:  document.getElementById('ai-cloud-key')?.value?.trim(),
+            cloudSecret: document.getElementById('ai-cloud-secret')?.value?.trim()
+          }
+        })
+      });
+      const json = await res.json();
+      if (json.url) {
+        setAsBackground(json.url);
+      } else {
+        // FIX 1 — Hard abort, no base64 fallback
+        showToast('Background upload failed. Please check Cloudinary credentials.', 'warning');
+      }
+    } catch (e2) {
+      // FIX 1 — No silent base64 fallback
+      showToast('Background upload failed. Please check Cloudinary credentials.', 'warning');
+    }
+  };
+  r.readAsDataURL(f);
 }
 
 function setAsBackground(src) {
-    pushState();
-    docV2.settings.legacyBgVisible = false;
-    
-    let bgLayer = docV2.elements.find(e => e.type === 'image' && e.layerRole === 'background');
-    if (bgLayer) {
-        bgLayer.assetId = 'asset_015';
-        bgLayer.src = src;
-        bgLayer.x = 0; bgLayer.y = 0;
-        bgLayer.width = BASE_W; bgLayer.height = BASE_H;
-        bgLayer.locked = true;
-        bgLayer.isSystemBackground = true;
-        bgLayer.visible = true;
-        bgLayer.opacity = 1;
-        bgLayer.rotation = 0;
-    } else {
-        const minZ = Math.min(...docV2.elements.map(e => e.zIndex || 10));
-        bgLayer = {
-            id: 'bg_upload_' + Date.now(),
-            type: 'image',
-            assetId: 'asset_015',
-            src: src,
-            x: 0, y: 0,
-            width: BASE_W, height: BASE_H,
-            zIndex: minZ - 1,
-            opacity: 1,
-            rotation: 0,
-            visible: true,
-            locked: true,
-            isSystemBackground: true,
-            layerRole: 'background'
-        };
-        docV2.elements.push(bgLayer);
-    }
-    selectedId = null;
-    render();
-    showToast('✅ Background replaced and locked');
+  pushState();
+  // FIX 2 — Always use a unique assetId so new uploads never clobber asset015
+  const newAssetId = 'bgupload_' + Date.now();
+  let bgLayer = docV2.elements.find(e => e.type === 'image' && e.layerRole === 'background');
+  if (bgLayer) {
+    bgLayer.assetId = newAssetId;
+    bgLayer.src    = src;
+    bgLayer.x      = 0;
+    bgLayer.y      = 0;
+    bgLayer.width  = BASE_W;
+    bgLayer.height = BASE_H;
+    bgLayer.locked = true;
+    bgLayer.isSystemBackground = true;
+    bgLayer.visible = true;
+    bgLayer.opacity = 1;
+    bgLayer.rotation = 0;
+  } else {
+    const minZ = docV2.elements.length
+      ? Math.min(...docV2.elements.map(e => e.zIndex || 10))
+      : 10;
+    bgLayer = {
+      id: 'bgupload_' + Date.now(),
+      type: 'image',
+      assetId: newAssetId,
+      src,
+      x: 0, y: 0,
+      width: BASE_W, height: BASE_H,
+      zIndex: minZ - 1,
+      opacity: 1, rotation: 0,
+      visible: true, locked: true,
+      isSystemBackground: true,
+      layerRole: 'background'
+    };
+    docV2.elements.push(bgLayer);
+  }
+  selectedId = null;
+  render();
+  showToast('Background replaced and locked.');
 }
 
 function setSelectedAsBackground() {
@@ -3072,7 +3603,15 @@ function setSelectedAsBackground() {
     if (!item || item.type !== 'image') return showToast("Only images can become backgrounds");
 
     pushState();
-    docV2.settings.legacyBgVisible = false;
+
+    // Clear any existing background role before promoting new one
+    docV2.elements.forEach(e => {
+        if (e.layerRole === 'background' && e.id !== item.id) {
+            e.layerRole = 'content';
+            e.locked = false;
+            e.isSystemBackground = false;
+        }
+    });
 
     // Promote IN-PLACE — item becomes locked system background
     item.isSystemBackground = true;
@@ -3082,7 +3621,7 @@ function setSelectedAsBackground() {
     item.y = 0;
     item.width = BASE_W;
     item.height = BASE_H;
-    item.zIndex = 1;
+    item.zIndex = 0;  // FIX 3 — background renders at absolute bottom
 
     selectedId = item.id; // keep selected
 
@@ -3294,10 +3833,9 @@ async function addFromAsset(assetId, src) {
         _fixEl.width  = fw;
         _fixEl.height = fh;
         render();
+        selectById(id);
     };
     _tmpImg.src = src;
-
-    render(); selectById(id);
 }
 
 // Fix 5c - Pinch-vs-drag suppression
@@ -3323,11 +3861,6 @@ function applyZoom(f, isAbsolute = false) {
     // Constraints: floor at 0.2 (for auto-fit), cap at 4.0
     zoomScale = Math.max(0.2, Math.min(4, zoomScale));
     
-    // Only persist zoom that the user explicitly triggered
-    // fitCanvasToScreen auto-fits should not overwrite the saved zoom
-    if(!_isFitZoom) {
-        docV2.editorState._userZoom = zoomScale;
-    }
 
     const scalerWrapper = document.getElementById('scaler-wrapper');
     const centeringWrapper = document.getElementById('centering-wrapper');
@@ -3343,26 +3876,95 @@ function applyZoom(f, isAbsolute = false) {
     }
 }
 
+const DEFAULT_MENU_DATA = {
+    elements: [{"id": "txt_0", "type": "text", "text": "SANDWICHES", "x": 631.39208984375, "y": 550.313720703125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-regular", "fontSize": 33.0, "color": "#ffffff", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_1", "type": "text", "text": "MAIN ENTREES", "x": 494.3760986328125, "y": 133.55673217773438, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-regular", "fontSize": 33.0, "color": "#ffffff", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_2", "type": "text", "text": "A LA CARTE", "x": 382.0440979003906, "y": 549.32373046875, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-regular", "fontSize": 33.0, "color": "#ffffff", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_3", "type": "text", "text": "WINGS", "x": 417.1890869140625, "y": 788.57373046875, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-regular", "fontSize": 33.0, "color": "#ffffff", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_4", "type": "text", "text": "Catfish", "x": 407.08349609375, "y": 189.51132202148438, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_5", "type": "text", "text": "$21.99", "x": 749.04736328125, "y": 189.51132202148438, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_6", "type": "text", "text": "$22.99", "x": 749.04736328125, "y": 216.16598510742188, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_7", "type": "text", "text": "$19.99", "x": 749.04736328125, "y": 241.38510131835938, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_8", "type": "text", "text": "$15.99", "x": 749.04736328125, "y": 268.5900573730469, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_9", "type": "text", "text": "$17.99", "x": 749.04736328125, "y": 294.9576110839844, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_10", "type": "text", "text": "$16.99", "x": 749.04736328125, "y": 321.3251647949219, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_11", "type": "text", "text": "$12.99", "x": 749.04736328125, "y": 346.8313293457031, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_12", "type": "text", "text": "$29.99", "x": 749.04736328125, "y": 372.1460876464844, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_13", "type": "text", "text": "$22.99", "x": 749.04736328125, "y": 398.7050476074219, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_14", "type": "text", "text": "Turkey Chops", "x": 407.0835266113281, "y": 216.11813354492188, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_15", "type": "text", "text": "Shrimp Plate", "x": 407.0835266113281, "y": 242.96420288085938, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_16", "type": "text", "text": "Party Wings Plate (6)", "x": 407.0835266113281, "y": 269.9777526855469, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_17", "type": "text", "text": "Fried Chicken Plate - White Meat", "x": 407.0835266113281, "y": 294.9336242675781, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_18", "type": "text", "text": "Fried Chicken Plate - Dark Meat", "x": 407.0835266113281, "y": 320.8705139160156, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_19", "type": "text", "text": "Veggie Plate", "x": 407.0835266113281, "y": 346.8074035644531, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_20", "type": "text", "text": "Oxtails w/Rice & Gravy", "x": 407.0835266113281, "y": 373.7492370605469, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_21", "type": "text", "text": "Turkey WIngs w/Rice & Gravy", "x": 407.0835266113281, "y": 398.7051086425781, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_22", "type": "text", "text": "Catfish 3 pieces", "x": 367.095703125, "y": 607.5958251953125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_23", "type": "text", "text": "$5.50", "x": 538.625244140625, "y": 588.5143432617188, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_24", "type": "text", "text": "Shrimp Po\u2019 Boy", "x": 604.43310546875, "y": 643.661865234375, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_25", "type": "text", "text": "Catfish Po\u2019 Boy", "x": 604.43310546875, "y": 668.5978393554688, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_26", "type": "text", "text": "$17.99", "x": 814.455078125, "y": 670.8505859375, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_27", "type": "text", "text": "$16.99", "x": 814.455078125, "y": 645.902587890625, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_28", "type": "text", "text": "DESSERTS", "x": 653.3687133789062, "y": 965.841064453125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-regular", "fontSize": 33.0, "color": "#ffffff", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_29", "type": "text", "text": "Peach Cobbler", "x": 603.77880859375, "y": 1006.7, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_30", "type": "text", "text": "Banana Pudding", "x": 603.77880859375, "y": 1031.7, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_31", "type": "text", "text": "Coffee Cake", "x": 603.77880859375, "y": 1056.7, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_32", "type": "text", "text": "$6.00", "x": 826.455078125, "y": 1006.7, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_33", "type": "text", "text": "$6.00", "x": 826.455078125, "y": 1031.7, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_34", "type": "text", "text": "$6.00", "x": 826.455078125, "y": 1056.7, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_35", "type": "text", "text": "SIDES", "x": 682.62841796875, "y": 738.2111206054688, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-regular", "fontSize": 33.0, "color": "#ffffff", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_36", "type": "text", "text": "Candied Yams", "x": 603.77880859375, "y": 796.0, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_37", "type": "text", "text": " ", "x": 728.1184692382812, "y": 796.0264282226562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_38", "type": "text", "text": "Cabbage", "x": 738.4916381835938, "y": 796.0, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_39", "type": "text", "text": "Mac N Cheese", "x": 603.77880859375, "y": 821.0, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_40", "type": "text", "text": " ", "x": 729.1574096679688, "y": 819.6660766601562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_41", "type": "text", "text": "Red Beans & Rice", "x": 738.330078125, "y": 821.0, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_42", "type": "text", "text": "Rice & Gravy", "x": 603.77880859375, "y": 846.0, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_43", "type": "text", "text": "Collard Greens", "x": 737.5737915039062, "y": 846.0, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_44", "type": "text", "text": "French Fries", "x": 737.57373046875, "y": 871.0, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_45", "type": "text", "text": "French Fries (Lrg)", "x": 604.5772705078125, "y": 896.0, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_46", "type": "text", "text": "Potato Salad", "x": 603.77880859375, "y": 871.0, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_47", "type": "text", "text": "$7.99", "x": 826.455078125, "y": 896.0, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_48", "type": "text", "text": "($3.99 each)", "x": 686.66552734375, "y": 776.0515747070312, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 14.93958854675293, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_49", "type": "text", "text": "$8.49", "x": 538.6328125, "y": 663.0020141601562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_50", "type": "text", "text": "$3.00", "x": 538.6328125, "y": 699.8838500976562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_51", "type": "text", "text": "$3.50", "x": 538.6328125, "y": 737.01806640625, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_52", "type": "text", "text": "$1.00", "x": 538.6328125, "y": 755.8666381835938, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_53", "type": "text", "text": "Canned Soft Drink", "x": 367.8152770996094, "y": 1010.3901977539062, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_54", "type": "text", "text": "Sweet Tea Small", "x": 367.8152770996094, "y": 1028.9283447265625, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_55", "type": "text", "text": "Sweet Tea Large", "x": 367.8152770996094, "y": 1047.46630859375, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_56", "type": "text", "text": "Lemonade Small", "x": 367.8152770996094, "y": 1066.0042724609375, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_57", "type": "text", "text": "Lemonade Large", "x": 367.8152770996094, "y": 1084.542236328125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_58", "type": "text", "text": "Arnold Palmer Sm", "x": 367.8152770996094, "y": 1103.0802001953125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_59", "type": "text", "text": "Arnold Palmer Lrg", "x": 367.8152770996094, "y": 1121.6182861328125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_60", "type": "text", "text": "BEVERAGES", "x": 379.4755859375, "y": 966.032470703125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-regular", "fontSize": 33.0, "color": "#ffffff", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_61", "type": "text", "text": "$1.75", "x": 536.6328125, "y": 1010.4033813476562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_62", "type": "text", "text": "$3.00", "x": 536.6328125, "y": 1029.2908935546875, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_63", "type": "text", "text": "$5.00", "x": 536.6328125, "y": 1048.17822265625, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_64", "type": "text", "text": "$3.00", "x": 536.6328125, "y": 1067.0655517578125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_65", "type": "text", "text": "$5.00", "x": 536.6328125, "y": 1085.9530029296875, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_66", "type": "text", "text": "$3.00", "x": 536.6328125, "y": 1104.8404541015625, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_67", "type": "text", "text": "$5.00", "x": 536.6328125, "y": 1123.727783203125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_68", "type": "text", "text": "$4.00", "x": 538.6264038085938, "y": 718.066162109375, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_69", "type": "text", "text": "$15.99", "x": 529.62353515625, "y": 607.6341552734375, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_70", "type": "text", "text": "$15.99", "x": 529.62353515625, "y": 645.0206909179688, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_71", "type": "text", "text": "$13.99", "x": 529.62353515625, "y": 681.4366455078125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_72", "type": "text", "text": "$10.99", "x": 529.62353515625, "y": 625.6091918945312, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_73", "type": "text", "text": "Shrimp 10 pieces", "x": 367.0810546875, "y": 625.6091918945312, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_74", "type": "text", "text": "Turkey Chop(2)", "x": 367.0810546875, "y": 645.0206909179688, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_75", "type": "text", "text": "NYMK Waffle", "x": 367.0810546875, "y": 662.7822265625, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_76", "type": "text", "text": "Chicken Wings (3)", "x": 367.095703125, "y": 682.5919189453125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_77", "type": "text", "text": "Leg", "x": 367.095703125, "y": 699.5449829101562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_78", "type": "text", "text": "Wing", "x": 367.095703125, "y": 718.199462890625, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_79", "type": "text", "text": "Thigh", "x": 367.095703125, "y": 736.6943969726562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_80", "type": "text", "text": "Cornbread Muffin (1)", "x": 367.09521484375, "y": 754.9776000976562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_81", "type": "text", "text": "6 Piece  -  $10.49", "x": 402.4888000488281, "y": 861.7587890625, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_82", "type": "text", "text": "12 Piece  -  $20.99", "x": 392.4898376464844, "y": 886.622802734375, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_83", "type": "text", "text": "18 Piece  -  $30.99", "x": 392.4898376464844, "y": 910.163818359375, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_84", "type": "text", "text": "Entrees served with choice of 2 sides", "x": 407.3174133300781, "y": 436.03741455078125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 16.274938583374023, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_85", "type": "text", "text": "and cornbread muffin", "x": 407.3174133300781, "y": 454.03741455078125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 16.274938583374023, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_86", "type": "text", "text": "Waffles with 3 Fried Whole Wings", "x": 130.4803466796875, "y": 501.2333984375, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 16.274938583374023, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_87", "type": "text", "text": "(served with tartar sauce, lettuce,", "x": 609.3571166992188, "y": 591.9713745117188, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 16.274938583374023, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_88", "type": "text", "text": "tomato, pickles, grilled onions,", "x": 609.3571166992188, "y": 607.973388671875, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 16.274938583374023, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_89", "type": "text", "text": "and non spicy cajun sauce)", "x": 609.3571166992188, "y": 623.9754028320312, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 16.274938583374023, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_90", "type": "text", "text": "Flavors: Plain, Hot, Honey Hot,", "x": 367.10076904296875, "y": 824.1533813476562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 16.274938583374023, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_91", "type": "text", "text": "Lemon Pepper, Sweet Thangs", "x": 367.10076904296875, "y": 842.1533813476562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 16.274938583374023, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_92", "type": "text", "text": "EVERY OTHER WEEKEND", "x": 292.9175109863281, "y": 384.487548828125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 8.702635765075684, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_93", "type": "text", "text": "WEEKENDS ONLY", "x": 301.9205627441406, "y": 410.8623046875, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 8.702635765075684, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_94", "type": "text", "text": "Chicken & Waffles", "x": 147.70309448242188, "y": 477.40283203125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 20.574399948120117, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_95", "type": "text", "text": "$12.99", "x": 249.8251953125, "y": 534.3789672851562, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 23.117069244384766, "color": "#ffffff", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_96", "type": "text", "text": "@nym_kitchen", "x": 113.22360229492188, "y": 1245.208740234375, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.0, "color": "#ffffff", "lineHeight": 1.1, "letterSpacing": 0}}, {"id": "txt_97", "type": "text", "text": "Catfish 1 piece", "x": 367.2944030761719, "y": 588.5089111328125, "zIndex": 10, "opacity": 1, "rotation": 0, "visible": true, "locked": false, "layerRole": "content", "style": {"fontFamily": "century-gothic-bold", "fontSize": 17.53, "color": "#000000", "lineHeight": 1.1, "letterSpacing": 0}}],
+    meta: {
+        sourceTemplate: "nymk-menu-v1",
+        migrationFrom: "1.x"
+    }
+};
+
+
+function fitCanvasToScreen(force = false) {
+    if (_canvasFitDone && !force) return;
+    _canvasFitDone = true;
+    _isFitZoom = true;
+    const editorVP = document.getElementById('editor-viewport');
+    if (!editorVP) return;
+    const vw = editorVP.clientWidth;
+    const vh = editorVP.clientHeight;
+    if (!vw || !vh) return;
+
+    // Prioritize Width: Fill the editor area horizontally with 100px total margin
+    let targetScale = (vw - 100) / BASE_W;
+
+    // On initial fit, don't exceed 1.0 scale to keep quality,
+    // and don't go below 0.65 to ensure readability (allow scroll if needed)
+    zoomScale = Math.min(targetScale, 1.0);
+    zoomScale = Math.max(0.65, zoomScale);
+
+    applyZoom(zoomScale, true);
+    _isFitZoom = false;
+    requestAnimationFrame(function() {
+        if (typeof drawRulers === 'function') drawRulers();
+    });
+}
+window.addEventListener('resize', function() {
+    requestAnimationFrame(() => fitCanvasToScreen(true));
+});
+
 function _mergeLoadedDoc(s) {
+    // Deduplicate backgrounds — keep only the LAST one (Fixing stacking bug)
+    if (s.elements && s.elements.length > 0) {
+        const backgrounds = s.elements.filter(e => e.layerRole === 'background');
+        if (backgrounds.length > 1) {
+            const keepBg = backgrounds[backgrounds.length - 1];
+            s.elements = s.elements.filter(e =>
+                e.layerRole !== 'background' || e.id === keepBg.id
+            );
+        }
+    }
+    // FIX 4 — Re-enforce background integrity after load
+    if (s.elements) {
+      s.elements.forEach(el => {
+        if (el.isSystemBackground === true) {
+          el.layerRole = 'background';
+          el.locked    = true;
+          el.x         = 0;
+          el.y         = 0;
+          el.width     = BASE_W;
+          el.height    = BASE_H;
+        }
+      });
+    }
+
     const currentAssets = [...(docV2.assets || [])];
     docV2 = { ...docV2, ...s };
     const serverIds = new Set((s.assets || []).map(a => a.id));
     const missing = currentAssets.filter(a => !serverIds.has(a.id));
     docV2.assets = [...(docV2.assets || []), ...missing];
     if (docV2.settings && docV2.settings.layoutLocked === undefined) docV2.settings.layoutLocked = false;
-    zoomScale = docV2.editorState?.zoom || 1;
     syncLayoutLockUI();
     syncZoomControlsVisibility();
     selectedId = null;
     docV2.editorState.selectedElementIds = [];
     restoreAiCredentials(docV2);
+
 }
 
 async function save() {
     sync();
-    docV2.editorState.zoom = docV2.editorState._userZoom ?? zoomScale;
+
+    // FIX 5 — Abort save if any element has a base64 src (not uploaded yet)
+    const base64Elements = docV2.elements.filter(el => el.src && el.src.startsWith('data:'));
+    if (base64Elements.length > 0) {
+        console.error('[save] Blocked: base64 src found in elements', base64Elements.map(e => e.id));
+        showToast('Cannot save: background image not uploaded to Cloudinary yet. Upload it first.', 'warning');
+        return;
+    }
+
+    // Sync layout lock
     docV2.settings.layoutLocked = layoutLocked;
-    localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2));
     docV2.version = 2;
 
     // Commit 7: Normalize save payload to settings.viewer
@@ -3379,6 +3981,7 @@ async function save() {
         }
       }
     };
+    delete payload.status; // BUG-F1 fix: strip server-injected status field before POST
 
     try {
         const r = await fetch('/api/menu', {
@@ -3459,50 +4062,7 @@ function loadGlobalSettings() {
         }).catch(() => {});
 }
 
-async function load() {
-    try {
-        const r = await fetch('/api/menu');
-        if (!r.ok) throw new Error('Server error');
-        const s = await r.json();
-        if (s.elements && s.elements.length > 0) {
-            _mergeLoadedDoc(s);
-            // FIX A: Ensure assets array exists
-            if (!Array.isArray(docV2.assets)) { docV2.assets = []; }
-            renderAssetPanel();
-            render();
-            applyZoom(1);
-            // BUG 3 FIX: Re-sync lock button after load
-            layoutLocked = !!docV2.settings.layoutLocked;
-            const _lb2a = document.getElementById('btn-lock-global');
-            if (_lb2a) { _lb2a.textContent = layoutLocked ? '\uD83D\uDD12 Layout Locked' : '\uD83D\uDD13 Layout Unlocked'; _lb2a.classList.toggle('lock-unlocked', !layoutLocked); _lb2a.classList.toggle('primary', layoutLocked); }
-            showToast('✅ Project loaded from server');
-            return;
-        }
-        throw new Error('Empty server response');
-    } catch (e) {
-        const l = localStorage.getItem('menu_pro_draft_v2');
-        if (l) {
-            try {
-                const parsed = JSON.parse(l);
-                if (parsed.elements && parsed.elements.length > 0) {
-                    _mergeLoadedDoc(parsed);
-                    // FIX A: Ensure assets array exists
-                    if (!Array.isArray(docV2.assets)) { docV2.assets = []; }
-                    renderAssetPanel();
-                    render();
-                    applyZoom(1);
-                    // BUG 3 FIX: Re-sync lock button after load
-                    layoutLocked = !!docV2.settings.layoutLocked;
-                    const _lb2b = document.getElementById('btn-lock-global');
-                    if (_lb2b) { _lb2b.textContent = layoutLocked ? '\uD83D\uDD12 Layout Locked' : '\uD83D\uDD13 Layout Unlocked'; _lb2b.classList.toggle('lock-unlocked', !layoutLocked); _lb2b.classList.toggle('primary', layoutLocked); }
-                    showToast('⚠️ Loaded from local backup — server unavailable');
-                    return;
-                }
-            } catch (e2) {}
-        }
-        showToast('❌ No saved project found');
-    }
-}
+
 
 function crc32(data) {
   let crc = 0xFFFFFFFF;
@@ -3570,15 +4130,10 @@ async function exportPng() {
         canvas.width = TARGET_W;
         canvas.height = Math.round(BASE_H * S);
         const ctx = canvas.getContext('2d');
-        const bgEl = docV2.elements.find(e => e.isSystemBackground === true);
-        let bgSrc = "menu-bg.png";
-        if (bgEl && bgEl.src && bgEl.src !== '' && !bgEl.src.endsWith('menu-bg-preview.jpg') && !bgEl.src.endsWith('menu-bg.png')) {
-            bgSrc = bgEl.src;
-        }
-
-        if(docV2.settings.legacyBgVisible || bgSrc !== "menu-bg.png") {
+        const bgEl = docV2.elements.find(e => e.layerRole === 'background');
+        if (bgEl && bgEl.src) {
             const img = new Image();
-            img.src = bgSrc;
+            img.src = bgEl.src;
             await new Promise(r => { img.onload = r; img.onerror = () => { showToast('⚠️ Background image not found, exporting without it.'); r(); }; });
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         } else { ctx.fillStyle='#fff'; ctx.fillRect(0,0,canvas.width,canvas.height); }
@@ -3696,69 +4251,74 @@ async function exportPng() {
     }
 }
 
+
 window.onload = async () => {
-    // Step 1: ALWAYS try server first. Only fall back to localStorage or
-    // hardcoded docV2 if the server explicitly returns empty/error.
-    let loadedFromExternal = false;
+    let data = null;
+
+    // Priority 1: Server
     try {
-        const r = await fetch('/api/menu');
-        if (!r.ok) throw new Error('Server returned ' + r.status);
-        const s = await r.json();
-        if (s.elements && s.elements.length > 0) {
-            _mergeLoadedDoc(s);
-            loadedFromExternal = true;
-        } else {
-            throw new Error('Empty server response');
+        const r = await fetch('/api/menu?t=' + Date.now());
+        if (r.ok) {
+            const s = await r.json();
+            if (s.elements && s.elements.length > 0) data = s;
         }
-    } catch(e) {
-        // Server failed or empty — try localStorage before accepting hardcoded default
-        try {
-            const l = localStorage.getItem('menu_pro_draft_v2');
-            if (l) {
-                const parsed = JSON.parse(l);
-                if (parsed.elements && parsed.elements.length > 0) {
-                    _mergeLoadedDoc(parsed);
-                    loadedFromExternal = true;
-                }
-            }
-        } catch(e2) {}
+    } catch (e) {
+        console.warn('Server load failed, falling back...', e);
     }
 
-    // Step 2: Render immediately with whatever state was loaded so the
-    // saved layout is visible right away — do NOT wait for fonts first.
-    try { render(); } catch(e) {}
-    // BUG 1 FIX: Force lock state to unlocked and sync button immediately after first render
-    layoutLocked = false;
-    docV2.settings.layoutLocked = false;
-    const _lb = document.getElementById('btn-lock-global');
-    if (_lb) { _lb.textContent = '\uD83D\uDD13 Layout Unlocked'; _lb.classList.add('lock-unlocked'); _lb.classList.remove('primary'); }
+    // Priority 2: localStorage
+    if (!data) {
+        try {
+            const local = localStorage.getItem('menuBackup');
+            if (local) data = JSON.parse(local);
+        } catch (e) {
+            console.warn('LocalStorage load failed, falling back...', e);
+        }
+    }
 
-    // Step 3: Declare fontNames, then re-render once fonts are ready
+    // Priority 3: Clean slate
+    if (!data) {
+        data = DEFAULT_MENU_DATA;
+    }
+
+    _mergeLoadedDoc(data);
+
+    // Step 2 & 3: Render once fonts are ready OR after safety timeout
+    let initialRenderDone = false;
+    function doInitialRender() {
+        if (initialRenderDone) return;
+        initialRenderDone = true;
+
+        // Force lock state to unlocked on init
+        layoutLocked = false;
+        docV2.settings.layoutLocked = false;
+        const _lb = document.getElementById('btn-lock-global');
+        if (_lb) {
+            _lb.textContent = '\uD83D\uDD13 Layout Unlocked';
+            _lb.classList.add('lock-unlocked');
+            _lb.classList.remove('primary');
+        }
+
+        try {
+            render();
+            fitCanvasToScreen();
+        } catch(e) { console.error('Initial render failed:', e); }
+    }
+
     const fontNames = [
         'bernard-mt-condensed-regular',
         'century-gothic-bold-italic',
         'century-gothic-bold',
         'century-gothic-regular'
     ];
-
-    const fontLoadPromises = fontNames.map(name =>
-        document.fonts.load(`16px "${name}"`)
-    );
+    const fontLoadPromises = fontNames.map(name => document.fonts.load(`16px "${name}"`));
 
     // Safety fallback: re-render even if font promise never settles
-    setTimeout(() => { try { render(); } catch(e) {} }, 800);
+    setTimeout(doInitialRender, 800);
 
-    Promise.all(fontLoadPromises).then(() => {
-        try {
-            render();
-        } catch(e) {
-            console.error('Render error on font load:', e);
-            render();
-        }
-    }).catch(e => {
-        console.error('Font load failed, rendering anyway:', e);
-        render();
-    });
+    Promise.all(fontLoadPromises)
+        .then(doInitialRender)
+        .catch(doInitialRender);
 
     // Step 4: Init the rest
     syncLayoutLockUI();
@@ -3772,46 +4332,18 @@ window.onload = async () => {
     onKlingModelChange();
     updateVideoModelOptions();
 
-    function fitCanvasToScreen() {
-        _isFitZoom = true;
-        const editorVP = document.getElementById('editor-viewport');
-        if (!editorVP) return;
-        const vw = editorVP.clientWidth;
-        const vh = editorVP.clientHeight;
-        if (!vw || !vh) return; 
 
-        // Prioritize Width: Fill the editor area horizontally with 100px total margin
-        let targetScale = (vw - 100) / BASE_W;
-        
-        // On initial fit, don't exceed 1.0 scale to keep quality, 
-        // and don't go below 0.65 to ensure readability (allow scroll if needed)
-        zoomScale = Math.min(targetScale, 1.0);
-        zoomScale = Math.max(0.65, zoomScale);
-
-        applyZoom(zoomScale, true); 
-        _isFitZoom = false;
-    }
-    window.addEventListener('resize', function() {
-        requestAnimationFrame(fitCanvasToScreen);
-    });
-
-    const savedZoom = docV2.editorState?._userZoom;
-    if (savedZoom && savedZoom !== 1) {
-        applyZoom(savedZoom, true);
-    } else {
-        // Double rAF to ensure sidebars are painted/calculated
+    // Double rAF to ensure sidebars are painted/calculated
+    requestAnimationFrame(function() {
         requestAnimationFrame(function() {
-            requestAnimationFrame(function() {
-                fitCanvasToScreen();
-            });
+            fitCanvasToScreen();
         });
-    }
+    });
     maybeShowHelpPopout();
 
     setInterval(() => {
         try {
             sync();
-            localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2));
         } catch(e) {}
     }, 30000);
 };
@@ -3936,6 +4468,47 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
+
+window.addEventListener('paste', (e) => {
+    if (isEditingText) return; // Let default paste work if editing text
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text');
+    if (text) {
+        console.log("Pasted text:", text);
+        pushState();
+        let id = 'txt_' + Date.now();
+        const vpRect = viewport.getBoundingClientRect();
+        const scalerRect = scaler.getBoundingClientRect();
+        const cx = (vpRect.left + vpRect.width/2 - scalerRect.left) / zoomScale;
+        const cy = (vpRect.top + vpRect.height/2 - scalerRect.top) / zoomScale;
+        const x = Math.max(50, Math.min(BASE_W - 200, cx));
+        const y = Math.max(50, Math.min(BASE_H - 100, cy));
+
+        docV2.elements.push({
+            id,
+            type: 'text',
+            text: text,
+            x, y,
+            zIndex: Math.max(10, docV2.elements.length + 10),
+            opacity: 1,
+            rotation: 0,
+            visible: true,
+            locked: false,
+            layerRole: 'content',
+            style: {
+                fontFamily: 'century-gothic-bold',
+                fontSize: 24,
+                color: '#000000',
+                lineHeight: 1.1,
+                letterSpacing: 0
+            }
+        });
+        render();
+        selectById(id);
+        showToast('✅ Text pasted from clipboard');
+    }
+});
+
 // Text editing history tracking
 let textEditingOriginal = null;
 function onTextFocus(e) { 
@@ -3944,6 +4517,7 @@ function onTextFocus(e) {
 }
 function onTextBlur(e) {
     isEditingText = false;
+    e.target.classList.remove('editing');
     e.target.contentEditable = false;
     if(textEditingOriginal !== null && textEditingOriginal !== e.target.innerText) {
         const item = docV2.elements.find(i => i.id === e.target.id);
@@ -4044,14 +4618,111 @@ async function switchManualLang(lang) {
             });
             scopedStyles += scoped;
         });
-        body.innerHTML = `<style>${scopedStyles}</style><div class="manual-content-scope">${doc.body.innerHTML}</div>`;
+        body.innerHTML = `<style>${scopedStyles}/* Premium black-glass hover for .ctrl-btn */
+.ctrl-btn:hover {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.18) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
+  backdrop-filter: blur(6px);
+}
+
+/* Premium glass hover for .tfb-btn */
+.tfb-btn:hover {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.15) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* Premium glass hover for .ls-action-btn */
+.ls-action-btn:hover {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+}
+
+/* Glass hover for .btn-ui (top header buttons) */
+.btn-ui:hover {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.15) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.07);
+}
+
+/* Upgrade #selection-bar and #distribute-bar glass look */
+#selection-bar {
+  background: rgba(8,8,8,0.96) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.06) !important;
+}
+
+/* Upgrade top header glass */
+#top-header {
+  background: rgba(6,6,6,0.97) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 4px 20px rgba(0,0,0,0.6) !important;
+}
+
+/* Upgrade sidebars glass */
+#left-sidebar, #right-panel {
+  background: rgba(14,14,14,0.98) !important;
+  border-color: rgba(255,255,255,0.07) !important;
+}
+
+/* Ruler guide lines on canvas */
+.canvas-guide {
+  position: absolute;
+  pointer-events: all;
+  z-index: 498;
+  transition: opacity 0.2s;
+}
+.canvas-guide-h {
+  left: 0; width: 100%; height: 1px;
+  cursor: ns-resize;
+  background: rgba(0,255,230,0.55);
+  box-shadow: 0 0 4px rgba(0,255,230,0.35);
+}
+.canvas-guide-v {
+  top: 0; height: 100%; width: 1px;
+  cursor: ew-resize;
+  background: rgba(0,255,230,0.55);
+  box-shadow: 0 0 4px rgba(0,255,230,0.35);
+}
+.canvas-guide:hover {
+  background: rgba(255,80,80,0.8) !important;
+  box-shadow: 0 0 8px rgba(255,80,80,0.5) !important;
+}
+.canvas-guide .guide-delete-btn {
+  position: absolute;
+  width: 16px; height: 16px;
+  background: rgba(200,30,30,0.9);
+  color: #fff; font-size: 9px;
+  border: none; border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.15s;
+  pointer-events: all;
+}
+.canvas-guide:hover .guide-delete-btn { opacity: 1; }
+.canvas-guide-h .guide-delete-btn { right: 4px; top: -8px; }
+.canvas-guide-v .guide-delete-btn { bottom: 4px; left: -8px; }
+
+/* Adjust editor-viewport left padding to account for vertical ruler */
+#centering-wrapper { margin-left: 0; }
+
+/* Mobile: hide rulers */
+@media (max-width: 900px) {
+  #ruler-h, #ruler-v, #ruler-corner { display: none !important; }
+  #centering-wrapper { margin-left: 0; }
+  #editor-viewport { top: 188px !important; }
+}
+</style><div class="manual-content-scope">${doc.body.innerHTML}</div>`;
         body.scrollTop = 0;
     } catch (e) {
         body.innerHTML = '<div style="padding:40px; text-align:center; color:#c0392b;">❌ Error loading manual.</div>';
     }
 }
 function maybeShowHelpPopout() {
-    if (localStorage.getItem('mde_help_shown')) return;
+    // Help popout state persistence via localStorage disabled for V2
+    // if (localStorage.getItem('mde_help_shown')) return;
     setTimeout(() => {
         const popout = document.getElementById('help-popout');
         if (popout) {
@@ -4066,7 +4737,7 @@ function dismissHelpPopout() {
     if (!popout) return;
     popout.classList.remove('visible');
     popout.classList.add('dismissing');
-    localStorage.setItem('mde_help_shown', '1');
+    // localStorage.setItem('mde_help_shown', '1');
     setTimeout(() => { popout.style.display = 'none'; }, 300);
 }
 </script>
@@ -4239,7 +4910,7 @@ function restoreAiCredentials(doc) {
 }
 
 function loadAiCredentials() {
-  const stored = localStorage.getItem(AI_CRED_KEY);
+  // const stored = localStorage.getItem(AI_CRED_KEY); // Purged for V2 database-only persistence
   if (!stored) return;
   try {
     const creds = JSON.parse(stored);
@@ -5323,6 +5994,138 @@ document.getElementById('ai-vid-ref-zone')?.addEventListener('drop', e => {
     handleAiVidRefUpload(input);
   }
 });
+
+// ===== TEXT FORMAT BAR FUNCTIONS =====
+function tfbUpdateStyle(k, v) {
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (item && item.style) {
+        if (k === 'fontSize') v = parseFloat(v) || 16;
+        if (k === 'lineHeight') v = Math.round(parseFloat(v) * 10) / 10 || 1.1;
+        item.style[k] = v;
+        render();
+        syncTextFormatBar();
+    }
+}
+function tfbToggleBold() {
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item || !item.style) return;
+    const isBold = item.style.fontWeight === 'bold' || item.style.fontWeight === '700';
+    item.style.fontWeight = isBold ? 'normal' : 'bold';
+    render();
+    syncTextFormatBar();
+}
+function tfbToggleItalic() {
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item || !item.style) return;
+    const isItalic = item.style.fontStyle === 'italic';
+    item.style.fontStyle = isItalic ? 'normal' : 'italic';
+    render();
+    syncTextFormatBar();
+}
+function tfbToggleUnderline() {
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item || !item.style) return;
+    const isUnder = item.style.textDecoration === 'underline';
+    item.style.textDecoration = isUnder ? 'none' : 'underline';
+    render();
+    syncTextFormatBar();
+}
+function tfbSetAlign(align) {
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item || !item.style) return;
+    item.style.textAlign = align;
+    render();
+    syncTextFormatBar();
+}
+function tfbToggleCaps() {
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item || !item.style) return;
+    const isCaps = item.style.textTransform === 'uppercase';
+    item.style.textTransform = isCaps ? 'none' : 'uppercase';
+    render();
+    syncTextFormatBar();
+}
+function tfbStepSize(delta) {
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item || !item.style) return;
+    const current = parseFloat(item.style.fontSize) || 16;
+    const step = Math.abs(delta) === 1 ? (current >= 48 ? 4 : current >= 24 ? 2 : 1) : 1;
+    item.style.fontSize = Math.max(4, Math.min(400, current + (delta > 0 ? step : -step)));
+    render();
+    syncTextFormatBar();
+}
+function tfbStepLineHeight(delta) {
+    if (!selectedId) return;
+    pushState();
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item || !item.style) return;
+    const current = parseFloat(item.style.lineHeight) || 1.1;
+    item.style.lineHeight = Math.round(Math.max(0.5, Math.min(3, current + delta)) * 10) / 10;
+    render();
+    syncTextFormatBar();
+}
+function syncTextFormatBar() {
+    const bar = document.getElementById('text-format-bar');
+    if (!bar) return;
+    if (!selectedId) {
+        bar.classList.remove('show');
+        document.body.classList.remove('tfb-active');
+        return;
+    }
+    const item = docV2.elements.find(e => e.id === selectedId);
+    if (!item || item.type !== 'text') {
+        bar.classList.remove('show');
+        document.body.classList.remove('tfb-active');
+        return;
+    }
+    bar.classList.add('show');
+    document.body.classList.add('tfb-active');
+    // Font
+    const fontSel = document.getElementById('tfb-font');
+    if (fontSel) fontSel.value = (item.style.fontFamily || 'century-gothic-regular');
+    // Size
+    const sizeIn = document.getElementById('tfb-size');
+    if (sizeIn) sizeIn.value = Math.round(item.style.fontSize || 16);
+    // Bold
+    const boldBtn = document.getElementById('tfb-bold');
+    if (boldBtn) boldBtn.classList.toggle('active', item.style.fontWeight === 'bold' || item.style.fontWeight === '700');
+    // Italic
+    const italicBtn = document.getElementById('tfb-italic');
+    if (italicBtn) italicBtn.classList.toggle('active', item.style.fontStyle === 'italic');
+    // Underline
+    const underBtn = document.getElementById('tfb-underline');
+    if (underBtn) underBtn.classList.toggle('active', item.style.textDecoration === 'underline');
+    // Alignment
+    ['left','center','right','justify'].forEach(a => {
+        const btn = document.getElementById('tfb-align-' + a);
+        if (btn) btn.classList.toggle('active', (item.style.textAlign || 'left') === a);
+    });
+    // Caps
+    const capsBtn = document.getElementById('tfb-caps');
+    if (capsBtn) capsBtn.classList.toggle('active', item.style.textTransform === 'uppercase');
+    // Color
+    const colorIn = document.getElementById('tfb-color');
+    const colorPrev = document.getElementById('tfb-color-preview');
+    if (colorIn) colorIn.value = normalizeHex(item.style.color || '#ffffff');
+    if (colorPrev) colorPrev.style.background = normalizeHex(item.style.color || '#ffffff');
+    // Line height
+    const lhIn = document.getElementById('tfb-lh');
+    if (lhIn) lhIn.value = item.style.lineHeight || 1.1;
+}
 </script>
 
 <div id="canvas-ctx-menu" style="display:none;position:fixed;z-index:10000;background:#1e1e1e;border:1px solid #444;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.6);min-width:180px;padding:4px 0;">
@@ -5332,6 +6135,260 @@ document.getElementById('ai-vid-ref-zone')?.addEventListener('drop', e => {
   <div style="padding:10px 14px;font-size:12px;cursor:pointer;border-radius:4px;" onmouseover="this.style.background='#333'" onmouseout="this.style.background='transparent'" onclick="hideCanvasCtxMenu()">✕ Cancel</div>
 </div>
 
+<script>
+(function() {
+  // ── RULER & GUIDE SYSTEM ──────────────────────────────────────────
+  // Reads canvas scroll position to draw tick marks on rulers.
+  // Pulls guides from ruler edges (drag from ruler onto canvas).
+  // Double-click guide to delete. Drag guide to reposition.
+  // Does NOT interfere with existing canvas JS (no shared variable names).
+
+  const RULER_SIZE = 20;
+  let CANVAS_W = 908;
+  let CANVAS_H = 1336;
+
+  // Update when background changes — called by future setBg feature
+  window.setRulerCanvasSize = function(w, h) {
+    CANVAS_W = w;
+    CANVAS_H = h;
+    drawRulers();
+  };
+  const TICK_COLOR = 'rgba(0,255,230,0.55)';
+  const TICK_LABEL_COLOR = 'rgba(0,255,230,0.7)';
+  const BG_COLOR = 'rgba(18,18,18,0.98)';
+
+  let rulerGuides = []; // { id, type:'h'|'v', pos:Number (px on canvas), el }
+  let rulerGuideIdCounter = 0;
+  let draggingGuide = null;
+  let pullingGuide = null; // guide being pulled from ruler
+
+  const viewport = document.getElementById('editor-viewport');
+  const scalerWrapper = document.getElementById('scaler-wrapper');
+  const guidesLayer = document.getElementById('guide-lines-layer');
+  const rulerH = document.getElementById('ruler-h');
+  const rulerV = document.getElementById('ruler-v');
+
+  if (!viewport || !scalerWrapper || !guidesLayer || !rulerH || !rulerV) return;
+
+  const ctxH = rulerH.getContext('2d');
+  const ctxV = rulerV.getContext('2d');
+
+  function getScale() {
+    const rect = scalerWrapper.getBoundingClientRect();
+    return rect.width / CANVAS_W;
+  }
+
+  function getCanvasOriginInViewport() {
+    const rect = scalerWrapper.getBoundingClientRect();
+    const vpRect = viewport.getBoundingClientRect();
+    return {
+      x: rect.left - vpRect.left + viewport.scrollLeft,
+      y: rect.top - vpRect.top + viewport.scrollTop
+    };
+  }
+
+  function drawRulers() {
+    const scale = getScale();
+    const origin = getCanvasOriginInViewport();
+    const vpW = viewport.clientWidth;
+    const vpH = viewport.clientHeight;
+
+    const DPR = window.devicePixelRatio || 1;
+
+    // ── Horizontal ruler ──
+    rulerH.width = vpW * DPR;
+    rulerH.height = RULER_SIZE * DPR;
+    rulerH.style.width = vpW + 'px';
+    rulerH.style.height = RULER_SIZE + 'px';
+    ctxH.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+    ctxH.fillStyle = BG_COLOR;
+    ctxH.fillRect(0,0,vpW,RULER_SIZE);
+
+    const scrollX = viewport.scrollLeft;
+    const startCanvasX = Math.max(0, (scrollX - origin.x) / scale);
+    const endCanvasX = Math.min(CANVAS_W, (scrollX + vpW - origin.x) / scale);
+    const step = pickStep(scale);
+
+    ctxH.fillStyle = TICK_COLOR;
+    ctxH.font = '9px Inter, sans-serif';
+    ctxH.textBaseline = 'top';
+
+    for (let cx = Math.floor(startCanvasX/step)*step; cx <= endCanvasX; cx += step) {
+      const screenX = origin.x + cx * scale - scrollX;
+      const isMajor = cx % (step * 5) === 0;
+      const tickH = isMajor ? 10 : 5;
+      ctxH.fillStyle = TICK_COLOR;
+      ctxH.fillRect(screenX, RULER_SIZE - tickH, 1, tickH);
+      if (isMajor && cx > 0) {
+        ctxH.fillStyle = TICK_LABEL_COLOR;
+        ctxH.fillText(Math.round(cx), screenX + 2, 2);
+      }
+    }
+
+    // ── Vertical ruler ──
+    const vH = Math.max(vpH, 400);
+    rulerV.width = RULER_SIZE * DPR;
+    rulerV.height = vH * DPR;
+    rulerV.style.width = RULER_SIZE + 'px';
+    rulerV.style.height = vH + 'px';
+    ctxV.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+    ctxV.fillStyle = BG_COLOR;
+    ctxV.fillRect(0,0,RULER_SIZE,vH);
+
+    const scrollY = viewport.scrollTop;
+    const startCanvasY = Math.max(0, (scrollY - origin.y) / scale);
+    const endCanvasY = Math.min(CANVAS_H, (scrollY + vpH - origin.y) / scale);
+
+    for (let cy = Math.floor(startCanvasY/step)*step; cy <= endCanvasY; cy += step) {
+      const screenY = origin.y + cy * scale - scrollY;
+      const isMajor = cy % (step * 5) === 0;
+      const tickW = isMajor ? 10 : 5;
+      ctxV.fillStyle = TICK_COLOR;
+      ctxV.fillRect(RULER_SIZE - tickW, screenY, tickW, 1);
+      if (isMajor && cy > 0) {
+        ctxV.save();
+        ctxV.fillStyle = TICK_LABEL_COLOR;
+        ctxV.translate(10, screenY - 2);
+        ctxV.rotate(-Math.PI/2);
+        ctxV.font = '9px Inter, sans-serif';
+        ctxV.textBaseline = 'top';
+        ctxV.fillText(Math.round(cy), 0, 0);
+        ctxV.restore();
+      }
+    }
+  }
+
+  function pickStep(scale) {
+    if (scale >= 1) return 10;
+    if (scale >= 0.5) return 20;
+    if (scale >= 0.25) return 50;
+    return 100;
+  }
+
+  // ── Guide rendering ──
+  function renderGuide(g) {
+    const scale = getScale();
+    const el = document.createElement('div');
+    el.className = 'canvas-guide canvas-guide-' + g.type;
+    if (g.type === 'h') {
+      el.style.top = g.pos + 'px';
+    } else {
+      el.style.left = g.pos + 'px';
+    }
+    el.dataset.gid = g.id;
+
+    // Delete button
+    const del = document.createElement('button');
+    del.className = 'guide-delete-btn';
+    del.textContent = '✕';
+    del.title = 'Delete guide';
+    del.addEventListener('pointerdown', function(e) {
+      e.stopPropagation();
+      removeGuide(g.id);
+    });
+    el.appendChild(del);
+
+    // Drag guide
+    let dragging = false, startPos = 0, startClient = 0;
+    el.addEventListener('pointerdown', function(e) {
+      if (e.target === del) return;
+      e.stopPropagation();
+      dragging = true;
+      startPos = g.pos;
+      startClient = g.type === 'h' ? e.clientY : e.clientX;
+      el.setPointerCapture(e.pointerId);
+    });
+    el.addEventListener('pointermove', function(e) {
+      if (!dragging) return;
+      const scale = getScale();
+      const delta = (g.type === 'h' ? e.clientY - startClient : e.clientX - startClient) / scale;
+      const newPos = Math.max(0, Math.min(g.type === 'h' ? CANVAS_H : CANVAS_W, startPos + delta));
+      g.pos = newPos;
+      if (g.type === 'h') el.style.top = newPos + 'px';
+      else el.style.left = newPos + 'px';
+    });
+    el.addEventListener('pointerup', function() { dragging = false; });
+
+    guidesLayer.appendChild(el);
+    g.el = el;
+  }
+
+  function removeGuide(id) {
+    const idx = rulerGuides.findIndex(g => g.id === id);
+    if (idx === -1) return;
+    const g = rulerGuides[idx];
+    if (g.el && g.el.parentNode) g.el.parentNode.removeChild(g.el);
+    rulerGuides.splice(idx, 1);
+  }
+
+  function addGuide(type, pos) {
+    const g = { id: ++rulerGuideIdCounter, type, pos, el: null };
+    rulerGuides.push(g);
+    renderGuide(g);
+    return g;
+  }
+
+  // ── Pull guide from ruler (drag from ruler onto canvas) ──
+  function getRulerCanvasPos(e, rulerEl, type) {
+    const scale = getScale();
+    const origin = getCanvasOriginInViewport();
+    const vpRect = viewport.getBoundingClientRect();
+    if (type === 'h') {
+      // dragging from horizontal ruler: guide Y position
+      const clientY = e.clientY;
+      const canvasY = (clientY - vpRect.top + viewport.scrollTop - origin.y) / scale;
+      return Math.max(0, Math.min(CANVAS_H, canvasY));
+    } else {
+      const clientX = e.clientX;
+      const canvasX = (clientX - vpRect.left + viewport.scrollLeft - origin.x) / scale;
+      return Math.max(0, Math.min(CANVAS_W, canvasX));
+    }
+  }
+
+  rulerH.addEventListener('pointerdown', function(e) {
+    const g = addGuide('h', 0);
+    const moveG = function(ev) {
+      const pos = getRulerCanvasPos(ev, rulerH, 'h');
+      g.pos = pos;
+      if (g.el) g.el.style.top = pos + 'px';
+    };
+    const upG = function() {
+      window.removeEventListener('pointermove', moveG);
+      window.removeEventListener('pointerup', upG);
+    };
+    window.addEventListener('pointermove', moveG);
+    window.addEventListener('pointerup', upG);
+    e.preventDefault();
+  });
+
+  rulerV.addEventListener('pointerdown', function(e) {
+    const g = addGuide('v', 0);
+    const moveG = function(ev) {
+      const pos = getRulerCanvasPos(ev, rulerV, 'v');
+      g.pos = pos;
+      if (g.el) g.el.style.left = pos + 'px';
+    };
+    const upG = function() {
+      window.removeEventListener('pointermove', moveG);
+      window.removeEventListener('pointerup', upG);
+    };
+    window.addEventListener('pointermove', moveG);
+    window.addEventListener('pointerup', upG);
+    e.preventDefault();
+  });
+
+  // ── Sync on scroll + resize ──
+  viewport.addEventListener('scroll', drawRulers, { passive: true });
+  window.addEventListener('resize', drawRulers);
+
+  // Initial draw after fonts/layout settle
+  setTimeout(drawRulers, 300);
+  requestAnimationFrame(drawRulers);
+
+})();
+</script>
 </body>
 </html>
 
