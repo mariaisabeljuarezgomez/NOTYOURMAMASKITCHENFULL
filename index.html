@@ -69,9 +69,10 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     -0.5px -0.5px,
     -0.5px -0.5px,
     9px 9px;
-  display:flex;
-  align-items:flex-start;
-  justify-content:center;
+  display: flex;
+  flex-direction: row;  /* ruler-v on left, right column fills rest */
+  align-items: flex-start;
+  justify-content: flex-start;  /* change from center to flex-start */
 }
 #centering-wrapper { 
     padding: 100px; 
@@ -839,18 +840,9 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 </div>
 
 <main id="editor-viewport" onclick="onViewportClick(event)">
-  <canvas id="ruler-v" style="
-    position: sticky;
-    left: 0;
-    top: 0;
-    width: 20px;
-    height: 100%;
-    z-index: 100;
-    pointer-events: auto;
-    float: left;
-    background: rgba(18,18,18,0.98);
-    border-right: 1px solid rgba(0,255,230,0.15);
-  "></canvas>
+  <canvas id="ruler-v" style="position:sticky;left:0;top:0;width:20px;height:100%;z-index:100;pointer-events:auto;float:left;background:rgba(18,18,18,0.98);border-right:1px solid rgba(0,255,230,0.15);flex-shrink:0;"></canvas>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;min-width:0;">
+    <canvas id="ruler-h" style="position:sticky;top:0;left:0;width:100%;height:20px;display:block;z-index:100;cursor:default;pointer-events:auto;background:rgba(18,18,18,0.98);border-bottom:1px solid rgba(0,255,230,0.15);flex-shrink:0;align-self:flex-start;"></canvas>
     <div id="centering-wrapper">
         <div id="scaler-wrapper" style="width:908px; height:1336px;">
             <div id="menu-container" onclick="onCanvasClick(event)" onmousedown="onCanvasMousedown(event)" ontouchstart="onCanvasMousedown(event)">
@@ -868,17 +860,8 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
                 "></div>
                 <div id="guide-lines-layer" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:498;overflow:visible;"></div>
             </div>
-<canvas id="ruler-h" style="
-  position:sticky; top:0; left:0;
-  width:100%; height:20px;
-  display:block; z-index:100;
-  cursor:default; pointer-events:auto;
-  background:rgba(18,18,18,0.98);
-  border-bottom:1px solid rgba(0,255,230,0.15);
-  flex-shrink:0;
-"></canvas>
 
-</div></div>
+</div></div></div>
 </main>
 
 <!-- ===== LEFT SIDEBAR ===== -->
@@ -6078,8 +6061,15 @@ function syncTextFormatBar() {
   // Does NOT interfere with existing canvas JS (no shared variable names).
 
   const RULER_SIZE = 20;
-  const CANVAS_W = 908;
-  const CANVAS_H = 1336;
+  let CANVAS_W = 908;
+  let CANVAS_H = 1336;
+
+  // Update when background changes — called by future setBg feature
+  window.setRulerCanvasSize = function(w, h) {
+    CANVAS_W = w;
+    CANVAS_H = h;
+    drawRulers();
+  };
   const TICK_COLOR = 'rgba(0,255,230,0.55)';
   const TICK_LABEL_COLOR = 'rgba(0,255,230,0.7)';
   const BG_COLOR = 'rgba(18,18,18,0.98)';
