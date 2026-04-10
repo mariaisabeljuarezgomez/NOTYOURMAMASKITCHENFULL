@@ -846,6 +846,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         <div id="scaler-wrapper" style="width:908px; height:1336px;">
             <div id="menu-container" onclick="onCanvasClick(event)" onmousedown="onCanvasMousedown(event)" ontouchstart="onCanvasMousedown(event)">
 
+                <div id="bg-layer" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; overflow:hidden;"></div>
                 <div id="elements-layer" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div>
                 <div id="guide-cx" class="guide guide-v" style="left:50%"></div>
                 <div id="guide-cy" class="guide guide-h" style="top:50%"></div>
@@ -1468,7 +1469,7 @@ docV2.elements.forEach(el => {
         }
     }
 });
-let layoutLocked = false, selectedId = null, zoomScale = 1, _isFitZoom = false, _activeBarTab = 'layer', _canvasFitDone = false;
+let layoutLocked = true, selectedId = null, zoomScale = 1, _isFitZoom = false, _activeBarTab = 'layer', _canvasFitDone = false, _isDragging = false;
 let historyStack = [];
 let redoStack = [];
 const elementDisplayNames = {}; // { elementId: "My Custom Name" } — editor display only, not persisted
@@ -1649,17 +1650,28 @@ function normalizeHex(c) {
   return c;
 }
 
-function render() {
+function renderBackground() {
+    const bgContainer = document.getElementById('bg-layer');
+    if (!bgContainer) return;
+    const bgEl = docV2.elements.find(e => e.layerRole === 'background');
+    if (!bgEl) {
+        bgContainer.innerHTML = '';
+        return;
+    }
+    const currentSrc = bgContainer.querySelector('img')?.src;
+    if (currentSrc === bgEl.src) return; // Skip if already correctly rendered
+    bgContainer.innerHTML = `<img src="${bgEl.src}" style="width:100%; height:100%; object-fit:cover; display:block;">`;
+}
 
-    
+function render() {
+    if (_isDragging) return; // Interaction aware guard
     elementsLayer.innerHTML = ''; 
     const sorted = [...docV2.elements].sort((a, b) => {
-      if (a.isSystemBackground) return -1;
-      if (b.isSystemBackground) return 1;
       return (a.zIndex || 10) - (b.zIndex || 10);
     });
     
     sorted.forEach(d => {
+        if (d.layerRole === 'background') return; // Skip decoupled background
 
         let el, imgEl = null;
         if (d.type === 'image') {
@@ -2270,6 +2282,7 @@ function attach(el) {
         const gcx = document.getElementById('guide-cx'), gcy = document.getElementById('guide-cy');
 
         document.onmousemove = (me) => {
+            _isDragging = true;
             if (isLassoing) return; // lasso takes priority — do not drag
             if (isEditingText) return;
             const item = docV2.elements.find(e => e.id === el.id);
@@ -2303,7 +2316,15 @@ function attach(el) {
                 });
             }
         };
-        document.onmouseup = () => { document.onmousemove = null; gcx.style.display='none'; gcy.style.display='none'; _groupDragStatePushed = false; sync(); };
+        document.onmouseup = () => { 
+            _isDragging = false;
+            document.onmousemove = null; 
+            gcx.style.display='none'; 
+            gcy.style.display='none'; 
+            _groupDragStatePushed = false; 
+            sync(); 
+            render(); // settled render after drag
+        };
     };
 
 
@@ -3012,7 +3033,7 @@ async function resetToOriginal() {
     try {
         const r = await fetch('/api/menu/reset', {method:'POST'});
         if (!r.ok) throw new Error('Server reset failed');
-        // localStorage.removeItem called removed for V2 database persistence compliance
+        renderBackground(); // Update background after reset
         location.reload();
     } catch(e) {
         showToast('❌ Reset failed — server unavailable. Your data is safe.');
@@ -3593,6 +3614,7 @@ function setAsBackground(src) {
     docV2.elements.push(bgLayer);
   }
   selectedId = null;
+  renderBackground();
   render();
   showToast('Background replaced and locked.');
 }
@@ -3625,6 +3647,7 @@ function setSelectedAsBackground() {
 
     selectedId = item.id; // keep selected
 
+    renderBackground();
     render();
     renderLayerList();
     showToast("✅ Image promoted to moveable background");
@@ -4255,85 +4278,51 @@ async function exportPng() {
 window.onload = async () => {
     let data = null;
 
-    // Priority 1: Server
+    // 1. Fetch from server
     try {
         const r = await fetch('/api/menu?t=' + Date.now());
         if (r.ok) {
             const s = await r.json();
             if (s.elements && s.elements.length > 0) data = s;
         }
-    } catch (e) {
-        console.warn('Server load failed, falling back...', e);
-    }
+    } catch (e) { console.warn('Server load failed...', e); }
 
-    // Priority 2: localStorage
+    // 2. Fallback to localStorage
     if (!data) {
         try {
             const local = localStorage.getItem('menuBackup');
             if (local) data = JSON.parse(local);
-        } catch (e) {
-            console.warn('LocalStorage load failed, falling back...', e);
-        }
+        } catch (e) { console.warn('LocalStorage load failed...', e); }
     }
 
-    // Priority 3: Clean slate
-    if (!data) {
-        data = DEFAULT_MENU_DATA;
-    }
+    // 3. Fallback to default
+    if (!data) data = DEFAULT_MENU_DATA;
 
+    // 4. Atomic Execution Sequence (The Waterfall)
     _mergeLoadedDoc(data);
+    
+    // Safety lock reset
+    layoutLocked = true;
+    docV2.settings.layoutLocked = true;
 
-    // Step 2 & 3: Render once fonts are ready OR after safety timeout
-    let initialRenderDone = false;
-    function doInitialRender() {
-        if (initialRenderDone) return;
-        initialRenderDone = true;
+    // Direct render calls (no doInitialRender)
+    renderBackground();
+    render();
+    setTimeout(() => fitCanvasToScreen(), 100);
 
-        // Force lock state to unlocked on init
-        layoutLocked = false;
-        docV2.settings.layoutLocked = false;
-        const _lb = document.getElementById('btn-lock-global');
-        if (_lb) { 
-            _lb.textContent = '\uD83D\uDD13 Layout Unlocked'; 
-            _lb.classList.add('lock-unlocked'); 
-            _lb.classList.remove('primary'); 
-        }
-
-        try { 
-            render(); 
-            fitCanvasToScreen();
-        } catch(e) { console.error('Initial render failed:', e); }
-    }
-
-    const fontNames = [
-        'bernard-mt-condensed-regular',
-        'century-gothic-bold-italic',
-        'century-gothic-bold',
-        'century-gothic-regular'
-    ];
-    const fontLoadPromises = fontNames.map(name => document.fonts.load(`16px "${name}"`));
-
-    // Safety fallback: re-render even if font promise never settles
-    setTimeout(doInitialRender, 800);
-
-    Promise.all(fontLoadPromises)
-        .then(doInitialRender)
-        .catch(doInitialRender);
-
-    // Step 4: Init the rest
+    // Initial systems
     syncLayoutLockUI();
     initSmartTooltips();
     await loadUserImages();
     loadVideoHistory();
     
-    // Init Kling panel defaults
+    // Kling config
     window._klingQuality = '1s';
     updateKlingCostEstimate();
     onKlingModelChange();
     updateVideoModelOptions();
 
-
-    // Double rAF to ensure sidebars are painted/calculated
+    // Final layout fit
     requestAnimationFrame(function() {
         requestAnimationFrame(function() {
             fitCanvasToScreen();
@@ -4341,11 +4330,7 @@ window.onload = async () => {
     });
     maybeShowHelpPopout();
 
-    setInterval(() => {
-        try {
-            sync();
-        } catch(e) {}
-    }, 30000);
+    setInterval(() => { try { sync(); } catch(e) {} }, 30000);
 };
 
 viewport.onwheel = (e) => { if(e.ctrlKey) { e.preventDefault(); applyZoom(e.deltaY > 0 ? 0.9 : 1.1); } };

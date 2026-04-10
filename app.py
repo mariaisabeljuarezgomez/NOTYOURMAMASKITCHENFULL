@@ -140,7 +140,9 @@ def serve_export_utils():
 
 @app.route('/<path:filename>.ttf')
 def serve_fonts(filename):
-    return send_from_directory('.', filename + '.ttf')
+    # Fix: Use absolute path for font serving to prevent 404s on deep routes
+    font_dir = os.path.dirname(os.path.abspath(__file__))
+    return send_from_directory(font_dir, filename + '.ttf')
 
 @app.route("/api/menu", methods=["GET"])
 def get_menu():
