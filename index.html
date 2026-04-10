@@ -3000,7 +3000,7 @@ async function resetToOriginal() {
     try {
         const r = await fetch('/api/menu/reset', {method:'POST'});
         if (!r.ok) throw new Error('Server reset failed');
-        localStorage.removeItem('menu_pro_draft_v2');
+        // localStorage.removeItem called removed for V2 database persistence compliance
         location.reload();
     } catch(e) {
         showToast('❌ Reset failed — server unavailable. Your data is safe.');
@@ -3862,6 +3862,16 @@ function applyZoom(f, isAbsolute = false) {
 }
 
 function _mergeLoadedDoc(s) {
+    // Deduplicate backgrounds — keep only the LAST one (Fixing stacking bug)
+    if (s.elements && s.elements.length > 0) {
+        const backgrounds = s.elements.filter(e => e.layerRole === 'background');
+        if (backgrounds.length > 1) {
+            const keepBg = backgrounds[backgrounds.length - 1];
+            s.elements = s.elements.filter(e => 
+                e.layerRole !== 'background' || e.id === keepBg.id
+            );
+        }
+    }
     const currentAssets = [...(docV2.assets || [])];
     docV2 = { ...docV2, ...s };
     const serverIds = new Set((s.assets || []).map(a => a.id));
@@ -3878,7 +3888,7 @@ function _mergeLoadedDoc(s) {
 async function save() {
     sync();
     docV2.settings.layoutLocked = layoutLocked;
-    localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2));
+    // localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2)); // Purged for V2 database-only persistence
     docV2.version = 2;
 
     // Commit 7: Normalize save payload to settings.viewer
@@ -3997,7 +4007,8 @@ async function load() {
         }
         throw new Error('Empty server response');
     } catch (e) {
-        const l = localStorage.getItem('menu_pro_draft_v2');
+        // localStorage fallback removed for V2 database-only persistence
+        // const l = localStorage.getItem('menu_pro_draft_v2');
         if (l) {
             try {
                 const parsed = JSON.parse(l);
@@ -4223,17 +4234,8 @@ window.onload = async () => {
             throw new Error('Empty server response');
         }
     } catch(e) {
-        // Server failed or empty — try localStorage before accepting hardcoded default
-        try {
-            const l = localStorage.getItem('menu_pro_draft_v2');
-            if (l) {
-                const parsed = JSON.parse(l);
-                if (parsed.elements && parsed.elements.length > 0) {
-                    _mergeLoadedDoc(parsed);
-                    loadedFromExternal = true;
-                }
-            }
-        } catch(e2) {}
+        showToast('⚠️ No saved project found on server.');
+        initApp(DEFAULT_MENU_DATA); // Clean slate template fallback
     }
 
     // Step 2: Render immediately with whatever state was loaded so the
@@ -4323,7 +4325,8 @@ window.onload = async () => {
     setInterval(() => {
         try {
             sync();
-            localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2));
+            // localStorage auto-save removed for V2 database-only persistence
+            // localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2));
         } catch(e) {}
     }, 30000);
 };
@@ -4701,7 +4704,8 @@ async function switchManualLang(lang) {
     }
 }
 function maybeShowHelpPopout() {
-    if (localStorage.getItem('mde_help_shown')) return;
+    // Help popout state persistence via localStorage disabled for V2
+    // if (localStorage.getItem('mde_help_shown')) return;
     setTimeout(() => {
         const popout = document.getElementById('help-popout');
         if (popout) {
@@ -4716,7 +4720,7 @@ function dismissHelpPopout() {
     if (!popout) return;
     popout.classList.remove('visible');
     popout.classList.add('dismissing');
-    localStorage.setItem('mde_help_shown', '1');
+    // localStorage.setItem('mde_help_shown', '1');
     setTimeout(() => { popout.style.display = 'none'; }, 300);
 }
 </script>
@@ -4889,7 +4893,7 @@ function restoreAiCredentials(doc) {
 }
 
 function loadAiCredentials() {
-  const stored = localStorage.getItem(AI_CRED_KEY);
+  // const stored = localStorage.getItem(AI_CRED_KEY); // Purged for V2 database-only persistence
   if (!stored) return;
   try {
     const creds = JSON.parse(stored);
