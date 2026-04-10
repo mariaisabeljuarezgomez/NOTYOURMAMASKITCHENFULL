@@ -83,6 +83,16 @@ def init_db():
             )
         """)
         
+        # Restoration: Create video_history table
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS video_history (
+                id SERIAL PRIMARY KEY,
+                slot TEXT NOT NULL,         -- 'hero', 'left', or 'right'
+                url TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
         # Migration: If id is integer, convert to TEXT
         cur.execute("SELECT data_type FROM information_schema.columns WHERE table_name = 'sessions' AND column_name = 'id'")
         row = cur.fetchone()
@@ -709,7 +719,97 @@ def kling_status(task_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Video behavior logic removed — replaced by stateless AI session pipeline
+# Video behavior logic restored — persistence for AI session pipeline
+
+@app.route("/api/video-history", methods=["GET"])
+def get_video_history():
+    conn = None
+    try:
+        if not DATABASE_URL:
+            return jsonify({"hero": [], "left": [], "right": []})
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT slot, url FROM video_history
+            ORDER BY created_at DESC
+        """)
+        rows = cur.fetchall()
+        result = {"hero": [], "left": [], "right": []}
+        seen = {"hero": set(), "left": set(), "right": set()}
+        for slot, url in rows:
+            if slot in result and url not in seen[slot] and len(result[slot]) < 5:
+                result[slot].append(url)
+                seen[slot].add(url)
+        cur.close()
+        return jsonify(result)
+    except Exception as e:
+        print(f"get_video_history ERROR: {e}", flush=True)
+        return jsonify({"hero": [], "left": [], "right": []})
+    finally:
+        if conn:
+            conn.close()
+
+@app.route("/api/video-history", methods=["POST"])
+def save_video_history():
+    conn = None
+    try:
+        data = request.json or {}
+        slot = data.get("slot", "")
+        url = data.get("url", "")
+        if slot not in ("hero", "left", "right") or not url:
+            return jsonify({"error": "Invalid slot or url"}), 400
+        if not DATABASE_URL:
+            return jsonify({"status": "no_db"}), 200
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        cur = conn.cursor()
+        # Avoid duplicate consecutive saves of the same URL to the same slot
+        cur.execute("""
+            INSERT INTO video_history (slot, url)
+            SELECT %s, %s
+            WHERE NOT EXISTS (
+                SELECT 1 FROM video_history
+                WHERE slot = %s AND url = %s
+                ORDER BY created_at DESC
+                LIMIT 1
+            )
+        """, (slot, url, slot, url))
+        conn.commit()
+        cur.close()
+        return jsonify({"status": "saved"})
+    except Exception as e:
+        print(f"save_video_history ERROR: {e}", flush=True)
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+@app.route("/api/image-history", methods=["GET"])
+def get_image_history():
+    conn = None
+    try:
+        if not DATABASE_URL:
+            return jsonify({"images": []})
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        cur = conn.cursor()
+        cur.execute("SELECT canvas_json FROM sessions WHERE id = 'main'")
+        row = cur.fetchone()
+        cur.close()
+        if not row:
+            return jsonify({"images": []})
+        data = row[0]
+        assets = data.get("assets", [])
+        ai_images = [
+            {"id": a.get("id"), "name": a.get("name", "AI Image"),
+             "url": (a.get("storage") or {}).get("originalUrl", "")}
+            for a in assets
+            if a.get("id", "").startswith("asset_ai") or "AI" in a.get("name", "")
+        ]
+        return jsonify({"images": ai_images[-20:]})
+    except Exception as e:
+        return jsonify({"images": [], "error": str(e)})
+    finally:
+        if conn:
+            conn.close()
 
 @app.route("/api/ai/cloudinary-upload", methods=["POST"])
 def cloudinary_upload():
