@@ -738,7 +738,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 .canvas-guide-v .guide-delete-btn { bottom: 4px; left: -8px; }
 
 /* Adjust editor-viewport left padding to account for vertical ruler */
-#centering-wrapper { margin-left: 20px; }
+#centering-wrapper { margin-left: 0; }
 
 /* Mobile: hide rulers */
 @media (max-width: 900px) {
@@ -839,6 +839,18 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 </div>
 
 <main id="editor-viewport" onclick="onViewportClick(event)">
+  <canvas id="ruler-v" style="
+    position: sticky;
+    left: 0;
+    top: 0;
+    width: 20px;
+    height: 100%;
+    z-index: 100;
+    pointer-events: auto;
+    float: left;
+    background: rgba(18,18,18,0.98);
+    border-right: 1px solid rgba(0,255,230,0.15);
+  "></canvas>
     <div id="centering-wrapper">
         <div id="scaler-wrapper" style="width:908px; height:1336px;">
             <div id="menu-container" onclick="onCanvasClick(event)" onmousedown="onCanvasMousedown(event)" ontouchstart="onCanvasMousedown(event)">
@@ -866,30 +878,6 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
   flex-shrink:0;
 "></canvas>
 
-<canvas id="ruler-v" style="
-  position: fixed;
-  top: 144px;
-  left: 240px;   /* left sidebar edge */
-  width: 20px;
-  bottom: 0;
-  z-index: 100;
-  pointer-events: auto;
-  display: block;
-  background: rgba(18,18,18,0.98);
-  border-right: 1px solid rgba(0,255,230,0.15);
-"></canvas>
-
-<div id="ruler-corner" style="
-  position: fixed;
-  top: 144px;
-  left: 240px;
-  width: 20px;
-  height: 20px;
-  z-index: 101;
-  background: rgba(12,12,12,0.99);
-  border-right: 1px solid rgba(0,255,230,0.15);
-  border-bottom: 1px solid rgba(0,255,230,0.15);
-"></div>
 </div></div>
 </main>
 
@@ -4653,7 +4641,7 @@ async function switchManualLang(lang) {
 .canvas-guide-v .guide-delete-btn { bottom: 4px; left: -8px; }
 
 /* Adjust editor-viewport left padding to account for vertical ruler */
-#centering-wrapper { margin-left: 20px; }
+#centering-wrapper { margin-left: 0; }
 
 /* Mobile: hide rulers */
 @media (max-width: 900px) {
