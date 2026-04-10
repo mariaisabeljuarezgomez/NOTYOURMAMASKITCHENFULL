@@ -138,6 +138,10 @@ def index():
 def serve_export_utils():
     return send_from_directory('.', 'export-utils.js')
 
+@app.route('/<path:filename>.ttf')
+def serve_fonts(filename):
+    return send_from_directory('.', filename + '.ttf')
+
 @app.route("/api/menu", methods=["GET"])
 def get_menu():
     try:
