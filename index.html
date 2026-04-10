@@ -1648,6 +1648,9 @@ function render() {
     const sorted = [...docV2.elements].sort((a,b)=> (a.zIndex||10)-(b.zIndex||10));
     
     sorted.forEach(d => {
+        if (d.layerRole === 'background' && document.getElementById(d.id)) {
+            return; // background already in DOM, skip re-render
+        }
         let el, imgEl = null;
         if (d.type === 'image') {
             el = document.createElement('div');
@@ -1750,6 +1753,10 @@ function render() {
             borderRadius: d.type === 'line' ? '0' : (d.cornerRadius||0)+'px',
             border: 'none' // Stroke handled by inner elements for shapes
         });
+        if (d.layerRole === 'background') {
+            el.style.zIndex = '0';
+            el.style.pointerEvents = 'none';
+        }
         
         if(d.style) {
             if(d.style.fontFamily) el.style.fontFamily = d.style.fontFamily;
@@ -3130,8 +3137,7 @@ function addText() {
     const cy = (vpRect.top + vpRect.height/2 - scalerRect.top) / zoomScale;
     const x = Math.max(50, Math.min(BASE_W - 200, cx));
     const y = Math.max(50, Math.min(BASE_H - 100, cy));
-    const maxZ = docV2.elements.reduce((m, e) => Math.max(m, e.zIndex || 0), 0);
-    docV2.elements.push({id, type:'text', text:'New Text', x, y, zIndex: maxZ + 1, opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fontFamily:'century-gothic-bold', fontSize:24, color:'#000', lineHeight:1.1, letterSpacing:0} }); 
+    docV2.elements.push({id, type:'text', text:'New Text', x, y, zIndex: Math.max(1, docV2.elements.filter(e => e.layerRole !== 'background').length + 1), opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fontFamily:'century-gothic-bold', fontSize:24, color:'#000', lineHeight:1.1, letterSpacing:0} }); 
     render(); 
     selectById(id); 
 }
