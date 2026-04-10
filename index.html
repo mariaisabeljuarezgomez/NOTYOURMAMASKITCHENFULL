@@ -1469,7 +1469,7 @@ docV2.elements.forEach(el => {
         }
     }
 });
-let layoutLocked = true, selectedId = null, zoomScale = 1, _isFitZoom = false, _activeBarTab = 'layer', _canvasFitDone = false, _isDragging = false;
+let layoutLocked = false, selectedId = null, zoomScale = 1, _isFitZoom = false, _activeBarTab = 'layer', _canvasFitDone = false, _isDragging = false;
 let historyStack = [];
 let redoStack = [];
 const elementDisplayNames = {}; // { elementId: "My Custom Name" } — editor display only, not persisted
@@ -2166,6 +2166,16 @@ function attach(el) {
         document.onmousemove = null;
         document.onmouseup = null;
         e.stopPropagation();
+
+        // FIX 2: Reset editing state if clicking a different element 
+        if (isEditingText && el.id !== selectedId) {
+            isEditingText = false;
+            const prevEl = document.getElementById(selectedId);
+            if (prevEl) {
+                prevEl.contentEditable = 'false';
+                prevEl.classList.remove('editing');
+            }
+        }
         
         const now = Date.now();
         const isDoubleClick = (lastClickId === el.id) && (now - lastClickTime < 400);
@@ -2241,6 +2251,11 @@ function attach(el) {
                 if (!_itemData.height) _itemData.height = el.offsetHeight || 100;
             }
             // Line: x1/y1/x2/y2 already set from data model; no init needed
+            injectResizeHandles(el);
+        }
+
+        // FIX 4: Standalone resize handle injection for text elements
+        if (_itemData.type === 'text' && !_itemData.locked) {
             injectResizeHandles(el);
         }
 

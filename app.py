@@ -910,6 +910,9 @@ def proxy_download():
         )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
