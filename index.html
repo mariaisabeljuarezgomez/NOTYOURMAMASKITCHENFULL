@@ -1653,7 +1653,11 @@ function render() {
 
     
     elementsLayer.innerHTML = ''; 
-    const sorted = [...docV2.elements].sort((a,b)=> (a.zIndex||10)-(b.zIndex||10));
+    const sorted = [...docV2.elements].sort((a, b) => {
+      if (a.isSystemBackground) return -1;
+      if (b.isSystemBackground) return 1;
+      return (a.zIndex || 10) - (b.zIndex || 10);
+    });
     
     sorted.forEach(d => {
 
@@ -3511,74 +3515,80 @@ async function importImg(input) {
 }
 
 async function importBackground(input) {
-    let f = input.files[0];
-    if (!f) return;
-    let r = new FileReader();
-    r.onload = async (e) => {
-        const src = e.target.result;
-        const filename = 'bg_' + Date.now() + '_' + f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-        try {
-            const res = await fetch('/api/upload-image', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ 
-                    filename, 
-                    data: src,
-                    credentials: {
-                        cloudName: document.getElementById('ai-cloud-name')?.value?.trim() || '',
-                        cloudKey: document.getElementById('ai-cloud-key')?.value?.trim() || '',
-                        cloudSecret: document.getElementById('ai-cloud-secret')?.value?.trim() || ''
-                    }
-                })
-            });
-            const json = await res.json();
-            if (json.url) {
-                setAsBackground(json.url);
-                return;
-            }
-        } catch(e2) {}
-        setAsBackground(src);
-    };
-    r.readAsDataURL(f);
+  let f = input.files[0];
+  if (!f) return;
+  let r = new FileReader();
+  r.onload = async (e) => {
+    const src = e.target.result;
+    const filename = 'bg_' + Date.now() + '_' + f.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    try {
+      const res = await fetch('/api/upload-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename,
+          data: src,
+          credentials: {
+            cloudName: document.getElementById('ai-cloud-name')?.value?.trim(),
+            cloudKey:  document.getElementById('ai-cloud-key')?.value?.trim(),
+            cloudSecret: document.getElementById('ai-cloud-secret')?.value?.trim()
+          }
+        })
+      });
+      const json = await res.json();
+      if (json.url) {
+        setAsBackground(json.url);
+      } else {
+        // FIX 1 — Hard abort, no base64 fallback
+        showToast('Background upload failed. Please check Cloudinary credentials.', 'warning');
+      }
+    } catch (e2) {
+      // FIX 1 — No silent base64 fallback
+      showToast('Background upload failed. Please check Cloudinary credentials.', 'warning');
+    }
+  };
+  r.readAsDataURL(f);
 }
 
 function setAsBackground(src) {
-    pushState();
-
-    
-    let bgLayer = docV2.elements.find(e => e.type === 'image' && e.layerRole === 'background');
-    if (bgLayer) {
-        bgLayer.assetId = 'asset_015';
-        bgLayer.src = src;
-        bgLayer.x = 0; bgLayer.y = 0;
-        bgLayer.width = BASE_W; bgLayer.height = BASE_H;
-        bgLayer.locked = true;
-        bgLayer.isSystemBackground = true;
-        bgLayer.visible = true;
-        bgLayer.opacity = 1;
-        bgLayer.rotation = 0;
-    } else {
-        const minZ = Math.min(...docV2.elements.map(e => e.zIndex || 10));
-        bgLayer = {
-            id: 'bg_upload_' + Date.now(),
-            type: 'image',
-            assetId: 'asset_015',
-            src: src,
-            x: 0, y: 0,
-            width: BASE_W, height: BASE_H,
-            zIndex: minZ - 1,
-            opacity: 1,
-            rotation: 0,
-            visible: true,
-            locked: true,
-            isSystemBackground: true,
-            layerRole: 'background'
-        };
-        docV2.elements.push(bgLayer);
-    }
-    selectedId = null;
-    render();
-    showToast('✅ Background replaced and locked');
+  pushState();
+  // FIX 2 — Always use a unique assetId so new uploads never clobber asset015
+  const newAssetId = 'bgupload_' + Date.now();
+  let bgLayer = docV2.elements.find(e => e.type === 'image' && e.layerRole === 'background');
+  if (bgLayer) {
+    bgLayer.assetId = newAssetId;
+    bgLayer.src    = src;
+    bgLayer.x      = 0;
+    bgLayer.y      = 0;
+    bgLayer.width  = BASE_W;
+    bgLayer.height = BASE_H;
+    bgLayer.locked = true;
+    bgLayer.isSystemBackground = true;
+    bgLayer.visible = true;
+    bgLayer.opacity = 1;
+    bgLayer.rotation = 0;
+  } else {
+    const minZ = docV2.elements.length
+      ? Math.min(...docV2.elements.map(e => e.zIndex || 10))
+      : 10;
+    bgLayer = {
+      id: 'bgupload_' + Date.now(),
+      type: 'image',
+      assetId: newAssetId,
+      src,
+      x: 0, y: 0,
+      width: BASE_W, height: BASE_H,
+      zIndex: minZ - 1,
+      opacity: 1, rotation: 0,
+      visible: true, locked: true,
+      isSystemBackground: true,
+      layerRole: 'background'
+    };
+    docV2.elements.push(bgLayer);
+  }
+  selectedId = null;
+  render();
+  showToast('Background replaced and locked.');
 }
 
 function setSelectedAsBackground() {
@@ -3605,7 +3615,7 @@ function setSelectedAsBackground() {
     item.y = 0;
     item.width = BASE_W;
     item.height = BASE_H;
-    item.zIndex = 1;
+    item.zIndex = 0;  // FIX 3 — background renders at absolute bottom
 
     selectedId = item.id; // keep selected
 
@@ -3872,6 +3882,20 @@ function _mergeLoadedDoc(s) {
             );
         }
     }
+    // FIX 4 — Re-enforce background integrity after load
+    if (s.elements) {
+      s.elements.forEach(el => {
+        if (el.isSystemBackground === true) {
+          el.layerRole = 'background';
+          el.locked    = true;
+          el.x         = 0;
+          el.y         = 0;
+          el.width     = BASE_W;
+          el.height    = BASE_H;
+        }
+      });
+    }
+
     const currentAssets = [...(docV2.assets || [])];
     docV2 = { ...docV2, ...s };
     const serverIds = new Set((s.assets || []).map(a => a.id));
@@ -3883,12 +3907,26 @@ function _mergeLoadedDoc(s) {
     selectedId = null;
     docV2.editorState.selectedElementIds = [];
     restoreAiCredentials(docV2);
+
+    // FIX 6 — Auto-fit canvas after state restore
+    fitCanvasToScreen();
 }
 
 async function save() {
     sync();
+    // FIX 5 — Remove localStorage (was previously commented but still present)
+    // localStorage.setItem(...) is gone entirely.
+
+    // FIX 5 — Abort save if any element has a base64 src (not uploaded yet)
+    const base64Elements = docV2.elements.filter(el => el.src && el.src.startsWith('data:'));
+    if (base64Elements.length > 0) {
+        console.error('[save] Blocked: base64 src found in elements', base64Elements.map(e => e.id));
+        showToast('Cannot save: background image not uploaded to Cloudinary yet. Upload it first.', 'warning');
+        return;
+    }
+
+    // Sync layout lock
     docV2.settings.layoutLocked = layoutLocked;
-    // localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2)); // Purged for V2 database-only persistence
     docV2.version = 2;
 
     // Commit 7: Normalize save payload to settings.viewer
@@ -4324,9 +4362,7 @@ window.onload = async () => {
 
     setInterval(() => {
         try {
-            sync();
-            // localStorage auto-save removed for V2 database-only persistence
-            // localStorage.setItem('menu_pro_draft_v2', JSON.stringify(docV2));
+            markDirty();
         } catch(e) {}
     }, 30000);
 };
