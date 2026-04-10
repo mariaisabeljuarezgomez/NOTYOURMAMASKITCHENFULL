@@ -2151,6 +2151,8 @@ function injectResizeHandles(el) {
 
 function attach(el) {
     el.onmousedown = (e) => {
+        document.onmousemove = null;
+        document.onmouseup = null;
         e.stopPropagation();
         
         const now = Date.now();
@@ -2182,16 +2184,22 @@ function attach(el) {
         if (e.shiftKey) {
             if (docV2.editorState.selectedElementIds.includes(el.id)) {
                 docV2.editorState.selectedElementIds = docV2.editorState.selectedElementIds.filter(id => id !== el.id);
+                const selEl = document.getElementById(el.id);
+                if (selEl) selEl.classList.remove('selected');
             } else {
                 if (selectedId && !docV2.editorState.selectedElementIds.includes(selectedId)) {
                     docV2.editorState.selectedElementIds.push(selectedId);
+                    const prevEl = document.getElementById(selectedId);
+                    if (prevEl) prevEl.classList.add('selected');
                 }
                 docV2.editorState.selectedElementIds.push(el.id);
+                const selEl = document.getElementById(el.id);
+                if (selEl) selEl.classList.add('selected');
             }
             selectedId = null;
-            render();
             updateSelectionBar();
             updateDistributeBar();
+            renderLayerList();
             return;
         } else {
             const alreadyInGroup = docV2.editorState.selectedElementIds.includes(el.id);
@@ -3474,11 +3482,9 @@ async function addFromTray(src, skipPush) {
         _fixEl.width  = fw;
         _fixEl.height = fh;
         render();
+        selectById(id);
     };
     _tmpImg.src = trimmedSrc;
-
-    render();
-    selectById(id);
 }
 
 async function importImg(input) {
@@ -3827,10 +3833,9 @@ async function addFromAsset(assetId, src) {
         _fixEl.width  = fw;
         _fixEl.height = fh;
         render();
+        selectById(id);
     };
     _tmpImg.src = src;
-
-    render(); selectById(id);
 }
 
 // Fix 5c - Pinch-vs-drag suppression
@@ -3945,8 +3950,6 @@ function _mergeLoadedDoc(s) {
     docV2.editorState.selectedElementIds = [];
     restoreAiCredentials(docV2);
 
-    // FIX 6 — Auto-fit canvas after state restore
-    setTimeout(() => fitCanvasToScreen(), 0);
 }
 
 async function save() {
@@ -4280,41 +4283,42 @@ window.onload = async () => {
 
     _mergeLoadedDoc(data);
 
-    // Step 2: Render immediately with whatever state was loaded so the
-    // saved layout is visible right away — do NOT wait for fonts first.
-    try { render(); } catch(e) {}
-    // BUG 1 FIX: Force lock state to unlocked and sync button immediately after first render
-    layoutLocked = false;
-    docV2.settings.layoutLocked = false;
-    const _lb = document.getElementById('btn-lock-global');
-    if (_lb) { _lb.textContent = '\uD83D\uDD13 Layout Unlocked'; _lb.classList.add('lock-unlocked'); _lb.classList.remove('primary'); }
+    // Step 2 & 3: Render once fonts are ready OR after safety timeout
+    let initialRenderDone = false;
+    function doInitialRender() {
+        if (initialRenderDone) return;
+        initialRenderDone = true;
 
-    // Step 3: Declare fontNames, then re-render once fonts are ready
+        // Force lock state to unlocked on init
+        layoutLocked = false;
+        docV2.settings.layoutLocked = false;
+        const _lb = document.getElementById('btn-lock-global');
+        if (_lb) { 
+            _lb.textContent = '\uD83D\uDD13 Layout Unlocked'; 
+            _lb.classList.add('lock-unlocked'); 
+            _lb.classList.remove('primary'); 
+        }
+
+        try { 
+            render(); 
+            fitCanvasToScreen();
+        } catch(e) { console.error('Initial render failed:', e); }
+    }
+
     const fontNames = [
         'bernard-mt-condensed-regular',
         'century-gothic-bold-italic',
         'century-gothic-bold',
         'century-gothic-regular'
     ];
-
-    const fontLoadPromises = fontNames.map(name =>
-        document.fonts.load(`16px "${name}"`)
-    );
+    const fontLoadPromises = fontNames.map(name => document.fonts.load(`16px "${name}"`));
 
     // Safety fallback: re-render even if font promise never settles
-    setTimeout(() => { try { render(); } catch(e) {} }, 800);
+    setTimeout(doInitialRender, 800);
 
-    Promise.all(fontLoadPromises).then(() => {
-        try {
-            render();
-        } catch(e) {
-            console.error('Render error on font load:', e);
-            render();
-        }
-    }).catch(e => {
-        console.error('Font load failed, rendering anyway:', e);
-        render();
-    });
+    Promise.all(fontLoadPromises)
+        .then(doInitialRender)
+        .catch(doInitialRender);
 
     // Step 4: Init the rest
     syncLayoutLockUI();
