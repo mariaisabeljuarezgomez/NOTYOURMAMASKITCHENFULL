@@ -3849,11 +3849,6 @@ function applyZoom(f, isAbsolute = false) {
     // Constraints: floor at 0.2 (for auto-fit), cap at 4.0
     zoomScale = Math.max(0.2, Math.min(4, zoomScale));
     
-    // Only persist zoom that the user explicitly triggered
-    // fitCanvasToScreen auto-fits should not overwrite the saved zoom
-    if(!_isFitZoom) {
-        docV2.editorState._userZoom = zoomScale;
-    }
 
     const scalerWrapper = document.getElementById('scaler-wrapper');
     const centeringWrapper = document.getElementById('centering-wrapper');
@@ -4322,17 +4317,12 @@ window.onload = async () => {
         requestAnimationFrame(() => fitCanvasToScreen(true));
     });
 
-    const savedZoom = docV2.editorState?._userZoom;
-    if (savedZoom && savedZoom !== 1) {
-        applyZoom(savedZoom, true);
-    } else {
-        // Double rAF to ensure sidebars are painted/calculated
+    // Double rAF to ensure sidebars are painted/calculated
+    requestAnimationFrame(function() {
         requestAnimationFrame(function() {
-            requestAnimationFrame(function() {
-                fitCanvasToScreen();
-            });
+            fitCanvasToScreen();
         });
-    }
+    });
     maybeShowHelpPopout();
 
     setInterval(() => {
