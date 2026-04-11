@@ -92,7 +92,9 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     transform-origin: top center; 
     margin: 40px 0;
     flex-shrink: 0;
-}0%; overflow:visible; cursor: default; }
+    overflow: visible;
+    cursor: default;
+}
 
 
 .editable-element { position:absolute; cursor:pointer; transition: outline 0.1s, opacity 0.2s, border-radius 0.2s; user-select:none; z-index:auto; transform-origin: center; box-sizing: border-box; }
@@ -2277,8 +2279,8 @@ function attach(el) {
         const scalerEl = document.getElementById('scaler-wrapper');
         let rect = scalerEl.getBoundingClientRect();
         const currentScale = rect.width / BASE_W;
-        let ox = (e.clientX - rect.left) / zoomScale - parseFloat(el.style.left);
-        let oy = (e.clientY - rect.top)  / zoomScale - parseFloat(el.style.top);
+        let ox = (e.clientX - rect.left) / currentScale - parseFloat(el.style.left);
+        let oy = (e.clientY - rect.top)  / currentScale - parseFloat(el.style.top);
         
         const groupStartMap = {};
         if (docV2.editorState.selectedElementIds.length > 1) {
@@ -2307,8 +2309,8 @@ function attach(el) {
             if (isEditingText) return;
             const item = docV2.elements.find(e => e.id === el.id);
             if (!item || item.locked) return;
-            let nx = (me.clientX - rect.left) / zoomScale - ox;
-            let ny = (me.clientY - rect.top)  / zoomScale - oy;
+            let nx = (me.clientX - rect.left) / currentScale - ox;
+            let ny = (me.clientY - rect.top)  / currentScale - oy;
             
             const cx = BASE_W/2 - el.offsetWidth/2, cy = BASE_H/2 - el.offsetHeight/2;
             if(Math.abs(nx-cx)<15) { nx=cx; gcx.style.display='block'; } else gcx.style.display='none';
@@ -5020,13 +5022,6 @@ function useCanvasAsImg2ImgSource() {
       _img2imgSourceB64 = canvas.toDataURL('image/png');
       showImg2ImgPreview(_img2imgSourceB64);
       showToast('✅ Canvas captured as source image');
-    } else if (typeof html2canvas !== 'undefined') {
-      html2canvas(document.getElementById('scaler-wrapper'), { scale:1, useCORS:true, allowTaint:true }).then(c => {
-        _img2imgSourceB64 = c.toDataURL('image/png');
-        showImg2ImgPreview(_img2imgSourceB64);
-        showToast('✅ Canvas captured as source image');
-      });
-    } else {
       showToast('⚠️ Canvas not available — upload an image instead');
     }
   } catch(e) { showToast('⚠️ Could not capture canvas: ' + e.message); }
