@@ -507,16 +507,33 @@ Violations of this rule cause silent 400 errors and data loss.
 | `raw_coords.json` | Legacy coordinate source data |
 
 ### Backend Routes (app.py)
-| Route | Behavior |
-|-------|----------|
-| `GET /` | Serves index.html with `Cache-Control: no-cache, must-revalidate` |
-| `GET /<path:path>` | Serves static files. `.ttf/.js/.jpg/.jpeg/.png/.webp` get `Cache-Control: max-age=604800, public` |
-| `GET/POST /api/menu` | Load / Save session JSON to Railway Volume |
-| `POST /api/menu/reset` | Backs up then wipes menu_data.json |
-| `POST /api/upload-image` | Accepts base64 image, saves to /app/data/user_images/ |
-| `GET /api/list-images` | Returns list of user-uploaded images |
-| `DELETE /api/delete-image/<filename>` | Removes a user-uploaded image |
-| `GET /user-images/<filename>` | Serves user images with `Cache-Control: max-age=604800, public` |
+| Route | Method | Behavior |
+|-------|--------|----------|
+| `/` | GET | Serves index.html with `Cache-Control: no-cache, must-revalidate` |
+| `/<path:filename>.ttf` | GET | Serves static font assets, uses absolute paths |
+| `/export-utils.js` | GET | Serves export helper logic |
+| `/menu` | GET | Serves viewer.html with no-cache headers (customer viewer) |
+| `/Images/<filename>` | GET | Serves local template images (was /user-images/ before) |
+| `/api/menu` | GET | Reads full JSON session from DB (id='main'), fallback to DEFAULT_MENU_DATA |
+| `/api/menu` | POST | UPSERTs full menu JSON into DB (`sessions` table, `canvas_json` column) |
+| `/api/upload-image` | POST | Cloudinary-first image upload; fallbacks to local `/Images/` save |
+| `/api/delete-asset/<filename>` | DELETE | Deletes local file; 404 indicates successful Cloudinary deletion |
+| `/api/list-images` | GET | Returns list of local uploaded images |
+| `/api/migrate-asset` | POST | Legacy migrator for Asset2_1 to Asset2 |
+| `/api/repair-images` | POST | Clears broken un-uploaded base64 references |
+| `/api/video-history` | GET/POST | Persists and retrieves AI generated video URLs by slot |
+| `/api/image-history` | GET | Retrieves latest 20 AI generated images |
+| `/api/ai/test-cloudinary` | POST | Cloudinary credential verification |
+| `/api/ai/test-stability` | POST | Stability AI credential verification |
+| `/api/ai/test-kling` | POST | Kling AI API credential verification (via JWT token) |
+| `/api/ai/enhance-prompt` | POST | Modifies prompts with quality modifiers |
+| `/api/ai/generate-image` | POST | Stability AI txt2img generation |
+| `/api/ai/generate-image-to-image` | POST | Stability AI img2img generation |
+| `/api/ai/generate-kling-image` | POST | Kling AI image generation |
+| `/api/ai/kling-image-status/<task_id>`| GET | Polling route for Kling image task |
+| `/api/ai/generate-video` | POST | Kling AI text2video and image2video (uploads to Cloudinary first) |
+| `/api/ai/kling-status/<task_id>` | POST | Polling route for Kling video task |
+| `/api/ai/cloudinary-upload` | POST | AI tool proxy to securely upload background/ref images |
 
 ### Persistence (PostgreSQL)
 - PostgreSQL is the persistence layer. "Railway Volume" system is GONE.
