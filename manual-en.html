@@ -1946,7 +1946,7 @@
         </tr>
         <tr>
           <td><strong>Backend</strong></td>
-          <td>Python-based server with Railway Volume storage at <code>/app/data</code> for durable session persistence.
+          <td>Python-based Flask server. Session data persisted to PostgreSQL database (Railway-hosted). No local filesystem storage.
           </td>
         </tr>
         <tr>
@@ -2049,7 +2049,7 @@
       <tbody>
         <tr>
           <td>Server save</td>
-          <td>Atomic write using <code>.tmp</code> + <code>os.replace</code> to prevent corruption. Retry logic with
+          <td>UPSERT to PostgreSQL sessions table (id='main'). Retry logic with
             exponential backoff on the frontend.</td>
         </tr>
         <tr>
