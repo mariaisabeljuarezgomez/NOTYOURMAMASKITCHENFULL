@@ -130,6 +130,7 @@ def validate_schema(data):
     if not isinstance(data, dict): return False
     if not isinstance(data.get("elements"), list): return False
     if not all(isinstance(e, dict) and 'id' in e and 'type' in e for e in data.get('elements', [])): return False
+    if "assets" in data and not isinstance(data["assets"], list): return False
     return True
 
 @app.route("/")
