@@ -27,27 +27,6 @@ async function inject300DpiAndDownload(blob, filename) {
   const arrayBuffer = await blob.arrayBuffer();
   const bytes = new Uint8Array(arrayBuffer);
 
-  // Verify IHDR chunk is at expected offset before inserting pHYs (BUG-H5 fix)
-  // PNG signature (8 bytes) + IHDR length (4) + "IHDR" type = bytes[12..15]
-  if (!(bytes[12]===73 && bytes[13]===72 && bytes[14]===68 && bytes[15]===82)) {
-    console.warn('[export] PNG IHDR not at expected offset — skipping pHYs injection, downloading as-is');
-    const fallback = new Blob([bytes], {type:'image/png'});
-    const fa = document.createElement('a');
-    fa.href = URL.createObjectURL(fallback);
-    fa.download = filename || 'menu-export.png';
-    fa.click();
-    return;
-  }
-
-  // verify IHDR signature at bytes 12–15 before assuming offset 33 is safe for pHYs insertion
-  const isIHDR = bytes[12] === 73 && bytes[13] === 72 && bytes[14] === 68 && bytes[15] === 82;
-  if (!isIHDR) {
-      const a = document.createElement('a');
-      a.download = filename;
-      a.href = URL.createObjectURL(blob);
-      a.click();
-      return;
-  }
 
   // Build pHYs chunk: length(4) + type(4) + data(9) + crc(4) = 21 bytes
   const phys = new Uint8Array(21);
@@ -65,9 +44,19 @@ async function inject300DpiAndDownload(blob, filename) {
   const crcVal = crc32(phys.slice(4, 17));
   phys[17]=(crcVal>>24)&0xFF; phys[18]=(crcVal>>16)&0xFF; phys[19]=(crcVal>>8)&0xFF; phys[20]=crcVal&0xFF;
 
-  // Insert pHYs chunk after PNG signature (8 bytes) + IHDR chunk (25 bytes) = byte 33
-  const before = bytes.slice(0, 33);
-  const after  = bytes.slice(33);
+  // Dynamically find end of IHDR chunk to safely insert pHYs chunk
+  let offset = 8;
+  while (offset < bytes.length) {
+      const length = (bytes[offset] << 24) | (bytes[offset+1] << 16) | (bytes[offset+2] << 8) | bytes[offset+3];
+      const type = String.fromCharCode(bytes[offset+4], bytes[offset+5], bytes[offset+6], bytes[offset+7]);
+      offset += 12 + length;
+      if (type === 'IHDR') {
+          break;
+      }
+  }
+
+  const before = bytes.slice(0, offset);
+  const after  = bytes.slice(offset);
   const merged = new Uint8Array(before.length + phys.length + after.length);
   merged.set(before, 0);
   merged.set(phys, before.length);
