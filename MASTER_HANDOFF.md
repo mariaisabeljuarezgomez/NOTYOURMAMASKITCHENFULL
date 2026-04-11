@@ -453,6 +453,7 @@ Violations of this rule cause silent 400 errors and data loss.
 
 > [!IMPORTANT]
 > **LATEST UPDATE: April 11, 2026**
+> - **Bug Fix #4 (Kling Key Mismatch)**: Fixed fatal field name mismatch in `generateKlingImage()`. It was reading `creds.kling_key`/`creds.kling_secret` (snake_case) but `saveAiCredentials()` stores `creds.klingKey`/`creds.klingSecret` (camelCase). This caused credentials to always be `undefined`, blocking all Kling image generation.
 > - **Bug Fix #3 (Background Fallback)**: Removed the Cloudinary credential gate from `importBackground()`. Updated the logic to use the universal `/api/upload-image` endpoint, enabling backgrounds to be saved to local `/Images/` storage when Cloudinary is not configured.
 > - **Bug Fix #2 (Asset Duplication)**: Fixed duplication in the Assets sidebar by clearing previous static assets (IDs starting with `asset_0`) before merging the latest list from the server in `loadUserImages()`.
 > - **Bug Fix #1 (Paste Hijack)**: Updated the global `paste` listener to ignore events when a native `<input>`, `<textarea>`, or contentEditable element is focused. This prevents newly pasted text from being diverted to a new canvas element while typing in side panel secret fields.

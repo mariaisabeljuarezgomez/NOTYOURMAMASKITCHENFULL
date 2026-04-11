@@ -5149,8 +5149,8 @@ function showImg2ImgPreview(b64) {
 
     async function generateKlingImage() {
       const creds = docV2.aiCredentials || {};
-      const api_key    = creds.kling_key    || '';
-      const api_secret = creds.kling_secret || '';
+      const api_key    = creds.klingKey    || '';
+      const api_secret = creds.klingSecret || '';
       const prompt     = (document.getElementById('kling-img-prompt').value || '').trim();
       const neg        = (document.getElementById('kling-img-neg').value    || '').trim();
       const model      = document.getElementById('kling-model').value || 'kling-v1';
