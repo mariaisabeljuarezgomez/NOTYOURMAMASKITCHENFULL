@@ -4301,9 +4301,9 @@ window.onload = async () => {
     // 4. Atomic Execution Sequence (The Waterfall)
     _mergeLoadedDoc(data);
     
-    // Safety lock reset
-    layoutLocked = true;
-    docV2.settings.layoutLocked = true;
+    // Allow editing by default
+    layoutLocked = false;
+    docV2.settings.layoutLocked = false;
 
     // Direct render calls (no doInitialRender)
     renderBackground();
