@@ -453,6 +453,7 @@ Violations of this rule cause silent 400 errors and data loss.
 
 > [!IMPORTANT]
 > **LATEST UPDATE: April 11, 2026**
+> - **Bug Fix #2 (Asset Duplication)**: Fixed duplication in the Assets sidebar by clearing previous static assets (IDs starting with `asset_0`) before merging the latest list from the server in `loadUserImages()`.
 > - **Bug Fix #1 (Paste Hijack)**: Updated the global `paste` listener to ignore events when a native `<input>`, `<textarea>`, or contentEditable element is focused. This prevents newly pasted text from being diverted to a new canvas element while typing in side panel secret fields.
 > - **Duplicate Manual Modal Purged**: Removed a redundant `manual-modal-overlay` block from `index.html` that lacked an `iframe` and was shadowing the correct implementation. The UI now correctly loads `manual-en.html` / `manual-es.html` via the embedded `iframe`.
 

@@ -689,10 +689,12 @@ Update this table after every Jules PR merge. Change OPEN to DONE.
 | 19 | V1→V2 shim version stamp | OPEN | Jules Task #2 | NO |
 | 20 | Duplicate manual modal | DONE | Jules Task #4 | YES |
 | 21 | Paste Hijack Intercept | DONE | Surgical Edit | YES |
+| 22 | Duplicate Assets Sidebar | DONE | Surgical Edit | YES |
 
 ---
 
 *Document maintained by: Perplexity (Claude Sonnet 4.6)*
-*Last updated: April 11, 2026 (Paste Hijack Fix)*
+*Last updated: April 11, 2026 (Duplicate Assets Fix)*
+
 
 *Update this document after every Jules PR merge.*

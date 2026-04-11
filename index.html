@@ -3889,6 +3889,7 @@ async function loadUserImages() {
         // MERGE new static assets into docV2.assets — never replace the whole array
         // AI-generated assets (id starts with asset_ai_) are preserved untouched
         if (!Array.isArray(docV2.assets)) docV2.assets = [];
+        docV2.assets = (docV2.assets || []).filter(a => !a.id.startsWith('asset_0'));
         docV2.assets = [...docV2.assets, ...staticAssets];
         renderAssetPanel();
     } catch(err) {
