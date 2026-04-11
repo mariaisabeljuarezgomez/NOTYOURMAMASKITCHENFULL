@@ -3793,13 +3793,19 @@ async function loadUserImages() {
         // Build a set of originalUrls already in docV2.assets
         // so we never create duplicate entries
         const existingUrls = new Set(
-            (docV2.assets || []).map(a => a.storage?.originalUrl)
+            (docV2.assets || []).map(a => {
+                const u = a.storage?.originalUrl || '';
+                return u.split('/').pop().split('?')[0].toLowerCase();
+            })
         );
 
         // Build static asset entries for /Images/ files only
         // These use the protected asset_001..asset_013 ID format
         const staticAssets = json.images
-            .filter(img => !existingUrls.has(img.url))
+            .filter(img => {
+                const fname = img.url.split('/').pop().split('?')[0].toLowerCase();
+                return !existingUrls.has(fname);
+            })
             .map((img, i) => ({
                 id: 'asset_' + String(
                         (docV2.assets || []).filter(a => a.id.startsWith('asset_0')).length + i + 1
