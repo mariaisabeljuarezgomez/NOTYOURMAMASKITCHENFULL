@@ -1878,7 +1878,6 @@ function render() {
         if(selectedId === d.id && (d.type === 'image' || d.type === 'shape' || d.type === 'line')) injectResizeHandles(el);
     });
     renderLayerList();
-    if(selectedId) updateSelectionBar();
     updateDistributeBar();
 }
 
@@ -1956,7 +1955,6 @@ function renderLayerList() {
                 renderLayerList();
             } else {
                 selectById(item.id);
-                updateSelectionBar();
             }
         };
         
@@ -2228,7 +2226,12 @@ function attach(el) {
             if (!alreadyInGroup) {
                 docV2.editorState.selectedElementIds = [];
                 if (selectedId !== el.id) {
-                    selectById(el.id);
+                    const prevEl = document.getElementById(selectedId);
+                    if (prevEl) prevEl.classList.remove('selected');
+                    selectedId = el.id;
+                    el.classList.add('selected');
+                    updateSelectionBar();
+                    renderLayerList();
                 }
             }
         }
