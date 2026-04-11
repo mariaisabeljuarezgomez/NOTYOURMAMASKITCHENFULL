@@ -4764,6 +4764,10 @@ let aiState = {
 };
 
 function toggleAiAccordion(id) {
+  if (id === 'cred') {
+    const body = document.getElementById('ai-cred-body');
+    if (body.style.display === 'none') restoreAiCredentials(docV2);
+  }
   const trigger = document.getElementById('ai-' + id + '-trigger');
   const body = document.getElementById('ai-' + id + '-body');
   const arrow = document.getElementById('ai-' + id + '-arrow');
