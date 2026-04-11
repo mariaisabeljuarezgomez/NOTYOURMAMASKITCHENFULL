@@ -2708,7 +2708,6 @@ function deselect() {
 function onCanvasClick(e) {
     if (e.target !== e.currentTarget) return;
     if (_lassoJustFired) return;
-    if (layoutLocked) return;
     deselect();
 }
 function onCanvasMousedown(e) {
@@ -3542,6 +3541,14 @@ async function importImg(input) {
 }
 
 async function importBackground(input) {
+  // Check for Cloudinary credentials
+  const creds = docV2.aiCredentials || {};
+  if (!creds.cloudName || !creds.cloudKey || !creds.cloudSecret) {
+    showToast('Please save Cloudinary credentials first (AI Studio → Credentials)');
+    setRpTab('aistudio');
+    setTimeout(() => toggleAiAccordion('cred'), 300);
+    return;
+  }
   let f = input.files[0];
   if (!f) return;
   let r = new FileReader();
@@ -3785,6 +3792,10 @@ async function deleteAssetFromServer(filename) {
 }
 
 async function loadUserImages() {
+    // Skip if assets already loaded from server to prevent duplicates
+    if (!docV2.assets || docV2.assets.length === 0) {
+        docV2.assets = [];
+    }
     try {
         const res = await fetch('/api/list-images');
         const json = await res.json();
