@@ -129,7 +129,6 @@ MAGIC_BYTES = [b"\x89PNG", b"\xff\xd8", b"RIFF"]
 def validate_schema(data):
     if not isinstance(data, dict): return False
     if not isinstance(data.get("elements"), list): return False
-    if data.get("version") == 1: return False
     if not all(isinstance(e, dict) and 'id' in e and 'type' in e for e in data.get('elements', [])): return False
     return True
 
@@ -790,6 +789,62 @@ def get_image_history():
     finally:
         if conn:
             conn.close()
+
+@app.route("/api/upload-image", methods=["POST"])
+def upload_image():
+    try:
+        data = request.json or {}
+        file_b64 = data.get("data", "")
+        filename = data.get("filename", "")
+        creds = data.get("credentials", {})
+        cloud_name = creds.get("cloudName", "")
+        api_key = creds.get("cloudKey", "")
+        api_secret = creds.get("cloudSecret", "")
+
+        if not file_b64:
+            return jsonify({"error": "Missing file data"}), 400
+
+        import base64 as _b64_mod
+        try:
+            raw_b64 = file_b64.split(",")[1] if "," in file_b64 else file_b64
+            raw_bytes = _b64_mod.b64decode(raw_b64)
+        except Exception:
+            return jsonify({"error": "Invalid base64 data"}), 400
+
+        if all([cloud_name, api_key, api_secret]):
+            # Upload to Cloudinary
+            client = _http()
+            if not client:
+                return jsonify({"error": "No HTTP client available"}), 500
+
+            timestamp = int(time.time())
+            params = {"folder": "nymk_ai", "timestamp": timestamp}
+            upload_url = f"https://api.cloudinary.com/v1_1/{cloud_name}/image/upload"
+            sig = cloudinary_sign(params, api_secret)
+
+            upload_fields = dict(params)
+            upload_fields["api_key"] = api_key
+            upload_fields["signature"] = sig
+
+            upload_files = {"file": (filename or "upload.png", raw_bytes, "image/png")}
+            for k, v in upload_fields.items():
+                upload_files[k] = (None, str(v))
+
+            resp = client.post(upload_url, files=upload_files, timeout=60)
+            if resp.status_code in (200, 201):
+                return jsonify({"status": "ok", "url": resp.json().get("secure_url", "")})
+            return jsonify({"error": f"Cloudinary upload failed — status {resp.status_code if resp else 'no response'}"}), 400
+        else:
+            # Fallback to local Images directory
+            if not os.path.exists(IMAGES_DIR):
+                os.makedirs(IMAGES_DIR)
+            safe_filename = filename.replace("..", "").replace("/", "") if filename else f"upload_{int(time.time())}.png"
+            file_path = os.path.join(IMAGES_DIR, safe_filename)
+            with open(file_path, "wb") as f:
+                f.write(raw_bytes)
+            return jsonify({"status": "ok", "url": f"/Images/{safe_filename}"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/ai/cloudinary-upload", methods=["POST"])
 def cloudinary_upload():

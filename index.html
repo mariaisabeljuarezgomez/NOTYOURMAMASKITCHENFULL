@@ -1960,6 +1960,7 @@ function renderLayerList() {
         div.innerHTML = `<span style="cursor:${isLockedBackground ? 'default' : 'grab'}; color:${isLockedBackground ? '#333' : '#555'}; font-size:14px; padding-right:6px; flex-shrink:0; visibility:${isLockedBackground ? 'hidden' : 'visible'};" title="${isLockedBackground ? '' : 'Drag to reorder'}">⠿</span>
             <div style="font-size:12px; width:20px; text-align:center;">${icon}</div>
             <div class="layer-name" style="flex:1; overflow:hidden; text-overflow:ellipsis;">${roleTag}<span class="layer-rename-span" data-elid="${item.id}" title="Double-click to rename (editor only)"></span></div>
+            ${item.isSystemBackground ? `<button class="layer-btn" title="Remove Background" onclick="removeBackground(event)" style="font-size:11px; margin-right: 4px;">🗑️</button>` : ''}
             <button class="layer-btn" title="${item.visible ? 'Visible' : 'Hidden — click to show'}"
                 onclick="toggleVisById(event, '${item.id}')"
                 style="font-size:11px; opacity:${item.visible ? '1' : '0.4'};">
@@ -3125,20 +3126,44 @@ function alignMulti(direction) {
     const minX = Math.min(...els.map(e => e.x));
     els.forEach(e => e.x = minX);
   } else if (direction === 'right') {
-    const maxR = Math.max(...els.map(e => e.x + (e.width||100)));
-    els.forEach(e => e.x = maxR - (e.width||100));
+    const maxR = Math.max(...els.map(e => {
+        const elDom = document.getElementById(e.id);
+        return e.x + (e.width || elDom?.offsetWidth || 100);
+    }));
+    els.forEach(e => {
+        const elDom = document.getElementById(e.id);
+        e.x = maxR - (e.width || elDom?.offsetWidth || 100);
+    });
   } else if (direction === 'top') {
     const minY = Math.min(...els.map(e => e.y));
     els.forEach(e => e.y = minY);
   } else if (direction === 'bottom') {
-    const maxB = Math.max(...els.map(e => e.y + (e.height||40)));
-    els.forEach(e => e.y = maxB - (e.height||40));
+    const maxB = Math.max(...els.map(e => {
+        const elDom = document.getElementById(e.id);
+        return e.y + (e.height || elDom?.offsetHeight || 40);
+    }));
+    els.forEach(e => {
+        const elDom = document.getElementById(e.id);
+        e.y = maxB - (e.height || elDom?.offsetHeight || 40);
+    });
   } else if (direction === 'centerH') {
-    const avgX = els.reduce((s,e) => s + e.x + (e.width||100)/2, 0) / els.length;
-    els.forEach(e => e.x = avgX - (e.width||100)/2);
+    const avgX = els.reduce((s, e) => {
+        const elDom = document.getElementById(e.id);
+        return s + e.x + (e.width || elDom?.offsetWidth || 100) / 2;
+    }, 0) / els.length;
+    els.forEach(e => {
+        const elDom = document.getElementById(e.id);
+        e.x = avgX - (e.width || elDom?.offsetWidth || 100) / 2;
+    });
   } else if (direction === 'centerV') {
-    const avgY = els.reduce((s,e) => s + e.y + (e.height||40)/2, 0) / els.length;
-    els.forEach(e => e.y = avgY - (e.height||40)/2);
+    const avgY = els.reduce((s, e) => {
+        const elDom = document.getElementById(e.id);
+        return s + e.y + (e.height || elDom?.offsetHeight || 40) / 2;
+    }, 0) / els.length;
+    els.forEach(e => {
+        const elDom = document.getElementById(e.id);
+        e.y = avgY - (e.height || elDom?.offsetHeight || 40) / 2;
+    });
   }
   render();
   showToast('Aligned: ' + direction);
@@ -3538,6 +3563,17 @@ async function importImg(input) {
         addFromAsset(null, base64Data);
     };
     r.readAsDataURL(f);
+}
+
+function removeBackground(e) {
+  if (e) e.stopPropagation();
+  docV2.elements = docV2.elements.filter(el => el.layerRole !== 'background');
+  selectedId = null;
+  renderBackground();
+  render();
+  renderLayerList();
+  save();
+  showToast('Background removed');
 }
 
 async function importBackground(input) {
@@ -3996,9 +4032,9 @@ async function save() {
     sync();
 
     // FIX 5 — Abort save if any element has a base64 src (not uploaded yet)
-    const base64Elements = docV2.elements.filter(el => el.src && el.src.startsWith('data:'));
+    const base64Elements = docV2.elements.filter(el => el.src && el.src.startsWith('data:') && el.layerRole === 'background');
     if (base64Elements.length > 0) {
-        console.error('[save] Blocked: base64 src found in elements', base64Elements.map(e => e.id));
+        console.error('[save] Blocked: base64 src found in background elements', base64Elements.map(e => e.id));
         showToast('Cannot save: background image not uploaded to Cloudinary yet. Upload it first.', 'warning');
         return;
     }
@@ -5476,6 +5512,17 @@ async function uploadAiToCloudinary(fileType) {
         aiState.generatedImageUrl = data.url;
         document.getElementById('ai-img-url').value = data.url;
         document.getElementById('ai-img-url-row').style.display = 'block';
+
+        // Synchronize docV2 asset storage with new Cloudinary URL
+        if (window._lastAiAssetId && docV2.assets) {
+          const asset = docV2.assets.find(a => a.id === window._lastAiAssetId);
+          if (asset) {
+            asset.storage = asset.storage || {};
+            asset.storage.originalUrl = data.url;
+            save(); // Persist update
+          }
+        }
+
         showToast('☁️ Image uploaded to Cloudinary!');
       } else {
         showToast('❌ Cloudinary upload failed: ' + (data.error || 'Unknown error'));
