@@ -4645,11 +4645,7 @@ function initSmartTooltips() {
 // --- Manual & Help Logic ---
 let helpPopoutTimer = null;
 function openManualModal(lang = 'en') {
-    const modal = document.getElementById('manual-modal-overlay');
-    if (!modal) return;
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('visible'), 10);
-    switchManualLang(lang);
+    window.open(`/manual-${lang}.html`, '_blank');
 }
 function closeManualModal() {
     const modal = document.getElementById('manual-modal-overlay');
@@ -4658,126 +4654,7 @@ function closeManualModal() {
     setTimeout(() => { modal.style.display = 'none'; }, 220);
 }
 async function switchManualLang(lang) {
-    const body = document.getElementById('manual-modal-body');
-    if (!body) return;
-    document.querySelectorAll('.manual-lang-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
-    body.innerHTML = '<div style="padding:40px; text-align:center; color:#666;">⏳ Loading manual...</div>';
-    try {
-        const response = await fetch(`/manual-${lang}.html`);
-        const html = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        let scopedStyles = '';
-        doc.querySelectorAll('style').forEach(style => {
-            const css = style.innerHTML;
-            const scoped = css.replace(/([^{@][^{]*)\{/g, (match, selector) => {
-                const trimmed = selector.trim();
-                if (!trimmed || trimmed.startsWith('@') || trimmed.startsWith(':root')) return match;
-                return `.manual-content-scope ${trimmed} {`;
-            });
-            scopedStyles += scoped;
-        });
-        body.innerHTML = `<style>${scopedStyles}/* Premium black-glass hover for .ctrl-btn */
-.ctrl-btn:hover {
-  background: rgba(255,255,255,0.07) !important;
-  border-color: rgba(255,255,255,0.18) !important;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
-  backdrop-filter: blur(6px);
-}
-
-/* Premium glass hover for .tfb-btn */
-.tfb-btn:hover {
-  background: rgba(255,255,255,0.07) !important;
-  border-color: rgba(255,255,255,0.15) !important;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
-}
-
-/* Premium glass hover for .ls-action-btn */
-.ls-action-btn:hover {
-  background: rgba(255,255,255,0.06) !important;
-  border-color: rgba(255,255,255,0.12) !important;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.4);
-}
-
-/* Glass hover for .btn-ui (top header buttons) */
-.btn-ui:hover {
-  background: rgba(255,255,255,0.07) !important;
-  border-color: rgba(255,255,255,0.15) !important;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.07);
-}
-
-/* Upgrade #selection-bar and #distribute-bar glass look */
-#selection-bar {
-  background: rgba(8,8,8,0.96) !important;
-  border: 1px solid rgba(255,255,255,0.10) !important;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.06) !important;
-}
-
-/* Upgrade top header glass */
-#top-header {
-  background: rgba(6,6,6,0.97) !important;
-  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 4px 20px rgba(0,0,0,0.6) !important;
-}
-
-/* Upgrade sidebars glass */
-#left-sidebar, #right-panel {
-  background: rgba(14,14,14,0.98) !important;
-  border-color: rgba(255,255,255,0.07) !important;
-}
-
-/* Ruler guide lines on canvas */
-.canvas-guide {
-  position: absolute;
-  pointer-events: all;
-  z-index: 498;
-  transition: opacity 0.2s;
-}
-.canvas-guide-h {
-  left: 0; width: 100%; height: 1px;
-  cursor: ns-resize;
-  background: rgba(0,255,230,0.55);
-  box-shadow: 0 0 4px rgba(0,255,230,0.35);
-}
-.canvas-guide-v {
-  top: 0; height: 100%; width: 1px;
-  cursor: ew-resize;
-  background: rgba(0,255,230,0.55);
-  box-shadow: 0 0 4px rgba(0,255,230,0.35);
-}
-.canvas-guide:hover {
-  background: rgba(255,80,80,0.8) !important;
-  box-shadow: 0 0 8px rgba(255,80,80,0.5) !important;
-}
-.canvas-guide .guide-delete-btn {
-  position: absolute;
-  width: 16px; height: 16px;
-  background: rgba(200,30,30,0.9);
-  color: #fff; font-size: 9px;
-  border: none; border-radius: 50%;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0; transition: opacity 0.15s;
-  pointer-events: all;
-}
-.canvas-guide:hover .guide-delete-btn { opacity: 1; }
-.canvas-guide-h .guide-delete-btn { right: 4px; top: -8px; }
-.canvas-guide-v .guide-delete-btn { bottom: 4px; left: -8px; }
-
-/* Adjust editor-viewport left padding to account for vertical ruler */
-#centering-wrapper { margin-left: 0; }
-
-/* Mobile: hide rulers */
-@media (max-width: 900px) {
-  #ruler-h, #ruler-v, #ruler-corner { display: none !important; }
-  #centering-wrapper { margin-left: 0; }
-  #editor-viewport { top: 188px !important; }
-}
-</style><div class="manual-content-scope">${doc.body.innerHTML}</div>`;
-        body.scrollTop = 0;
-    } catch (e) {
-        body.innerHTML = '<div style="padding:40px; text-align:center; color:#c0392b;">❌ Error loading manual.</div>';
-    }
+    window.open(`/manual-${lang}.html`, '_blank');
 }
 function maybeShowHelpPopout() {
     // Help popout state persistence via localStorage disabled for V2

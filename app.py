@@ -949,6 +949,14 @@ def proxy_download():
 def favicon():
     return '', 204
 
+@app.route('/manual-en.html')
+def manual_en():
+    return send_from_directory('.', 'manual-en.html')
+
+@app.route('/manual-es.html')
+def manual_es():
+    return send_from_directory('.', 'manual-es.html')
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
