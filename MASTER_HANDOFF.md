@@ -512,6 +512,8 @@ Violations of this rule cause silent 400 errors and data loss.
 | `/` | GET | Serves index.html with `Cache-Control: no-cache, must-revalidate` |
 | `/<path:filename>.ttf` | GET | Serves static font assets, uses absolute paths |
 | `/export-utils.js` | GET | Serves export helper logic |
+| `/manual-en.html` | GET | Serves compiled English manual |
+| `/manual-es.html` | GET | Serves compiled Spanish manual |
 | `/menu` | GET | Serves viewer.html with no-cache headers (customer viewer) |
 | `/Images/<filename>` | GET | Serves local template images (was /user-images/ before) |
 | `/api/menu` | GET | Reads full JSON session from DB (id='main'), fallback to DEFAULT_MENU_DATA |
