@@ -687,9 +687,12 @@ Update this table after every Jules PR merge. Change OPEN to DONE.
 | 17 | Stale docV2 overwrites DB | OPEN | Jules Task #3 | NO |
 | 18 | Three credential sources | OPEN | Jules Task #3 | NO |
 | 19 | V1→V2 shim version stamp | OPEN | Jules Task #2 | NO |
+| 20 | Duplicate manual modal | DONE | Jules Task #4 | YES |
+| 21 | Paste Hijack Intercept | DONE | Surgical Edit | YES |
 
 ---
 
 *Document maintained by: Perplexity (Claude Sonnet 4.6)*
-*Last updated: April 11, 2026*
+*Last updated: April 11, 2026 (Paste Hijack Fix)*
+
 *Update this document after every Jules PR merge.*

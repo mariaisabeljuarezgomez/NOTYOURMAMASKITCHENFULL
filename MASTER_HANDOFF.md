@@ -451,6 +451,12 @@ Violations of this rule cause silent 400 errors and data loss.
 
 ## 1. Project Identity
 
+> [!IMPORTANT]
+> **LATEST UPDATE: April 11, 2026**
+> - **Bug Fix #1 (Paste Hijack)**: Updated the global `paste` listener to ignore events when a native `<input>`, `<textarea>`, or contentEditable element is focused. This prevents newly pasted text from being diverted to a new canvas element while typing in side panel secret fields.
+> - **Duplicate Manual Modal Purged**: Removed a redundant `manual-modal-overlay` block from `index.html` that lacked an `iframe` and was shadowing the correct implementation. The UI now correctly loads `manual-en.html` / `manual-es.html` via the embedded `iframe`.
+
+
 **Product Name:** Dine In Menu Editor Pro  
 **Client / Owner:** Not Your Mama's Kitchen (NYMK) — restaurant brand  
 **What it is:** A browser-based, professional-grade layered menu layout editor. Allows non-designers to update a visually complex restaurant menu safely while preserving print accuracy and layout integrity.

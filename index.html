@@ -4529,7 +4529,8 @@ window.addEventListener('keydown', (e) => {
 
 
 window.addEventListener('paste', (e) => {
-    if (isEditingText) return; // Let default paste work if editing text
+    const _ae = document.activeElement;
+    if (isEditingText || _ae.tagName === 'INPUT' || _ae.tagName === 'TEXTAREA' || _ae.isContentEditable) return;
     e.preventDefault();
     const text = (e.clipboardData || window.clipboardData).getData('text');
     if (text) {
