@@ -1460,6 +1460,7 @@ docV2.elements.forEach(el => {
         }
     }
 });
+docV2.version = 2;
 let layoutLocked = false, selectedId = null, zoomScale = 1, _isFitZoom = false, _activeBarTab = 'layer', _canvasFitDone = false, _isDragging = false;
 let historyStack = [];
 let redoStack = [];
@@ -3580,9 +3581,7 @@ async function importBackground(input) {
   // Check for Cloudinary credentials
   const creds = docV2.aiCredentials || {};
   if (!creds.cloudName || !creds.cloudKey || !creds.cloudSecret) {
-    showToast('Please save Cloudinary credentials first (AI Studio → Credentials)');
-    setRpTab('aistudio');
-    setTimeout(() => toggleAiAccordion('cred'), 300);
+    showToast('Background upload requires Cloudinary credentials. Add them in AI Studio first.');
     return;
   }
   let f = input.files[0];
@@ -3592,16 +3591,16 @@ async function importBackground(input) {
     const src = e.target.result;
     const filename = 'bg_' + Date.now() + '_' + f.name.replace(/[^a-zA-Z0-9.-]/g, '_');
     try {
-      const res = await fetch('/api/upload-image', {
+      const res = await fetch('/api/ai/cloudinary-upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          filename,
-          data: src,
+          fileB64: src.split(',')[1],
+          fileType: 'image',
           credentials: {
-            cloudName: document.getElementById('ai-cloud-name')?.value?.trim(),
-            cloudKey:  document.getElementById('ai-cloud-key')?.value?.trim(),
-            cloudSecret: document.getElementById('ai-cloud-secret')?.value?.trim()
+            cloudName: creds.cloudName,
+            cloudKey: creds.cloudKey,
+            cloudSecret: creds.cloudSecret
           }
         })
       });
@@ -4076,6 +4075,7 @@ async function save() {
 }
 
 function saveGlobalSettings() {
+    docV2.version = 2;
     const heroUrl = (document.getElementById('hero-video-url-input').value || '').trim();
     const lUrl = (document.getElementById('side-panel-left-url').value || '').trim();
     const lLabel = (document.getElementById('side-panel-left-label').value || '').trim();
@@ -4915,8 +4915,8 @@ async function saveAiCredentials() {
     cloudKey:     (document.getElementById('ai-cloud-key').value     || '').trim(),
     cloudSecret:  (document.getElementById('ai-cloud-secret').value  || '').trim(),
     stabilityKey: (document.getElementById('ai-stability-key').value || '').trim(),
-    kling_key:    (document.getElementById('ai-kling-key').value      || '').trim(),
-    kling_secret: (document.getElementById('ai-kling-secret').value || '').trim()
+    klingKey:     (document.getElementById('ai-kling-key').value     || '').trim(),
+    klingSecret:  (document.getElementById('ai-kling-secret').value  || '').trim()
   };
   try {
     const res = await fetch('/api/menu', {
@@ -4945,28 +4945,20 @@ function restoreAiCredentials(doc) {
   if (c.stabilityKey) document.getElementById('ai-stability-key').value = c.stabilityKey;
   if (c.klingKey) document.getElementById('ai-kling-key').value = c.klingKey;
   if (c.klingSecret) document.getElementById('ai-kling-secret').value = c.klingSecret;
+  if (c.stabilityKey) {
+    const imgBtn = document.getElementById('ai-img-btn');
+    if (imgBtn) imgBtn.removeAttribute('disabled');
+  }
+  if (c.klingKey && c.klingSecret) {
+    const klingImgBtn = document.getElementById('kling-img-btn');
+    const klingVidBtn = document.getElementById('ai-vid-btn');
+    if (klingImgBtn) klingImgBtn.removeAttribute('disabled');
+    if (klingVidBtn) klingVidBtn.removeAttribute('disabled');
+  }
 }
 
 function loadAiCredentials() {
-  // const stored = localStorage.getItem(AI_CRED_KEY); // Purged for V2 database-only persistence
-  if (!stored) return;
-  try {
-    const creds = JSON.parse(stored);
-    if (creds.cloudinary) {
-      document.getElementById('ai-cloud-name').value = creds.cloudinary.cloud_name || '';
-      document.getElementById('ai-cloud-key').value = creds.cloudinary.api_key || '';
-      document.getElementById('ai-cloud-secret').value = creds.cloudinary.api_secret || '';
-    }
-    if (creds.stability) {
-      document.getElementById('ai-stability-key').value = creds.stability.api_key || '';
-      document.getElementById('ai-img-btn').removeAttribute('disabled');
-    }
-    if (creds.kling) {
-      document.getElementById('ai-kling-key').value = creds.kling.api_key || '';
-      document.getElementById('ai-kling-secret').value = creds.kling.api_secret || '';
-      document.getElementById('ai-vid-btn').removeAttribute('disabled');
-    }
-  } catch (e) { /* ignore parse errors */ }
+  restoreAiCredentials(docV2);
 }
 
 async function testAiService(service) {
