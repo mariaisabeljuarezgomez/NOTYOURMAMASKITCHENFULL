@@ -1652,7 +1652,8 @@ function renderBackground() {
     }
     const currentSrc = bgContainer.querySelector('img')?.src;
     if (currentSrc === bgEl.src) return; // Skip if already correctly rendered
-    bgContainer.innerHTML = `<img src="${bgEl.src}" style="width:100%; height:100%; object-fit:cover; display:block;">`;
+    bgContainer.innerHTML = `<img src="${bgEl.src}" style="width:100%; height:100%; object-fit:cover; display:block; pointer-events:none;">`;
+
 }
 
 function render() {
