@@ -1655,7 +1655,6 @@ function renderBackground() {
 }
 
 function render() {
-    if (_isDragging) return; // Interaction aware guard
     elementsLayer.innerHTML = ''; 
     const sorted = [...docV2.elements].sort((a, b) => {
       return (a.zIndex || 10) - (b.zIndex || 10);
