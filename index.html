@@ -4028,11 +4028,12 @@ function _mergeLoadedDoc(s) {
       });
     }
 
-    const currentAssets = [...(docV2.assets || [])];
+    const currentAssetsMap = new Map((docV2.assets || []).map(a => [a.id, a]));
     docV2 = { ...docV2, ...s };
-    const serverIds = new Set((s.assets || []).map(a => a.id));
-    const missing = currentAssets.filter(a => !serverIds.has(a.id));
-    docV2.assets = [...(docV2.assets || []), ...missing];
+    if (s.assets && Array.isArray(s.assets)) {
+        s.assets.forEach(a => currentAssetsMap.set(a.id, a));
+    }
+    docV2.assets = Array.from(currentAssetsMap.values());
     if (docV2.settings && docV2.settings.layoutLocked === undefined) docV2.settings.layoutLocked = false;
     syncLayoutLockUI();
     syncZoomControlsVisibility();
@@ -4351,7 +4352,7 @@ window.onload = async () => {
         const r = await fetch('/api/menu?t=' + Date.now());
         if (r.ok) {
             const s = await r.json();
-            if (s.elements && s.elements.length > 0) data = s;
+            if (s && ((s.elements && s.elements.length > 0) || (s.assets && s.assets.length > 0))) data = s;
         }
     } catch (e) { console.warn('Server load failed...', e); }
 
@@ -4368,6 +4369,7 @@ window.onload = async () => {
 
     // 4. Atomic Execution Sequence (The Waterfall)
     _mergeLoadedDoc(data);
+    renderAssetPanel();
     
     // Allow editing by default
     layoutLocked = false;
@@ -5453,9 +5455,22 @@ async function uploadAiToCloudinary(fileType) {
 }
 
 function placeAiImageOnCanvas() {
-  const url = window._lastAiImageUrl || aiState.generatedImageUrl || aiState.generatedImage;
+  let url = window._lastAiImageUrl || aiState.generatedImageUrl || aiState.generatedImage;
   if (!url) { showToast('❌ No image to place — generate one first'); return; }
   
+  let assetId = window._lastAiAssetId || '';
+  if (assetId && docV2.assets) {
+      const asset = docV2.assets.find(a => a.id === assetId);
+      if (asset && asset.storage && asset.storage.originalUrl) {
+          url = asset.storage.originalUrl;
+      }
+  }
+
+  if (url.startsWith('data:')) {
+      showToast('⚠️ Please Upload to Cloudinary first before placing on canvas.');
+      return;
+  }
+
   // Calculate dimensions based on aspect ratio
   const aspectMap = {
     '1:1':   [300, 300],
@@ -5478,7 +5493,7 @@ function placeAiImageOnCanvas() {
     id: 'el_' + Date.now() + '_' + Math.random().toString(36).slice(2,5),
     type: 'image',
     src: url,
-    assetId: window._lastAiAssetId || '',
+    assetId: assetId,
     x: Math.max(50, Math.min(BASE_W - 400, cx - elW/2)),
     y: Math.max(50, Math.min(BASE_H - 400, cy - elH/2)),
     width: elW, height: elH,
@@ -5500,6 +5515,10 @@ async function saveAiImageToAssets(b64, prompt, urlOverride) {
   
   // If urlOverride is provided (Kling URL case), use it directly
   if (urlOverride) {
+    if (urlOverride.startsWith('data:')) {
+        showToast('⚠️ Cannot save raw image data. Please Upload to Cloudinary first.');
+        return;
+    }
     assetUrl = urlOverride;
     // Extract filename from URL or generate one
     const urlParts = urlOverride.split('/');
