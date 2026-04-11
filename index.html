@@ -4645,16 +4645,29 @@ function initSmartTooltips() {
 // --- Manual & Help Logic ---
 let helpPopoutTimer = null;
 function openManualModal(lang = 'en') {
-    window.open(`/manual-${lang}.html`, '_blank');
+    const overlay = document.getElementById('manual-modal-overlay');
+    const iframe  = document.getElementById('manual-modal-iframe');
+    if (!overlay || !iframe) return;
+    iframe.src = `/manual-${lang}.html`;
+    overlay.querySelectorAll('.manual-lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+    overlay.style.display = 'flex';
+    requestAnimationFrame(() => overlay.classList.add('visible'));
 }
+
 function closeManualModal() {
-    const modal = document.getElementById('manual-modal-overlay');
-    if (!modal) return;
-    modal.classList.remove('visible');
-    setTimeout(() => { modal.style.display = 'none'; }, 220);
+    const overlay = document.getElementById('manual-modal-overlay');
+    if (!overlay) return;
+    overlay.classList.remove('visible');
+    setTimeout(() => {
+        overlay.style.display = 'none';
+        document.getElementById('manual-modal-iframe').src = 'about:blank';
+    }, 220);
 }
+
 async function switchManualLang(lang) {
-    window.open(`/manual-${lang}.html`, '_blank');
+    openManualModal(lang);
 }
 function maybeShowHelpPopout() {
     // Help popout state persistence via localStorage disabled for V2
@@ -6321,6 +6334,25 @@ function syncTextFormatBar() {
 
 })();
 </script>
+<div id="manual-modal-overlay" class="manual-modal-overlay" onclick="if(event.target===this)closeManualModal()">
+  <div class="manual-modal">
+    <div class="manual-modal-header">
+      <h2><span>📖</span> User Manual</h2>
+      <div class="manual-lang-toggle">
+        <button class="manual-lang-btn active" data-lang="en" onclick="switchManualLang('en')">🇺🇸 EN</button>
+        <button class="manual-lang-btn"        data-lang="es" onclick="switchManualLang('es')">🇲🇽 ES</button>
+      </div>
+      <button class="manual-close-btn" onclick="closeManualModal()" title="Close Manual">✕</button>
+    </div>
+    <iframe
+      id="manual-modal-iframe"
+      src="about:blank"
+      style="flex:1; border:none; width:100%; height:100%; display:block;"
+      title="User Manual"
+      sandbox="allow-same-origin allow-scripts allow-popups"
+    ></iframe>
+  </div>
+</div>
 </body>
 </html>
 
