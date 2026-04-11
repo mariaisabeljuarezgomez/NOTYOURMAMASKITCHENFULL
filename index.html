@@ -5783,7 +5783,11 @@ document.addEventListener('contextmenu', e => {
 });
 
 async function generateAiVideo() {
-  const creds = getAiCredentials();
+  const _c = docV2.aiCredentials || {};
+  const creds = {
+    kling: { api_key: _c.klingKey || '', api_secret: _c.klingSecret || '' },
+    cloudinary: { cloud_name: _c.cloudName || '', api_key: _c.cloudKey || '', api_secret: _c.cloudSecret || '' }
+  };
   const prompt = document.getElementById('ai-vid-prompt').value.trim();
   if (!prompt) return;
   
@@ -5842,14 +5846,16 @@ async function generateAiVideo() {
 }
 
 function pollKlingStatus() {
-  const creds = getAiCredentials();
+  const _pc = docV2.aiCredentials || {};
+  const _klingKey = _pc.klingKey || '';
+  const _klingSecret = _pc.klingSecret || '';
   document.getElementById('ai-vid-status').textContent = 'Polling for result…';
   aiState.vidPollingInterval = setInterval(async () => {
     try {
       const res = await fetch(`/api/ai/kling-status/${aiState.vidTaskId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ api_key: creds.kling.api_key, api_secret: creds.kling.api_secret, task_type: aiState.vidTaskType || 'text2video' })
+        body: JSON.stringify({ api_key: _klingKey, api_secret: _klingSecret, task_type: aiState.vidTaskType || 'text2video' })
       });
       const data = await res.json();
       if (data.progress !== undefined) {
