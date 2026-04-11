@@ -399,7 +399,7 @@ Violations of this rule cause silent 400 errors and data loss.
 **Live URL:** https://web-production-3e17d.up.railway.app/  
 **GitHub Repo:** https://github.com/mariaisabeljuarezgomez/NOTYOURMAMASKITCHENFULL  
 **Deployment:** Railway (auto-deploys from GitHub `main` branch)  
-**Latest Known Good SHA:** `0d9b547` — Bug Audit Rounds A–D Complete  
+**Latest Known Good SHA:** `e82ad968` — Task 12 Persistent Assets Pipeline  
 **PageSpeed Score (Mar 27, 2026):** 100 / 100 / 100 / 100 ✅
 
 ## Phase: Schema Unification & Viewer Rendering Parity
@@ -472,8 +472,13 @@ Violations of this rule cause silent 400 errors and data loss.
 | Frontend | HTML5, CSS3, Vanilla JavaScript, Canvas API |
 | Export engine | Canvas API + `export-utils.js` (NO html2canvas) |
 | Backend | Python 3, Flask, flask-compress |
-| Persistence | Railway Volume (`/app/data/`) — JSON files |
+| Database | PostgreSQL (psycopg2, Railway managed Postgres) |
+| Persistence | PostgreSQL `sessions` DB (fallback to localStorage) |
 | Hosting | Railway (auto-deploy from GitHub push) |
+| CDN/Storage | Cloudinary (AI asset hosting, video reference images) |
+| AI Image | Stability AI API, Kling AI API |
+| AI Video | Kling AI API (requires Cloudinary for image2video) |
+| Utilities | cloudscraper (HTTP), PyJWT (Kling auth) |
 | Fonts | Local TTF files served as static assets |
 
 ---
@@ -513,13 +518,15 @@ Violations of this rule cause silent 400 errors and data loss.
 | `DELETE /api/delete-image/<filename>` | Removes a user-uploaded image |
 | `GET /user-images/<filename>` | Serves user images with `Cache-Control: max-age=604800, public` |
 
-### Persistence
-- Railway Volume mounted at `/app/data`
-- Save file: `/app/data/menu_data.json`
-- Backups: `/app/data/backups/menu_data_YYYYMMDD_HHMMSS.json`
-- Writes use atomic `.tmp` + `os.replace` pattern
-- Frontend has localStorage fallback if server unreachable
-- `IS_PERSISTENT` flag in API response warns if volume is unavailable
+### Persistence (PostgreSQL)
+- PostgreSQL is the persistence layer. "Railway Volume" system is GONE.
+- Uses `DATABASE_URL` env var (set in Railway environment).
+- Schema: `sessions` table (id TEXT PRIMARY KEY, canvas_json JSONB, updated_at TIMESTAMP).
+- The document saves to the record where `id='main'`.
+- Fully uses UPSERT (`ON CONFLICT (id) DO UPDATE ...`) pattern. No atomic files, no backups.
+- Includes `video_history` table for persisting AI video reference URLs by slot.
+- No `IS_PERSISTENT` flag. Frontend relies on HTTP status from `/api/menu`.
+- Frontend has `localStorage` fallback and retry queue when DB is unreachable.
 
 ### Cache-Control Strategy (required for PageSpeed 100)
 ```
@@ -578,10 +585,10 @@ Five independent audit rounds were conducted on `app.py`. All fixes applied to `
 | D1 | 65a0158 | fix: move werkzeug NotFound import to module level |
 | D2 | 145aadc | fix: set COMPRESS_MIN_SIZE to 500 to avoid compressing tiny responses |
 | D3 | f7833a2 | fix: AI asset persistence (version: 2 in save()) & Kling video image_url fix (Cloudinary upload for reference image) |
-3fd470 | fix: cap duplicate filename counter at 999 to prevent unbounded loop |
+| D3b | 3fd470 | fix: cap duplicate filename counter at 999 to prevent unbounded loop |
 | D4 | 0dc7488 | fix: log prune_backups exceptions instead of silently discarding |
 | D5 | 0d9b547 | fix: remove blank line with trailing whitespace in delete_asset |
-| Task 12 | [new SHA] | feat: Task 12 — persistent assets pipeline — importImg now registers uploaded images into docV2.assets and persists full docV2 to DB; deleteAssetFromServer now treats HTTP 404 as successful deletion to prevent ghost assets |
+| Task 12 | e82ad968 | feat: Task 12 — persistent assets pipeline — importImg now registers uploaded images into docV2.assets and persists full docV2 to DB; deleteAssetFromServer now treats HTTP 404 as successful deletion to prevent ghost assets |
 
 ---
 
@@ -638,6 +645,14 @@ The editor was rebuilt from scratch to correctly implement the full background r
 ---
 
 ## 4. What Was Built Successfully (Full History)
+
+### AI Studio Integration
+- **Three Providers:** Stability AI (image), Kling AI (image, video), Cloudinary (hosting/CDN).
+- **Credentials:** Securely stored in `docV2.aiCredentials` and persisted via the standard `save()` pattern.
+- **Image Generation:** Supports txt2img, img2img, and Kling multi-mode.
+- **Video Generation:** Uses Kling AI. `image2video` relies on automatic background uploading to Cloudinary for Kling to fetch.
+- **Cloudinary:** Used as the fallback asset host for custom backgrounds, user uploaded images, and AI reference images.
+- **UI Accordions:** Credentials, Generate Image, Generate Video sections inside the AI panel.
 
 ### Generator-first architecture
 `build_app.py` emits all CSS, HTML, and JS into `index.html`. Python f-string braces are escaped with `{{` and `}}` to avoid collision with emitted JavaScript/CSS braces. **Currently frozen** — index.html is live source.
@@ -979,9 +994,9 @@ User clicks Export Pro PNG
 | Background at export | `menu-bg.png` loaded on demand |
 | Font loading timeout | 800ms fallback before initApp() |
 | History stack max | 30 states |
-| Server save path | `/app/data/menu_data.json` |
-| User images path | `/app/data/user_images/` |
-| Railway volume env var | `STORAGE_DIR` (defaults to `/app/data`) |
+| Server save path | PostgreSQL `sessions` DB (`id='main'`) |
+| User images path | Cloudinary (primary), local `/Images/` (fallback) |
+| Database env var | `DATABASE_URL` (Railway managed) |
 | Deployment trigger | Push to `main` branch on GitHub |
 | Compression | flask-compress, gzip all text/html/css/js/json/fonts |
 | contentEditable attribute | Must use string `"true"` not boolean `true` |
@@ -1242,3 +1257,17 @@ A shim runs once at page load and copies V1 fields into V2 field names for every
 #### Rule for Future Developers
 
 > **Never change the expected field names in `render()` without also migrating all existing saved session data on the server.** A schema change in code that doesn't match the stored data will silently break all existing elements. Always add a load-time migration shim when introducing schema changes, and keep it until all server data is confirmed migrated.
+---
+
+## 19. Historical Architecture Notes (Legacy / Obsolete)
+
+These references describe old systems that have been completely removed and replaced. They are documented here solely so agents understand what code used to exist and why it is no longer present.
+
+- **Railway Volume (`/app/data/`)**: Persistence is now PostgreSQL. 
+- **User Uploads (`/app/data/user_images/`)**: Replaced by Cloudinary + local `Images/` fallback.
+- **File System Saves (`/app/data/menu_data.json`)**: Replaced by PostgreSQL `sessions` table (`id='main'`).
+- **File System Backups (`/app/data/backups/`)**: No longer utilized; PostgreSQL UPSERT is now the absolute backup paradigm.
+- **Env Vars `STORAGE_DIR` & `RAILWAY_VOLUME_MOUNTED`**: Superseded by `DATABASE_URL`.
+- **`IS_PERSISTENT` Flag**: Removed. The system trusts connection success/failure for DB.
+- **Atomic `.tmp` + `os.replace` write pattern**: Fully abandoned for SQL `INSERT ... ON CONFLICT DO UPDATE`.
+
