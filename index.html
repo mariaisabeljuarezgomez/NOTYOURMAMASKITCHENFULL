@@ -3599,12 +3599,6 @@ function removeBackground(e) {
 }
 
 async function importBackground(input) {
-  // Check for Cloudinary credentials
-  const creds = docV2.aiCredentials || {};
-  if (!creds.cloudName || !creds.cloudKey || !creds.cloudSecret) {
-    showToast('Background upload requires Cloudinary credentials. Add them in AI Studio first.');
-    return;
-  }
   let f = input.files[0];
   if (!f) return;
   let r = new FileReader();
@@ -3612,16 +3606,16 @@ async function importBackground(input) {
     const src = e.target.result;
     const filename = 'bg_' + Date.now() + '_' + f.name.replace(/[^a-zA-Z0-9.-]/g, '_');
     try {
-      const res = await fetch('/api/ai/cloudinary-upload', {
+      const res = await fetch('/api/upload-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fileB64: src.split(',')[1],
-          fileType: 'image',
+          data: src,
+          filename: filename,
           credentials: {
-            cloudName: creds.cloudName,
-            cloudKey: creds.cloudKey,
-            cloudSecret: creds.cloudSecret
+            cloudName: document.getElementById('ai-cloud-name')?.value?.trim() || '',
+            cloudKey: document.getElementById('ai-cloud-key')?.value?.trim() || '',
+            cloudSecret: document.getElementById('ai-cloud-secret')?.value?.trim() || ''
           }
         })
       });
@@ -3629,12 +3623,11 @@ async function importBackground(input) {
       if (json.url) {
         setAsBackground(json.url);
       } else {
-        // FIX 1 — Hard abort, no base64 fallback
-        showToast('Background upload failed. Please check Cloudinary credentials.', 'warning');
+        showToast('Background upload failed. Please check backend logs.', 'warning');
       }
-    } catch (e2) {
-      // FIX 1 — No silent base64 fallback
-      showToast('Background upload failed. Please check Cloudinary credentials.', 'warning');
+    } catch (err) {
+      console.error(err);
+      showToast('Background upload failed.', 'warning');
     }
   };
   r.readAsDataURL(f);

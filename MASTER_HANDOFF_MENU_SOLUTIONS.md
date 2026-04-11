@@ -690,11 +690,13 @@ Update this table after every Jules PR merge. Change OPEN to DONE.
 | 20 | Duplicate manual modal | DONE | Jules Task #4 | YES |
 | 21 | Paste Hijack Intercept | DONE | Surgical Edit | YES |
 | 22 | Duplicate Assets Sidebar | DONE | Surgical Edit | YES |
+| 23 | Background Local Fallback | DONE | Surgical Edit | YES |
 
 ---
 
 *Document maintained by: Perplexity (Claude Sonnet 4.6)*
-*Last updated: April 11, 2026 (Duplicate Assets Fix)*
+*Last updated: April 11, 2026 (Background Fallback Fix)*
+
 
 
 *Update this document after every Jules PR merge.*
