@@ -3178,7 +3178,7 @@ function addText() {
     const cy = (vpRect.top + vpRect.height/2 - scalerRect.top) / zoomScale;
     const x = Math.max(50, Math.min(BASE_W - 200, cx));
     const y = Math.max(50, Math.min(BASE_H - 100, cy));
-    docV2.elements.push({id, type:'text', content:'New Text', x, y, width: 200, zIndex: Math.max(1, docV2.elements.filter(e => e.layerRole !== 'background').length + 1), opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fontFamily:'century-gothic-bold', fontSize:24, color:'#000000', lineHeight:1.1, letterSpacing:0} }); 
+    docV2.elements.push({id, type:'text', text:'New Text', x, y, width: 200, zIndex: Math.max(1, docV2.elements.filter(e => e.layerRole !== 'background').length + 1), opacity:1, rotation:0, visible:true, locked:false, layerRole:'content', style:{fontFamily:'century-gothic-bold', fontSize:24, color:'#000000', lineHeight:1.1, letterSpacing:0} }); 
     render(); 
     selectById(id); 
 }
