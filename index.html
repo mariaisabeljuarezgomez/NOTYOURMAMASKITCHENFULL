@@ -3554,9 +3554,30 @@ async function importImg(input) {
                 })
             });
             const json = await res.json();
-            if (json.status === "ok") {
-                showToast('Image saved to /Images/ successfully!');
-                await loadUserImages(); // Refresh panel immediately
+            if (json.status === 'ok' && json.url) {
+                // Register the uploaded image as a persistent asset
+                const newAsset = {
+                    id: 'asset_' + Date.now(),
+                    kind: 'image',
+                    name: f.name || ('upload_' + Date.now()),
+                    storage: {
+                        originalUrl: json.url,
+                        previewUrl: null,
+                        thumbnailUrl: null
+                    }
+                };
+                if (!docV2.assets) docV2.assets = [];
+                docV2.assets.push(newAsset);
+                // Persist to DB immediately
+                try {
+                    await fetch('/api/menu', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(docV2)
+                    });
+                } catch (saveErr) { markDirty(); }
+                renderAssetPanel();
+                showToast('Image uploaded and saved to Assets!');
                 return;
             }
         } catch(err) { console.error(err); }
@@ -3796,7 +3817,7 @@ async function deleteAssetFromServer(filename) {
             headers: { 'Content-Type': 'application/json' }
         });
         const json = await res.json();
-        if (res.ok && json.status === 'deleted') {
+        if ((res.ok && json.status === 'deleted') || res.status === 404) {
             // Remove ONLY this asset from docV2.assets by matching filename in originalUrl
             // DO NOT call loadUserImages() — that would wipe AI-generated assets
             if (Array.isArray(docV2.assets)) {

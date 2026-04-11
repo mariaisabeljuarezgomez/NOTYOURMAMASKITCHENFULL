@@ -394,7 +394,7 @@ EVERY function that saves anything to the server MUST:
 Violations of this rule cause silent 400 errors and data loss.
 
 ---
-**Last Updated:** April 8, 2026  
+**Last Updated:** April 11, 2026  
 **Prepared by:** MARIAS DIGITAL DESIGNS  
 **Live URL:** https://web-production-3e17d.up.railway.app/  
 **GitHub Repo:** https://github.com/mariaisabeljuarezgomez/NOTYOURMAMASKITCHENFULL  
@@ -581,6 +581,7 @@ Five independent audit rounds were conducted on `app.py`. All fixes applied to `
 3fd470 | fix: cap duplicate filename counter at 999 to prevent unbounded loop |
 | D4 | 0dc7488 | fix: log prune_backups exceptions instead of silently discarding |
 | D5 | 0d9b547 | fix: remove blank line with trailing whitespace in delete_asset |
+| Task 12 | [new SHA] | feat: Task 12 — persistent assets pipeline — importImg now registers uploaded images into docV2.assets and persists full docV2 to DB; deleteAssetFromServer now treats HTTP 404 as successful deletion to prevent ghost assets |
 
 ---
 
