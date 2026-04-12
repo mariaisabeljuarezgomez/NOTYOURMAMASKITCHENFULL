@@ -453,6 +453,7 @@ Violations of this rule cause silent 400 errors and data loss.
 
 > [!IMPORTANT]
 > **LATEST UPDATE: April 11, 2026**
+> - **Audit Fix #14 (BUG-18 — Fatal DB Initialization Guard)**: Updated `init_db()` in `app.py` to raise a fatal `SystemExit` if the database connection or initialization fails. This ensures the application only starts when the database is in a healthy state, preventing silent data loss or session corruption.
 > - **Audit Fix #13 (BUG-17 — Undo Stack Documentation)**: Corrected the comment in `pushState()` to accurately reflect the 50-step undo limit (the result of `slice(-49)` plus the new state).
 > - **Audit Fix #12 (BUG-15 — Smart enhance_prompt dedup)**: Improved the `enhance_prompt()` logic in `app.py` to correctly detect if a prompt has already been enhanced for its specific type (image or video), preventing redundant modifier append.
 > - **Audit Fix #11 (BUG-11 — video_history Dedup Fix)**: Corrected the video history deduplication logic in `app.py`. It now only blocks a save if the *most recent* record for that slot is the exact same URL, instead of blocking any URL that appeared at any point in the history. This allows users to correctly cycle back to previous clips in a chronological order.
