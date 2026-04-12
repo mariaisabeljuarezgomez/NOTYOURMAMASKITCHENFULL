@@ -2892,7 +2892,11 @@ function resequenceZIndex() {
     // Sort elements array by current zIndex ascending, then reassign 1..N
     docV2.elements.sort((a, b) => a.zIndex - b.zIndex);
     docV2.elements.forEach((el, idx) => {
-        el.zIndex = el.layerRole === 'background' ? 0 : idx + 1;
+        if (el.layerRole === 'background') {
+            el.zIndex = 0;
+        } else {
+            el.zIndex = Math.max(1, idx + 1); // Ensure no non-BG hits 0
+        }
     });
 }
 
