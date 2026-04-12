@@ -453,6 +453,11 @@ Violations of this rule cause silent 400 errors and data loss.
 
 > [!IMPORTANT]
 > **LATEST UPDATE: April 11, 2026**
+> - **Audit Fix #5 (BUG-2 — alignToCanvas bottom)**: Fixed `alignToCanvas('bottom')` to use `offsetHeight` instead of snapping to an arbitrary `40px` from the top for elements without fixed heights.
+> - **Audit Fix #4 (BUG-13 — alignMulti height fallback)**: Changed `alignMulti` height dimension fallback from `40` to `0` to prevent misaligning thin elements and lines.
+> - **Audit Fix #3 (BUG-14 — Gated AI Buttons)**: `saveAiCredentials()` now only enables the Stability and Kling buttons if those specific service credentials are actually present, matching the logic in `restoreAiCredentials()`.
+> - **Audit Fix #2 (BUG-7 — Credential Trim)**: Added `.trim()` to all secret/key fields in `getAiCredentials()` to prevent authentication failures from trailing spaces during copy-paste.
+> - **Audit Fix #1 (BUG-1 — Save failure indicator)**: Changed the `save()` catch block to call `markDirty()` instead of `markClean()`. The save button now correctly stays red/dirty on server failure, protecting data integrity.
 > - **Bug Fix #9 (removeBackground Undo + IsSystemBackground)**: Added `pushState()` before background deletion so the action is undoable with Ctrl+Z. Expanded the filter to also catch elements flagged `isSystemBackground:true` in case they lack `layerRole:'background'`. `renderLayerList()` and `renderBackground()` preserved. Cherry-picked from PR #6 (rejected the rest).
 > - **Bug Fix #8 (Background Click Intercept)**: `renderBackground()` was injecting `<img>` without `pointer-events:none`. The `#bg-layer` container has `pointer-events:none` but that doesn't cascade to dynamically injected children. The img was intercepting all canvas clicks, preventing deselect. One-word fix.
 > - **Bug Fix #7 (Video/Poll DOM Read)**: `generateAiVideo()` and `pollKlingStatus()` were reading credentials via `getAiCredentials()` (DOM-based). When the credentials accordion is collapsed after a page reload, DOM input values are empty, causing silent 400 errors from the backend. Both functions now read directly from `docV2.aiCredentials`, matching the pattern used by `generateKlingImage()`.
