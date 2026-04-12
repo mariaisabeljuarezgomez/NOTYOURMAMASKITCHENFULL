@@ -2401,18 +2401,28 @@ function renderLayerList() {
             }
         };
         
-        const icon = item.type==='text' ? 'T'
-            : item.type==='image' ? '🖼️'
-            : item.type==='line' ? '╱'
-            : item.shapeType==='circle' ? '⭕'
-            : item.shapeType==='star' ? '⭐'
+        const icon = item.layerRole === 'background' ? '<span style="color:red;" title="Background">BG</span>'
+            : item.type==='text' ? '<span style="color:gold;">T</span>'
+            : item.type==='image' ? '<span style="color:lightblue;">🖼️</span>'
+            : item.type==='line' ? '<span style="color:gray;">—</span>'
+            : item.shapeType==='circle' ? '<span style="color:lightgreen;">●</span>'
+            : item.shapeType==='star' ? '<span style="color:lightgreen;">★</span>'
+            : item.type==='shape' ? '<span style="color:lightgreen;">■</span>'
             : '⬜';
-        const roleTag = `<span style="font-size:8px; padding:2px 4px; border-radius:3px; background:#444; color:#aaa; text-transform:uppercase; margin-right:4px;">${item.layerRole || 'content'}</span>`;
 
+        const label = item.type === 'text'
+            ? (item.content || item.text || 'Text').substring(0, 20)
+            : item.type === 'image'
+            ? (item.name || item.src?.split('/').pop() || 'Image').substring(0, 20)
+            : item.type === 'shape'
+            ? (item.shapeType || 'Shape')
+            : item.type === 'line'
+            ? 'Line'
+            : item.layerRole || 'Layer';
 
         div.innerHTML = `<span style="cursor:${isLockedBackground ? 'default' : 'grab'}; color:${isLockedBackground ? '#333' : '#555'}; font-size:14px; padding-right:6px; flex-shrink:0; visibility:${isLockedBackground ? 'hidden' : 'visible'};" title="${isLockedBackground ? '' : 'Drag to reorder'}">⠿</span>
             <div style="font-size:12px; width:20px; text-align:center;">${icon}</div>
-            <div class="layer-name" style="flex:1; overflow:hidden; text-overflow:ellipsis;">${roleTag}<span class="layer-rename-span" data-elid="${item.id}" title="Double-click to rename (editor only)"></span></div>
+            <div class="layer-name" style="flex:1; overflow:hidden; text-overflow:ellipsis;"><span class="layer-rename-span" data-elid="${item.id}" title="Double-click to rename (editor only)"></span></div>
             ${item.isSystemBackground ? `<button class="layer-btn" title="Remove Background" onclick="removeBackground(event)" style="font-size:11px; margin-right: 4px;">🗑️</button>` : ''}
             <button class="layer-btn" title="${item.visible ? 'Visible' : 'Hidden — click to show'}"
                 onclick="toggleVisById(event, '${item.id}')"
@@ -2430,7 +2440,7 @@ function renderLayerList() {
         // Wire up rename span after it is in DOM
         const nameSpan = div.querySelector('.layer-rename-span');
         if (nameSpan) {
-            nameSpan.textContent = elementDisplayNames[item.id] || item.id;
+            nameSpan.textContent = elementDisplayNames[item.id] || label;
 
             nameSpan.addEventListener('dblclick', (e) => {
                 e.stopPropagation();
@@ -2449,13 +2459,13 @@ function renderLayerList() {
                     elementDisplayNames[item.id] = newName;
                 } else {
                     delete elementDisplayNames[item.id];
-                    nameSpan.textContent = item.id;
+                    nameSpan.textContent = label;
                 }
             });
 
             nameSpan.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') { e.preventDefault(); nameSpan.blur(); }
-                if (e.key === 'Escape') { nameSpan.innerText = elementDisplayNames[item.id] || item.id; nameSpan.blur(); }
+                if (e.key === 'Escape') { nameSpan.innerText = elementDisplayNames[item.id] || label; nameSpan.blur(); }
                 e.stopPropagation(); // prevent canvas keyboard shortcuts while typing
             });
         }
