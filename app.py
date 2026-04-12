@@ -110,7 +110,11 @@ def init_db():
         conn.commit()
         cur.close()
     except Exception as e:
-        print(f"init_db ERROR: {e}", flush=True)
+        print(f"init_db FATAL: {e}", flush=True)
+        # Prevent app from starting with a broken or uninitialized database connection
+        # This protects against silent data loss.
+        import sys
+        sys.exit(f"FATAL: Database initialization failed: {e}")
     finally:
         if conn:
             conn.close()
