@@ -453,6 +453,7 @@ Violations of this rule cause silent 400 errors and data loss.
 
 > [!IMPORTANT]
 > **LATEST UPDATE: April 11, 2026**
+> - **Audit Fix #12 (BUG-15 — Smart enhance_prompt dedup)**: Improved the `enhance_prompt()` logic in `app.py` to correctly detect if a prompt has already been enhanced for its specific type (image or video), preventing redundant modifier append.
 > - **Audit Fix #11 (BUG-11 — video_history Dedup Fix)**: Corrected the video history deduplication logic in `app.py`. It now only blocks a save if the *most recent* record for that slot is the exact same URL, instead of blocking any URL that appeared at any point in the history. This allows users to correctly cycle back to previous clips in a chronological order.
 > - **Audit Fix #10 (BUG-10 — zIndex Stability Guard)**: Hardened `resequenceZIndex()` with an explicit `Math.max(1, idx + 1)` guard for content elements. This ensures that only the background layer can ever hold `zIndex: 0`, protecting against layering bugs if a non-background element's index is ever manually set to zero.
 > - **Audit Fix #9 (BUG-8 — Credential Schema Documentation)**: Added cross-reference comments to `app.py` for `/api/upload-image` and `/api/ai/cloudinary-upload` clarify why one uses camelCase while the other uses snake_case, preventing accidental breakage during backend refactors.
