@@ -3,7 +3,8 @@
 **Last Updated: April 12, 2026**
 
 ## Changelog — Audit Patch April 12, 2026
-Updated based on confirmed three-agent source code audit. 14 fixes applied. See each section for details. Includes PR #9 features (Clear Credentials, AI Gallery 3-slot apply).
+Updated based on confirmed three-agent source code audit. 14 fixes applied. Includes PR #9 features (Clear Credentials, AI Gallery 3-slot apply).
+**Manual Hardening — Apply 16 surgical fixes to manual-en.html to reconcile docs with live code.**
 
 ---
 
@@ -133,21 +134,21 @@ CREATE TABLE image_history (
 | GET | `/api/menu` | Loads canvas_json where id='main' |
 | POST | `/api/menu` | Saves full docV2 to canvas_json where id='main', validates schema |
 | GET | `/api/backup` | Loads canvas_json where id='backup' |
-| POST | `/api/backup` | Saves rolling backup to canvas_json where id='backup', validates schema |
-| POST | `/api/upload-image` | Uploads base64 image to Cloudinary, returns secure_url |
-| POST | `/api/ai/cloudinary-upload` | Uploads AI-generated base64 to Cloudinary |
-| POST | `/api/ai/generate-image` | Generates image via Stability AI or Google Imagen |
-| POST | `/api/ai/generate-kling-image` | Generates image via Kling AI |
-| POST | `/api/ai/generate-video` | Generates video via Kling AI |
-| GET | `/api/ai/poll-kling-video/<task_id>` | Polls Kling for video completion |
-| POST | `/api/ai/enhance-prompt` | Appends food photography modifiers to prompt |
-| POST | `/api/ai/test-cloudinary` | Validates Cloudinary credentials |
-| GET | `/api/video-history` | Returns all video_history records |
-| POST | `/api/video-history` | Saves video URL to history (deduped) |
-| GET | `/api/image-history` | Returns all image_history records |
-| DELETE | `/api/image-history/<id>` | Deletes image from history |
-| POST | `/api/save-video-history` | Legacy alias for video-history POST |
-| GET | `/api/list-images` | Lists /Images/ directory files (deprecated) |
+| POST | `/api/backup" | Saves rolling backup to canvas_json where id='backup', validates schema |
+| POST | `/api/upload-image" | Uploads base64 image to Cloudinary, returns secure_url |
+| POST | `/api/ai/cloudinary-upload" | Uploads AI-generated base64 to Cloudinary |
+| POST | `/api/ai/generate-image" | Generates image via Stability AI or Google Imagen |
+| POST | `/api/ai/generate-kling-image" | Generates image via Kling AI |
+| POST | `/api/ai/generate-video" | Generates video via Kling AI |
+| GET | `/api/ai/poll-kling-video/<task_id>" | Polls Kling for video completion |
+| POST | `/api/ai/enhance-prompt" | Appends food photography modifiers to prompt |
+| POST | `/api/ai/test-cloudinary" | Validates Cloudinary credentials |
+| GET | `/api/video-history" | Returns all video_history records |
+| POST | `/api/video-history" | Saves video URL to history (deduped) |
+| GET | `/api/image-history" | Returns all image_history records |
+| DELETE | `/api/image-history/<id>" | Deletes image from history |
+| POST | `/api/save-video-history" | Legacy alias for video-history POST |
+| GET | `/api/list-images" | Lists /Images/ directory files (deprecated) |
 
 ---
 

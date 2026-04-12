@@ -2,353 +2,320 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Menu Editor Pro V2 – Complete Professional User Manual</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&amp;display=swap" rel="stylesheet">
   <style>
     :root {
-      --brand-red: #95201d;
-      --brand-yellow: #f8f4ad;
-      --gold: #c8a96a;
-      --ink: #181818;
-      --paper: #fffdf8;
-      --muted: #5b5b5b;
-      --line: #d8d0c5;
-      --soft: #fbf5e7;
+      --primary: #95201d;
+      --primary-light: #b92f2a;
+      --bg: #fdfdfd;
+      --text: #2c2121;
+      --muted: #6b5c5c;
+      --border: #e8e1e1;
+      --accent: #c8a96a;
+      --accent-light: #f0e6d2;
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      --radius: 12px;
     }
 
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
-      margin: 0;
-      font-family: "Inter", "Segoe UI", Arial, sans-serif;
-      color: var(--ink);
-      background: #ece7df;
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       line-height: 1.6;
+      background: #f1eeee;
+      color: var(--text);
+      overflow-x: hidden;
     }
 
     .page {
-      width: 8.5in;
-      min-height: 11in;
-      margin: 24px auto;
-      background: var(--paper);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
-      padding: 0.9in 0.8in 0.85in;
+      width: 100%;
+      max-width: 1000px;
+      margin: 40px auto;
+      background: var(--bg);
+      padding: 60px 80px;
+      box-shadow: var(--shadow);
       position: relative;
-      overflow: hidden;
+      min-height: 1200px;
     }
 
     .page-break {
-      page-break-after: always;
+      page-break-before: always;
     }
 
     .cover {
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      min-height: 9.2in;
-      background: radial-gradient(circle at top right, rgba(200, 169, 106, .22), transparent 28%), linear-gradient(135deg, #fffdf8 0%, #f6f0e6 45%, #efe7da 100%);
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      min-height: 1100px;
     }
 
-    .brand-bar {
-      height: 10px;
-      width: 100%;
-      background: linear-gradient(90deg, var(--brand-red), #b64334, var(--gold), var(--brand-yellow));
-      border-radius: 999px;
-      margin-bottom: 36px;
-    }
-
-    .eyebrow {
-      color: var(--brand-red);
-      font-size: 12px;
-      letter-spacing: .18em;
-      text-transform: uppercase;
-      font-weight: 800;
-      margin-bottom: 24px;
-    }
-
-    h1 {
-      font-size: 34px;
-      line-height: 1.05;
-      margin: 0 0 10px;
-      letter-spacing: -.03em;
+    .brand-large {
+      font-weight: 700;
+      font-size: 48px;
+      color: var(--primary);
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
     }
 
     .subtitle {
-      font-size: 20px;
+      font-size: 24px;
       color: var(--muted);
-      margin: 0 0 26px;
+      margin-bottom: 40px;
+      font-weight: 300;
     }
 
-    .hero-box {
-      border: 1px solid var(--line);
-      border-left: 8px solid var(--brand-red);
-      background: rgba(255, 255, 255, .9);
-      padding: 22px 24px;
-      border-radius: 14px;
-      margin: 24px 0 32px;
-    }
-
-    .meta {
-      display: grid;
-      grid-template-columns: 170px 1fr;
-      gap: 8px 16px;
+    .edition-badge {
+      background: var(--primary);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-weight: 600;
       font-size: 14px;
-      margin-top: 24px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 60px;
     }
 
-    .meta div:nth-child(odd) {
+    h1 {
+      font-size: 56px;
+      margin-bottom: 12px;
+      line-height: 1.1;
       font-weight: 700;
-      color: var(--brand-red);
     }
 
     h2 {
-      font-size: 24px;
-      border-bottom: 2px solid var(--line);
-      padding-bottom: 8px;
-      margin-top: 0;
-      margin-bottom: 20px;
+      font-size: 28px;
+      color: var(--primary);
+      margin-top: 48px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 12px;
+      font-weight: 600;
     }
 
     h3 {
-      font-size: 18px;
-      margin: 22px 0 10px;
-      color: var(--brand-red);
-    }
-
-    h4 {
-      font-size: 15px;
-      margin: 16px 0 8px;
-      color: var(--ink);
-      font-weight: 700;
+      font-size: 20px;
+      margin-top: 32px;
+      margin-bottom: 16px;
+      font-weight: 600;
+      color: #4a3c3c;
     }
 
     p {
-      margin: 0 0 14px;
+      margin-bottom: 20px;
+      font-size: 17px;
     }
 
     ul,
     ol {
-      margin: 0 0 16px 22px;
+      margin-bottom: 24px;
+      margin-left: 20px;
     }
 
     li {
-      margin-bottom: 8px;
+      margin-bottom: 12px;
+      font-size: 17px;
     }
 
-    .toc li {
-      margin-bottom: 6px;
+    .callout {
+      padding: 24px;
+      border-radius: var(--radius);
+      margin: 32px 0;
+      background: #f7f3f3;
+      border-left: 5px solid var(--accent);
+    }
+
+    .callout.tip {
+      background: #f0f7f0;
+      border-left-color: #4CAF50;
+    }
+
+    .callout.warning {
+      background: #fff8e1;
+      border-left-color: #FFC107;
+    }
+
+    .callout.danger {
+      background: #ffebee;
+      border-left-color: #F44336;
+    }
+
+    .callout strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 18px;
+      color: #333;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      margin: 14px 0 18px;
-      font-size: 14px;
+      margin: 32px 0;
+      font-size: 16px;
     }
 
     th,
     td {
-      border: 1px solid var(--line);
-      padding: 12px 10px;
+      padding: 16px;
       text-align: left;
-      vertical-align: top;
+      border: 1px solid var(--border);
     }
 
     th {
-      background: var(--soft);
-      color: var(--brand-red);
+      background: #f7f3f3;
+      font-weight: 600;
+      color: #333;
     }
 
-    .callout {
-      background: #fff8de;
-      border: 1px solid #eadc98;
-      border-left: 6px solid var(--brand-red);
-      padding: 14px 16px;
-      border-radius: 10px;
-      margin: 18px 0;
+    .kbd {
+      padding: 2px 6px;
+      background: #f1eeee;
+      border: 1px solid #dcd3d3;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--primary);
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
     }
 
-    .callout.tip {
-      border-left-color: #27ae60;
-      background: #f0fff4;
-      border-color: #a8dbb9;
+    .ui-btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+      background: #eee;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid #ccc;
+      margin: 0 4px;
     }
 
-    .callout.warning {
-      border-left-color: #e67e22;
-      background: #fff8f0;
-      border-color: #f0cfa0;
+    .ui-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
     }
 
-    .callout.danger {
-      border-left-color: #c0392b;
-      background: #fff5f5;
-      border-color: #f5c6c6;
+    .footer {
+      position: absolute;
+      bottom: 40px;
+      left: 80px;
+      right: 80px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 14px;
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+      background: white;
+    }
+
+    .toc-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .toc-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .toc-item .dots {
+      flex: 1;
+      border-bottom: 2px dotted var(--border);
+      margin: 0 10px;
+      margin-bottom: 4px;
+    }
+
+    .toc-item:hover .text {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge.green {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .badge.red {
+      background: #ffebee;
+      color: #c62828;
     }
 
     .spec-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-top: 18px;
+      gap: 20px;
     }
 
     .spec-card {
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 16px;
-      background: #fff;
-    }
-
-    .spec-card h4 {
-      margin: 0 0 10px;
-      color: var(--brand-red);
-      font-size: 15px;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-    }
-
-    .ui-mock {
-      background: #1a1a1a;
+      background: #f9f9f9;
+      padding: 20px;
       border-radius: 12px;
-      padding: 14px 18px;
-      margin: 14px 0;
-      font-family: monospace;
-      font-size: 13px;
-      color: #f1c40f;
-      border: 1px solid #333;
+      border: 1px solid #eee;
     }
 
-    .ui-mock .ui-label {
-      color: #aaa;
-      font-size: 11px;
+    .spec-card strong {
+      display: block;
       margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: .1em;
+      color: var(--primary);
     }
 
-    .ui-mock .ui-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-      margin-bottom: 6px;
-    }
-
-    .ui-btn {
-      display: inline-block;
-      background: #333;
-      color: #fff;
-      border: 1px solid #555;
-      border-radius: 8px;
-      padding: 5px 12px;
-      font-size: 12px;
-      font-family: "Inter", Arial, sans-serif;
-    }
-
-    .ui-btn.primary {
-      background: #95201d;
-      border-color: #b64334;
-    }
-
-    .ui-btn.accent {
-      background: #f1c40f;
-      color: #000;
-      border-color: #c8a96a;
-      font-weight: 700;
-    }
-
-    .ui-btn.active {
-      background: #95201d;
-      border-color: #f1c40f;
-    }
-
-    .ui-btn.green {
-      background: #27ae60;
-      border-color: #2ecc71;
-    }
-
-    .ui-btn.red {
-      background: #c0392b;
-      border-color: #e74c3c;
-    }
-
-    .footer {
+    .brand-bar {
+      height: 8px;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
       position: absolute;
-      left: 0.8in;
-      right: 0.8in;
-      bottom: 0.3in;
-      display: flex;
-      justify-content: space-between;
-      font-size: 11px;
-      color: #666;
-      border-top: 1px solid var(--line);
-      padding-top: 10px;
+      top: 0;
+      left: 0;
+      right: 0;
     }
 
-    .small {
-      font-size: 13px;
-      color: var(--muted);
+    img.diagram {
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      margin: 20px 0;
+      display: block;
+      width: 100%;
     }
 
-    .step-num {
-      display: inline-block;
-      width: 26px;
-      height: 26px;
-      background: var(--brand-red);
-      color: #fff;
-      border-radius: 50%;
-      text-align: center;
-      line-height: 26px;
-      font-weight: 700;
-      font-size: 13px;
-      margin-right: 8px;
-      flex-shrink: 0;
+    /* Page Numbers */
+    body {
+      counter-reset: page;
     }
 
-    .step-row {
-      display: flex;
-      align-items: flex-start;
-      margin-bottom: 12px;
-    }
-
-    .step-row p {
-      margin: 0;
-      padding-top: 3px;
-    }
-
-    .kbd {
-      display: inline-block;
-      background: #f0f0f0;
-      border: 1px solid #bbb;
-      border-radius: 4px;
-      padding: 2px 8px;
-      font-family: monospace;
-      font-size: 13px;
-      box-shadow: 0 2px 0 #bbb;
-      color: #222;
-    }
-
-    .badge {
-      display: inline-block;
-      background: var(--brand-red);
-      color: #fff;
-      border-radius: 999px;
-      padding: 2px 10px;
-      font-size: 12px;
-      font-weight: 700;
-      margin-right: 6px;
-    }
-
-    .badge.green {
-      background: #27ae60;
-    }
-
-    .badge.blue {
-      background: #2980b9;
+    .page::after {
+      /* counter-increment: page;
+      content: "Page " counter(page);
+      position: absolute;
+      bottom: 20px;
+      right: 80px;
+      font-size: 14px;
+      color: #999; */
     }
 
     @media print {
@@ -359,61 +326,61 @@
       .page {
         margin: 0;
         box-shadow: none;
+        width: 100%;
+        max-width: none;
+        height: auto;
+        min-height: auto;
+      }
+
+      .page-break {
+        page-break-before: always;
       }
     }
   </style>
 </head>
 
 <body>
-  <section class="page cover page-break">
-    <div>
-      <div class="brand-bar"></div>
-      <div class="eyebrow">MARIAS DIGITAL DESIGNS</div>
+  <section class="page">
+    <div class="brand-bar"></div>
+    <div class="cover">
+      <div class="edition-badge">Customer Edition</div>
+      <div class="brand-large">MARIAS DIGITAL DESIGNS</div>
       <h1>Menu Editor Pro V2</h1>
-      <p class="subtitle">Complete Professional User Manual – Customer Edition</p>
-      <div class="hero-box">
-        <p><strong>Professional Menu Editing for Desktop and Mobile</strong></p>
-        <p>This guide and the Menu Editor Pro V2 program were created by <strong>MARIAS DIGITAL DESIGNS</strong>.</p>
-        <p>Designed to help restaurant owners and staff edit, design, and export print-ready menus clearly, confidently,
-          and professionally — without any design software or technical training required.</p>
-        <p>This manual covers <strong>every feature</strong> of the editor in full detail: the layer system, text
-          styling, image management, shape tools, export engine, keyboard shortcuts, undo history, and complete mobile
-          workflow.</p>
-      </div>
-      <div class="meta">
-        <div>Version</div>
-        <div>3.1 (Phase 30 + Phases 2A–11 + Bug Batches 1–8 + Bug Audit Rounds A–D)</div>
-        <div>Release Date</div>
-        <div>March 2026</div>
-        <div>Last Updated</div>
-        <div>April 11, 2026</div>
-        <div>Document Type</div>
-        <div>Complete Customer User Guide</div>
-        <div>Prepared By</div>
-        <div>MARIAS DIGITAL DESIGNS</div>
-        <div>Program By</div>
-        <div>MARIAS DIGITAL DESIGNS</div>
-        <div>Language</div>
-        <div>English</div>
-        <div>Companion</div>
-        <div>manual-es.html (Spanish Edition)</div>
+      <div class="subtitle">Complete Professional User Manual</div>
+      <p style="font-size: 18px; color: var(--muted); margin-top: 60px;">Complete Guide to Editing, Managing, and
+        Exporting your Premium Menu Designs</p>
+
+      <div style="margin-top: 100px; text-align: left; padding: 40px; border: 1px solid var(--border); border-radius: 20px; width: 80%;">
+        <p><strong>Version:</strong> 3.1 (Phase 30 Final Build)</p>
+        <p><strong>Release:</strong> March 2026</p>
+        <p><strong>Platform:</strong> Web Application (Desktop &amp; Mobile)</p>
       </div>
     </div>
-    <div class="small">Premium customer-facing documentation for authorized use only.</div>
-    <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>MARIAS DIGITAL DESIGNS</span></div>
+    <div class="footer"><span>© 2026 MARIAS DIGITAL DESIGNS</span><span>Page 1 — Cover</span></div>
   </section>
+
   <section class="page page-break">
+    <div class="brand-bar"></div>
     <h2>Table of Contents</h2>
-    <ol class="toc">
-      <li>Welcome &amp; What Is New</li>
+    <ol style="columns: 2; column-gap: 40px; list-style-position: inside;">
+      <li style="margin-bottom: 12px;">Welcome &amp; Introduction</li>
+      <li>What Is New in V2?</li>
       <li>Before You Start</li>
-      <li>Understanding the Editor Layout</li>
-      <li>Quick Start Workflow</li>
+      <li>Editor Layout Anatomy</li>
+      <li>The Quick-Start Guide (5 Minutes)</li>
       <li>The Top Header Bar</li>
       <li>The Floating Action Button (FAB) &amp; Drawer</li>
       <li>The Asset Tray – Built-In &amp; Uploaded Images</li>
-      <li>Adding &amp; Managing Text Elements</li>
-      <li>Adding &amp; Managing Image Elements</li>
+      <li>Adding &amp; Managing Text Elements
+        <ul style="margin-left: 15px; font-size: 0.9em; color: #666; margin-bottom: 4px;">
+          <li>Text Format Bar</li>
+        </ul>
+      </li>
+      <li>Adding &amp; Managing Image Elements
+        <ul style="margin-left: 15px; font-size: 0.9em; color: #666; margin-bottom: 4px;">
+          <li>Right-Click Context Menu</li>
+        </ul>
+      </li>
       <li>Adding &amp; Managing Shape Elements</li>
       <li>Multi-Select – Selecting Multiple Elements</li>
       <li>Lasso &amp; Drag-Box Selection</li>
@@ -432,974 +399,687 @@
       <li>Export Pro PNG – Print-Ready Output</li>
       <li>Keyboard Shortcuts</li>
       <li>Smart Tooltips</li>
-      <li>Zoom &amp; Canvas Navigation</li>
+      <li>Zoom &amp; Canvas Navigation
+        <ul style="margin-left: 15px; font-size: 0.9em; color: #666; margin-bottom: 4px;">
+          <li>Rulers and Guides</li>
+        </ul>
+      </li>
       <li>Reset to Original</li>
       <li>Cross-Device Syncing</li>
       <li>Mobile Guide</li>
       <li>Troubleshooting</li>
       <li>Best Practices</li>
       <li>Technical Specifications</li>
-      <li>AI Studio</li>
+      <li>AI Studio
+        <ul style="margin-left: 15px; font-size: 0.9em; color: #666; margin-bottom: 4px;">
+          <li>AI Gallery</li>
+        </ul>
+      </li>
       <li>Document Information</li>
     </ol>
     <div class="footer"><span>Customer Edition</span><span>Page 2</span></div>
   </section>
+
   <section class="page page-break">
-    <h2>1. Welcome &amp; What Is New in V2</h2>
-    <p>Welcome to <strong>Menu Editor Pro V2</strong> — the most advanced version of the professional menu editing
-      system created by <strong>MARIAS DIGITAL DESIGNS</strong>.</p>
-    <p>This editor runs entirely in your web browser. There is nothing to install. You simply open your personal editor
-      link, make your changes, save, and export a print-ready file. It works on desktop computers, laptops, tablets, and
-      phones.</p>
-    <h3>What This Manual Covers</h3>
+    <div class="brand-bar"></div>
+    <h2>1. Welcome &amp; Introduction</h2>
+    <p>Welcome to <strong>Menu Editor Pro V2</strong>, the most advanced browser-based menu editing system specifically
+      tailored for high-end restaurant displays. This version has been completely re-engineered for speed, precision,
+      and cross-device reliability.</p>
+
+    <p>Whether you are using a desktop computer for fine-tuning your layout or a mobile phone for quick price updates in
+      the kitchen, Menu Editor Pro V2 provides a professional, "what-you-see-is-what-you-get" (WYSIWYG) experience
+      without requiring any design or coding skills.</p>
+
+    <h2>2. What Is New in V2?</h2>
+    <p>Version 2 introduces critical architectural changes and high-end features designed for professional restaurant
+      environments:</p>
+
     <ul>
-      <li>Every button, control, and feature explained in plain language</li>
-      <li>How to add, edit, style, move, and delete text, images, and shapes</li>
-      <li>How the layer system keeps your menu organized</li>
-      <li>How to save, load, and sync your work across devices</li>
-      <li>How to export a professional 300 DPI print-ready PNG</li>
-      <li>Full mobile workflow including touch gestures and pinch zoom</li>
-      <li>Keyboard shortcuts for faster editing on desktop</li>
-      <li>Troubleshooting every common issue</li>
+      <li><strong>Native Canvas Rendering:</strong> All elements are now rendered using the browser's native Canvas API
+        for pixel-perfect fidelity and smooth performance.</li>
+      <li><strong>Server-Side Persistence:</strong> Your progress is now saved to a secure PostgreSQL database.
+        Changes persist across reloads and different devices.</li>
+      <li><strong>Advanced Undos:</strong> A robust, multiple-step undo system protects your work against accidental
+        mistakes.</li>
+      <li><strong>Mobile UX Hardening:</strong> Every button, slider, and gesture has been optimized for touch screens,
+        with multi-touch suppression and mobile-friendly toolbars.</li>
+      <li><strong>Cloud Asset Tray:</strong> All uploaded images are served via Cloudinary global CDN, ensuring your
+        menu loads instantly anywhere in the world.</li>
     </ul>
-    <h3>What Is New in Version 2</h3>
-    <div class="spec-grid">
-      <div class="spec-card">
-        <h4>Layer System</h4>
-        <p>Every element has a layer role (Content, Background, Overlay), visibility toggle, lock toggle, and opacity
-          control managed through a dedicated Layers Panel.</p>
-      </div>
-      <div class="spec-card">
-        <h4>3-Tab Selection Bar</h4>
-        <p>When you select any element, a floating toolbar with three tabs appears: LAYER, DESIGN, and ARRANGE — full
-          control over every property without opening any menus.</p>
-      </div>
-      <div class="spec-card">
-        <h4>Image Upload Library</h4>
-        <p>Upload your own photos and logos from your device. They are saved permanently to your library and accessible
-          from the Asset Tray at any time.</p>
-      </div>
-      <div class="spec-card">
-        <h4>Shape Tool</h4>
-        <p>Add colored rectangles with custom fill color, corner radius, border width, and border color for price tags,
-          banners, dividers, or decorative blocks.</p>
-      </div>
-      <div class="spec-card">
-        <h4>Numeric Font Size</h4>
-        <p>Type any precise font size number directly — no more stepping with + / − buttons. Enter exactly 17.5 or 36 or
-          72 with a single click.</p>
-      </div>
-      <div class="spec-card">
-        <h4>Auto-Save on Export</h4>
-        <p>Every export automatically saves your session first so your print file always reflects your most recent saved
-          state.</p>
-      </div>
-      <div class="spec-card">
-        <h4>Zoom-Aware Resizing</h4>
-        <p>Image resize handles work correctly at any zoom level — dragging always resizes by the correct amount whether
-          you are at 50% or 200% zoom.</p>
-      </div>
-      <div class="spec-card">
-        <h4>Keyboard Shortcuts</h4>
-        <p>Ctrl+Z for Undo and Ctrl+E for Export are now available for faster professional workflow on desktop.</p>
-      </div>
+
+    <h2>3. Before You Start</h2>
+    <div class="callout tip">
+      <strong>Internet Connection:</strong> Menu Editor Pro V2 is a web application. You must be connected to the
+      internet to save your changes and upload new images.
     </div>
+
+    <h3>Supported Browsers</h3>
+    <p>The editor works on all modern browsers. We recommend <strong>Google Chrome</strong> or <strong>Apple
+        Safari</strong> for the most consistent experience. Please ensure your browser is updated to the latest version.
+    </p>
+
+    <h3>Screen Orientation</h3>
+    <p>If you are on a mobile device or tablet, we highly recommend using <strong>Landscape mode</strong> (turning your
+      device sideways). This provides more workspace and makes the toolbar controls easier to manage.</p>
+
     <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 3</span></div>
   </section>
+
   <section class="page page-break">
-    <h2>2. Before You Start</h2>
-    <h3>Recommended Browsers</h3>
-    <ul>
-      <li><strong>Google Chrome</strong> — Best overall experience on desktop and Android</li>
-      <li><strong>Microsoft Edge</strong> — Excellent on Windows desktop</li>
-      <li><strong>Apple Safari</strong> — Best on iPhone and iPad</li>
-      <li><strong>Mozilla Firefox</strong> — Fully supported on desktop</li>
-    </ul>
-    <h3>Internet Connection</h3>
-    <p>An active internet connection is required for saving to the server and loading previously saved work on another
-      device. The editor also uses your browser's local storage as a backup so your most recent work is protected even
-      if the connection drops temporarily.</p>
-    <h3>Screen Size &amp; Orientation</h3>
-    <p>The editor works on any screen size. On desktop you see the full canvas and all controls simultaneously. On
-      phones, the canvas fills the screen and controls appear as a floating toolbar. On phones and tablets,
-      <strong>landscape orientation</strong> gives more working space and makes it easier to see the full toolbar.</p>
-    <h3>Preview Quality vs. Export Quality</h3>
-    <p>While editing, the background image displays at a lower resolution so the editor loads fast and stays responsive.
-      This is normal and intentional. When you click Export Pro PNG, the editor uses the original full-resolution
-      background file, producing a crisp professional 300 DPI print file regardless of how the preview looked.</p>
-    <div class="callout">
-      <strong>Best habit:</strong> Save your session regularly — after completing a section of work, before closing the
-      browser, and before switching to another device. One click on Save protects everything.
+    <div class="brand-bar"></div>
+    <h2>4. Editor Layout Anatomy</h2>
+    <p>The editor is divided into four main functional areas. Understanding these areas will help you navigate the system
+      quickly.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <strong>1. The Canvas (Center)</strong>
+        <p>Your menu board. This is where you see your design exactly as it will appear once exported. You can click any
+          element to edit it.</p>
+      </div>
+      <div class="spec-card">
+        <strong>2. Header Bar (Top)</strong>
+        <p>Contains global controls: 💾 Save, ↺ Undo, 🏠 Home, and the current layout state (Locked/Unlocked).</p>
+      </div>
+      <div class="spec-card">
+        <strong>3. The Tools Drawer (Left)</strong>
+        <p>Opened by the 🛠️ Floating Action Button (FAB). Contains the ADD tab for new elements and the ASSETS tab for your
+          images.</p>
+      </div>
+      <div class="spec-card">
+        <strong>4. The Selection Bar (Floating)</strong>
+        <p>Appears only when an element is selected. Shows three tabs: 🏷️ LAYER, 🎨 DESIGN, and 📐 ARRANGE for
+          fine-tuning the selected object.</p>
+      </div>
     </div>
-    <h3>Your Editor Link</h3>
-    <p>Your editor is accessed through a private web address provided to you by MARIAS DIGITAL DESIGNS. Bookmark it in
-      your browser for quick return. Never share this link publicly — it is your private editing environment.</p>
-    <div class="callout tip">
-      <strong>Tip:</strong> On iPhone or Android, save your editor link to your home screen so it opens like an app. In
-      Safari or Chrome, use the browser menu and select "Add to Home Screen."
+
+    <h2>5. The Quick-Start Guide (5 Minutes)</h2>
+    <p>Follow these steps to make your first update in under five minutes:</p>
+
+    <ol>
+      <li><strong>Unlock:</strong> Click the 🔒 <strong>Layout Locked</strong> button in the top bar to switch to 🔓
+        <strong>Unlocked</strong> mode. This allows you to click and select elements.</li>
+      <li><strong>Edit Text:</strong> Double-click any price or item name on the canvas. A cursor appears. Type your
+        new values. Click the background to finish.</li>
+      <li><strong>Move Elements:</strong> Single-click any element, then drag it to a new position. Use the ARRANGE tab for
+        centering.</li>
+      <li><strong>Upload Logo:</strong> Click the 🛠️ FAB (bottom left) → <strong>Upload Img</strong>. Select your file. It
+        appears on the canvas automatically.</li>
+      <li><strong>Save:</strong> Click the 💾 <strong>Save</strong> button in the top bar. Your changes are now permanent
+        and stored on the server.</li>
+      <li><strong>Export:</strong> Click the 🛠️ FAB → ⬇️ <strong>Export Pro PNG</strong>. Your print-ready menu
+        downloads immediately.</li>
+    </ol>
+
+    <div class="callout warning">
+      <strong>Pro Tip:</strong> Always keep the layout <strong>Locked</strong> unless you are specifically moving
+      elements. In <strong>Locked</strong> mode, you can still edit text by double-clicking, but you won't accidentally
+      drag elements out of place.
     </div>
+
     <div class="footer"><span>Customer Edition</span><span>Page 4</span></div>
   </section>
+
   <section class="page page-break">
-    <h2>3. Understanding the Editor Layout</h2>
-    <p>When you open the editor, you will see four main areas. Understanding each one will help you work confidently.
-    </p>
-    <h3>Area 1 — The Top Header Bar</h3>
-    <div class="ui-mock">
-      <div class="ui-label">Top of Screen — Always Visible</div>
-      <div class="ui-row">
-        <span style="color:#f1c40f;font-weight:700;font-family:sans-serif;">MENU EDITOR PRO V2</span>
-        <span class="ui-btn green">💾 Save</span>
-        <span class="ui-btn">↺ Undo</span>
-        <span class="ui-btn primary">🔒 Layout Locked</span>
-        <span class="ui-btn">↺ RELOAD</span>
-      </div>
-    </div>
-    <p>The top header bar runs across the very top of the screen at all times. It contains your most important controls:
-      Save, Undo, the Layout Lock toggle, and a Reload button. These are always accessible no matter what you are doing.
-    </p>
-    <h3>Area 2 — The Canvas (Main Editing Area)</h3>
-    <p>The large center area is the canvas — your menu. It shows a scaled preview of your full-size menu. You can scroll
-      around it, zoom in and out, click elements to select them, and drag them when the layout is unlocked. Everything
-      on the canvas appears exactly in your exported PNG.</p>
-    <h3>Area 3 — The Floating Action Button (FAB)</h3>
-    <div class="ui-mock">
-      <div class="ui-label">Bottom-Left Corner of Screen</div>
-      <div class="ui-row">
-        <span class="ui-btn primary"
-          style="border-radius:50%;width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;">🛠️</span>
-        <span style="color:#aaa;font-size:12px;">← Tap to open / close the Tools Drawer</span>
-      </div>
-    </div>
-    <p>The circular 🛠️ button in the bottom-left opens and closes the Tools Drawer — your main command center for all
-      editing actions, image uploads, export, and the Layers Panel.</p>
-    <h3>Area 4 — The Selection Bar (Contextual Toolbar)</h3>
-    <div class="ui-mock">
-      <div class="ui-label">Appears When an Element Is Selected</div>
-      <div class="ui-row">
-        <span style="color:#888;font-size:18px;">⠿</span>
-        <span class="ui-btn active" style="font-size:10px;">LAYER</span>
-        <span class="ui-btn" style="font-size:10px;">DESIGN</span>
-        <span class="ui-btn" style="font-size:10px;">ARRANGE</span>
-        <span class="ui-btn" style="background:#2980b9;">📋</span>
-        <span class="ui-btn" style="background:#c0392b;">🗑</span>
-      </div>
-    </div>
-    <p>When you click or tap any element on the canvas, the Selection Bar appears. It has three tabs —
-      <strong>LAYER</strong>, <strong>DESIGN</strong>, and <strong>ARRANGE</strong> — each with different controls for
-      the selected element. Grab the ⠿ handle to drag it anywhere on screen.</p>
-    <div class="callout tip">
-      <strong>Tip:</strong> On mobile, if the Selection Bar overlaps your work, grab the ⠿ handle on the left and slide
-      it to a more comfortable position.
-    </div>
-    <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 5</span></div>
-  </section>
-  <section class="page page-break">
-    <h2>4. Quick Start Workflow</h2>
-    <p>Follow these steps for your first editing session. Each step is explained fully in later sections.</p>
-    <div class="step-row"><span class="step-num">1</span>
-      <p><strong>Open your editor link</strong> in Google Chrome or Safari. The menu loads automatically with your last
-        saved session.</p>
-    </div>
-    <div class="step-row"><span class="step-num">2</span>
-      <p><strong>Unlock the layout</strong> by clicking the 🔒 Layout Locked button in the top header. It turns yellow
-        and shows 🔓 Layout Unlocked. This lets you click and select elements.</p>
-    </div>
-    <div class="step-row"><span class="step-num">3</span>
-      <p><strong>Click any text element</strong> on the canvas to select it. A yellow highlight box appears around it
-        and the Selection Bar appears at the bottom.</p>
-    </div>
-    <div class="step-row"><span class="step-num">4</span>
-      <p><strong>Double-click the text</strong> (or double-tap on mobile) to place your cursor inside it. Type your
-        changes — update a price, fix a spelling, change a dish name.</p>
-    </div>
-    <div class="step-row"><span class="step-num">5</span>
-      <p><strong>Click the canvas background</strong> (not on any element) to deselect and finish editing.</p>
-    </div>
-    <div class="step-row"><span class="step-num">6</span>
-      <p><strong>Use the DESIGN tab</strong> in the Selection Bar to change the font, color, size, line height, or
-        letter spacing.</p>
-    </div>
-    <div class="step-row"><span class="step-num">7</span>
-      <p><strong>Click 💾 Save</strong> in the top header to save your work to the server. A green toast notification
-        confirms the save.</p>
-    </div>
-    <div class="step-row"><span class="step-num">8</span>
-      <p><strong>When ready to print</strong>, open the drawer (🛠️) and click ⬇️ Export Pro PNG. Your 300 DPI file
-        downloads automatically.</p>
-    </div>
-    <div class="callout">
-      <strong>Remember:</strong> Keep the layout <strong>Locked</strong> whenever you are editing text or browsing.
-      Unlock it only when dragging something to a new position, then lock it again immediately.
-    </div>
-    <h3>First Session Quick Reference</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Goal</th>
-          <th>What to Do</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Edit text content</td>
-          <td>Unlock → Click element → Double-click to type</td>
-        </tr>
-        <tr>
-          <td>Change font or color</td>
-          <td>Click element → DESIGN tab → Choose font / color / size</td>
-        </tr>
-        <tr>
-          <td>Move an element</td>
-          <td>Unlock → Click element → Drag to new position</td>
-        </tr>
-        <tr>
-          <td>Add new text</td>
-          <td>Open drawer → ＋ Add Text</td>
-        </tr>
-        <tr>
-          <td>Add a logo or image</td>
-          <td>Open drawer → 🖼️ Upload Img or click tray thumbnail</td>
-        </tr>
-        <tr>
-          <td>Save your work</td>
-          <td>💾 Save button in top header bar</td>
-        </tr>
-        <tr>
-          <td>Export for printing</td>
-          <td>Open drawer → ⬇️ Export Pro PNG or press Ctrl+E</td>
-        </tr>
-        <tr>
-          <td>Undo a mistake</td>
-          <td>↺ Undo button in top bar or Ctrl+Z</td>
-        </tr>
-      </tbody>
-    </table>
-    <div class="footer"><span>Customer Edition</span><span>Page 6</span></div>
-  </section>
-  <section class="page page-break">
-    <h2>5. The Top Header Bar</h2>
-    <p>The top header bar is always visible at the top of the screen and contains four controls you will use constantly.
-    </p>
-    <div class="ui-mock">
-      <div class="ui-label">Top Header Bar</div>
-      <div class="ui-row">
-        <span style="color:#f1c40f;font-weight:700;font-family:sans-serif;letter-spacing:1px;">MENU EDITOR PRO V2</span>
-        <span class="ui-btn green">💾 Save</span>
-        <span class="ui-btn">↺ Undo Last Change</span>
-        <span class="ui-btn primary">🔒 Layout Locked</span>
-        <span class="ui-btn">↺ RELOAD</span>
-      </div>
-    </div>
+    <div class="brand-bar"></div>
+    <h2>6. The Top Header Bar</h2>
+    <p>The header bar is always visible at the top of your screen. It provides the core safety and management controls for
+      your session.</p>
+
+    <h3>🔒 Layout Lock / 🔓 Layout Unlocked</h3>
+    <p>This is the most important control in the editor. By default, the layout is <strong>Locked</strong>. In this state,
+      you can <strong>not</strong> drag elements or accidentally click small objects. This is "Safe Mode." Switch to
+      <strong>Unlocked</strong> only when you need to reposition things or use the selection tabs.</p>
+
     <h3>💾 Save</h3>
     <p>Saves your entire session — all text content, positions, styles, layer settings, and image placements — to the
       server. Also creates a local browser backup simultaneously. A green toast message confirms: <em>"Project Saved
-        Locally"</em>. Use Save frequently. There is no automatic timed saving.</p>
+        Locally"</em>. Use Save frequently. Auto-backup runs automatically every 5 minutes whenever unsaved changes exist. The Save button turns red when changes are pending. Auto-backup saves silently to the server — you will see a brief "Auto-backup saved" notification when it fires..</p>
     <div class="callout tip"><strong>Shortcut:</strong> Save runs automatically every time you click Export Pro PNG, so
       your export always matches your most recent work.</div>
+
     <h3>↺ Undo Last Change</h3>
-    <p>Reverses your most recent action one step at a time. The undo system remembers up to 30 actions, covering text
+    <p>Reverses your most recent action one step at a time. The undo system remembers up to 50 actions, covering text
       edits, element moves, style changes, additions, deletions, visibility changes, and lock toggles. Click repeatedly
       to step back through history.</p>
     <div class="callout warning"><strong>Important:</strong> Undo does NOT reverse a Reset to Original or a Load
-      Session. Those are intentional full-restore actions.</div>
-    <h3>🔒 Layout Locked / 🔓 Layout Unlocked</h3>
-    <p>Two states:</p>
-    <ul>
-      <li><strong>🔒 Layout Locked (red, default):</strong> Elements cannot be accidentally dragged. Use for all text
-        editing, styling, and general navigation.</li>
-      <li><strong>🔓 Layout Unlocked (yellow):</strong> Elements CAN be dragged to new positions. Floating Zoom Controls
-        (+/−) also appear in the top-right corner. Use only when repositioning something, then immediately switch back
-        to Locked.</li>
-    </ul>
-    <div class="callout"><strong>Rule of thumb:</strong> If you are not actively dragging something, the layout should
-      be Locked. This prevents accidental repositioning, especially on mobile.</div>
+      Session. Once you reload or reset, the history is cleared.</div>
+
+    <h3>🏠 Home</h3>
+    <p>Returns you to the application home dashboard. Always save before clicking Home.</p>
+
     <h3>↺ RELOAD</h3>
-    <p>Refreshes the entire page (hard browser reload). Use only if the editor becomes unresponsive or appears visually
-      broken. <strong>Save your work before clicking RELOAD</strong> — any unsaved changes will be lost.</p>
-    <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 7</span></div>
+    <p>Refreshes the current application. Use this if the editor feels slow or if an action becomes unresponsive. This
+      is more reliable than the browser's refresh button because it maintains the current editor context.</p>
+
+    <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 5</span></div>
   </section>
+
   <section class="page page-break">
-    <h2>6. The Floating Action Button (FAB) &amp; Drawer</h2>
-    <p>The 🛠️ floating button in the bottom-left opens and closes the <strong>Tools Drawer</strong> — your main command
-      center for all editing actions.</p>
-    <div class="ui-mock">
-      <div class="ui-label">Tools Drawer — Bottom of Screen</div>
-      <div class="ui-row" style="margin-bottom:10px;"><span style="color:#aaa;font-size:11px;">[ Asset Image Tray —
-          scrollable row of built-in and uploaded images ]</span></div>
-      <div class="ui-row">
-        <span class="ui-btn primary">💾 Save Session</span>
-        <span class="ui-btn">📂 Load Session</span>
-        <span class="ui-btn">＋ Add Text</span>
-        <span class="ui-btn">⬜ Add Rect</span>
-      </div>
-      <div class="ui-row">
-        <span class="ui-btn">🖼️ Upload Img</span>
-        <span class="ui-btn">👁️ Toggle BG</span>
-        <span class="ui-btn accent">⬇️ Export Pro PNG</span>
-        <span class="ui-btn" style="background:#444;">🔄 Reset</span>
-      </div>
-      <div class="ui-row" style="margin-top:8px;">
-        <span class="ui-btn">📖 Manual (EN)</span>
-        <span class="ui-btn">📖 Manual (ES)</span>
-      </div>
-      <div class="ui-row" style="margin-top:8px;"><span style="color:#aaa;font-size:11px;">[ Layers Panel — list of all
-          canvas elements ]</span></div>
-    </div>
-    <h3>💾 Save Session</h3>
-    <p>Saves all your current work to the server permanently. Also backs up to local browser storage. Always use before
-      closing the editor or switching devices.</p>
-    <h3>📂 Load Session</h3>
-    <p>Loads the last version you saved to the server. Use when continuing on a different device.
-      <strong>Warning:</strong> This replaces your current unsaved work with the server version. Save first if needed.
-    </p>
+    <div class="brand-bar"></div>
+    <h2>7. The Floating Action Button (FAB) &amp; Drawer</h2>
+    <p>The 🛠️ Floating Action Button sits at the bottom-left of your screen. Clicking it opens the <strong>System
+        Drawer</strong>, which contains two primary tabs: <strong>ADD</strong> and <strong>ASSETS</strong>.</p>
+
+    <h2>8. ADD Tab (The Tools Drawer)</h2>
+    <p>This tab contains the buttons for adding new content to your menu and performing global file operations.</p>
+
     <h3>＋ Add Text</h3>
     <p>Creates a new text element in the center of your current view, labeled "New Text," already selected. Immediately
       type your content and use the Selection Bar to style it.</p>
+
     <h3>⬜ Add Rect</h3>
     <p>Creates a new rectangle shape in the center of the canvas. Use the DESIGN tab to change fill color, corner
       roundness, border width, and border color. Ideal for price backgrounds, banners, and dividers.</p>
+    <p><strong>Add Circle</strong> — Adds a filled circle shape to the canvas. The circle is fully editable: change fill color, stroke, opacity, rotation, and size. Select it and use the DESIGN tab to style it.</p>
+    <p><strong>Add Star</strong> — Adds a five-point star shape rendered as an SVG polygon. Fully styleable with fill color and stroke. Use the DESIGN tab after selecting.</p>
+    <p><strong>Add Line</strong> — Adds a straight horizontal line element. Use the DESIGN tab to set line weight (0.25px to 4px), line cap style (Flat, Round, Square), and color. Lines can be rotated with the rotation slider.</p>
+
     <h3>🖼️ Upload Img</h3>
-    <p>Opens your device's file picker. Select a JPG, PNG, WEBP, GIF, or SVG file. The image is saved to your permanent
+    <p>Opens your device's file picker. You can select multiple image files at once — hold Ctrl (Windows) or Cmd (Mac) while clicking in the file picker to select several images. All selected images will be imported into your asset tray simultaneously. The image is saved to your permanent
       library, appears in the Asset Tray, and is placed on the canvas automatically. Transparent PNG borders are
       auto-trimmed.</p>
+
     <h3>👁️ Toggle Original BG</h3>
-    <p>Shows or hides the original scanned menu background. Hiding it lets you see only your added elements — useful for
+    <p>Fades out the background image, showing only your elements on a dark grid. This is helpful for seeing small text or
       checking alignment. This setting is saved with your session.</p>
+
     <h3>🖼️ Replace Background</h3>
     <p>If you select an image element on the canvas, the drawer will show a "Replace Background" button. Clicking this promotes your selected image to become the new, locked master background for the menu.</p>
+    <p><strong>Remove Background</strong> — Found in the Layers panel context. This permanently deletes all background layers from the canvas without replacing them. Use this when you want a transparent or blank canvas behind your content. This is different from Replace Background — it does not import anything new.</p>
+
     <h3>⬇️ Export Pro PNG</h3>
     <p>Generates a print-ready PNG at full resolution. Auto-saves first, then renders every visible element and
       downloads the file. A progress toast appears during export. Covered in full in Section 19.</p>
+
     <h3>🔄 Reset to Original</h3>
-    <p>Restores the menu to its original template, clearing all custom edits. A confirmation dialog appears first.
-      <strong>Cannot be undone with the Undo button.</strong> Use only for a complete fresh start.</p>
-    <h3>📖 Manual (EN)</h3>
-    <p>Opens the English in-app user manual in a new panel.</p>
-    <h3>📖 Manual (ES)</h3>
-    <p>Opens the Spanish in-app user manual in a new panel.</p>
-    <div class="footer"><span>Customer Edition</span><span>Page 8</span></div>
+    <p>Clears ALL your custom edits and restores the menu to the original template delivered by Marias Digital Designs. Use with caution — this cannot be undone.</p>
+
+    <div class="footer"><span>Customer Edition</span><span>Page 6</span></div>
   </section>
+
   <section class="page page-break">
-    <h2>7. The Asset Tray – Built-In &amp; Uploaded Images</h2>
-    <p>Inside the Tools Drawer, at the very top, is the <strong>Asset Tray</strong> — a horizontal scrolling row of
-      image thumbnails. These are your menu's built-in graphic assets plus any images you have personally uploaded.</p>
-    <div class="ui-mock">
-      <div class="ui-label">Asset Tray — Top of the Drawer</div>
-      <div class="ui-row">
-        <span
-          style="display:inline-block;width:70px;height:60px;background:#333;border-radius:6px;border:2px solid #555;text-align:center;line-height:60px;font-size:20px;">🖼️</span>
-        <span
-          style="display:inline-block;width:70px;height:60px;background:#333;border-radius:6px;border:2px solid #555;text-align:center;line-height:60px;font-size:20px;">🖼️</span>
-        <span
-          style="display:inline-block;width:70px;height:60px;background:#333;border-radius:6px;border:2px solid #555;text-align:center;line-height:60px;font-size:20px;">🖼️</span>
-        <span style="color:#aaa;font-size:12px;">← Scroll left/right to see all</span>
+    <div class="brand-bar"></div>
+    <div class="ui-row">
+      <div style="width:250px; background:#f7f3f3; padding:20px; border-radius:12px; border:1px solid #ccc;">
+        <h3>💾 Save Session</h3>
+        <p style="font-size:12px;">Saves to Cloud</p>
+        <h3 style="margin-top:10px;">📂 Load Session</h3>
+        <p style="font-size:12px;">Restores from Cloud</p>
+        <span class="ui-btn" style="margin-top:10px;">📖 Manual (EN)</span>
+        <span class="ui-btn">📖 Manual (ES)</span>
       </div>
+      <h3>Restore Backup</h3>
+      <p><strong>Restore Backup</strong> — Click this button to restore your canvas to the last auto-backup point. A confirmation dialog will appear before anything is changed. Use this if you made a mistake and want to roll back to the last auto-saved version. Note: this replaces your current canvas — any unsaved work after the last backup will be lost.</p>
+      <div class="ui-row" style="margin-top:8px;"><span style="color:#aaa;font-size:11px;">[ Layers Panel — list of all
+          canvas elements ]</span></div>
     </div>
-    <h3>Using Built-In Images</h3>
-    <p>The built-in images are pre-loaded decorative graphics designed to match your menu's visual style. To add one to
-      your canvas, simply <strong>click or tap its thumbnail</strong> in the tray. The image is placed on the canvas and
-      selected automatically so you can reposition and resize it immediately.</p>
-    <h3>Uploading Your Own Images</h3>
-    <ol>
-      <li>Click <strong>🖼️ Upload Img</strong> in the drawer.</li>
-      <li>Your device's file picker opens. Select a JPG, PNG, WEBP, GIF, or SVG file.</li>
-      <li>The image uploads, is stored in your permanent library, appears in the Asset Tray, and is placed on the canvas
-        automatically.</li>
-      <li>Use the resize handles (corner circles visible when selected) to adjust its size, then drag to position.</li>
-    </ol>
+
+    <h2>9. ASSETS Tab (Your Image Library)</h2>
+    <p>All images you have ever uploaded to the editor are stored in the <strong>Assets Tray</strong>. This allows you to
+      reuse logos, badges, and food photos without re-uploading them.</p>
+
+    <h3>How to use assets:</h3>
     <ul>
-      <li>Each uploaded image thumbnail has a ✕ button in the corner</li>
-      <li>Clicking ✕ permanently removes that image from the library</li>
-      <li>A confirmation dialog appears before deletion</li>
-      <li>Once removed, the image cannot be recovered — re-upload if needed</li>
+      <li><strong>Add to Canvas:</strong> Simply click any image in the tray. It appears in the canvas center.</li>
+      <li><strong>Delete Asset:</strong> Hover over an image and click the red ✕ to remove it from your tray permanently.
+        Already-placed images on the canvas will NOT be affected.</li>
     </ul>
-    <div class="callout tip"><strong>Tip:</strong> Uploaded images persist in your library permanently. Even after
-      clearing the canvas, your uploaded images will still be in the Asset Tray ready to use again.</div>
-    <h3>Transparent PNG Images</h3>
-    <p>If you upload a PNG file with a transparent background (such as a logo), the editor automatically trims empty
-      transparent space before placing it — no white box behind your logo.</p>
-    <h3>Image File Tips</h3>
-    <ul>
-      <li>Use <strong>PNG</strong> for logos and graphics with transparent backgrounds</li>
-      <li>Use <strong>JPG</strong> for photographs of food or your restaurant</li>
-      <li>For best print quality, upload images at <strong>300 DPI or higher</strong> resolution</li>
-      <li>Most standard phone photos upload without issue</li>
-    </ul>
-    <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 9</span></div>
-  </section>
-  <section class="page page-break">
-    <h2>8. Adding &amp; Managing Text Elements</h2>
-    <h3>Adding New Text</h3>
-    <ol>
-      <li>Open the drawer (🛠️ FAB button).</li>
-      <li>Click <strong>＋ Add Text</strong>.</li>
-      <li>A new element labeled "New Text" appears at the center of your current view, already selected.</li>
-      <li>Double-click (or double-tap on mobile) to enter editing mode and type your content.</li>
-      <li>Click anywhere on the canvas background to finish editing.</li>
-    </ol>
-    <h3>Selecting an Existing Text Element</h3>
-    <p>Make sure layout is unlocked (🔓), then click or tap once on any text element. A yellow glowing border appears
-      around it and the Selection Bar shows at the bottom. The element is now selected.</p>
+
+    <div class="callout warning">
+      <strong>File limits:</strong> For best performance, use PNG for logos (transparency) and JPG for food photos. The
+      editor automatically optimizes files over 5MB, but try to keep uploads under this limit for fastest speed.
+    </div>
+
+    <h2>10. Adding &amp; Managing Text Elements</h2>
+    <p>Text elements are the core of your menu. You can add them from the drawer or duplicate existing ones.</p>
+
     <h3>Editing Text Content</h3>
-    <p>With a text element selected, <strong>double-click it</strong> (or double-tap on mobile) to place your cursor
-      inside. Type your changes — update a price, fix a name, change a description. Press Enter for a new line. Click
-      the canvas background to confirm when done.</p>
-    <div class="callout tip"><strong>Tip:</strong> Text supports multiple lines. Press Enter/Return while editing to
-      create a line break inside the same text element.</div>
-    <h3>Moving Text Elements</h3>
     <ol>
-      <li>Ensure layout is <strong>🔓 Unlocked</strong>.</li>
-      <li>Click the element once to select it (do NOT double-click — that enters text editing mode).</li>
-      <li>Hold and drag it to its new position.</li>
-      <li>Release. The new position is recorded in undo history.</li>
-      <li>Lock the layout again with 🔒 once finished.</li>
+      <li>Double-click the text element on the canvas.</li>
+      <li>The cursor appears. Type your changes.</li>
+      <li>Click anywhere else (or hit Escape) to finish and lock the text.</li>
     </ol>
-    <h3>Deleting a Text Element</h3>
-    <p>Select the element, then click the <strong>🗑 Delete</strong> button (red trash icon) in the Selection Bar. A
-      confirmation dialog appears. Confirm deletion. You can restore it with <strong>↺ Undo Last Change</strong> if
-      needed.</p>
-    <h3>Duplicating an Element</h3>
-    <p>Select any element. In the Selection Bar, click the <strong>📋 Duplicate</strong> button (blue). An exact copy
-      appears, offset slightly from the original, and is automatically selected for immediate repositioning. Works for
-      text, images, and shapes.</p>
-    <h3>Background-Labeled Elements</h3>
-    <p>If a text or image element is named "background" and set to Locked in the LAYER tab, it will not respond to click
-      selection while the global layout is locked — protecting the base design from any accidental interaction.</p>
-    <div class="footer"><span>Customer Edition</span><span>Page 10</span></div>
-  </section>
-  <section class="page page-break">
-    <h2>9. Adding &amp; Managing Image Elements</h2>
-    <h3>Adding an Image from the Asset Tray</h3>
-    <p>Open the drawer and click any image thumbnail in the Asset Tray. The image is placed on the canvas at a default
-      size and is automatically selected. Drag it to position, and use the corner resize handles to change its size.</p>
-    <h3>Resizing Images</h3>
-    <p>When an image element is selected, you will see <strong>four yellow circular handles</strong> at each corner.</p>
+
+    <div class="callout tip">
+      <strong>Pro Tip:</strong> To create multiple columns, use the <strong>Duplicate</strong> button on a price
+      element, then drag the copy into place. This keeps the font and size consistent across your prices.
+    </div>
+
+    <h3>Text Element Controls</h3>
+    <p>When you select a text element, three specialized tabs appear in the Selection Bar:</p>
     <ul>
-      <li>Drag any corner handle to resize the image</li>
-      <li>Resize is <strong>zoom-aware</strong> — handles work correctly whether zoomed in at 200% or out at 50%</li>
-      <li>Minimum size protection prevents images from being shrunk accidentally to nothing</li>
-      <li>Hold <strong>Shift</strong> while dragging a corner to resize proportionally (keeps original aspect ratio)
+      <li><strong>LAYER:</strong> Change the layer name, toggle lock state, hide the element, or adjust opacity.</li>
+      <li><strong>DESIGN:</strong> Change font family, font size, bold/italic style, and color.</li>
+      <li><strong>ARRANGE:</strong> Center the text, move it to the front/back, or rotate it.</li>
+    </ul>
+
+    <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 7</span></div>
+  </section>
+
+  <section class="page page-break">
+    <div class="brand-bar"></div>
+    <h2>11. Adding &amp; Managing Image Elements</h2>
+    <p>Image elements include your logos, badges, and food photography. All images are handled through the Cloudinary
+      asset pipeline.</p>
+
+    <h3>Adding an Image</h3>
+    <ul>
+      <li><strong>New Upload:</strong> Use 🛠️ FAB → <strong>Upload Img</strong>.</li>
+      <li><strong>Existing Asset:</strong> Open 🛠️ FAB → <strong>ASSETS</strong> tab → Click the image.</li>
+    </ul>
+
+    <h3>Image Propeties</h3>
+    <p>Like text, images have specialized tabs in the Selection Bar:</p>
+    <ul>
+      <li><strong>LAYER:</strong> Wrench-icon tab. Control Opacity (for watermarks), Locking, and Visibility.</li>
+      <li><strong>ARRANGE:</strong> Box-icon tab. Control Alignment (Center, Middle), Order (Front/Back), and Rotation.
       </li>
     </ul>
-    <h3>Moving Images</h3>
-    <p>Ensure layout is <strong>🔓 Unlocked</strong>, click the image to select it, then drag it by its body (not by a
-      corner handle — those resize). Release to confirm the new position.</p>
-    <h3>Image Opacity</h3>
-    <p>Select an image element, go to the <strong>LAYER tab</strong>, and use the <strong>Opacity slider</strong> to
-      fade it. Useful for watermarks, decorative backgrounds, or semi-transparent overlays. Range: 0% (invisible) to
-      100% (fully solid).</p>
-    <h3>Hiding an Image Without Deleting</h3>
-    <p>In the LAYER tab, click the <strong>👁️ Visibility</strong> toggle to hide the image. It becomes faint (20%
-      opacity) in the editor but will <strong>not appear in your exported PNG</strong>. The hidden element still shows
-      in the Layers Panel so you know it exists.</p>
-    <h3>Locking an Image in Place</h3>
-    <p>In the LAYER tab, click the <strong>🔒 Lock Element</strong> toggle. A locked element cannot be moved, resized,
-      or accidentally selected. Ideal for permanent background frames or watermarks.</p>
+
     <div class="callout"><strong>Background images:</strong> Any element named "background" AND set to Locked will not
       respond to click selection while the global layout is also locked — giving you double protection on critical base
       design elements.</div>
+
+    <h3>Right-Click Context Menu</h3>
+    <p>Right-clicking an image element on the canvas opens a quick-action context menu. Options include:</p>
+    <ul>
+      <li><strong>Use as Kling Reference</strong> — sends the image directly to the Kling AI image generation reference input in the AI Studio panel.</li>
+      <li><strong>Use as Video Reference</strong> — sends the image directly to the AI video generation reference input.</li>
+    </ul>
+    <p>This saves time — you do not need to download and re-upload an image to use it as an AI reference.</p>
     <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 11</span></div>
   </section>
+
   <section class="page page-break">
-    <h2>10. Adding &amp; Managing Shape Elements</h2>
-    <p>The shape tool lets you add solid-color rectangles to your menu. Use them to create price tag backgrounds,
-      section banners, colored dividers, highlight boxes, or any decorative block.</p>
-    <h3>Adding a Rectangle</h3>
+    <div class="brand-bar"></div>
+    <h2>12. Adding &amp; Managing Shape Elements</h2>
+    <p>Shape elements (Rectangles) are useful for creating backgrounds behind text, color blocks, or decorative borders.
+    </p>
+
+    <h3>Creating a Shape</h3>
     <ol>
-      <li>Open the drawer (🛠️ FAB).</li>
+      <li>Open 🛠️ FAB → <strong>ADD</strong> tab.</li>
       <li>Click <strong>⬜ Add Rect</strong>.</li>
-      <li>A yellow rectangle appears on the canvas, centered in your current view, and is automatically selected.</li>
-      <li>Use the DESIGN tab to customize its appearance.</li>
-      <li>Drag to position and use resize handles to adjust size.</li>
+      <li>A gray rectangle appears on the canvas.</li>
     </ol>
-    <h3>Customizing Shape Appearance (DESIGN Tab)</h3>
+
+    <h3>Styling a Shape</h3>
+    <p>Use the 🎨 <strong>DESIGN</strong> tab on the Selection Bar to style your shapes:</p>
+    <ul>
+      <li><strong>Fill Color:</strong> The primary color of the rectangle.</li>
+      <li><strong>Border Color:</strong> The color of the outline.</li>
+      <li><strong>Border Width:</strong> Set to 0 for a flat block or increase for an outline style.</li>
+      <li><strong>Corner Radius:</strong> Create rounded corners (0 for sharp squares, higher numbers for pills/circles).
+      </li>
+    </ul>
+
+    <div class="callout tip">
+      <strong>Design Tip:</strong> Use a semi-transparent fill color (by using the opacity slider) to create a "tint"
+      effect over your background image, making the text above it easier to read.
+    </div>
+
+    <h2>13. Multi-Select – Selecting Multiple Elements</h2>
+    <p>You can manage dozens of elements at once by selecting more than one at a time. This is essential for moving
+      groups or aligning items.</p>
+
+    <h3>How to Multi-Select</h3>
+    <ul>
+      <li><strong>Shift + Click:</strong> Hold the Shift key and click elements one by one.</li>
+      <li><strong>Lasso (Drag-Box):</strong> Click and hold on an <strong>empty area</strong> of the canvas background and
+        drag your mouse. A rectangular selection box appears. Anything inside the box will be selected. (Layout must be
+        Unlocked).</li>
+      <li><strong>Select All:</strong> Press <span class="kbd">Ctrl+A</span> on your keyboard.</li>
+    </ul>
+
+    <h3>Bulk Actions</h3>
+    <p>When multiple elements are selected, the Selection Bar shows actions that apply to the <strong>entire
+        group</strong>:</p>
+    <ul>
+      <li><strong>Duplicate:</strong> Makes a copy of the entire group.</li>
+      <li><strong>Delete:</strong> Deletes all selected elements.</li>
+      <li><strong>Align Tools:</strong> Appears in the ARRANGE tab when 2+ elements are selected.</li>
+    </ul>
+
+    <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 9</span></div>
+  </section>
+
+  <section class="page page-break">
+    <div class="brand-bar"></div>
+    <h2>14. Selection Bar Reference</h2>
+    <p>The Selection Bar is a floating toolbar that appears only when elements are selected. It has three tabs for
+      different types of control.</p>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <strong>🏷️ Tab 1: LAYER (Wrench Icon)</strong>
+        <ul>
+          <li><strong>Element Name:</strong> Rename your element (e.g., "Mains Title").</li>
+          <li><strong>Visible Toggle:</strong> Quickly hide an element without deleting it.</li>
+          <li><strong>Lock Toggle:</strong> Locks the element relative to your canvas; it won't move even if global
+            layout is Unlocked.</li>
+          <li><strong>Opacity:</strong> Adjust transparency (0 to 100).</li>
+        </ul>
+      </div>
+      <div class="spec-card">
+        <strong>🎨 Tab 2: DESIGN (Brush Icon)</strong>
+        <ul>
+          <li><strong>Font (Text Only):</strong> Choose from the curated restaurant font library.</li>
+          <li><strong>Font Size:</strong> Increase or decrease text size.</li>
+          <li><strong>Fill Color:</strong> Change text or shape color.</li>
+          <li><strong>Spacing (Text Only):</strong> Line height and letter spacing controls.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="spec-card" style="margin-top:20px;">
+      <strong>📐 Tab 3: ARRANGE (Box Icon)</strong>
+      <ul>
+        <li><strong>Order:</strong> Send to Front, Bring Forward, Send Backward, Send to Back.</li>
+        <li><strong>Alignment:</strong> Align Left, Center, Right, Top, Middle, Bottom.</li>
+        <li><strong>Distribution:</strong> Space elements evenly (vertical or horizontal gaps).</li>
+        <li><strong>Rotation:</strong> Rotate elements by degrees.</li>
+      </ul>
+    </div>
+
+    <h3>Text Format Bar</h3>
+    <p>When you select a text element, a floating <strong>Text Format Bar</strong> appears at the top of the canvas. It contains quick-access controls for:</p>
+    <ul>
+      <li><strong>Bold, Italic, Underline, Strikethrough</strong> — toggle text style</li>
+      <li><strong>Alignment</strong> — Left, Center, Right, Justify</li>
+      <li><strong>Text Transform</strong> — Uppercase, Lowercase, Normal</li>
+      <li><strong>Font Family</strong> — select from available fonts</li>
+      <li><strong>Font Size</strong> — with + / − increment buttons</li>
+      <li><strong>Color picker</strong> — with live color swatch preview</li>
+    </ul>
+    <p>The bar disappears when no text element is selected.</p>
+    <div class="footer"><span>Customer Edition</span><span>Page 10</span></div>
+  </section>
+
+  <section class="page page-break">
+    <div class="brand-bar"></div>
+    <h2>15. The Layers Panel</h2>
+    <p>Located at the bottom of the System Drawer (🛠️ FAB), the Layers Panel provides a table-view list of every element
+      on your canvas.</p>
+
+    <h3>Why Use the Layers Panel?</h3>
+    <ul>
+      <li><strong>Selection:</strong> Click an element name in the list to select it on the canvas — great for finding
+        tiny elements or items buried under other layers.</li>
+      <li><strong>Quick Toggles:</strong> Change visibility (👁️) or lock state (🔒) directly from the table.</li>
+      <li><strong>Z-Order:</strong> The list reflects the stack order. Items higher in the list are "on top" of items
+        lower in the list.</li>
+    </ul>
+
+    <div class="callout tip">
+      <strong>Pro Tip:</strong> Keep your background frame locked (🔒) so you can easily select the text on top of it.
+    </div>
+
+    <h2>16. Save, Load &amp; Persistence</h2>
+    <p>Menu Editor Pro V2 uses a "Session" based saving system linked exactly to your project ID.</p>
+
+    <h3>💾 Save Session</h3>
+    <p>Found at the bottom of the drawer. When clicked, it sends your entire project state to the database. A success
+      notification confirms the write is complete.</p>
+
+    <h3>📂 Load Session</h3>
+    <p>Resets the canvas to the last version you manually saved. Use this if you want to undo a large amount of work in
+      one click.</p>
+
+    <h3>Auto-Save Protection</h3>
+    <p>The system automatically saves a "dirty" state indication in your browser. If you close the page and come back, it
+      will try to restore your unsaved work. <strong>However, you should always click 💾 Save manually before closing the
+        browser to ensure server-side persistence.</strong></p>
+
+    <div class="callout danger">
+      <strong>Safety Warning:</strong> Before switching between your phone and your computer, always click <strong>💾
+        Save Session</strong>. This pushes the latest update to the cloud so the second device can "see" it.
+    </div>
+
+    <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 11</span></div>
+  </section>
+
+  <section class="page page-break">
+    <div class="brand-bar"></div>
+    <h2>17. Selection Bar — ARRANGE Tab Deep Dive</h2>
+    <p>The ARRANGE tab controls the <strong>Position</strong>, <strong>Stacking Order</strong>, and
+      <strong>Alignment</strong> of your elements. Precision here makes the difference between a amateur and professional
+      looking menu.</p>
+
+    <h3>Stacking Order (Z-Index)</h3>
+    <p>Determines which elements are "in front" and which are "behind."</p>
+    <ul>
+      <li><strong>Bring to Front:</strong> Moves the element to the absolute top of the stack.</li>
+      <li><strong>Send to Back:</strong> Moves the element to the absolute bottom (just above the background).</li>
+      <li><strong>Forward/Backward:</strong> Moves the element one layer at a time.</li>
+    </ul>
+
+    <h3>Precision Alignment Tools</h3>
+    <p>When two or more elements are selected (Multi-select), these distribution tools appear:</p>
     <table>
       <thead>
         <tr>
-          <th>Control</th>
+          <th>Tool</th>
           <th>What It Does</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><strong>Fill Color</strong></td>
-          <td>Changes the solid color filling the rectangle. Click the color swatch to open the color picker.</td>
+          <td>↔️ Horizontal Distribute</td>
+          <td>Equally spaces the gaps between elements from left to right.</td>
         </tr>
         <tr>
-          <td><strong>Corner Radius</strong></td>
-          <td>Rounds the corners. Set to 0 for sharp square corners, increase for rounded cards and pill shapes.</td>
+          <td>↕️ Vertical Distribute</td>
+          <td>Equally spaces the gaps between elements from top to bottom.</td>
         </tr>
         <tr>
-          <td><strong>Border Width</strong></td>
-          <td>Sets the outline border thickness in pixels. Set to 0 for no border.</td>
+          <td>Align Left / Right</td>
+          <td>Snaps all selected elements to the leftmost or rightmost edge of the lead element.</td>
         </tr>
         <tr>
-          <td><strong>Border Color</strong></td>
-          <td>Sets the outline border color. Only visible when Border Width is greater than 0.</td>
-        </tr>
-        <tr>
-          <td><strong>Opacity</strong></td>
-          <td>In the LAYER tab — fade the shape for watermark or overlay effects.</td>
+          <td>Align Center</td>
+          <td>Line up the vertical centers of all selected items — perfect for price lists.</td>
         </tr>
       </tbody>
     </table>
-    <h3>Layering Shapes Behind Text</h3>
-    <p>To use a rectangle as a text background: add the shape, position and size it, then go to the <strong>ARRANGE
-        tab</strong> and click <strong>Send to Back</strong> to move it behind all other elements. Your text will then
-      sit on top of the colored shape.</p>
-    <h3>Common Shape Uses</h3>
-    <ul>
-      <li><strong>Price highlight:</strong> Dark red or gold rectangle behind a price number</li>
-      <li><strong>Section divider:</strong> Thin horizontal rectangle between menu sections</li>
-      <li><strong>Special item badge:</strong> Rounded rectangle behind "Chef's Special" text</li>
-      <li><strong>Semi-transparent overlay:</strong> Low-opacity black rectangle over a photo for text readability</li>
-    </ul>
+
+    <div class="callout tip">
+      <strong>Perfect Price Lists:</strong> Multi-select your entire column of prices, then click <strong>Align
+        Center</strong> (Vertical) and <strong>Vertical Distribute</strong>. This creates a perfectly spaced, straight
+      vertical column automatically.
+    </div>
+
+    <h3>Rotation</h3>
+    <p>Use the rotation slider or the degree input (0 to 360) to tilt elements. This is great for "New!", "Special!", or
+      "Try This!" badges to give them a dynamic, hand-placed look.</p>
+
     <div class="footer"><span>Customer Edition</span><span>Page 12</span></div>
   </section>
+
   <section class="page page-break">
-    <h2>11. Multi-Select – Selecting Multiple Elements</h2>
-    <p>Select multiple elements to move, delete, duplicate, or align them together as a single group.</p>
+    <div class="brand-bar"></div>
+    <h2>18. Selection Bar — DESIGN Tab Deep Dive</h2>
+    <p>The DESIGN tab controls the <strong>Visual Aesthetics</strong> of elements. This is where you set the mood of your
+      menu.</p>
+
+    <h3>Fonts and Typography (Text Only)</h3>
+    <p>The font selection menu is populated with high-end typography carefully selected for restaurant use:
+      <strong>Bernard MT Condensed</strong>, <strong>Century Gothic (Bold/Regular/Italic)</strong>, and other clean,
+      legible options.</p>
+
+    <h3>Color Management</h3>
+    <p>The color picker allows for Hex codes or visual selection. Each menu has a designated "Brand Palette" — try to stay
+      within this palette for a cohesive look.</p>
+
+    <h3>Text Spacing</h3>
     <ul>
-      <li><strong>Shift+click</strong> any element to add it to / remove it from the selection</li>
-      <li><span class="kbd">Ctrl+A</span> / <span class="kbd">⌘+A</span> selects all elements at once</li>
-      <li>Selection count shown in Selection Bar header (e.g. "3 elements selected")</li>
-      <li>Multi-select deselects when you click an empty canvas area</li>
+      <li><strong>Line Height:</strong> Increase the vertical gap between lines of text in descriptions.</li>
+      <li><strong>Letter Spacing:</strong> Increase for headers to create an elegant, airy look.</li>
     </ul>
-    <h3>Group Operations</h3>
-    <p>When multiple elements are selected, you can:</p>
+
+    <h3>Shape Design (Rectangle Only)</h3>
     <ul>
-      <li>Move all selected elements together as a group</li>
-      <li>Delete all selected (single undo history entry)</li>
-      <li>Duplicate all selected</li>
-      <li>Use the ARRANGE tab to access alignment tools</li>
+      <li><strong>Fill:</strong> Primary color of the block.</li>
+      <li><strong>Border:</strong> Set border color and thickness (0 to 20px).</li>
+      <li><strong>Rounding:</strong> Turn a square rectangle into a pill-shape or circle by increasing this value.</li>
     </ul>
-    <div class="ui-mock">
-      <div class="ui-label">Selection Bar — Multi-Select State</div>
-      <div class="ui-row">
-        <span style="color:#aaa;font-size:12px;">3 elements selected</span>
-        <span style="flex:1;"></span>
-        <span class="ui-btn" style="background:#2980b9;">📋</span>
-        <span class="ui-btn" style="background:#c0392b;">🗑</span>
+
+    <div class="spec-grid" style="margin-top:20px;">
+      <div class="spec-card">
+        <strong>Design Best Practice:</strong>
+        <p>Use larger, Bold fonts for item titles (e.g., "GRILLED SALMON") and smaller, regular fonts for descriptions
+          (e.g., "Served with lemon caper sauce...").</p>
+      </div>
+      <div class="spec-card">
+        <strong>Contrast Rule:</strong>
+        <p>If your background is dark, use light text. If your background is light, use dark text. High contrast ensures
+          highest legibility in low-light restaurant settings.</p>
       </div>
     </div>
-    <div class="footer"><span>Customer Edition</span><span>Page 13</span></div>
-  </section>
-  <section class="page page-break">
-    <h2>12. Lasso &amp; Drag-Box Selection</h2>
-    <p>Quickly select multiple elements by drawing a selection box around them.</p>
-    <ul>
-      <li><strong>Desktop (mouse):</strong> Hold and drag on any empty canvas area to draw a selection box. All elements whose bounding box overlaps the lasso box become selected when you release.</li>
-      <li><strong>Mobile (touch):</strong> One-finger drag on empty canvas area (Layout must be Unlocked). Same behavior as mouse lasso.</li>
-    </ul>
-    <p>Selected elements show the same yellow glow border as single-select. Works with any combination of text, image, and shape elements. After lasso, all group operations (move, delete, duplicate, align) are available.</p>
-    <div class="callout tip">
-      <strong>Tip:</strong> Use lasso selection to quickly grab a whole section of the menu (like a title and its items) to move them down together.
-    </div>
-    <div class="footer"><span>Customer Edition</span><span>Page 14</span></div>
-  </section>
-  <section class="page page-break">
-    <h2>13. Alignment &amp; Distribution Tools</h2>
-    <p>Only available in the <strong>ARRANGE</strong> tab when 2 or more elements are selected.</p>
-    <div class="callout tip">
-      <strong>Tip:</strong> Alignment tools are hidden when only one element is selected. Select 2 or more to reveal them.
-    </div>
-    <div class="ui-mock">
-      <div class="ui-label">ARRANGE Tab — Alignment Tools</div>
-      <div class="ui-row">
-        <span class="ui-btn" style="font-size:11px;">Align L</span>
-        <span class="ui-btn" style="font-size:11px;">Center H</span>
-        <span class="ui-btn" style="font-size:11px;">Align R</span>
-      </div>
-      <div class="ui-row">
-        <span class="ui-btn" style="font-size:11px;">Align T</span>
-        <span class="ui-btn" style="font-size:11px;">Center V</span>
-        <span class="ui-btn" style="font-size:11px;">Align B</span>
-      </div>
-      <div class="ui-row">
-        <span class="ui-btn" style="font-size:11px;">Dist. Horiz</span>
-        <span class="ui-btn" style="font-size:11px;">Dist. Vert</span>
-      </div>
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th>Tool</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>Align Left</td><td>Aligns all selected elements to the leftmost edge of the selection</td></tr>
-        <tr><td>Align Center (H)</td><td>Centers all horizontally across the selection bounding box</td></tr>
-        <tr><td>Align Right</td><td>Aligns all to the rightmost edge</td></tr>
-        <tr><td>Align Top</td><td>Aligns all to the topmost edge</td></tr>
-        <tr><td>Align Middle (V)</td><td>Centers all vertically across the selection bounding box</td></tr>
-        <tr><td>Align Bottom</td><td>Aligns all to the bottommost edge</td></tr>
-        <tr><td>Distribute Horizontally</td><td>Creates equal spacing between elements left to right</td></tr>
-        <tr><td>Distribute Vertically</td><td>Creates equal spacing between elements top to bottom</td></tr>
-      </tbody>
-    </table>
-    <p><strong>Example:</strong> Use Align Left to instantly line up a column of price labels so they share exactly the same left edge.</p>
-    <div class="footer"><span>Customer Edition</span><span>Page 15</span></div>
+
+    <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 13</span></div>
   </section>
 
   <section class="page page-break">
-    <h2>14. The Selection Bar – Complete Reference</h2>
-    <p>The Selection Bar is the floating toolbar that appears whenever you click any element. It contains three tabs, a
-      Duplicate button, and a Delete button.</p>
-    <div class="ui-mock">
-      <div class="ui-label">Selection Bar — Full Layout</div>
-      <div class="ui-row">
-        <span style="color:#888;font-size:18px;cursor:grab;">⠿</span>
-        <span class="ui-btn active" style="font-size:10px;font-weight:800;">LAYER</span>
-        <span class="ui-btn" style="font-size:10px;font-weight:800;">DESIGN</span>
-        <span class="ui-btn" style="font-size:10px;font-weight:800;">ARRANGE</span>
-        <span style="flex:1;"></span>
-        <span class="ui-btn" style="background:#2980b9;padding:5px 10px;">📋</span>
-        <span class="ui-btn" style="background:#c0392b;padding:5px 10px;">🗑</span>
+    <div class="brand-bar"></div>
+    <h2>19. Export Pro PNG</h2>
+    <p>The Export Pro PNG feature is a high-performance rendering engine that converts your canvas into a massive,
+      print-ready high-resolution file.</p>
+
+    <h3>How to Export</h3>
+    <ol>
+      <li>Prepare your menu and <strong>Save Session</strong>.</li>
+      <li>Open the drawer (🛠️ FAB) → <strong>⬇️ Export Pro PNG</strong>.</li>
+      <li>A toast notification appears: "Saving project state... Rerendering..."</li>
+      <li>Wait a few seconds. Do not close the browser.</li>
+      <li>A file named <code>notyourmamaskitchen-menu.png</code> will be saved to your device's downloads folder.</li>
+    </ol>
+
+    <h3>Export Output Specifications</h3>
+    <div class="spec-grid">
+      <div class="spec-card">
+        <strong>File Format</strong>
+        <p>PNG (Lossless Quality)</p>
+      </div>
+      <div class="spec-card">
+        <strong>Target Resolution</strong>
+        <p>300 DPI (Professional Print Quality)</p>
+      </div>
+      <div class="spec-card">
+        <strong>Dimensions</strong>
+        <p>12 inches × 18 inches equivalent</p>
+      </div>
+      <div class="spec-card">
+        <strong>Safety Features</strong>
+        <p>Any element marked Hidden (👁️ off) will NOT appear in the export</p>
       </div>
     </div>
-    <h3>⠿ Drag Handle</h3>
-    <p>Hold and drag the ⠿ handle on the far left to move the entire toolbar anywhere on the screen. Especially useful
-      on mobile when the bar overlaps your work area.</p>
-    <h3>📋 Duplicate Button (Blue)</h3>
-    <p>Creates an exact copy of the selected element with the same text, style, size, and a slightly offset position.
-      The duplicate is selected immediately for repositioning. Works for text, images, and shapes.</p>
-    <h3>🗑 Delete Button (Red)</h3>
-    <p>Removes the selected element after a confirmation dialog. Deletion is recorded in undo history — restore with
-      <strong>↺ Undo Last Change</strong> within 30 steps.</p>
-    <h3>Tab Overview</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Tab</th>
-          <th>Available For</th>
-          <th>Controls Inside</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>LAYER</strong></td>
-          <td>All elements</td>
-          <td>Visibility toggle, Lock toggle, Opacity slider, Element Name field, Role selector (Content / Background /
-            Overlay)</td>
-        </tr>
-        <tr>
-          <td><strong>DESIGN</strong></td>
-          <td>Text: full typography. Shape: fill/border. Image: opacity reference.</td>
-          <td>Font family, Font size (numeric), Bold, Italic, Text color, Letter spacing, Line height, Text alignment.
-            Shapes: Fill color, Corner radius, Border width, Border color.</td>
-        </tr>
-        <tr>
-          <td><strong>ARRANGE</strong></td>
-          <td>All elements</td>
-          <td>Exact X/Y position, Width/Height, Rotation slider (0–360°), Bring Forward, Send Backward, Bring to Front,
-            Send to Back</td>
-        </tr>
-      </tbody>
-    </table>
-    <div class="callout tip"><strong>Tip:</strong> On mobile, the Selection Bar scrolls horizontally. Swipe left or
-      right on the bar to reveal all tabs and buttons if they do not all fit on screen.</div>
+    <p><strong>Export dimensions:</strong> 3600 × 5400 pixels at 300 DPI (12 × 18 inches print-ready). The exported file is named <code>notyourmamaskitchen-menu.png</code>.</p>
+
+    <h3>Preview vs. Export Quality</h3>
+    <p>While editing, the background displays at a reduced resolution for speed. This is intentional and does not affect
+      the output. The Export Pro PNG engine automatically switches to the <strong>Master Reference Background</strong>
+      (full resolution) during the export process to ensure perfect results.</p>
+
+    <div class="callout tip">
+      <strong>Printing:</strong> The exported PNG is ready for direct use on digital signage or for professional
+      printing at standard sizes. No further editing is required.
+    </div>
+
+    <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 14</span></div>
+  </section>
+
+  <section class="page page-break">
+    <div class="brand-bar"></div>
+    <h2>20. Troubleshooting</h2>
+    <p>Most issues can be solved with these quick checks:</p>
+
+    <h3>Elements are moving when I try to scroll</h3>
+    <p><strong>Solution:</strong> The layout is <strong>Unlocked</strong>. Click the 🔒 <strong>Locked</strong> button in
+      the header to return to scroll-safe mode.</p>
+
+    <h3>I can't see the text format settings</h3>
+    <p><strong>Solution:</strong> You must select a text element first. The DESIGN tab only shows font and color settings
+      when something is selected.</p>
+
+    <h3>An image I uploaded has a white box around it</h3>
+    <p><strong>Solution:</strong> To remove borders, use <strong>PNG</strong> files with transparent backgrounds. If your
+      file is a JPG, the background is baked-in. Marias Digital Designs can help you convert your logo to a transparent
+      PNG if needed.</p>
+
+    <h3>The Undo button didn't fix my text change</h3>
+    <p><strong>Solution:</strong> If you are still <strong>actively typing</strong> (the cursor is inside the text), Ctrl+Z/Undo will undo individual characters. Once you click outside the text to finish, Undo will revert the entire text change.</p>
+
+    <h3>The editor looks broken on my mobile screen</h3>
+    <p><strong>Solution:</strong> Turn your device sideways (Landscape mode). Mobile screens are too narrow in portrait
+      mode to show the full canvas and toolbars comfortably.</p>
+
+    <div class="callout danger">
+      <strong>Internet Warning:</strong> If the 💾 Save button turns red and gives a "Save Failed" error, check your
+      internet connection. The editor will try to backup your work locally, but do not close the browser until you see
+      the green "Project Saved" success toast.
+    </div>
+
+    <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 15</span></div>
+  </section>
+
+  <section class="page page-break">
+    <div class="brand-bar"></div>
+    <h2>21. Video Panel / Viewer Settings</h2>
+    <p>Menu Editor Pro V2 supports live video integration. This section explains how to configure the videos displayed
+      during public viewing.</p>
+
+    <h3>Video Content Strategy</h3>
+    <p>Your menu supports three video "slots":</p>
+    <ul>
+      <li><strong>Hero Video:</strong> The main cinematic video featured on the dashboard or top section.</li>
+      <li><strong>Side Panel Left:</strong> A secondary video displayed on the left side of the screen.</li>
+      <li><strong>Side Panel Right:</strong> A secondary video displayed on the right side of the screen.</li>
+    </ul>
+
+    <h3>Configuring URLs</h3>
+    <p>URLs MUST be direct video links (ending in .mp4, .webm, or .mov) or professional Cloudinary hosting URLs.
+      <strong>YouTube or Vimeo links will not work</strong> directly. We recommend Cloudinary for its performance and
+      global accessibility.</p>
+
+    <h3>Slot Configuration</h3>
+    <ol>
+      <li>Open the right panel by clicking the <strong>📺 Viewer Settings</strong> tab.</li>
+      <li>Find the relevant input field (Hero, Left, or Right).</li>
+      <li>Paste your video URL.</li>
+      <li>Click <strong>SET</strong> or <strong>SAVE</strong> to confirm.</li>
+      <li>(Optional) For Side Panels, choose the <strong>Resolution</strong> (1080p recommended).</li>
+    </ol>
+
+    <div class="callout tip">
+      <strong>Slot Naming:</strong> Use descriptive names for your videos in Cloudinary (e.g., "Breakfast_Hero_V2") to
+      keep your slot management organized.
+    </div>
+
     <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 16</span></div>
   </section>
-  <section class="page page-break">
-    <h2>15. The LAYER Tab</h2>
-    <p>The LAYER tab appears first in the Selection Bar when you select any element. It controls visibility, lock state,
-      transparency, name, and role.</p>
-    <div class="ui-mock">
-      <div class="ui-label">LAYER Tab Controls</div>
-      <div class="ui-row">
-        <span class="ui-btn active" style="font-size:10px;">LAYER</span>
-        <span class="ui-btn" style="font-size:11px;">👁️ Visible</span>
-        <span class="ui-btn" style="font-size:11px;">🔓 Unlocked</span>
-        <span style="color:#aaa;">Opacity:</span>
-        <span style="color:#f1c40f;font-size:12px;">[========80%===]</span>
-      </div>
-      <div class="ui-row">
-        <span style="color:#aaa;font-size:11px;">Name:</span>
-        <span style="color:#fff;font-size:12px;">[price-header_______]</span>
-        <span style="color:#aaa;font-size:11px;">Role:</span>
-        <span class="ui-btn" style="font-size:10px;">Content ▼</span>
-      </div>
-    </div>
-    <h3>👁️ Visibility Toggle</h3>
-    <p>Toggles the element between visible and hidden. Hidden elements appear very faint (🙈 at 20% opacity) in the
-      editor so you can still see their position, but they are <strong>completely invisible in the exported
-        PNG</strong>. Hidden elements show with a strikethrough in the Layers Panel.</p>
-    <h3>🔒 Lock Element Toggle</h3>
-    <p>When locked, the element cannot be selected, moved, or resized. Hover shows a locked cursor. To unlock an
-      element, select it from the Layers Panel and turn off the lock. Essential for background frames and permanently
-      anchored elements.</p>
-    <h3>Opacity Slider</h3>
-    <p>Drag left to make the element more transparent, right to make it fully opaque. Range: 0% to 100%. Changes are
-      visible immediately and recorded in undo history.</p>
-    <h3>Element Name</h3>
-    <p>A label used to identify the element in the Layers Panel. Default names are "text-1", "image-1", etc. Type a
-      meaningful name like "main-title" or "price-left" for easier organization. The name never appears on the printed
-      menu.</p>
-    <h3>Role Selector</h3>
-    <ul>
-      <li><strong>Content (default):</strong> A standard element participating normally in the design.</li>
-      <li><strong>Background:</strong> Treated as a background layer. If also Locked, it will not respond to click
-        selection when global layout is locked — fully protecting your base design.</li>
-      <li><strong>Overlay:</strong> Always rendered above Content elements in both the editor and the final export.</li>
-    </ul>
-    <div class="footer"><span>Customer Edition</span><span>Page 17</span></div>
-  </section>
-  <section class="page page-break">
-    <h2>16. The DESIGN Tab – Fonts, Color, Size &amp; Spacing</h2>
-    <p>The DESIGN tab contains all styling controls for the selected element. Typography controls appear for text
-      elements; shape controls appear for rectangles.</p>
-    <div class="ui-mock">
-      <div class="ui-label">DESIGN Tab — Text Element</div>
-      <div class="ui-row">
-        <span style="color:#aaa;font-size:11px;">Font:</span>
-        <span class="ui-btn" style="font-size:11px;">Century Gothic ▼</span>
-        <span style="color:#aaa;font-size:11px;">Size:</span>
-        <span
-          style="background:#222;color:#f1c40f;border:1px solid #555;border-radius:6px;padding:4px 8px;font-size:12px;">24</span>
-        <span class="ui-btn" style="font-weight:700;">B</span>
-        <span class="ui-btn" style="font-style:italic;">I</span>
-      </div>
-      <div class="ui-row">
-        <span style="color:#aaa;font-size:11px;">Color:</span>
-        <span
-          style="display:inline-block;width:24px;height:24px;background:#95201d;border-radius:4px;border:2px solid #fff;"></span>
-        <span style="color:#aaa;font-size:11px;">Spacing:</span>
-        <span class="ui-btn" style="font-size:11px;">− 0.05em +</span>
-        <span style="color:#aaa;font-size:11px;">Line H:</span>
-        <span class="ui-btn" style="font-size:11px;">− 1.4 +</span>
-      </div>
-    </div>
-    <h3>Font Family Selector</h3>
-    <p>Click the font dropdown to see all available fonts. The editor includes premium fonts: <strong>Century
-        Gothic</strong>, <strong>Century Gothic Bold</strong>, <strong>Century Gothic Bold Italic</strong>,
-      <strong>Bernard MT Condensed</strong>, and <strong>Inter</strong>. All fonts use fast-loading font-display:swap
-      for instant display.</p>
-    <h3>Font Size — Numeric Input</h3>
-    <p>Click the number field and type any value directly — 14, 24.5, 36, 72. Press Tab or click elsewhere to apply.
-      Enter the exact size you need without stepping through values one by one.</p>
-    <h3>Bold &amp; Italic</h3>
-    <p>Click <strong>B</strong> to toggle bold. Click <strong>I</strong> to toggle italic. Both can be active
-      simultaneously. Fonts with dedicated bold-italic variants (like Century Gothic Bold Italic) override the style
-      toggle automatically when selected.</p>
-    <h3>Text Color</h3>
-    <p>Click the colored square to open a full color picker. Choose from the color wheel or type a hex code directly
-      (e.g., <code>#95201d</code> for brand red, <code>#f1c40f</code> for gold). Color applies immediately and is saved
-      with your session.</p>
-    <h3>Letter Spacing</h3>
-    <p>Use − and + to decrease or increase spacing between individual letters. Measured in em units relative to font
-      size. Positive values spread letters apart for elegant headline styles. Negative values tighten them.</p>
-    <h3>Line Height</h3>
-    <p>Use − and + to adjust spacing between lines of text. A multiplier of 1.4 means line spacing is 1.4× the font
-      size. Increase for more breathing room in longer descriptions.</p>
-    <h3>Underline</h3>
-    <p>Adds a solid line beneath the selected text. Useful for defining section category headers or emphasizing special items without changing the font size.</p>
-    <h3>Text Shadow</h3>
-    <p>Applies a soft, dark drop shadow behind the text. Use this when placing light text over a busy or low-contrast background image to ensure it remains perfectly readable.</p>
-    <h3>Text Alignment</h3>
-    <p>Left, Center, Right alignment buttons control how text sits within its element box. Center is standard for titles
-      and prices. Left is standard for descriptions.</p>
-    <div class="callout tip"><strong>Shape DESIGN controls:</strong> When a shape is selected, the DESIGN tab shows Fill
-      Color, Corner Radius, Border Width, and Border Color instead of typography controls.</div>
-    <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 18</span></div>
-  </section>
-  <section class="page page-break">
-    <h2>17. The ARRANGE Tab – Position, Order &amp; Rotation</h2>
-    <p>The ARRANGE tab gives you precise numerical control over an element's position, size, rotation, and layer order.
-    </p>
-    <div class="ui-mock">
-      <div class="ui-label">ARRANGE Tab Controls</div>
-      <div class="ui-row">
-        <span style="color:#aaa;font-size:11px;">X:</span>
-        <span
-          style="background:#222;color:#f1c40f;border:1px solid #555;border-radius:6px;padding:4px 8px;font-size:12px;">142</span>
-        <span style="color:#aaa;font-size:11px;">Y:</span>
-        <span
-          style="background:#222;color:#f1c40f;border:1px solid #555;border-radius:6px;padding:4px 8px;font-size:12px;">87</span>
-        <span style="color:#aaa;font-size:11px;">W:</span>
-        <span
-          style="background:#222;color:#f1c40f;border:1px solid #555;border-radius:6px;padding:4px 8px;font-size:12px;">280</span>
-        <span style="color:#aaa;font-size:11px;">H:</span>
-        <span
-          style="background:#222;color:#f1c40f;border:1px solid #555;border-radius:6px;padding:4px 8px;font-size:12px;">40</span>
-      </div>
-      <div class="ui-row">
-        <span style="color:#aaa;font-size:11px;">Rotate:</span>
-        <span style="color:#f1c40f;">[====15°=========]</span>
-        <span class="ui-btn" style="font-size:11px;">⬆ Fwd</span>
-        <span class="ui-btn" style="font-size:11px;">⬇ Back</span>
-        <span class="ui-btn" style="font-size:11px;">⬆⬆ Top</span>
-        <span class="ui-btn" style="font-size:11px;">⬇⬇ Bottom</span>
-      </div>
-    </div>
-    <h3>X and Y Position</h3>
-    <p>Shows the element's exact pixel position from the top-left corner of the canvas. Click and type a new number to
-      move to an exact coordinate. Useful for aligning multiple elements — set all price labels to the same X value for
-      a perfect column.</p>
-    <h3>Width and Height</h3>
-    <p>Shows and sets the element's exact pixel size. For text elements, width determines the text wrap boundary — wider
-      means text stays on fewer lines.</p>
-    <h3>Rotation</h3>
-    <p>Drag the slider or type a degree value (0–360°) to rotate the element around its center. 0° is upright, 90° tilts
-      right, 180° is upside-down, 270° tilts left. Use for angled labels, diagonal watermarks, or decorative tilted
-      text.</p>
-    <h3>Layer Order Controls</h3>
-    <ul>
-      <li><strong>⬆ Bring Forward:</strong> Moves the element one layer forward (in front of the next element)</li>
-      <li><strong>⬇ Send Backward:</strong> Moves the element one layer back (behind the next element)</li>
-      <li><strong>⬆⬆ Bring to Front:</strong> Moves the element to the very top, in front of everything</li>
-      <li><strong>⬇⬇ Send to Back:</strong> Moves the element to the very bottom, behind everything</li>
-    </ul>
-    <div class="callout tip"><strong>Common use:</strong> Add a rectangle, then click ARRANGE → Send to Back. Your text
-      automatically appears on top of the colored shape.</div>
-    <div class="footer"><span>Customer Edition</span><span>Page 19</span></div>
-  </section>
-  <section class="page page-break">
-    <h2>18. The Layers Panel</h2>
-    <p>Located at the bottom of the Tools Drawer, the Layers Panel shows every element on your canvas — text, images,
-      and shapes — so you can manage them all from one place.</p>
-    <div class="ui-mock">
-      <div class="ui-label">Layers Panel</div>
-      <div style="background:#222;border-radius:8px;padding:8px;margin-top:8px;">
-        <div
-          style="display:flex;align-items:center;gap:10px;padding:6px 8px;background:#333;border-radius:6px;margin-bottom:4px;font-family:sans-serif;font-size:12px;">
-          <span style="color:#f1c40f;">★</span><span style="color:#ccc;flex:1;">main-title</span><span
-            style="color:#f1c40f;font-size:11px;">T</span><span style="color:#aaa;">👁️</span><span
-            style="color:#aaa;">🔓</span>
-        </div>
-        <div
-          style="display:flex;align-items:center;gap:10px;padding:6px 8px;margin-bottom:4px;font-family:sans-serif;font-size:12px;">
-          <span style="color:#888;">○</span><span style="color:#ccc;flex:1;">price-section-1</span><span
-            style="color:#f1c40f;font-size:11px;">T</span><span style="color:#aaa;">👁️</span><span
-            style="color:#aaa;">🔓</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;padding:6px 8px;font-family:sans-serif;font-size:12px;">
-          <span style="color:#888;">○</span><span
-            style="color:#999;flex:1;text-decoration:line-through;">logo-image</span><span
-            style="color:#3498db;font-size:11px;">I</span><span style="color:#666;">🙈</span><span
-            style="color:#aaa;">🔒</span>
-        </div>
-      </div>
-    </div>
-    <h3>Reading the Panel</h3>
-    <ul>
-      <li><strong>★ / ○:</strong> The currently selected element is highlighted with gold and a star</li>
-      <li><strong>Element name:</strong> The label assigned in the LAYER tab</li>
-      <li><strong>Type badge (T/I/S):</strong> T = Text, I = Image, S = Shape</li>
-      <li><strong>👁️ / 🙈:</strong> Eye icon = visible; 🙈 = hidden; click to toggle</li>
-      <li><strong>🔓 / 🔒:</strong> Click to lock or unlock the element</li>
-      <li><strong>Strikethrough name:</strong> Indicates the element is currently hidden</li>
-    </ul>
-    <h3>Selecting Elements from the Panel</h3>
-    <p>Click any row in the Layers Panel to select that element on the canvas. Especially helpful for selecting elements
-      that are hidden, stacked under others, or too small to click precisely on the canvas.</p>
-    <h3>Toggling Visibility and Lock from the Panel</h3>
-    <p>Click the 👁️ or 🙈 icon in any row to show or hide that element without selecting it first. Click 🔓 or 🔒 to
-      toggle lock state. This lets you quickly manage multiple elements without selecting each one individually.</p>
-    <h3>Reordering Layers by Drag</h3>
-    <p>You can drag any layer row to reposition it in the stacking order. Click and hold the row, then drag it up or down.
-      A gold indicator line shows where the layer will be placed. Release to confirm the new position. This changes the
-      element's visual z-index on the canvas — elements drawn higher in the list appear in front of those lower in the
-      list.</p>
-    <p>Drag reordering works independently of the Bring Forward / Send Backward buttons in the ARRANGE tab. Use whichever
-      method feels faster for the task at hand — drag for large jumps, the buttons for single-step adjustments.</p>
-    <div class="callout tip"><strong>Tip:</strong> Drag reordering is especially useful when you want to quickly place an
-      element between two specific layers, rather than sending it all the way to front or back.</div>
-    <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 20</span></div>
-  </section>
-  <section class="page page-break">
-    <h2>19. Layout Lock vs. Layout Unlocked</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>State</th>
-          <th>What It Controls</th>
-          <th>When to Use</th>
-          <th>Button Color</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>🔒 Layout Locked</strong></td>
-          <td>Elements cannot be dragged or repositioned. Canvas safe to scroll and touch.</td>
-          <td>All text editing, styling, general navigation, and all mobile browsing. This is the default.</td>
-          <td>Red</td>
-        </tr>
-        <tr>
-          <td><strong>🔓 Layout Unlocked</strong></td>
-          <td>Elements CAN be dragged. Zoom controls (+/−) appear in the top-right corner.</td>
-          <td>Only when intentionally repositioning an element. Lock again immediately after.</td>
-          <td>Yellow</td>
-        </tr>
-      </tbody>
-    </table>
-    <div class="callout warning"><strong>Mobile caution:</strong> When unlocked on mobile, accidental touch movement is
-      possible. Always re-lock after repositioning any element.</div>
-  </section>
-  <section class="page page-break">
-    <h2>20. Replace Background</h2>
-    <p>The Replace Background feature lets you swap out the menu's background image instantly. All text and element
-      placements remain exactly as they are — only the background changes.</p>
-    <h3>How to Replace the Background</h3>
-    <ol>
-      <li>Click <strong>📷 Replace Background</strong> in the Tools Drawer</li>
-      <li>A dialog opens showing all available background images in the <code>backgrounds/</code> folder on the server</li>
-      <li>Click any thumbnail to preview it on the canvas</li>
-      <li>Click <strong>Confirm</strong> to apply, or <strong>Cancel</strong> to keep the current background</li>
-    </ol>
-    <h3>Background Discovery</h3>
-    <p>The dialog dynamically scans the <code>backgrounds/</code> folder. Supported formats are <code>.png</code>,
-      <code>.jpg</code>, <code>.jpeg</code>, <code>.webp</code>, and <code>.gif</code>. Any image you upload to that
-      folder appears in the picker automatically — no code changes or restart required.</p>
-    <h3>What Is Preserved</h3>
-    <ul>
-      <li>Every text element and its content, font, size, color, spacing, and alignment</li>
-      <li>Every image element and its placement, crop, and opacity</li>
-      <li>Every shape element and its fill, border, and corner radius</li>
-      <li>Layer order, visibility, and lock states for all elements</li>
-    </ul>
-    <div class="callout tip"><strong>Tip:</strong> The Replace Background feature is safe to use at any stage of editing.
-      You can experiment freely — just switch back to a different background at any time.</div>
 
-    <h2>21. Video Panel / Viewer Settings</h2>
-    <p>The Video Panel provides playback controls for any video embedded on the canvas, as well as global viewer settings
-      that apply to the exported viewer.html.</p>
-    <h3>Video Controls</h3>
-    <ul>
-      <li><strong>Play / Pause:</strong> Toggles video playback</li>
-      <li><strong>Timeline scrubber:</strong> Drag to seek to any point in the video</li>
-      <li><strong>Volume:</strong> Adjust or mute the audio track</li>
-      <li><strong>Fullscreen:</strong> Expands the video to fill the browser window</li>
-      <li><strong>Loop:</strong> When enabled, the video repeats continuously</li>
-    </ul>
-    <h3>Viewer Settings</h3>
-    <ul>
-      <li><strong>Autoplay:</strong> Video starts automatically when the page loads (muted by default for browser
-        compatibility)</li>
-      <li><strong>Poster frame:</strong> The image shown before the video plays or while loading</li>
-      <li><strong>Aspect ratio:</strong> Sets the display dimensions of the video container</li>
-      <li><strong>Controls visibility:</strong> Choose whether native playback controls are shown</li>
-    </ul>
-    <h3>Exporting with Video</h3>
-    <p>When exporting a canvas that includes a video element, the editor captures the current video frame as a static
-      image and composites all elements on top. The exported PNG shows a clear, static snapshot — not a moving image.
-      To create animated content, use the Cloudinary AI Video feature instead.</p>
-
+  <section class="page page-break">
+    <div class="brand-bar"></div>
     <h2>22. Cloudinary &amp; AI Video Creation</h2>
-    <p>The editor integrates with <strong>Cloudinary</strong> to generate AI-powered video content from text prompts.
-      This feature is designed for creating short promotional videos, social media content, and animated menu
-      previews.</p>
-    <h3>How AI Video Generation Works</h3>
+    <p>Menu Editor Pro V2 integrates with Cloudinary and AI video technology to create cinematic backgrounds for your
+      menu.</p>
+
+    <h3>What is Cloudinary?</h3>
+    <p>Cloudinary is a global content delivery network (CDN). When you upload images or create AI videos, they are stored
+      on Cloudinary's servers. This ensures your menu loads fast for everyone, everywhere.</p>
+
+    <h3>Generating AI Video</h3>
     <ol>
-      <li>Navigate to the <strong>Cloudinary</strong> section of the Tools Drawer</li>
-      <li>Enter a descriptive prompt for the video you want to create (e.g., <em>"Slow pan across a beautifully plated
-          dish with warm lighting"</em>)</li>
-      <li>Optionally enter a negative prompt to exclude unwanted elements</li>
-      <li>Click <strong>Generate Video</strong></li>
-      <li>The server submits the request to Cloudinary's AI video API and polls for completion</li>
+      <li>Open the <strong>✨ AI Studio</strong> tab in the right-side panel.</li>
+      <li>Enter a <strong>Video Prompt</strong> (e.g., "Steam rising from a fresh pizza, slow cinematic panning, golden
+        lighting").</li>
+      <li>Choose the <strong>Aspect Ratio</strong> (16:9 for landscape displays).</li>
+      <li>Click <strong>Generate AI Video</strong>.</li>
       <li>When ready, the video is downloaded and saved to your project</li>
     </ol>
+
     <h3>Technical Details</h3>
     <ul>
       <li><strong>API:</strong> Cloudinary's AI Video generation API</li>
@@ -1409,6 +1089,7 @@
       <li><strong>Async:</strong> Generation is asynchronous; status is polled until the video is ready</li>
       <li><strong>Output:</strong> Downloaded MP4 video saved to the project directory</li>
     </ul>
+
     <h3>Configuration</h3>
     <p>Set the following environment variables before using AI video features:</p>
     <ul>
@@ -1416,186 +1097,156 @@
       <li><code>CLOUDINARY_API_SECRET</code></li>
       <li><code>CLOUDINARY_CLOUD_NAME</code></li>
     </ul>
+
     <div class="callout tip"><strong>Creative tip:</strong> AI video generation works best with specific, descriptive
       prompts. Describe the mood, camera movement, lighting, and subject clearly for the best results.</div>
 
-    <h2 style="margin-top:32px;">23. Save, Load &amp; Auto-Save</h2>
-    <h3>💾 Save Session</h3>
-    <p>Saves your entire state to the server: every element's content, position, style, layer settings, visibility, lock
-      state, and image placements. Creates both a server backup and a local browser backup simultaneously. Confirmation
-      toast: <em>"Project Saved Locally"</em>.</p>
-    <h3>📂 Load Session</h3>
-    <p>Loads the latest server-saved version of your menu. Use when continuing on a new device or browser. <strong>All
-        unsaved local changes will be replaced</strong> by the server version. Always save first if you have unsaved
-      work.</p>
-    <h3>Auto-Save on Export</h3>
-    <p>Every time you click Export Pro PNG, the editor automatically runs a Save first. Your exported file always
-      matches exactly what is on the server. A brief toast confirms the auto-save before export begins.</p>
-        <h3>Auto-Save (Every 30 Seconds)</h3>
-    <p>The editor automatically saves your session to the server every 30 seconds while the editor is open and active. You do not need to click Save for this to happen. The auto-save runs silently in the background. A subtle toast confirms each auto-save cycle.</p>
-    <h3>Dirty State Indicator</h3>
-    <p>The 💾 Save button visually changes appearance when you have unsaved changes. This "dirty state" indicator lets you know at a glance whether your current work has been saved. When the button returns to its normal appearance, your session is saved.</p>
-    <h3>Load Session — Dirty State Warning</h3>
-    <p>If you click 📂 Load Session while you have unsaved changes, the editor will show a warning dialog before proceeding. You can choose to save first, or continue loading (which will discard unsaved changes). This prevents accidental loss of work.</p>
-    <h3>Local Browser Backup</h3>
-    <p>The editor maintains a local backup in your browser's storage. This protects your most recent work if your
-      internet connection drops temporarily. Updated every time you Save.</p>
-    <div class="callout"><strong>Best practice:</strong> Save after completing each menu section. Before closing the
-      browser. Before switching to another device.</div>
+    <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 17</span></div>
+  </section>
+
+  <section class="page page-break">
+    <div class="brand-bar"></div>
+    <h2>23. Save, Load &amp; Auto-Save Deep Dive</h2>
+    <p>Data safety is the foundation of Menu Editor Pro V2. This section details the multi-layer saving system.</p>
+
+    <h3>Server Save (The "Primary" Save)</h3>
+    <p>When you click the <strong>💾 Save</strong> button, the entire state of your menu (the `docV2` JSON object) is
+      sent to the PostgreSQL database on Railway. This is the **authoritative source of truth**. Once a server save
+      succeeds, your data is safe even if you switch browsers or computers.</p>
+
+    <h3>Auto-Save Protection</h3>
+    <p>If you leave the editor before clicking Save, the system maintains a **Local Browser Backup** in your browser's
+      `localStorage`. When you return to the editor, it will check if your local version is newer than the server
+      version. If it is, a prompt will ask if you want to restore your unsaved changes.</p>
+
+    <h3>Validation and Security</h3>
+    <p>The system performs a full validation check before every save. It ensures that no invalid elements are added and
+      that the file size remains within the 5MB performance limit. If a save fails, the editor will highlight the
+      invalid areas and provide instructions on how to fix them.</p>
+
+    <div class="callout warning">
+      <strong>Pro Tip:</strong> After a session, always click <strong>💾 Save</strong> and wait for the "Project Saved
+      Locally" toast BEFORE closing the tab. Never rely purely on auto-save if you are switching to another device.
+    </div>
 
     <h2 style="margin-top:32px;">24. Undo History</h2>
     <p>The <strong>↺ Undo Last Change</strong> button (top header bar, or press <span class="kbd">Ctrl+Z</span>) steps
-      back through your editing history one action at a time. The undo system tracks up to 30 actions.</p>
+      back through your editing history one action at a time. The undo system tracks up to 50 actions.</p>
+
     <h3>What Undo Covers</h3>
     <ul>
       <li>Text content edits</li>
-      <li>Element drag moves and position changes</li>
-      <li>Style changes (font, color, size, spacing)</li>
-      <li>Adding new elements (text, image, shape)</li>
-      <li>Deleting elements</li>
-      <li>Visibility and lock state changes</li>
-      <li>Opacity and rotation changes</li>
+      <li>Element movement and resizing</li>
+      <li>Design changes (fonts, colors, spacing)</li>
+      <li>Adding or deleting elements</li>
+      <li>Visibility/locking/opacity changes</li>
+      <li>Rotation adjustments</li>
     </ul>
-    <div class="callout warning"><strong>Undo does NOT cover:</strong> Reset to Original, Load Session, or browser page
-      reload. These are intentional full-restore actions that cannot be undone.</div>
-    <div class="footer"><span>Customer Edition</span><span>Page 21</span></div>
+
+    <h3>What Undo Does NOT Cover</h3>
+    <ul>
+      <li><strong>Save/Load:</strong> You cannot undo a "Load Session" operation back to its previous state.</li>
+      <li><strong>Reset to Original:</strong> Reseting the template is permanent and cannot be reversed by Undo.</li>
+    </ul>
+
+    <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 18</span></div>
   </section>
+
   <section class="page page-break">
-    <h2>25. Export Pro PNG – Print-Ready Output</h2>
-    <p>The <strong>⬇️ Export Pro PNG</strong> button in the Tools Drawer produces a professional, print-ready PNG file.
-      This is the only way to get a file suitable for commercial printing or sending to a print shop.</p>
+    <div class="brand-bar"></div>
+    <h2>25. Export Pro PNG – Complete Reference</h2>
+    <p>Generating the final menu image is a three-step process handled automatically by the editor's internal rendering
+      engine.</p>
 
-    <div class="ui-mock">
-      <div class="ui-label">Export Button — Inside the Drawer</div>
-      <div class="ui-row">
-        <span class="ui-btn accent" style="font-size:13px; padding:8px 18px;">⬇️ Export Pro PNG</span>
-        <span style="color:#aaa; font-size:12px;">← Also press Ctrl+E on desktop</span>
-      </div>
-    </div>
-
-    <h3>What Happens During Export</h3>
+    <h3>The Export Pipeline</h3>
     <ol>
-      <li><strong>Auto-Save runs first.</strong> Your current session is saved to the server before anything else. This
-        guarantees your printed file matches what is saved.</li>
-      <li><strong>The master background image loads.</strong> The editor swaps in the high-resolution master background
-        file (<code>menu_bg.png</code>) in place of the fast preview image used during editing.</li>
-      <li><strong>The canvas renders to PNG.</strong> Every visible element — text, images, shapes — is composited at full resolution using the native Canvas API. <code>document.fonts.load()</code> is awaited before rendering begins — this prevents garbled or missing text in the exported PNG.</li>
-      <li><strong>300 DPI metadata is injected.</strong> The PNG binary is rewritten to embed proper physical density
-        information (<code>pHYs</code> chunk) so printers and design software correctly recognize the file as 300 DPI.
-      </li>
-      <li><strong>The file downloads automatically</strong> to your device's Downloads folder.</li>
+      <li><strong>State Capture:</strong> The editor first saves your current project to ensure the output matches your
+        last edit.</li>
+      <li><strong>High-Fidelity Render:</strong> The system creates a hidden, high-resolution canvas. It loads the
+        master background (3600px wide) and draws every element at 300% zoom level to ensure maximum crispness.</li>
+      <li><strong>CRC32 Checksumming:</strong> The PNG file is assembled with specific metadata chunks to ensure it is
+        recognized as a 300 DPI professional file by printers and digital signs.</li>
     </ol>
 
     <h3>Export Output Specifications</h3>
-    <div class="spec-grid">
-      <div class="spec-card">
-        <h4>File Format</h4>
-        <p>PNG (Portable Network Graphics) — lossless, full color</p>
-      </div>
-      <div class="spec-card">
-        <h4>Resolution</h4>
-        <p>300 DPI — professional print-ready density</p>
-      </div>
-            <div class="spec-card">
-        <h4>Physical Width</h4>
-        <p>3600 × 5400 pixels (12 × 18 inches at 300 DPI)</p>
-      </div>
-      <div class="spec-card">
-        <h4>Export Filename</h4>
-        <p>notyourmamaskitchen-menu.png</p>
-      </div>
-      <div class="spec-card">
-        <h4>Color Mode</h4>
-        <p>RGB — suitable for digital print, professional printers</p>
-      </div>
-      <div class="spec-card">
-        <h4>Background</h4>
-        <p>Master high-resolution source (<code>menu_bg.png</code>), not the preview</p>
-      </div>
-      <div class="spec-card">
-        <h4>Hidden Elements</h4>
-        <p>Any element marked Hidden (👁️ off) will NOT appear in the export</p>
-      </div>
+    <div class="toc-grid">
+      <div class="toc-item"><span class="text">Output File Format</span><span class="dots"></span><span class="val">PNG
+          (Lossless)</span></div>
+      <div class="toc-item"><span class="text">Color Mode</span><span class="dots"></span><span class="val">sRGB (8-bit
+          color)</span></div>
+      <div class="toc-item"><span class="text">Resolution (DPI)</span><span class="dots"></span><span class="val">300 DPI
+          (High Res)</span></div>
+      <div class="toc-item"><span class="text">Total Resolution (Pixels)</span><span class="dots"></span><span class="val">3600w × 5400h</span></div>
     </div>
+    <p><strong>Export dimensions:</strong> 3600 × 5400 pixels at 300 DPI (12 × 18 inches print-ready). The exported file is named <code>notyourmamaskitchen-menu.png</code>.</p>
 
-    <h3>Preview vs. Export Quality</h3>
-    <p>While editing, the background displays at a reduced resolution for speed. This is intentional and does not affect
-      export quality. When you export, the editor automatically uses the full-resolution master background, so the final
-      file is always crisp and print-ready regardless of how the on-screen preview looked.</p>
-
-    <div class="callout tip">
-      <strong>Tip:</strong> Export does not affect your editing session in any way. You can continue editing after
-      exporting, make more changes, and export again at any time. Each export reflects the current visible state.
-    </div>
+    <h3>Common Export Questions</h3>
+    <p><strong>Is the export different on mobile?</strong> No. The export engine is server-synced and uses the same
+      high-resolution logic regardless of the device your are using to trigger the export.</p>
+    <p><strong>Can I export a transparent menu?</strong> Only if you have removed the background layer entirely in the
+      Layers panel. Otherwise, the menu will include the background frame.</p>
 
     <div class="callout warning">
-      <strong>Important:</strong> Hidden elements are excluded from the export. If you want an element to appear in the
-      print file, make sure its Visibility is turned ON in the LAYER tab before exporting.
+      <strong>Wait for the Finish:</strong> During export, a progress bar appears. Do not click anything until the file
+      download actually begins. On slow connections, rendering the high-res frame can take up to 20 seconds.
     </div>
 
-    <h3>Sending to a Print Shop</h3>
-    <p>The exported PNG is ready for commercial printing. When sending to a printer:</p>
-    <ul>
-      <li>Confirm they accept PNG files (most modern print shops do)</li>
-      <li>Specify that the file is <strong>300 DPI, RGB color</strong></li>
-      <li>Request a proof if possible before a large print run</li>
-      <li>For very large format prints, ask the printer if they require a higher resolution source</li>
-    </ul>
-    <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 22</span></div>
+    <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 19</span></div>
   </section>
-  <section class="page page-break">
-    <h2>26. Keyboard Shortcuts</h2>
-    <p>These shortcuts work on <strong>desktop and laptop computers</strong> when the editor is the active window. They
-      speed up the most common actions significantly.</p>
 
-        <table>
+  <section class="page page-break">
+    <div class="brand-bar"></div>
+    <h2>26. Keyboard Shortcuts</h2>
+    <p>For power users on desktop, these shortcuts dramatically speed up the editing process.</p>
+
+    <table>
       <thead>
         <tr>
-          <th>Shortcut</th>
-          <th>Action</th>
-          <th>Notes</th>
+          <th>Snapshot</th>
+          <th>Description</th>
+          <th>Context</th>
         </tr>
       </thead>
       <tbody>
         <tr><td><span class="kbd">Ctrl+Z</span> / <span class="kbd">⌘+Z</span></td><td>Undo Last Change</td><td>Passes through to browser native undo while actively typing inside a text element</td></tr>
+        <tr><td><kbd>Ctrl+Y</kbd></td><td>Redo — re-applies the last undone action (up to 50 redo steps).</td></tr>
         <tr><td><span class="kbd">Ctrl+E</span> / <span class="kbd">⌘+E</span></td><td>Export Pro PNG</td><td>Triggers full export pipeline</td></tr>
         <tr><td><span class="kbd">Ctrl+D</span> / <span class="kbd">⌘+D</span></td><td>Duplicate selected element(s)</td><td>Duplicates single or multi-select group</td></tr>
         <tr><td><span class="kbd">Ctrl+A</span> / <span class="kbd">⌘+A</span></td><td>Select all elements</td><td>Selects every element on the canvas</td></tr>
-        <tr><td><span class="kbd">Delete</span> / <span class="kbd">Backspace</span></td><td>Delete selected element(s)</td><td>Works on single or multi-select. Shows confirmation dialog.</td></tr>
+        <tr><td><span class="kbd">Backspace</span> / <span class="kbd">Delete</span></td><td>Delete selected element(s)</td><td>Prompts for confirmation before deleting</td></tr>
         <tr><td><span class="kbd">Arrow keys</span> (↑ ↓ ← →)</td><td>Nudge selected element 1px</td><td>Only when not in text editing mode. Works on single or group selection.</td></tr>
+        <tr><td><kbd>Shift + Arrow Keys</kbd></td><td>Nudge selected element 10px in any direction (faster nudge for coarser positioning).</td></tr>
         <tr><td><span class="kbd">Enter</span> / <span class="kbd">Return</span></td><td>New line (in text edit mode)</td><td>Creates a line break inside the text element</td></tr>
         <tr><td><span class="kbd">Escape</span></td><td>Exit text editing mode</td><td>Confirms text edit and deselects element</td></tr>
         <tr><td><span class="kbd">Shift + click</span></td><td>Add to / remove from multi-select</td><td>Click additional elements while holding Shift</td></tr>
-        <tr><td><span class="kbd">Shift + drag corner</span> (image)</td><td>Proportional resize</td><td>Maintains original aspect ratio while resizing</td></tr>
       </tbody>
     </table>
 
     <div class="callout tip">
-      <strong>Mac users:</strong> Use <span class="kbd">⌘ Cmd</span> instead of <span class="kbd">Ctrl</span> for all
-      shortcuts. <span class="kbd">⌘+Z</span> for Undo, <span class="kbd">⌘+E</span> for Export.
+      <strong>Pro Shortcut:</strong> <span class="kbd">Ctrl+D</span> is the fastest way to build a menu. Format one price
+      exactly how you like it, then use <span class="kbd">Ctrl+D</span> 10 times and drag each copy into position. This
+      is 10x faster than adding new text for every item.
     </div>
 
-    <h2 style="margin-top:32px;">28. Zoom &amp; Canvas Navigation</h2>
-    <p>The zoom system lets you work comfortably at any detail level. Zoom behavior depends on whether the layout is
-      Locked or Unlocked.</p>
+    <div class="footer"><span>Customer Edition</span><span>Page 20</span></div>
+  </section>
 
-    <h3>Zoom Controls (Layout Unlocked Only)</h3>
-    <p>When you switch to <strong>🔓 Layout Unlocked</strong>, two floating zoom buttons appear in the top-right corner
-      of the screen:</p>
-    <div class="ui-mock">
-      <div class="ui-label">Floating Zoom Controls — Top Right (Unlocked Mode)</div>
-      <div class="ui-row">
-        <span class="ui-btn" style="font-size:18px; padding:6px 14px;">＋</span>
-        <span class="ui-btn" style="font-size:18px; padding:6px 14px;">－</span>
-        <span style="color:#aaa; font-size:12px;">Only visible when Layout is Unlocked</span>
-      </div>
-    </div>
+  <section class="page page-break">
+    <div class="brand-bar"></div>
+    <h2>28. Zoom &amp; Canvas Navigation</h2>
+    <p>Managing your view is critical for both laptop and mobile users. The editor includes a high-performance viewport
+      controller.</p>
+
+    <h3>Zoom Controls</h3>
+    <p>Controls are located at the bottom-right of the screen:</p>
     <ul>
-      <li><strong>＋ Zoom In:</strong> Enlarges the canvas view. Useful for precise text placement or working on small
+      <li><strong>Fit to Screen:</strong> Snaps the canvas to fit perfectly within your current window size. This is the
+        default view.</li>
+      <li><strong>＋ Zoom In:</strong> Magnifies the canvas. This is required for reading and editing small font sizes (10-14px) and for precise placement of
         elements.</li>
       <li><strong>－ Zoom Out:</strong> Shrinks the canvas view. Useful for seeing the whole menu at once.</li>
     </ul>
-    <p><strong>Zoom Memory:</strong> The editor remembers your exact zoom level automatically. If you reload the page, your last zoom level is fully restored.</p>
+    <p><strong>Zoom Memory:</strong> Zoom level resets to fit-to-screen each time the page reloads. Use the zoom controls to re-adjust after reload.</p>
 
     <h3>Pinch Zoom on Mobile</h3>
     <p>On touchscreen devices, use a two-finger pinch gesture to zoom in and out on the canvas. Pinch zoom only works
@@ -1611,9 +1262,19 @@
       <strong>Best practice:</strong> Zoom in to work on fine detail (small text, precise alignment), then zoom back out
       to see the full composition before exporting.
     </div>
+    <h3>Rulers and Guides</h3>
+    <p>The editor displays a horizontal ruler across the top and a vertical ruler on the left side of the canvas. You can drag from either ruler onto the canvas to place a <strong>guide line</strong> — a non-printing alignment reference line.</p>
+    <ul>
+      <li><strong>Place a guide:</strong> Click and drag from the top ruler (horizontal guide) or left ruler (vertical guide) onto the canvas.</li>
+      <li><strong>Move a guide:</strong> Click and drag the guide line to reposition it.</li>
+      <li><strong>Delete a guide:</strong> Hover over a guide to reveal the ✕ delete button, then click it.</li>
+    </ul>
+    <p>Rulers and guides are hidden on mobile devices.</p>
     <div class="footer"><span>Customer Edition</span><span>Page 23</span></div>
   </section>
+
   <section class="page page-break">
+    <div class="brand-bar"></div>
     <h2>27. Smart Tooltips</h2>
     <p>Every button in the editor has a <strong>tooltip</strong> — a small label that appears when you hover over it
       with your mouse. Tooltips explain what each button does in plain language without requiring you to open this
@@ -1683,7 +1344,9 @@
     </ul>
     <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 24</span></div>
   </section>
+
   <section class="page page-break">
+    <div class="brand-bar"></div>
     <h2>31. Mobile Guide – iPhone, Android &amp; Tablet</h2>
     <p>Menu Editor Pro V2 is fully optimized for mobile devices. This section covers the specific ways the editor
       behaves on phones and tablets, and the best practices for mobile editing.</p>
@@ -1732,7 +1395,7 @@
           <td>Zooms in or out on the canvas</td>
           <td>Layout Unlocked</td>
         </tr>
-                <tr>
+        <tr>
           <td>One-finger drag on empty canvas area</td>
           <td>Lasso multi-select (draws selection box)</td>
           <td>Layout Unlocked</td>
@@ -1750,7 +1413,7 @@
       </tbody>
     </table>
 
-        <h3>Canvas Auto-Fit</h3>
+    <h3>Canvas Auto-Fit</h3>
     <p>When you open the editor on any device, the canvas automatically scales to fit your screen width using <code>fitCanvasToScreen</code>. You do not need to manually zoom to see the full menu. If you previously set a custom zoom level, that zoom is also restored automatically on reload.</p>
     <h3>The Selection Bar on Mobile</h3>
     <p>The Selection Bar appears at the bottom of the screen when an element is selected. On mobile, it <strong>scrolls
@@ -1783,11 +1446,13 @@
       near-desktop editing experience.</p>
     <div class="footer"><span>Customer Edition</span><span>Page 25</span></div>
   </section>
+
   <section class="page page-break">
+    <div class="brand-bar"></div>
     <h2>32. Troubleshooting</h2>
     <p>This section covers the most common issues you may encounter and how to resolve each one quickly.</p>
 
-        <table>
+    <table>
       <thead>
         <tr>
           <th>Problem</th>
@@ -1812,7 +1477,7 @@
 
     <h3>I accidentally moved an element to the wrong position</h3>
     <p>Click <strong>↺ Undo Last Change</strong> in the top header bar (or press <span class="kbd">Ctrl+Z</span>)
-      immediately. The element will return to its previous position. The undo system tracks up to 30 steps, so you can
+      immediately. The element will return to its previous position. The undo system tracks up to 50 steps, so you can
       step back through several accidental changes if needed.</p>
 
     <h3>My text edits are not showing up</h3>
@@ -1856,8 +1521,10 @@
     </p>
     <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 26</span></div>
   </section>
+
   <section class="page page-break">
-     <h2>33. Best Practices</h2>
+    <div class="brand-bar"></div>
+    <h2>33. Best Practices</h2>
     <p>These habits will protect your work, keep your menu looking professional, and make editing fast and
       frustration-free.</p>
 
@@ -1917,7 +1584,9 @@
     </ul>
     <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 27</span></div>
   </section>
+
   <section class="page page-break">
+    <div class="brand-bar"></div>
     <h2>34. Technical Specifications</h2>
     <p>This section documents the confirmed technical architecture of Menu Editor Pro V2 for reference.</p>
 
@@ -2015,7 +1684,7 @@
           <td>Color mode</td>
           <td>RGB — suitable for professional digital printing</td>
         </tr>
-                <tr>
+        <tr>
           <td>Background rendering</td>
           <td>DOM &lt;img&gt; element (not CSS background) for correct capture fidelity</td>
         </tr>
@@ -2064,7 +1733,7 @@
       </tbody>
     </table>
 
-        <h3>Phase History</h3>
+    <h3>Phase History</h3>
     <table>
       <thead>
         <tr>
@@ -2115,12 +1784,14 @@
     </table>
 
     <h3>Undo System</h3>
-    <p>The undo system maintains a history stack of up to <strong>30 steps</strong>. It covers: text edits, element
+    <p>The undo system maintains a history stack of up to <strong>50 steps</strong>. It covers: text edits, element
       moves, style changes, add/delete operations, visibility changes, lock toggles, and opacity/rotation changes. It
       does not cover Reset to Original or Load Session.</p>
     <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 28</span></div>
   </section>
+
   <section class="page page-break">
+    <div class="brand-bar"></div>
     <h2>35. AI Studio</h2>
     <p>AI Studio is an <strong>optional</strong> panel within the Menu Editor Pro that lets you generate custom images and videos using AI and place them directly on your canvas. It requires free accounts with the supported AI services and is entirely separate from the core menu editing features.</p>
 
@@ -2165,9 +1836,9 @@
       <li>Expand the <strong>🔑 Credentials</strong> section.</li>
       <li>Fill in the fields for each service you want to use.</li>
       <li>Click <strong>Test</strong> next to any service to verify your credentials are working. A toast will confirm success or show the error.</li>
-      <li>Click <strong>Save</strong> to store credentials in your browser (they are saved to localStorage and persist across sessions on this browser).</li>
+      <li>Click <strong>Save</strong> to store credentials in your browser (Your API credentials are saved securely to your account on the server. They are restored automatically each time you open the editor — you do not need to re-enter them after saving.).</li>
     </ol>
-    <div class="callout tip"><strong>Security note:</strong> Credentials are stored only in your browser's localStorage. They are never sent to any server other than the respective AI service APIs.</div>
+    <div class="callout tip"><strong>Security note:</strong> Your API credentials are saved securely to your account on the server. They are restored automatically each time you open the editor — you do not need to re-enter them after saving.</div>
 
     <h3>Generating an Image</h3>
     <ol>
@@ -2176,6 +1847,7 @@
       <li>Optionally click <strong>✨ Enhance Prompt</strong> to have the AI improve your description for better results.</li>
       <li>Choose an <strong>Aspect Ratio</strong> and <strong>Style</strong> from the dropdowns.</li>
       <li>Optionally enter a <strong>Negative Prompt</strong> to exclude unwanted elements.</li>
+      <li><strong>Enhance Prompt</strong> — Before generating, click the "Enhance Prompt" button to automatically rewrite your prompt into a more detailed, cinematic, AI-optimized version. The enhanced text replaces your original prompt in the text field. You can edit it further before generating.</li>
       <li>Click <strong>Generate Image</strong>. The image appears in the panel as a preview.</li>
       <li>Click <strong>Upload to Cloudinary</strong> to host the image on your Cloudinary CDN, or click <strong>Place on Canvas</strong> to add it directly to your menu.</li>
     </ol>
@@ -2188,6 +1860,7 @@
       <li>Use <strong>✨ Enhance Prompt</strong> for better results.</li>
       <li>Configure <strong>Duration</strong>, <strong>Resolution</strong>, and <strong>Camera Motion</strong>.</li>
       <li>Adjust <strong>Creativity vs. Prompt Fidelity</strong> (CFG Scale) — lower values are more creative, higher values follow the prompt more strictly.</li>
+      <li><strong>Enhance Prompt</strong> — Before generating, click the "Enhance Prompt" button to automatically rewrite your prompt into a more detailed, cinematic, AI-optimized version. The enhanced text replaces your original prompt in the text field. You can edit it further before generating.</li>
       <li>Click <strong>Generate Video</strong>. The video is submitted to Kling AI asynchronously. A progress indicator updates as the video is generated.</li>
       <li>Once ready, the video plays in the panel. Click <strong>Send to Viewer</strong> to automatically populate the matching Viewer Panel video URL field based on your chosen resolution.</li>
     </ol>
@@ -2199,6 +1872,13 @@
     <p>When you click <strong>Place on Canvas</strong>, the image is first uploaded to your Cloudinary CDN (if not already). A new image element is created at the center of your current viewport, sized at 300×300px. You can then move, resize, and style it like any other element. The element is placed using the standard V2 image element schema.</p>
 
     <div class="callout warning"><strong>Important:</strong> AI-generated content may be subject to the respective service's terms of use. Review each platform's policies before using generated content commercially.</div>
+    <h3>AI Gallery</h3>
+    <p>The <strong>AI Gallery</strong> tab (fourth tab in the left sidebar) shows all previously generated AI content for your menu:</p>
+    <ul>
+      <li><strong>Generated Images</strong> — all images you created with Stability AI or Kling AI and saved to assets. Click any image to place it on the canvas.</li>
+      <li><strong>Generated Videos</strong> — all videos generated with Kling AI, organized by slot (Hero, Left, Right). Each video card shows apply buttons for all three viewer slots so you can re-apply any previous video without regenerating.</li>
+    </ul>
+    <p>Use the AI Gallery to retrieve and reuse any previously generated content without running a new generation job.</p>
     <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 29</span></div>
   </section>
   <section class="page page-break">
