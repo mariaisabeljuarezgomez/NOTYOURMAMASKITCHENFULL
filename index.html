@@ -1228,6 +1228,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     <button class="ls-tab active" id="ls-tab-add"    onclick="setLsTab('add')"    title="Add Elements">➕<span>ADD</span></button>
     <button class="ls-tab"        id="ls-tab-assets" onclick="setLsTab('assets')" title="Image Assets">🖼️<span>ASSETS</span></button>
     <button class="ls-tab"        id="ls-tab-layers" onclick="setLsTab('layers')" title="Layers">📋<span>LAYERS</span></button>
+    <button class="ls-tab"        id="ls-tab-gallery" onclick="setLsTab('gallery')" title="AI Generated Media">🤖<span>AI GALLERY</span></button>
   </div>
   <!-- TAB: ADD -->
   <div class="ls-panel" id="ls-panel-add">
@@ -1263,6 +1264,28 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     <div class="ls-section-title">Layer Stack</div>
     <div id="layers-panel"></div>
   </div>
+
+  <!-- TAB: AI GALLERY -->
+  <div class="ls-panel" id="ls-panel-gallery" style="display:none;">
+    <div class="ls-section-title">AI Generated Images</div>
+    <div id="ai-gallery-images" class="ls-asset-grid">
+      <div data-placeholder="true"
+        style="color:#555; font-size:10px; grid-column:1/-1; text-align:center; padding:12px;">
+        Generated images appear here.<br>Use "Save to Assets" in AI Studio.
+      </div>
+    </div>
+    <div class="ls-section-title" style="margin-top:14px;">AI Generated Videos</div>
+    <div id="ai-gallery-videos" style="display:flex; flex-direction:column; gap:6px;">
+      <div style="color:#555; font-size:10px; text-align:center; padding:12px;">
+        Generated videos appear here after uploading to Cloudinary.
+      </div>
+    </div>
+    <button class="ls-action-btn" style="margin-top:10px;" onclick="loadAiGallery()">
+      <span class="ls-btn-icon">🔄</span>
+      <span class="ls-btn-label">Refresh Gallery</span>
+    </button>
+  </div>
+
   <!-- Hidden file inputs (must stay in DOM) -->
   <input type="file" id="in-img" style="display:none" accept="image/*" onchange="importImg(this)">
   <input type="file" id="in-bg"  style="display:none" accept="image/*" onchange="importBackground(this)">
@@ -1276,7 +1299,6 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     <button class="rp-tab active" id="rp-tab-viewer" onclick="setRpTab('viewer')" title="Viewer Settings">🌍<span>VIEWER</span></button>
     <button class="rp-tab"        id="rp-tab-manual" onclick="openManualModal('en')" title="Open Manual">📖<span>MANUAL</span></button>
     <button class="rp-tab"        id="rp-tab-aistudio" onclick="setRpTab('aistudio')" title="AI Studio">✨<span>AI STUDIO</span></button>
-    <button class="rp-tab"        id="rp-tab-gallery" onclick="setRpTab('gallery')" title="AI Generated Media">🤖<span>AI GALLERY</span></button>
   </div>
   <!-- TAB: VIEWER SETTINGS -->
   <div class="rp-panel" id="rp-panel-viewer">
@@ -1298,26 +1320,6 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     <div class="rp-hint">Changes apply immediately to the public viewer.</div>
   </div><!-- /.rp-panel#rp-panel-viewer -->
 
-  <!-- TAB: AI GALLERY -->
-  <div class="rp-panel" id="rp-panel-gallery" style="display:none;">
-    <div class="rp-section-title">AI Generated Images</div>
-    <div id="ai-gallery-images" class="ls-asset-grid">
-      <div data-placeholder="true"
-        style="color:#555; font-size:10px; grid-column:1/-1; text-align:center; padding:12px;">
-        Generated images appear here.<br>Use "Save to Assets" in AI Studio.
-      </div>
-    </div>
-    <div class="rp-section-title" style="margin-top:14px;">AI Generated Videos</div>
-    <div id="ai-gallery-videos" style="display:flex; flex-direction:column; gap:6px;">
-      <div style="color:#555; font-size:10px; text-align:center; padding:12px;">
-        Generated videos appear here after uploading to Cloudinary.
-      </div>
-    </div>
-    <button class="ls-action-btn" style="margin-top:10px;" onclick="loadAiGallery()">
-      <span class="ls-btn-icon">🔄</span>
-      <span class="ls-btn-label">Refresh Gallery</span>
-    </button>
-  </div>
 
   <!-- TAB: AI STUDIO -->
   <div class="rp-panel" id="rp-panel-aistudio" style="display:none;">
@@ -5235,21 +5237,24 @@ function toggleRightPanel() {
 
 // ===== LEFT SIDEBAR TAB SWITCHER =====
 function setLsTab(tab) {
-  ['add','assets','layers'].forEach(t => {
-    document.getElementById('ls-tab-' + t).classList.toggle('active', t === tab);
-    document.getElementById('ls-panel-' + t).style.display = t === tab ? 'block' : 'none';
+  ['add','assets','layers', 'gallery'].forEach(t => {
+    const tabEl = document.getElementById('ls-tab-' + t);
+    const panelEl = document.getElementById('ls-panel-' + t);
+    if (tabEl) tabEl.classList.toggle('active', t === tab);
+    if (panelEl) panelEl.style.display = t === tab ? 'block' : 'none';
   });
   if (tab === 'assets') {
     renderAssetPanel();
-  }
-  if (tab === 'layers') {
+  } else if (tab === 'layers') {
     if (typeof renderLayersPanel === 'function') renderLayersPanel();
+  } else if (tab === 'gallery') {
+    loadAiGallery();
   }
 }
 
 // ===== RIGHT PANEL TAB SWITCHER =====
 function setRpTab(tab) {
-  ['viewer', 'aistudio', 'gallery'].forEach(t => {
+  ['viewer', 'aistudio'].forEach(t => {
     const tabEl = document.getElementById('rp-tab-' + t);
     const panelEl = document.getElementById('rp-panel-' + t);
     if (tabEl) tabEl.classList.toggle('active', t === tab);
@@ -5257,8 +5262,6 @@ function setRpTab(tab) {
   });
   if (tab === 'aistudio') {
     loadAiCredentials();
-  } else if (tab === 'gallery') {
-    loadAiGallery();
   }
 }
 
