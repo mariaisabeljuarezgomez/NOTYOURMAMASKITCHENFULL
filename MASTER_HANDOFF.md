@@ -453,6 +453,7 @@ Violations of this rule cause silent 400 errors and data loss.
 
 > [!IMPORTANT]
 > **LATEST UPDATE: April 11, 2026**
+> - **Audit Fix #10 (BUG-10 — zIndex Stability Guard)**: Hardened `resequenceZIndex()` with an explicit `Math.max(1, idx + 1)` guard for content elements. This ensures that only the background layer can ever hold `zIndex: 0`, protecting against layering bugs if a non-background element's index is ever manually set to zero.
 > - **Audit Fix #9 (BUG-8 — Credential Schema Documentation)**: Added cross-reference comments to `app.py` for `/api/upload-image` and `/api/ai/cloudinary-upload` clarify why one uses camelCase while the other uses snake_case, preventing accidental breakage during backend refactors.
 > - **Audit Fix #8 (BUG-12 — Redundant crc32 removal)**: Removed the unused `crc32()` function from `index.html`. This function was inefficient (rebuilt its table on every call) and redundant as the PNG export logic already uses a module-level optimized implementation in `export-utils.js`.
 > - **Audit Fix #7 (BUG-16 — Optimized Asset Storage)**: Updated `addFromTray()` to store the element's `src` as its remote URL instead of the full base64 transparency-trimmed blob when the asset exists in the registry. This significantly reduces the size of the document JSON saved to PostgreSQL.
