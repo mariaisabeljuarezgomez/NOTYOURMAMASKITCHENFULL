@@ -743,14 +743,18 @@ def save_video_history():
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cur = conn.cursor()
         # Avoid duplicate consecutive saves of the same URL to the same slot
+        # Correctly only checks the single most recent record for this slot
         cur.execute("""
             INSERT INTO video_history (slot, url)
             SELECT %s, %s
             WHERE NOT EXISTS (
-                SELECT 1 FROM video_history
-                WHERE slot = %s AND url = %s
-                ORDER BY created_at DESC
-                LIMIT 1
+                SELECT 1 FROM (
+                    SELECT url FROM video_history 
+                    WHERE slot = %s 
+                    ORDER BY created_at DESC 
+                    LIMIT 1
+                ) last_entry 
+                WHERE last_entry.url = %s
             )
         """, (slot, url, slot, url))
         conn.commit()
