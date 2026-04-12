@@ -6118,62 +6118,39 @@ function addToAiImageGallery(url, name) {
 }
 
 async function loadAiGallery() {
-    // Load AI image history
-    try {
-        const resp = await fetch('/api/image-history');
-        const json = await resp.json();
-        const grid = document.getElementById('ai-gallery-images');
-        if (grid && json.images && json.images.length) {
-            grid.innerHTML = '';
-            [...json.images].reverse().forEach(item => {
-                if (!item.url) return;
-                const c = document.createElement('div');
-                c.className = 'asset-container';
-                const el = document.createElement('img');
-                el.className = 'ls-asset-item';
-                el.src = item.url;
-                el.title = item.name || 'AI Image';
-                el.onclick = () => addFromAsset(null, item.url);
-                c.appendChild(el);
-                grid.appendChild(c);
-            });
-        }
-    } catch(e) { /* silent */ }
+    const grid = document.getElementById('ai-gallery-images');
+    grid.innerHTML = '';
+    const aiAssets = (docV2.assets || []).filter(a =>
+        a.id && (a.id.startsWith('asset_ai') || (a.name || '').toUpperCase().includes('AI'))
+    );
+    if (aiAssets.length === 0) {
+        grid.innerHTML = '<div data-placeholder="true" style="color:#555;font-size:10px;grid-column:1/-1;text-align:center;padding:12px;">Generated images appear here.<br>Use "Save to Assets" in AI Studio.</div>';
+        return;
+    }
+    aiAssets.forEach(asset => {
+        const url = (asset.storage || {}).originalUrl || (asset.storage || {}).previewUrl || '';
+        const wrap = document.createElement('div');
+        wrap.className = 'asset-container';
+        wrap.style.position = 'relative';
+        wrap.innerHTML = `
+            <img src="${url}" class="ls-asset-item"
+                onclick="addFromAsset('${asset.id}', '${url}')"
+                title="${asset.name || 'AI Image'}"
+                onerror="this.closest('.asset-container').style.opacity='0.3'">
+            <button class="asset-del-btn" onclick="deleteAiGalleryItem('${asset.id}', event)">✕</button>
+        `;
+        grid.appendChild(wrap);
+    });
+}
 
-    // Load AI video history
-    try {
-        const resp = await fetch('/api/video-history');
-        const json = await resp.json();
-        const vidDiv = document.getElementById('ai-gallery-videos');
-        if (!vidDiv) return;
-        const allVids = [
-            ...(json.hero || []),
-            ...(json.left || []),
-            ...(json.right || [])
-        ];
-        const unique = [...new Set(allVids)];
-        if (!unique.length) return;
-        vidDiv.innerHTML = '';
-        unique.forEach(url => {
-            const card = document.createElement('div');
-            card.style.cssText =
-                'background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:6px;margin-bottom:4px;';
-            card.innerHTML = `
-                <video src="${url}" muted loop
-                    style="width:100%;border-radius:4px;max-height:80px;object-fit:cover;"
-                    onmouseenter="this.play()" onmouseleave="this.pause()"></video>
-                <div style="display:flex;gap:4px;margin-top:4px;">
-                    <button class="btn-ui"
-                        style="flex:1;font-size:9px;padding:3px;"
-                        onclick="applyVideoToSlot('hero', '${url}')">🎬 Hero</button>
-                    <button class="btn-ui"
-                        style="flex:1;font-size:9px;padding:3px;"
-                        onclick="navigator.clipboard.writeText('${url}');showToast('URL Copied')">
-                        📋 Copy</button>
-                </div>`;
-            vidDiv.appendChild(card);
-        });
-    } catch(e) { /* silent */ }
+function deleteAiGalleryItem(assetId, e) {
+    e.stopPropagation();
+    pushState();
+    docV2.assets = (docV2.assets || []).filter(a => a.id !== assetId);
+    docV2.elements = docV2.elements.filter(el => el.assetId !== assetId);
+    save();
+    loadAiGallery();
+    showToast('🗑 AI image removed');
 }
 
 function copyAiUrl(inputId) {

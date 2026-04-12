@@ -915,14 +915,7 @@ def upload_image():
                 return jsonify({"status": "ok", "url": resp.json().get("secure_url", "")})
             return jsonify({"error": f"Cloudinary upload failed — status {resp.status_code if resp else 'no response'}"}), 400
         else:
-            # Fallback to local Images directory
-            if not os.path.exists(IMAGES_DIR):
-                os.makedirs(IMAGES_DIR)
-            safe_filename = filename.replace("..", "").replace("/", "") if filename else f"upload_{int(time.time())}.png"
-            file_path = os.path.join(IMAGES_DIR, safe_filename)
-            with open(file_path, "wb") as f:
-                f.write(raw_bytes)
-            return jsonify({"status": "ok", "url": f"/Images/{safe_filename}"})
+            return jsonify({"error": "Cloudinary credentials required to save images permanently. Fill in your credentials in AI Studio → Credentials."}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
