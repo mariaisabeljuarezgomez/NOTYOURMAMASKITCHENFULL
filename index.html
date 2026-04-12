@@ -3142,11 +3142,11 @@ function alignMulti(direction) {
   } else if (direction === 'bottom') {
     const maxB = Math.max(...els.map(e => {
         const elDom = document.getElementById(e.id);
-        return e.y + (e.height || elDom?.offsetHeight || 40);
+        return e.y + (e.height || elDom?.offsetHeight || 0);
     }));
     els.forEach(e => {
         const elDom = document.getElementById(e.id);
-        e.y = maxB - (e.height || elDom?.offsetHeight || 40);
+        e.y = maxB - (e.height || elDom?.offsetHeight || 0);
     });
   } else if (direction === 'centerH') {
     const avgX = els.reduce((s, e) => {
@@ -3160,11 +3160,11 @@ function alignMulti(direction) {
   } else if (direction === 'centerV') {
     const avgY = els.reduce((s, e) => {
         const elDom = document.getElementById(e.id);
-        return s + e.y + (e.height || elDom?.offsetHeight || 40) / 2;
+        return s + e.y + (e.height || elDom?.offsetHeight || 0) / 2;
     }, 0) / els.length;
     els.forEach(e => {
         const elDom = document.getElementById(e.id);
-        e.y = avgY - (e.height || elDom?.offsetHeight || 40) / 2;
+        e.y = avgY - (e.height || elDom?.offsetHeight || 0) / 2;
     });
   }
   render();
