@@ -346,7 +346,9 @@ def enhance_prompt():
         prompt_type = data.get("type", "image")
         if not prompt: return jsonify({"error": "Prompt is required"}), 400
         modifiers = "professional food photography, soft natural lighting, shallow depth of field, 85mm lens, restaurant-quality presentation, high resolution, appetizing composition" if prompt_type == "image" else "cinematic food video, slow motion, professional lighting, 4K quality, appetizing presentation, smooth camera movement, broadcast quality"
-        enhanced = prompt if "professional food photography" in prompt.lower() else f"{prompt}. {modifiers}"
+        # Check if the prompt already contains the first identifiable part of the modifiers string
+        check_phrase = "professional food photography" if prompt_type == "image" else "cinematic food video"
+        enhanced = prompt if check_phrase in prompt.lower() else f"{prompt}. {modifiers}"
         return jsonify({"enhanced_prompt": enhanced})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
