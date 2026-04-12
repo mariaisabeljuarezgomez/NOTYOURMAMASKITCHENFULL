@@ -3505,7 +3505,7 @@ async function addFromTray(src, skipPush) {
     const newElement = {
         id,
         type: 'image',
-        src: trimmedSrc,
+        src: matchedAsset ? matchedAsset.storage.originalUrl : trimmedSrc,
         assetId: matchedAsset ? matchedAsset.id : null,
         x, y,
         width: 300, height: 300,
