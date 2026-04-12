@@ -3590,7 +3590,10 @@ async function importImg(input) {
 
 function removeBackground(e) {
   if (e) e.stopPropagation();
-  docV2.elements = docV2.elements.filter(el => el.layerRole !== 'background');
+  pushState();
+  docV2.elements = docV2.elements.filter(
+      el => el.layerRole !== 'background' && !el.isSystemBackground
+  );
   selectedId = null;
   renderBackground();
   render();

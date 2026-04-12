@@ -453,6 +453,7 @@ Violations of this rule cause silent 400 errors and data loss.
 
 > [!IMPORTANT]
 > **LATEST UPDATE: April 11, 2026**
+> - **Bug Fix #9 (removeBackground Undo + IsSystemBackground)**: Added `pushState()` before background deletion so the action is undoable with Ctrl+Z. Expanded the filter to also catch elements flagged `isSystemBackground:true` in case they lack `layerRole:'background'`. `renderLayerList()` and `renderBackground()` preserved. Cherry-picked from PR #6 (rejected the rest).
 > - **Bug Fix #8 (Background Click Intercept)**: `renderBackground()` was injecting `<img>` without `pointer-events:none`. The `#bg-layer` container has `pointer-events:none` but that doesn't cascade to dynamically injected children. The img was intercepting all canvas clicks, preventing deselect. One-word fix.
 > - **Bug Fix #7 (Video/Poll DOM Read)**: `generateAiVideo()` and `pollKlingStatus()` were reading credentials via `getAiCredentials()` (DOM-based). When the credentials accordion is collapsed after a page reload, DOM input values are empty, causing silent 400 errors from the backend. Both functions now read directly from `docV2.aiCredentials`, matching the pattern used by `generateKlingImage()`.
 > - **Bug Fix #6 (Accordion Credential Reload)**: `toggleAiAccordion()` never repopulated credential fields when opening the 'cred' panel after a page reload. Added `restoreAiCredentials(docV2)` call at the top so fields are always populated from the saved state when the panel opens.
