@@ -4830,9 +4830,14 @@ async function saveAiCredentials() {
     });
     if (res.ok) {
       showToast('✅ Credentials saved permanently!');
-      document.getElementById('ai-img-btn').disabled = false;
-      document.getElementById('kling-img-btn').disabled = false;
-      document.getElementById('ai-vid-btn').disabled = false;
+      const c = docV2.aiCredentials;
+      if (c.stabilityKey) {
+        document.getElementById('ai-img-btn').disabled = false;
+      }
+      if (c.klingKey && c.klingSecret) {
+        document.getElementById('kling-img-btn').disabled = false;
+        document.getElementById('ai-vid-btn').disabled = false;
+      }
     } else {
       showToast('⚠️ Could not save credentials to server');
     }
