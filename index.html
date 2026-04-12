@@ -4088,8 +4088,8 @@ async function save() {
         markClean();
         showToast('✅ Saved to server');
     } catch (e) {
-        markClean(); // still saved locally
-        showToast('⚠️ Server save failed — backed up locally');
+        markDirty(); // keep dirty state — save did not succeed
+        showToast('⚠️ Server save failed — please try again');
         console.error('Save error:', e);
     }
 }
