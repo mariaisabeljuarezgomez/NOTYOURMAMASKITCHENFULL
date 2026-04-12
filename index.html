@@ -4766,8 +4766,14 @@ let aiState = {
   vidRefMimeType: null,
   vidTaskId: null,
   vidTaskType: null,
-  vidPollingInterval: null
+  vidPollingInterval: null,
+  imgPollingInterval: null
 };
+
+window.addEventListener('beforeunload', () => {
+  if (aiState.vidPollingInterval) clearInterval(aiState.vidPollingInterval);
+  if (aiState.imgPollingInterval) clearInterval(aiState.imgPollingInterval);
+});
 
 function toggleAiAccordion(id) {
   if (id === 'cred') {
@@ -5224,10 +5230,11 @@ function showImg2ImgPreview(b64) {
         // Poll for result
         let attempts = 0;
         const maxAttempts = 60;
-        const pollInterval = setInterval(async () => {
+        aiState.imgPollingInterval = setInterval(async () => {
           attempts++;
           if (attempts > maxAttempts) {
-            clearInterval(pollInterval);
+            clearInterval(aiState.imgPollingInterval);
+            aiState.imgPollingInterval = null;
             showToast('⏱️ Kling image timed out. Try again.');
             btn.disabled = false;
             btn.textContent = 'Generate with Kling';
@@ -5242,7 +5249,8 @@ function showImg2ImgPreview(b64) {
             });
             const pollData = await pollResp.json();
             if (pollData.error) {
-              clearInterval(pollInterval);
+              clearInterval(aiState.imgPollingInterval);
+              aiState.imgPollingInterval = null;
               showToast('❌ ' + pollData.error);
               btn.disabled = false;
               btn.textContent = 'Generate with Kling';
@@ -5251,7 +5259,8 @@ function showImg2ImgPreview(b64) {
             }
             document.getElementById('kling-img-status').textContent = 'Status: ' + pollData.status + ' (' + pollData.progress + '%)';
             if (pollData.status === 'succeed' && pollData.image_url) {
-              clearInterval(pollInterval);
+              clearInterval(aiState.imgPollingInterval);
+              aiState.imgPollingInterval = null;
               document.getElementById('kling-img-progress').style.display = 'none';
               btn.disabled = false;
               btn.textContent = 'Generate with Kling';
@@ -5284,7 +5293,8 @@ function showImg2ImgPreview(b64) {
                 window._lastAiImageUrl = pollData.image_url;
               }
             } else if (pollData.status === 'failed') {
-              clearInterval(pollInterval);
+              clearInterval(aiState.imgPollingInterval);
+              aiState.imgPollingInterval = null;
               showToast('❌ Kling image generation failed.');
               btn.disabled = false;
               btn.textContent = 'Generate with Kling';
