@@ -1627,9 +1627,9 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         <div id="ai-vid-apply-row" style="display:none;margin-top:6px;">
           <div style="font-size:9px;color:#888;font-weight:800;text-transform:uppercase;margin-bottom:4px;">⚡ Apply Directly To Viewer</div>
           <div style="display:flex;gap:4px;">
-            <button onclick="applyVideoToSlot('hero')" class="btn-ui accent" style="flex:1;font-size:9px;padding:5px;">🎬 Hero</button>
-            <button onclick="applyVideoToSlot('left')" class="btn-ui" style="flex:1;font-size:9px;padding:5px;">◀ Left</button>
-            <button onclick="applyVideoToSlot('right')" class="btn-ui" style="flex:1;font-size:9px;padding:5px;">▶ Right</button>
+            <button onclick="applyVideoToSlot('hero', window._lastAiVideoCloudUrl || document.getElementById('ai-vid-url').value)" class="btn-ui accent" style="flex:1;font-size:9px;padding:5px;">🎬 Hero</button>
+            <button onclick="applyVideoToSlot('left', window._lastAiVideoCloudUrl || document.getElementById('ai-vid-url').value)" class="btn-ui" style="flex:1;font-size:9px;padding:5px;">◀ Left</button>
+            <button onclick="applyVideoToSlot('right', window._lastAiVideoCloudUrl || document.getElementById('ai-vid-url').value)" class="btn-ui" style="flex:1;font-size:9px;padding:5px;">▶ Right</button>
           </div>
         </div>
         <div id="ai-vid-history-hero" style="display:none;margin-top:6px;padding:6px;background:#1a1a1a;border-radius:6px;border:1px solid #2a2a2a;"></div>
@@ -4092,6 +4092,7 @@ async function importMultipleImgs(input) {
     prog.style.display = 'none';
     input.value = '';
     renderAssetPanel();
+    save();
     showToast(`✅ ${files.length} image${files.length > 1 ? 's' : ''} uploaded to Assets`);
 }
 
@@ -6164,7 +6165,7 @@ async function loadAiGallery() {
                 <div style="display:flex;gap:4px;margin-top:4px;">
                     <button class="btn-ui"
                         style="flex:1;font-size:9px;padding:3px;"
-                        onclick="applyVideoToSlot('hero')">🎬 Hero</button>
+                        onclick="applyVideoToSlot('hero', '${url}')">🎬 Hero</button>
                     <button class="btn-ui"
                         style="flex:1;font-size:9px;padding:3px;"
                         onclick="navigator.clipboard.writeText('${url}');showToast('URL Copied')">
@@ -6237,8 +6238,7 @@ function clearAiVidRef() {
   updateVideoControlStates();
 }
 
-async function applyVideoToSlot(slot) {
-  const url = window._lastAiVideoCloudUrl || document.getElementById('ai-vid-url').value;
+async function applyVideoToSlot(slot, url) {
   if (!url) { showToast('⚠️ Upload to Cloudinary first to get a permanent URL.'); return; }
   if (slot === 'hero') {
     document.getElementById('hero-video-url-input').value = url;
@@ -6295,8 +6295,7 @@ function renderVideoHistoryUI() {
 
 function restoreVideoSlot(slot, url) {
   if (!confirm('Restore this video to ' + slot + '?')) return;
-  window._lastAiVideoCloudUrl = url;
-  applyVideoToSlot(slot);
+  applyVideoToSlot(slot, url);
   showToast('↩ Restored!');
 }
 

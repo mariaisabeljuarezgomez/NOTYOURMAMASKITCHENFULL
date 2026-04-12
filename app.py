@@ -187,8 +187,10 @@ def save_backup():
     if request.content_length and request.content_length > 5_000_000:
         return jsonify({"error": "Payload too large"}), 413
     data = request.json
-    if not data or not isinstance(data.get('elements'), list):
+    if not data or not validate_schema(data):
         return jsonify({"error": "Invalid payload"}), 400
+    conn = None
+    cur = None
     try:
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cur = conn.cursor()
@@ -200,21 +202,25 @@ def save_backup():
                 updated_at = CURRENT_TIMESTAMP
         """, (json.dumps(data),))
         conn.commit()
-        cur.close()
-        conn.close()
         return jsonify({"status": "backup_saved"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    finally:
+        try:
+            if cur: cur.close()
+            if conn: conn.close()
+        except Exception:
+            pass
 
 @app.route("/api/backup", methods=["GET"])
 def get_backup():
+    conn = None
+    cur = None
     try:
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cur = conn.cursor()
         cur.execute("SELECT canvas_json, updated_at FROM sessions WHERE id = 'backup'")
         row = cur.fetchone()
-        cur.close()
-        conn.close()
         if row:
             data = row[0]
             # Parse stringified JSON just like get_menu if necessary
@@ -227,6 +233,12 @@ def get_backup():
         return jsonify({"data": None}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    finally:
+        try:
+            if cur: cur.close()
+            if conn: conn.close()
+        except Exception:
+            pass
 
 @app.route("/api/menu", methods=["POST"])
 def save_menu():
