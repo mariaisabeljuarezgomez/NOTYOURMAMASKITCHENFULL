@@ -1467,7 +1467,7 @@ let redoStack = [];
 const elementDisplayNames = {}; // { elementId: "My Custom Name" } — editor display only, not persisted
 
 function pushState() {
-    // Save state BEFORE the change
+    // Save state BEFORE the change (limit to 50 undo steps)
     historyStack = [...historyStack.slice(-49), JSON.stringify(docV2.elements)];
     redoStack = []; // Clear redo on any new action
     markDirty();
