@@ -2,6 +2,10 @@
 
 **Last Updated: April 12, 2026**
 
+## Changelog — Audit Patch April 12, 2026
+Updated based on confirmed three-agent source code audit. 14 fixes applied. See each section for details.
+
+
 ---
 
 ## Section 1 — Project Overview
@@ -175,6 +179,19 @@ CREATE TABLE image_history (
 - **renderAssetPanel()** — Builds asset grid from docV2.assets, shows in ASSETS tab.
 - **renderLayersPanel()** — Lists all elements by z-index in LAYERS tab.
 
+### 30-Second Sync System
+A setInterval fires every 30,000ms (30 seconds) and calls sync(). This is a UI/state synchronization call — it is NOT a save operation and does NOT write to the database. It is separate from the 5-minute auto-backup. The sync() function has approximately 32 call sites throughout the codebase. Do not confuse this interval with the auto-backup timer.
+
+### Help Popout System
+maybeShowHelpPopout() — Auto-triggers on new sessions for first-time guidance. Renders a bottom-center floating popout (.help-popout) with a title, description text, a primary CTA button, and a dismiss X. The popout animates in with a cubic-bezier spring transition. Once dismissed, it does not reappear for that session. Called at line 4912 during editor initialization.
+
+### Pinch-vs-Drag Suppression (Mobile)
+At line 4454, the editor implements logic to distinguish between a two-finger pinch gesture (zoom intent) and a single-finger drag (pan/move intent) on touch devices. This prevents accidental element drags during pinch-to-zoom. Part of the broader mobile UX hardening layer.
+
+### Auto-Backup Fallback
+On backup restore, the editor first attempts to read menuBackup from localStorage (line 4873) as a fallback before fetching from /api/backup. This provides an additional recovery layer if the server backup is unavailable.
+
+
 ---
 
 ## Section 6 — Left Sidebar Tabs
@@ -204,6 +221,16 @@ CREATE TABLE image_history (
 - Each item shows: visibility toggle, lock toggle, element type icon, element name
 - Click to select, drag to reorder (z-index)
 
+### Ruler & Draggable Canvas Guide System
+The editor renders a horizontal ruler (ruler-h) across the top and a vertical ruler (ruler-v) on the left. Users can click and drag from either ruler onto the canvas to place draggable guide lines. Guides are rendered as .canvas-guide-h (horizontal) and .canvas-guide-v (vertical) elements with a cyan glow (rgba(0,255,230,0.55)). Guides can be repositioned by dragging. Hovering a guide reveals a delete button (✕) that removes it. Rulers are hidden on mobile (max-width: 900px). This system is entirely CSS + JS — no external library.
+
+### Right-Click Context Menu
+A custom right-click context menu is implemented at line 6669. When a user right-clicks an image element on the canvas, the menu offers shortcuts including "Use as Kling Reference" and "Use as Video Reference." These populate the reference image inputs in the AI Studio panel directly from the canvas selection, without requiring a separate upload.
+
+### Text Format Bar
+A floating Text Format Bar (text-format-bar) appears above the canvas whenever a text element is selected. It contains: Bold, Italic, Underline, Strikethrough, text alignment (Left/Center/Right/Justify), text transform (Caps/Lowercase), font family selector, font size input with ± controls, line height, letter spacing, and a color picker with live preview swatch. The bar is fixed-position at top: 60px, spanning left: 220px to right: 260px. It is hidden (opacity: 0.35, pointer-events: none) when no text is selected and becomes fully active (opacity: 1) when a text element is active.
+
+
 ### AI GALLERY Tab (4th tab)
 - **Generated Images Section:** Reads from docV2.assets filtering for asset_ai_ prefixed IDs or AI in name. Shows delete button (✕) on each. Click adds to canvas via addFromAsset().
 - **Generated Videos Section:** Reads from video_history table. Shows video preview, "🎬 Hero" button to apply to hero slot, "📋 Copy" button to copy URL.
@@ -228,6 +255,10 @@ Each slot has a "Set as Hero" / "Set as Left" / "Set as Right" button when video
 - **Enhance Prompt:** Appends food photography modifiers
 - **Save to Assets:** Saves generated image to docV2.assets[] and persists to DB
 - **Upload to Cloudinary:** For videos, makes URL permanent in video_history
+
+### Kling Prompt Enhancement
+- **Enhance Prompt:** The AI Studio includes an "Enhance Prompt" button for both image and video generation panels. It calls /api/ai/enhance-prompt and rewrites the user's raw prompt into a more detailed, cinematic AI-optimized version. The enhanced text is injected back into the prompt textarea. Confirmed at line 5420.
+
 
 ### Credentials Accordion
 - Cloudinary: cloudName, cloudKey, cloudSecret
@@ -320,7 +351,9 @@ Each slot has a "Set as Hero" / "Set as Left" / "Set as Right" button when video
 **Remove Background:**
 - removeBackground(e) calls pushState() first (undoable)
 - Filters elements where layerRole !== 'background' AND !isSystemBackground
+- removeBackground(e) — Confirmed separate function from Replace Background. Deletes all elements where layerRole === 'background' or isSystemBackground === true. Does not import a new background — it fully clears the background layer. Triggers save() and shows a toast confirmation. UI button is located in the Layers panel context.
 - Clears #bg-layer.innerHTML, calls render() and save()
+
 
 ---
 
@@ -352,6 +385,13 @@ Each slot has a "Set as Hero" / "Set as Left" / "Set as Right" button when video
 - Checks if "professional food photography" (image) or "cinematic food video" (video) already in prompt
 - Only appends modifiers if not already present (no double-append)
 
+### Video Slot History System
+Each slot (Hero, Left, Right) maintains a history of applied videos via saveVideoHistory(slot, url), which POSTs to /api/video-history. History is displayed in dedicated DOM containers: ai-vid-history-hero, ai-vid-history-left, ai-vid-history-right. Users can re-apply previously generated videos from these history panels without regenerating.
+
+### Kling Generation Costs
+Kling AI generation costs are variable by model. Newer models (Kling v2.5 Turbo, v2.6, v3, v3-Omni, Video-O1) carry different point costs than legacy models (v1, v1.5, v1.6). Cost estimate is displayed to the user in the kling-cost-estimate div before generation. Do not document a flat point value — it changes per model selection.
+
+
 ---
 
 ## Section 12 — UI Theme
@@ -374,9 +414,9 @@ Each slot has a "Set as Hero" / "Set as Left" / "Set as Right" button when video
 
 | Item | Status |
 |------|--------|
-| AI Gallery Left video apply | ⚠️ NOT IMPLEMENTED — Hero only works |
-| AI Gallery Right video apply | ⚠️ NOT IMPLEMENTED — Hero only works |
+| **Kling Video Slots** | applyVideoToSlot('left', url) and applyVideoToSlot('right', url) are fully functional. They write the Cloudinary URL directly to side-panel-left-url and side-panel-right-url inputs and call saveVideoHistory(slot, url) and saveGlobalSettings(). All three slots (Hero, Left, Right) are operational. |
 | build_app.py sync | ⚠️ May need verification after index.html changes |
+
 
 ---
 
@@ -407,4 +447,12 @@ Each slot has a "Set as Hero" / "Set as Left" / "Set as Right" button when video
 
 ---
 
-**END OF MASTER HANDOFF**
+---
+
+## Section 15 — Keyboard Shortcuts
+
+- **Arrow keys** — Nudge selected element 2px in any direction.
+- **Shift + Arrow keys** — Nudge selected element 10px in any direction (confirmed at line 4936). Both nudge modes call nudge(dx, dy) and push undo state.
+- **Ctrl+Y** — Redo. Calls redo(). Pops the top state from redoStack, pushes current state back to historyStack, re-renders canvas, and shows "Action Redone" toast. Note: There is no visible redo button in the UI — redo is keyboard-only via Ctrl+Y.
+
+**END OF MASTER HANDOFF**
