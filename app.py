@@ -107,6 +107,15 @@ def init_db():
             cur.execute("INSERT INTO sessions (id, canvas_json) VALUES ('main', %s) ON CONFLICT (id) DO NOTHING", (json.dumps(canvas_data),))
             print("DB: Initialized 'main' session record")
             
+        # Ensure 'backup' record exists for rolling auto-backup
+        cur.execute("SELECT id FROM sessions WHERE id = 'backup'")
+        if not cur.fetchone():
+            cur.execute(
+                "INSERT INTO sessions (id, canvas_json) VALUES ('backup', %s) ON CONFLICT (id) DO NOTHING",
+                (json.dumps(DEFAULT_MENU_DATA),)
+            )
+            print("DB: Initialized 'backup' session record")
+
         conn.commit()
         cur.close()
     except Exception as e:
@@ -172,6 +181,64 @@ def get_menu():
     except Exception as e:
         print(f"get_menu ERROR: {e}", flush=True)
         return jsonify({"error": str(e)}), 500
+
+@app.route("/api/backup", methods=["POST"])
+def save_backup():
+    if request.content_length and request.content_length > 5_000_000:
+        return jsonify({"error": "Payload too large"}), 413
+    data = request.json
+    if not data or not validate_schema(data):
+        return jsonify({"error": "Invalid payload"}), 400
+    conn = None
+    cur = None
+    try:
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO sessions (id, canvas_json, updated_at)
+            VALUES ('backup', %s, CURRENT_TIMESTAMP)
+            ON CONFLICT (id) DO UPDATE SET
+                canvas_json = EXCLUDED.canvas_json,
+                updated_at = CURRENT_TIMESTAMP
+        """, (json.dumps(data),))
+        conn.commit()
+        return jsonify({"status": "backup_saved"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        try:
+            if cur: cur.close()
+            if conn: conn.close()
+        except Exception:
+            pass
+
+@app.route("/api/backup", methods=["GET"])
+def get_backup():
+    conn = None
+    cur = None
+    try:
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        cur = conn.cursor()
+        cur.execute("SELECT canvas_json, updated_at FROM sessions WHERE id = 'backup'")
+        row = cur.fetchone()
+        if row:
+            data = row[0]
+            # Parse stringified JSON just like get_menu if necessary
+            if isinstance(data, str):
+                try:
+                    data = json.loads(data)
+                except:
+                    pass
+            return jsonify({"data": data, "updated_at": str(row[1])}), 200
+        return jsonify({"data": None}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        try:
+            if cur: cur.close()
+            if conn: conn.close()
+        except Exception:
+            pass
 
 @app.route("/api/menu", methods=["POST"])
 def save_menu():

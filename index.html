@@ -1228,6 +1228,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     <button class="ls-tab active" id="ls-tab-add"    onclick="setLsTab('add')"    title="Add Elements">➕<span>ADD</span></button>
     <button class="ls-tab"        id="ls-tab-assets" onclick="setLsTab('assets')" title="Image Assets">🖼️<span>ASSETS</span></button>
     <button class="ls-tab"        id="ls-tab-layers" onclick="setLsTab('layers')" title="Layers">📋<span>LAYERS</span></button>
+    <button class="ls-tab"        id="ls-tab-gallery" onclick="setLsTab('gallery')" title="AI Generated Media">🤖<span>AI GALLERY</span></button>
   </div>
   <!-- TAB: ADD -->
   <div class="ls-panel" id="ls-panel-add">
@@ -1243,10 +1244,19 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     <div class="ls-section-title" style="margin-top:16px;">File</div>
     <button class="ls-action-btn accent" onclick="exportPng()"><span class="ls-btn-icon">⬇️</span><span class="ls-btn-label">Export Pro PNG</span></button>
     <button class="ls-action-btn" onclick="load()"><span class="ls-btn-icon">📂</span><span class="ls-btn-label">Load Session</span></button>
+    <button class="ls-action-btn" onclick="restoreFromBackup()" style="background:#1a3a2a; border-color:#2ecc71; color:#7dcea0;">
+      <span class="ls-btn-icon">🔄</span>
+      <span class="ls-btn-label">Restore Backup</span>
+    </button>
   </div>
   <!-- TAB: ASSETS -->
   <div class="ls-panel" id="ls-panel-assets" style="display:none;">
     <div class="ls-section-title">Click to Add</div>
+    <button class="ls-action-btn accent" onclick="document.getElementById('in-img-assets').click()">
+      <span class="ls-btn-icon">📷</span>
+      <span class="ls-btn-label">Upload Images</span>
+    </button>
+    <div id="asset-upload-progress" style="display:none; font-size:10px; color:#c8a96a; margin-bottom:6px; text-align:center;"></div>
     <div class="ls-asset-grid"></div>
   </div>
   <!-- TAB: LAYERS -->
@@ -1254,9 +1264,32 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     <div class="ls-section-title">Layer Stack</div>
     <div id="layers-panel"></div>
   </div>
+
+  <!-- TAB: AI GALLERY -->
+  <div class="ls-panel" id="ls-panel-gallery" style="display:none;">
+    <div class="ls-section-title">AI Generated Images</div>
+    <div id="ai-gallery-images" class="ls-asset-grid">
+      <div data-placeholder="true"
+        style="color:#555; font-size:10px; grid-column:1/-1; text-align:center; padding:12px;">
+        Generated images appear here.<br>Use "Save to Assets" in AI Studio.
+      </div>
+    </div>
+    <div class="ls-section-title" style="margin-top:14px;">AI Generated Videos</div>
+    <div id="ai-gallery-videos" style="display:flex; flex-direction:column; gap:6px;">
+      <div style="color:#555; font-size:10px; text-align:center; padding:12px;">
+        Generated videos appear here after uploading to Cloudinary.
+      </div>
+    </div>
+    <button class="ls-action-btn" style="margin-top:10px;" onclick="loadAiGallery()">
+      <span class="ls-btn-icon">🔄</span>
+      <span class="ls-btn-label">Refresh Gallery</span>
+    </button>
+  </div>
+
   <!-- Hidden file inputs (must stay in DOM) -->
   <input type="file" id="in-img" style="display:none" accept="image/*" onchange="importImg(this)">
   <input type="file" id="in-bg"  style="display:none" accept="image/*" onchange="importBackground(this)">
+  <input type="file" id="in-img-assets" style="display:none" accept="image/*" multiple onchange="importMultipleImgs(this)">
 </div>
 
 <!-- ===== RIGHT PANEL ===== -->
@@ -1286,6 +1319,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     <button onclick="saveGlobalSettings()" class="rp-save-btn">💾 UPDATE ALL VIEWER SETTINGS</button>
     <div class="rp-hint">Changes apply immediately to the public viewer.</div>
   </div><!-- /.rp-panel#rp-panel-viewer -->
+
 
   <!-- TAB: AI STUDIO -->
   <div class="rp-panel" id="rp-panel-aistudio" style="display:none;">
@@ -1593,9 +1627,9 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         <div id="ai-vid-apply-row" style="display:none;margin-top:6px;">
           <div style="font-size:9px;color:#888;font-weight:800;text-transform:uppercase;margin-bottom:4px;">⚡ Apply Directly To Viewer</div>
           <div style="display:flex;gap:4px;">
-            <button onclick="applyVideoToSlot('hero')" class="btn-ui accent" style="flex:1;font-size:9px;padding:5px;">🎬 Hero</button>
-            <button onclick="applyVideoToSlot('left')" class="btn-ui" style="flex:1;font-size:9px;padding:5px;">◀ Left</button>
-            <button onclick="applyVideoToSlot('right')" class="btn-ui" style="flex:1;font-size:9px;padding:5px;">▶ Right</button>
+            <button onclick="applyVideoToSlot('hero', window._lastAiVideoCloudUrl || document.getElementById('ai-vid-url').value)" class="btn-ui accent" style="flex:1;font-size:9px;padding:5px;">🎬 Hero</button>
+            <button onclick="applyVideoToSlot('left', window._lastAiVideoCloudUrl || document.getElementById('ai-vid-url').value)" class="btn-ui" style="flex:1;font-size:9px;padding:5px;">◀ Left</button>
+            <button onclick="applyVideoToSlot('right', window._lastAiVideoCloudUrl || document.getElementById('ai-vid-url').value)" class="btn-ui" style="flex:1;font-size:9px;padding:5px;">▶ Right</button>
           </div>
         </div>
         <div id="ai-vid-history-hero" style="display:none;margin-top:6px;padding:6px;background:#1a1a1a;border-radius:6px;border:1px solid #2a2a2a;"></div>
@@ -1843,6 +1877,53 @@ function markDirty() {
     }
 }
 
+// ── AUTO-BACKUP: saves to server every 5 minutes if unsaved changes exist ──
+let _autoBackupTimer = null;
+function startAutoBackup() {
+    if (_autoBackupTimer) return;
+    _autoBackupTimer = setInterval(async () => {
+        const btn = document.getElementById('btn-save-header');
+        if (!btn || !btn.dataset.dirty) return; // only runs when dirty
+        try {
+            const payload = JSON.parse(JSON.stringify(docV2));
+            await fetch('/api/backup', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            showToast('🔄 Auto-backup saved');
+        } catch(e) { /* silent fail — never interrupt the editor */ }
+    }, 5 * 60 * 1000);
+}
+startAutoBackup();
+
+async function restoreFromBackup() {
+    showConfirmModal(
+        '🔄 Restore from Backup?',
+        'This will replace your current canvas with the last auto-backup.<br>Any unsaved changes will be lost.',
+        'Yes, Restore',
+        'Cancel',
+        async () => {
+            try {
+                const resp = await fetch('/api/backup');
+                const json = await resp.json();
+                if (!json.data || !json.data.elements) {
+                    showToast('⚠️ No backup found');
+                    return;
+                }
+                pushState(); // allow undo after restore
+                docV2.elements = json.data.elements;
+                if (json.data.assets) docV2.assets = json.data.assets;
+                render();
+                renderAssetPanel();
+                showToast('✅ Restored from backup (' + (json.updated_at || 'unknown time') + ')');
+            } catch(e) {
+                showToast('❌ Restore failed: ' + e.message);
+            }
+        }
+    );
+}
+
 function markClean() {
     const btn = document.getElementById('btn-save-header');
     if (btn) {
@@ -1987,6 +2068,19 @@ function showToast(m) {
     const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = m;
     const container = document.getElementById('toast-container');
     container.appendChild(t); setTimeout(() => t.remove(), 2500);
+}
+
+function showConfirmModal(title, body, confirmLabel, cancelLabel, onConfirm) {
+    showBrandedModal2(title, body, [
+        {
+            label: cancelLabel || 'Cancel',
+            onClick: closeGenericModal
+        },
+        {
+            label: confirmLabel || 'Confirm',
+            onClick: () => { closeGenericModal(); onConfirm(); }
+        }
+    ]);
 }
 
 function normalizeHex(c) {
@@ -3947,6 +4041,61 @@ async function importImg(input) {
     r.readAsDataURL(f);
 }
 
+async function importMultipleImgs(input) {
+    const files = Array.from(input.files);
+    if (!files.length) return;
+    const prog = document.getElementById('asset-upload-progress');
+    prog.style.display = 'block';
+    for (let i = 0; i < files.length; i++) {
+        prog.textContent = `Uploading ${i + 1} of ${files.length}…`;
+        await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const b64 = e.target.result;
+                const creds = docV2.aiCredentials || {};
+                let url = b64;
+                if (creds.cloudName && creds.cloudKey && creds.cloudSecret) {
+                    try {
+                        const resp = await fetch('/api/upload-image', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                data: b64,
+                                filename: files[i].name,
+                                credentials: {
+                                    cloudName: creds.cloudName,
+                                    cloudKey: creds.cloudKey,
+                                    cloudSecret: creds.cloudSecret
+                                }
+                            })
+                        });
+                        const json = await resp.json();
+                        if (json.url) url = json.url;
+                    } catch(err) { /* fallback to base64 */ }
+                }
+                const assetId = 'asset_' + Date.now() + '_' + i;
+                const newAsset = {
+                    id: assetId, kind: 'image',
+                    name: files[i].name.replace(/\.[^/.]+$/, ''),
+                    storage: { originalUrl: url, previewUrl: null, thumbnailUrl: null },
+                    original: { width: null, height: null, mimeType: files[i].type },
+                    tags: [], createdAt: new Date().toISOString()
+                };
+                docV2.assets = docV2.assets || [];
+                docV2.assets.push(newAsset);
+                markDirty();
+                resolve();
+            };
+            reader.readAsDataURL(files[i]);
+        });
+    }
+    prog.style.display = 'none';
+    input.value = '';
+    renderAssetPanel();
+    save();
+    showToast(`✅ ${files.length} image${files.length > 1 ? 's' : ''} uploaded to Assets`);
+}
+
 function removeBackground(e) {
   if (e) e.stopPropagation();
   pushState();
@@ -3961,7 +4110,17 @@ function removeBackground(e) {
   showToast('Background removed');
 }
 
-async function importBackground(input) {
+function importBackground(input) {
+    showConfirmModal(
+        '⚠️ Replace Background?',
+        'This will permanently replace your current background.<br>Make sure you have saved a backup first.<br><br>Are you sure?',
+        'Yes, Replace It',
+        'Cancel',
+        () => { _doImportBackground(input); }
+    );
+}
+
+async function _doImportBackground(input) {
   let f = input.files[0];
   if (!f) return;
   let r = new FileReader();
@@ -5079,15 +5238,18 @@ function toggleRightPanel() {
 
 // ===== LEFT SIDEBAR TAB SWITCHER =====
 function setLsTab(tab) {
-  ['add','assets','layers'].forEach(t => {
-    document.getElementById('ls-tab-' + t).classList.toggle('active', t === tab);
-    document.getElementById('ls-panel-' + t).style.display = t === tab ? 'block' : 'none';
+  ['add','assets','layers', 'gallery'].forEach(t => {
+    const tabEl = document.getElementById('ls-tab-' + t);
+    const panelEl = document.getElementById('ls-panel-' + t);
+    if (tabEl) tabEl.classList.toggle('active', t === tab);
+    if (panelEl) panelEl.style.display = t === tab ? 'block' : 'none';
   });
   if (tab === 'assets') {
     renderAssetPanel();
-  }
-  if (tab === 'layers') {
+  } else if (tab === 'layers') {
     if (typeof renderLayersPanel === 'function') renderLayersPanel();
+  } else if (tab === 'gallery') {
+    loadAiGallery();
   }
 }
 
@@ -5934,8 +6096,84 @@ async function saveAiImageToAssets(b64, prompt, urlOverride) {
     } catch (saveErr) {
       markDirty();
     }
+    addToAiImageGallery(assetUrl, newAsset.name);
     showToast('🖼️ AI image saved to Assets — will persist after refresh.');
   }
+}
+
+function addToAiImageGallery(url, name) {
+    const grid = document.getElementById('ai-gallery-images');
+    if (!grid) return;
+    const placeholder = grid.querySelector('[data-placeholder]');
+    if (placeholder) placeholder.remove();
+    const container = document.createElement('div');
+    container.className = 'asset-container';
+    const img = document.createElement('img');
+    img.className = 'ls-asset-item';
+    img.src = url;
+    img.title = name || 'AI Image';
+    img.onclick = () => addFromAsset(null, url);
+    container.appendChild(img);
+    grid.insertBefore(container, grid.firstChild);
+}
+
+async function loadAiGallery() {
+    // Load AI image history
+    try {
+        const resp = await fetch('/api/image-history');
+        const json = await resp.json();
+        const grid = document.getElementById('ai-gallery-images');
+        if (grid && json.images && json.images.length) {
+            grid.innerHTML = '';
+            [...json.images].reverse().forEach(item => {
+                if (!item.url) return;
+                const c = document.createElement('div');
+                c.className = 'asset-container';
+                const el = document.createElement('img');
+                el.className = 'ls-asset-item';
+                el.src = item.url;
+                el.title = item.name || 'AI Image';
+                el.onclick = () => addFromAsset(null, item.url);
+                c.appendChild(el);
+                grid.appendChild(c);
+            });
+        }
+    } catch(e) { /* silent */ }
+
+    // Load AI video history
+    try {
+        const resp = await fetch('/api/video-history');
+        const json = await resp.json();
+        const vidDiv = document.getElementById('ai-gallery-videos');
+        if (!vidDiv) return;
+        const allVids = [
+            ...(json.hero || []),
+            ...(json.left || []),
+            ...(json.right || [])
+        ];
+        const unique = [...new Set(allVids)];
+        if (!unique.length) return;
+        vidDiv.innerHTML = '';
+        unique.forEach(url => {
+            const card = document.createElement('div');
+            card.style.cssText =
+                'background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:6px;margin-bottom:4px;';
+            card.innerHTML = `
+                <video src="${url}" muted loop
+                    style="width:100%;border-radius:4px;max-height:80px;object-fit:cover;"
+                    onmouseenter="this.play()" onmouseleave="this.pause()"></video>
+                <div style="display:flex;gap:4px;margin-top:4px;">
+                    <button class="btn-ui"
+                        style="flex:1;font-size:9px;padding:3px;"
+                        onclick="applyVideoToSlot('hero', '${url}')">🎬 Hero</button>
+                    <button class="btn-ui"
+                        style="flex:1;font-size:9px;padding:3px;"
+                        onclick="navigator.clipboard.writeText('${url}');showToast('URL Copied')">
+                        📋 Copy</button>
+                </div>`;
+            vidDiv.appendChild(card);
+        });
+    } catch(e) { /* silent */ }
 }
 
 function copyAiUrl(inputId) {
@@ -6000,8 +6238,7 @@ function clearAiVidRef() {
   updateVideoControlStates();
 }
 
-async function applyVideoToSlot(slot) {
-  const url = window._lastAiVideoCloudUrl || document.getElementById('ai-vid-url').value;
+async function applyVideoToSlot(slot, url) {
   if (!url) { showToast('⚠️ Upload to Cloudinary first to get a permanent URL.'); return; }
   if (slot === 'hero') {
     document.getElementById('hero-video-url-input').value = url;
@@ -6058,8 +6295,7 @@ function renderVideoHistoryUI() {
 
 function restoreVideoSlot(slot, url) {
   if (!confirm('Restore this video to ' + slot + '?')) return;
-  window._lastAiVideoCloudUrl = url;
-  applyVideoToSlot(slot);
+  applyVideoToSlot(slot, url);
   showToast('↩ Restored!');
 }
 
