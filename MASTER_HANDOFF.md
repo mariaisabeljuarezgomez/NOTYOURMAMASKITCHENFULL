@@ -453,6 +453,7 @@ Violations of this rule cause silent 400 errors and data loss.
 
 > [!IMPORTANT]
 > **LATEST UPDATE: April 11, 2026**
+> - **Audit Fix #6 (BUG-9 — Kling Poll Cleanup)**: Added `beforeunload` listener and moved image polling to `aiState` to ensure all active AI generations are killed when the user refreshes or closes the tab, preventing ghost polling.
 > - **Audit Fix #5 (BUG-2 — alignToCanvas bottom)**: Fixed `alignToCanvas('bottom')` to use `offsetHeight` instead of snapping to an arbitrary `40px` from the top for elements without fixed heights.
 > - **Audit Fix #4 (BUG-13 — alignMulti height fallback)**: Changed `alignMulti` height dimension fallback from `40` to `0` to prevent misaligning thin elements and lines.
 > - **Audit Fix #3 (BUG-14 — Gated AI Buttons)**: `saveAiCredentials()` now only enables the Stability and Kling buttons if those specific service credentials are actually present, matching the logic in `restoreAiCredentials()`.
