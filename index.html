@@ -3176,8 +3176,12 @@ function onCanvasClick(e) {
 }
 function onCanvasMousedown(e) {
   if (e.button !== 0 && e.type !== 'touchstart') return;
-  if (layoutLocked) return;
-  if (e.target.closest('.editable-element')) return;
+  const targetEl = e.target.closest('.editable-element');
+  if (targetEl) {
+    const id = targetEl.dataset.id || targetEl.id;
+    const elData = id && docV2.elements.find(el => el.id === id);
+    if (!elData || (elData.layerRole !== 'background' && elData.isSystemBackground !== true)) return;
+  }
   const lassoBox = document.getElementById('lasso-box');
   const scalerEl = document.getElementById('scaler-wrapper');
   if (!lassoBox || !scalerEl) return;
@@ -3232,7 +3236,7 @@ function onCanvasMousedown(e) {
       docV2.editorState.selectedElementIds = hits.map(el => el.id);
       selectedId = null;
       _lassoJustFired = true;
-      
+      render();
       updateSelectionBar();
       updateDistributeBar();
       showToast('✅ ' + hits.length + ' element' + (hits.length > 1 ? 's' : '') + ' selected');
@@ -3243,12 +3247,19 @@ function onCanvasMousedown(e) {
   }
   window.addEventListener('mousemove', onMove);
   window.addEventListener('mouseup', onUp);
-  window.addEventListener('touchmove', function onTouchMove(te) {
-    onMove({ clientX: te.touches[0].clientX, clientY: te.touches[0].clientY });
-  }, { passive: true });
-  window.addEventListener('touchend', function onTouchEnd(te) {
-    onUp({ clientX: te.changedTouches[0].clientX, clientY: te.changedTouches[0].clientY });
-  }, { once: true });
+
+  function onTouchMove(te) {
+    onMove(te.touches[0]);
+  }
+
+  function onTouchEnd(te) {
+    onUp(te.changedTouches[0] || {clientX: lastX, clientY: lastY});
+    window.removeEventListener('touchmove', onTouchMove);
+    window.removeEventListener('touchend', onTouchEnd);
+  }
+
+  window.addEventListener('touchmove', onTouchMove, { passive: true });
+  window.addEventListener('touchend', onTouchEnd);
 }
 function onViewportClick(e) { 
     if (e.target !== e.currentTarget) return;
