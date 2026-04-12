@@ -1,1320 +1,410 @@
-# Dine In Menu Editor Pro — MASTER HANDOFF
+# MASTER HANDOFF — Not Your Mama's Kitchen Menu Editor
 
-## Documentation Map
-| File | Status | Purpose |
-|---|---|---|
-| `MASTER_HANDOFF.md` | ✅ **CANONICAL** | Single source of truth for all developers and agents |
-| `.agents/rules/global-rules.md` | ✅ Active | Manus agent rules — must stay in sync with the Agent Rules section above |
-| `legacy_docs/Agent_Instructions.md` | ⚠️ Deprecated | Consolidated into MASTER_HANDOFF.md |
-| `legacy_docs/Documentation_Menu_App.md` | ⚠️ Deprecated | Consolidated into MASTER_HANDOFF.md |
-| `legacy_docs/mobile_menu_editor_recommendations.md` | ⚠️ Deprecated | Consolidated into MASTER_HANDOFF.md |
-| `BUG AUDIT.MD` | ✅ Active | Ongoing bug log — separate from MASTER_HANDOFF.md by design |
-| `USER_MANUAL_SOURCE.md` | ✅ Active | User-facing manual source, separate by design |
+**Last Updated: April 12, 2026**
 
 ---
 
-## Agent Rules (Canonical)
+## Section 1 — Project Overview
 
-> ⚠️ This section is the canonical source of agent rules. The file `.agents/rules/global-rules.md` also exists and must be kept in sync with this section. If you update rules here, update that file too.
+**App Name:** Not Your Mama's Kitchen Menu Editor (Menu Editor Pro V2)
 
----
-trigger: always_on
----
+**Stack:**
+- Backend: Flask (app.py) running on Railway
+- Database: PostgreSQL on Railway (no local filesystem)
+- Frontend: index.html (single-page canvas editor), viewer.html, export-utils.js
+- Build: build_app.py (regenerates index.html from components)
 
-> **For full architectural context, system history, data model contract, and non-negotiable feature rules, see [`MASTER_HANDOFF.md`](MASTER_HANDOFF.md).**
-> This file (`global-rules.md`) governs **HOW** agents must operate (process, commit rules, verification steps).
-> That file (`MASTER_HANDOFF.md`) governs **WHAT** the system is (architecture, schema, history, anti-patterns).
-> **Both must be read before any task begins.**
+**Deployment:** Railway — https://web-production-3e17d.up.railway.app/
 
-# NYMK AGENT RULES — COMPLETE RULES FILE
-# Last updated: April 6, 2026
-# All agents working on this repo must read this file before every task.
-# These rules override every prompt, including from the owner.
-# Source of truth for architecture: MASTER_HANDOFF.md in this repo.
+**Persistence Model:** PostgreSQL only — never localStorage, never local filesystem. All document state stored in `sessions` table as JSONB.
+
+**Asset Storage:** Cloudinary for all images and videos. URLs only — no base64 stored in database. Base64 blocked at upload to prevent database bloat and 5MB payload failures.
 
 ---
 
-### STEP 0 — MANDATORY BEFORE WRITING ANY CODE
+## Section 2 — File Inventory
 
-1. Read MASTER_HANDOFF.md from GitHub (direct file read — NOT code search).
-2. Read the live target file from GitHub (direct file read — NOT code search).
-3. Compare what the live code does vs what the rules require.
-4. If the task contradicts MASTER_HANDOFF.md — STOP.
-   Write out the conflict clearly. Do not code until the owner resolves it.
-
----
-
-### FILE MAP — WHAT EXISTS AND WHAT YOU MAY TOUCH
-
-| File              | Purpose                                   | May you edit it?              |
-|-------------------|-------------------------------------------|-------------------------------|
-| index.html        | Live editor — primary working file        | YES — default target          |
-| viewer.html       | Customer-facing menu viewer               | YES — only if explicitly named |
-| app.py            | Flask backend / API routes                | YES — only if explicitly named |
-| export-utils.js   | 300 DPI export pipeline                   | YES — only if explicitly named |
-| build_app.py      | FROZEN code generator — DO NOT RUN        | NEVER — under any circumstance |
-| create_preview.py | Utility script                            | Only if explicitly named      |
-
-NEVER edit a file not explicitly named in the task prompt.
-NEVER run build_app.py. It overwrites all live patches with old code.
-
----
-
-### COMMIT RULES
-
-- One commit per logical fix. Never mix bug fixes and features in one commit.
-- Push to GitHub after every single change.
-- After pushing, read the changed file back from GitHub to confirm the SHA.
-- Do not declare a task done until the SHA is confirmed by direct GitHub read.
-- Wait 60 seconds after push for Railway to redeploy before testing.
-- Commit message format:
-    fix: short description       ← bug fix
-    feat: short description      ← new feature
-    docs: short description      ← documentation only
-
----
-
-### V2 DATA SCHEMA — FIELD NAMES (USE EXACTLY AS WRITTEN)
-
-V2 has NO style wrapper object. All fields are top-level on el.
-NEVER write el.style.anything. Every property is directly on the element.
-
-**All element types:**
-el.id string
-el.type 'text' | 'image' | 'shape' | 'line'
-el.name string
-el.x number (pixels, base canvas coordinates)
-el.y number (pixels, base canvas coordinates)
-el.width number
-el.height number
-el.visible boolean
-el.locked boolean
-el.opacity — number — stored as 0–1 (CSS-native range). Pass directly to element.style.opacity and ctx.globalAlpha. The UI slider displays 0–100 and divides by 100 on input — the stored value is always 0–1. Do NOT multiply or divide when reading from docV2.elements.
-el.zIndex number
-el.role string (optional)
-
-**Text elements:**
-el.content ← THE text string. NEVER el.text.
-el.fontFamily string
-el.fontSize number (px)
-el.fontWeight 'normal' | 'bold'
-el.fontStyle 'normal' | 'italic'
-el.color string (hex or rgba)
-el.textAlign 'left' | 'center' | 'right'
-el.lineHeight number (multiplier, e.g. 1.1)
-el.letterSpacing number
-
-**Image elements:**
-el.src string ← exact path e.g. "/Images/Asset1.png" — case-sensitive
-el.assetId string ← registry ID e.g. "asset_001"
-el.originalWidth number
-el.originalHeight number
-
-**Shape / Rectangle elements:**
-el.fillColor string ← NEVER el.fill or s.fill
-el.borderColor string ← NEVER el.strokeColor (shapes only — see Line exception)
-el.borderWidth number ← NEVER el.strokeWidth (shapes only — see Line exception)
-el.borderRadius number ← NEVER el.cornerRadius
-el.shapeType 'rect' | 'circle' | 'star' (optional, default is rect)
-el.lineCap 'butt' | 'round' | 'square' (for line-style shapes only)
-
-**Line elements — THE ONE EXCEPTION TO V2 FIELD NAMES:**
-viewer.html draw() uses:
-el.strokeColor ← NOT el.borderColor
-el.strokeWidth ← NOT el.borderWidth
-el.x1, el.y1, el.x2, el.y2 ← endpoint offsets from el.x / el.y
-el.lineCap
-
-index.html uses el.borderColor / el.borderWidth for lines.
-
-This inconsistency is known and intentional (legacy).
-DO NOT fix it unless both files are updated in the exact same commit.
-Until that refactor: always write the file-correct field name for the file you are editing.
-
-## Schema Migration State (as of April 2026)
-
-**Current state:** The live `docV2.elements` data on the server was originally saved in V1 format (`el.text` for content, `el.style.fontFamily` etc. for styles). A migration shim runs at page load to bridge V1 data into V2 field names. The shim commit is `29965b0`.
-
-**What this means for developers:**
-- `render()`, `sync()`, and `syncTextFormatBar()` still read from V1 field paths (`d.text`, `d.style.*`). This is intentional — do not change them without a full planned migration.
-- The shim ensures `el.content` and top-level style properties are always populated from V1 data on load.
-- Do NOT remove the shim. Do NOT "fix" render() to use V2 fields without also migrating all saved session data on the server.
-
-**Future migration plan (not yet scheduled):**
-When commissioned, a full V1→V2 migration requires:
-1. A one-time server-side data migration script to rewrite all saved JSON
-2. Updating `render()` to read `d.content` and top-level style properties
-3. Updating `sync()` to write to `item.content`
-4. Updating `syncTextFormatBar()` to read top-level style properties
-5. Removing the load-time shim after confirming all saved data is V2-compliant
-
-**Do not perform this migration in a single PR without explicit approval from the project owner.**
-
----
-
-### OPACITY RULE — ALWAYS
-
-el.opacity is stored as 0–1 in V2.
-When setting canvas globalAlpha, pass it directly:
-```javascript
-ctx.globalAlpha = (el.opacity !== undefined ? el.opacity : 1);
-```
-viewer.html already has a normalizeEl() shim that converts V1 (0–1) to V2 (0–100).
-Do not add redundant conversion logic.
-
----
-
-### TEXT RENDERING RULES
-
-- Read and write text content using el.content — NEVER el.text.
-- In DOM: read with innerText — NEVER innerHTML (XSS prevention).
-- contentEditable must be set as string "true" — NEVER boolean true.
-
----
-
-### IMAGE ELEMENTS — MANDATORY PATTERN
-
-When creating a new image element, ALWAYS set BOTH fields:
-```javascript
-el.src     = "/Images/Asset1.png"   // exact filename, case-sensitive
-el.assetId = "asset_001"            // matching registry ID
-```
-NEVER set only one. Both are required.
-
-**How index.html resolves image src:**
-```javascript
-asset.storage.previewUrl || asset.storage.originalUrl
-```
-previewUrl is ALWAYS null. The only valid path is originalUrl.
-Never assume previewUrl will work.
-
-**How viewer.html resolves image src:**
-```javascript
-el.src || ASSET_ID_TO_SRC[el.assetId] || ''
-```
-NEVER construct a path like `/Images/${el.assetId}.png` — that is wrong.
-assetId "asset_001" does NOT match filename "Asset1.png" by construction.
-Always use the ASSET_ID_TO_SRC lookup table.
-
----
-
-### ASSET REGISTRY — EXACT MAPPING (case-sensitive)
-
-This table MUST be declared at the TOP of the viewer.html script block,
-before draw() and fetchAndDraw(). It is already in viewer.html as of April 5, 2026.
-Do not remove it. Do not modify it unless a new asset is added.
-
-```javascript
-const ASSET_ID_TO_SRC = {
-    'asset_001': '/Images/Asset1.png',
-    'asset_002': '/Images/Asset10.png',
-    'asset_003': '/Images/Asset11.png',
-    'asset_004': '/Images/Asset12.png',
-    'asset_005': '/Images/Asset13.png',
-    'asset_006': '/Images/Asset14.png',
-    'asset_007': '/Images/Asset2.png',
-    'asset_008': '/Images/Asset3.png',
-    'asset_009': '/Images/Asset4.png',
-    'asset_010': '/Images/Asset6.png',
-    'asset_011': '/Images/Asset7.png',
-    'asset_012': '/Images/Asset8.png',
-    'asset_013': '/Images/Asset9.png'
-};
-```
-
-Files confirmed to exist in /Images/:
-  Asset1.png  Asset2.png  Asset3.png  Asset4.png
-  Asset6.png  Asset7.png  Asset8.png  Asset9.png
-  Asset10.png Asset11.png Asset12.png Asset13.png Asset14.png
-
-Asset5.png does NOT exist. There is no Asset5. Skip from Asset4 to Asset6.
-
----
-
-### BACKGROUND IMAGE RULES — PROTECT PAGESPEED 100
-
-| File                | Used where       | Size     |
-|---------------------|------------------|----------|
-| menu-bg-preview.jpg | Editor + viewer  | ~114 KB  |
-| menu-bg.png         | Export only      | 7.2 MB   |
-
-- menu-bg-preview.jpg loads on page init with fetchpriority="high".
-- menu-bg.png loads ONLY during Export Pro PNG execution.
-- NEVER swap these. NEVER load menu-bg.png on page init.
-- This split is what achieved PageSpeed 100. Protect it at all costs.
-
----
-
-### CANVAS AND RENDERING RULES
-
-- Base canvas dimensions: 908.44 × 1336.02 px
-- Export renders at 3600 × 5400 px (12 × 18 in @ 300 DPI)
-- Export scale factor: 3600 / 908.44 ≈ 3.963×
-- Canvas API only. html2canvas is banned — fully removed from the project.
-- export-utils.js must be loaded with defer attribute.
-- inject300DpiAndDownload() handles pHYs chunk injection (11811 px/meter).
-- Elements render in ascending zIndex order.
-- viewer.html uses normalizeEl() to shim V1 fields → V2. Do not remove it.
-
----
-
-### FONT SYSTEM
-
-Active @font-face declarations (do NOT delete or re-add):
-century-gothic-regular.ttf → family: "Century Gothic" weight: normal
-century-gothic-bold.ttf → family: "Century Gothic" weight: bold
-century-gothic-bold-italic.ttf → family: "Century Gothic" weight: bold, style: italic
-bernard-mt-condensed-regular.ttf → family: "bernard-mt-condensed-regular"
-
-centurygothic.ttf was DELETED March 27, 2026. Do NOT re-add it ever.
-All font faces use font-display: swap.
-
-Font-loading wait pattern used in index.html — do not change:
-```javascript
-await Promise.race([
-    Promise.all([
-        document.fonts.load('1em century-gothic-regular'),
-        document.fonts.load('1em century-gothic-bold'),
-        document.fonts.load('1em century-gothic-bold-italic'),
-        document.fonts.load('1em bernard-mt-condensed-regular'),
-    ]),
-    new Promise(resolve => setTimeout(resolve, 800))
-]);
-initApp();
-```
-
----
-
-### PERSISTENCE RULES — DO NOT TOUCH WITHOUT EXPLICIT OWNER APPROVAL
-
-- Save path: /app/data/menu_data.json (Railway persistent volume)
-- Backup path: /app/data/backups/menu_data_YYYYMMDD_HHMMSS.json
-- Writes use atomic .tmp + os.replace pattern — never write directly.
-- Frontend has localStorage fallback when server is unreachable.
-- layoutLocked resets to true on every page load — never persisted.
-- Undo stack is cleared on Load Session.
-- If a task touches persistence in any way: STOP and get owner approval first.
-
----
-
-### EXPORT PIPELINE — DO NOT TOUCH WITHOUT EXPLICIT OWNER APPROVAL
-
-- Renders at 3600 × 5400 px via Canvas API only.
-- html2canvas is fully banned from this project.
-- export-utils.js loaded with defer.
-- inject300DpiAndDownload() injects pHYs chunk (300 DPI metadata).
-- If a task touches the export pipeline in any way: STOP and get owner approval first.
-
----
-
-### LAYOUT LOCK — NEVER CHANGE THE DEFAULT
-
-- layoutLocked = true on every page load. This is intentional safety behavior.
-- Mobile users accidentally move elements without it.
-- Never change the default. Never make it "smart", conditional, or device-dependent.
-- Second finger during drag cancels the drag immediately (multi-touch suppression).
-- Individually locked elements are never draggable regardless of global lock state.
-
----
-
-### CACHE-CONTROL — DO NOT CHANGE
-index.html → Cache-Control: no-cache, must-revalidate
-All static assets → Cache-Control: max-age=604800, public (7 days)
-User uploads → Cache-Control: max-age=604800, public (7 days)
-
-Changing any of these will break PageSpeed 100.
-
----
-
-### UI VOCABULARY — OFFICIAL TERMS ONLY
-
-| Use this term          | Never substitute with              |
-|------------------------|------------------------------------|
-| Edit Mode              | Unlock, Edit state                 |
-| Layout Locked          | Locked mode, Freeze                |
-| Save Session           | Save, Submit                       |
-| Load Session           | Load, Restore                      |
-| Undo Last Change       | Undo, Revert                       |
-| Reset to Original      | Reset, Clear, Delete               |
-| Export Pro PNG         | Export, Download, Print            |
-| Add Text               | New text, Insert text              |
-| Add Rect               | New shape, Insert rectangle        |
-| Upload Img             | Add image, Insert image            |
-| Replace Background     | Change background                  |
-| Toggle Original BG     | Show/hide background               |
-
----
-
-### ABSOLUTE ANTI-PATTERNS — THESE WILL BREAK THE APP
-1.  Run build_app.py — wipes ALL live patches
-2.  Use html2canvas — banned, Canvas API only
-3.  Mix bug fixes and features in one commit
-4.  Guess at field names — always read the live file first
-5.  Use el.style.anything — V2 has no style wrapper
-6.  Use el.text — always el.content
-7.  Use el.fill or s.fill — always el.fillColor
-8.  Use el.cornerRadius — always el.borderRadius
-9.  Construct paths as `/Images/${el.assetId}.png` — always use ASSET_ID_TO_SRC
-10. Load menu-bg.png on page init — export only
-11. Declare a task done before confirming SHA on GitHub
-12. Edit any file not explicitly named in the task
-13. Use native alert() or confirm() — use branded modal/toast only
-14. Change the layoutLocked default
-
----
-
-### Manual Update Rules (Enforced)
-- **Manual updates are not optional.** When a feature ships, the manual update is part of the same definition of done.
-- **NEVER rewrite manual-en.html or manual-es.html in full.** These are 100KB+ files. Full rewrites will be truncated. Always use surgical injection of new `<section>` blocks.
-- **Always read the current manual file completely before editing it.** Do not assume you know its current state.
-- **Always update both language editions** (EN and ES) in the same sprint.
-- **Match the existing CSS class system exactly.** Do not introduce new class names. Use `.callout`, `.ui-mock`, `.step-row`, `.spec-grid`, etc. as defined in the file's `<style>` block.
-- **Update the TOC and cover page metadata** on every structural addition.
-
----
-
-## ⛔ RULE #1 — NEVER VIOLATED — SERVER SAVE PATTERN
-
-The server's /api/menu POST route WILL REJECT (400 Bad Request) any
-body that is not the complete docV2 object.
-
-docV2 always has: { version: 2, elements: [...], ... }
-
-EVERY function that saves anything to the server MUST:
-1. Mutate docV2 directly (e.g. docV2.assets, docV2.aiCredentials)
-2. POST the ENTIRE docV2 object — never a subset or partial object
-3. Use this exact pattern:
-
-   await fetch('/api/menu', {
-     method: 'POST',
-     headers: { 'Content-Type': 'application/json' },
-     body: JSON.stringify(docV2)   // ← ALWAYS full docV2, never partial
-   });
-
-Violations of this rule cause silent 400 errors and data loss.
-
----
-**Last Updated:** April 11, 2026  
-**Prepared by:** MARIAS DIGITAL DESIGNS  
-**Live URL:** https://web-production-3e17d.up.railway.app/  
-**GitHub Repo:** https://github.com/mariaisabeljuarezgomez/NOTYOURMAMASKITCHENFULL  
-**Deployment:** Railway (auto-deploys from GitHub `main` branch)  
-**Latest Known Good SHA:** `e82ad968` — Task 12 Persistent Assets Pipeline  
-**PageSpeed Score (Mar 27, 2026):** 100 / 100 / 100 / 100 ✅
-
-## Phase: Schema Unification & Viewer Rendering Parity
-**Status:** ✅ Complete  
-**Date:** April 2026  
-**Commits:** c96ccb3 → 678bd8a (8 commits)
-### What Was Built
-| # | Commit | File | Change |
-|---|--------|------|--------|
-| 1 | c96ccb3 | viewer.html | el.content compliance per RULES.md |
-| 2 | 0053bd1 | viewer.html | normalizeViewerSettings() — legacy settings migration layer |
-| 3 | 752619d | viewer.html | resolveImageSrc() — unified cache key for preload + draw |
-| 4 | 80ddf60 | viewer.html | Rotation + opacity for all element types (text, image, line, shape) |
-| 5 | 0fbf3cc | viewer.html | Letter-spacing with drawTextWithSpacing() manual fallback |
-| 6 | 752619d | viewer.html | FONT_MAP — unified font family mapping |
-| 7 | a008570 | index.html | Canonical save path: settings.viewer in save() + saveGlobalSettings() |
-| 8 | 678bd8a | viewer.html | BUGFIX: opacity scale corrected 0–1 (was erroneously ÷100) |
-### Key Architecture Decisions
-- **Opacity scale:** Editor stores 0–1. Viewer uses raw value — NO division by 100.
-- **Image cache key:** resolveImageSrc() return value is the single source of truth for both preload store and draw retrieve.
-- **Settings path:** New saves write to settings.viewer. Legacy root-level fields preserved for backward compat. normalizeViewerSettings() bridges both.
-- **Font mapping:** FONT_MAP handles generic CSS names. Custom fonts (century-gothic-*) pass through directly to canvas.
-
----
-
-## ⚠️ CRITICAL WARNING — READ FIRST
-
-> **`index.html` IS THE LIVE SOURCE OF TRUTH.**
->
-> As of March 28, 2026, all Phases 2A–11 and Bug Fix Batches 1–8 (21 bugs total) were applied **directly to `index.html`**. `build_app.py` has NOT been updated and is frozen at Phase 30. **Do NOT run `python build_app.py`** — it will overwrite all patches with the old code. Until all patches are reconciled back into the generator, treat `index.html` as the only file to edit.
-
----
-
-## RULES FOR ANY AI ASSISTANT READING THIS FILE
-
-0. **Read `.agents/rules/global-rules.md` FIRST.** That file is the enforcement layer for how all agents must operate. This file (MASTER_HANDOFF.md) is the architectural reference. Both must be read before any task begins.
-1. **Read `index.html` from GitHub before touching anything.** Do not assume local state.
-2. **Edit `index.html` only** until `build_app.py` is reconciled. Do not run `python build_app.py`.
-3. **One commit per logical fix.** Never mix feature work with bug fixes.
-4. **Push to GitHub after every change.** Railway deploys from GitHub. A task is NOT done until the SHA is visible on GitHub.
-5. **Do not reopen locked architecture** (persistence, export pipeline, split-asset strategy) without overwhelming justification.
-6. **Preserve the V2 data model contract** (Section 9). All schema work must conform to it.
-7. **Verify with direct file reads, not code search.** GitHub search has indexing lag.
-8. **Do not mark a task complete** until you have verified the change exists in GitHub via a file read or commit check.
-9. **If a change touches export, persistence, or the split-asset strategy** — stop and flag for explicit approval before coding.
-10. **Keep changes small, testable, and single-purpose.** The project's biggest historical failures all came from mixing too many concerns at once.
-
----
-
-## 1. Project Identity
-
-> [!IMPORTANT]
-> **LATEST UPDATE: April 11, 2026**
-> - **Audit Fix #14 (BUG-18 — Fatal DB Initialization Guard)**: Updated `init_db()` in `app.py` to raise a fatal `SystemExit` if the database connection or initialization fails. This ensures the application only starts when the database is in a healthy state, preventing silent data loss or session corruption.
-> - **Audit Fix #13 (BUG-17 — Undo Stack Documentation)**: Corrected the comment in `pushState()` to accurately reflect the 50-step undo limit (the result of `slice(-49)` plus the new state).
-> - **Audit Fix #12 (BUG-15 — Smart enhance_prompt dedup)**: Improved the `enhance_prompt()` logic in `app.py` to correctly detect if a prompt has already been enhanced for its specific type (image or video), preventing redundant modifier append.
-> - **Audit Fix #11 (BUG-11 — video_history Dedup Fix)**: Corrected the video history deduplication logic in `app.py`. It now only blocks a save if the *most recent* record for that slot is the exact same URL, instead of blocking any URL that appeared at any point in the history. This allows users to correctly cycle back to previous clips in a chronological order.
-> - **Audit Fix #10 (BUG-10 — zIndex Stability Guard)**: Hardened `resequenceZIndex()` with an explicit `Math.max(1, idx + 1)` guard for content elements. This ensures that only the background layer can ever hold `zIndex: 0`, protecting against layering bugs if a non-background element's index is ever manually set to zero.
-> - **Audit Fix #9 (BUG-8 — Credential Schema Documentation)**: Added cross-reference comments to `app.py` for `/api/upload-image` and `/api/ai/cloudinary-upload` clarify why one uses camelCase while the other uses snake_case, preventing accidental breakage during backend refactors.
-> - **Audit Fix #8 (BUG-12 — Redundant crc32 removal)**: Removed the unused `crc32()` function from `index.html`. This function was inefficient (rebuilt its table on every call) and redundant as the PNG export logic already uses a module-level optimized implementation in `export-utils.js`.
-> - **Audit Fix #7 (BUG-16 — Optimized Asset Storage)**: Updated `addFromTray()` to store the element's `src` as its remote URL instead of the full base64 transparency-trimmed blob when the asset exists in the registry. This significantly reduces the size of the document JSON saved to PostgreSQL.
-> - **Audit Fix #6 (BUG-9 — Kling Poll Cleanup)**: Added `beforeunload` listener and moved image polling to `aiState` to ensure all active AI generations are killed when the user refreshes or closes the tab, preventing ghost polling.
-> - **Audit Fix #5 (BUG-2 — alignToCanvas bottom)**: Fixed `alignToCanvas('bottom')` to use `offsetHeight` instead of snapping to an arbitrary `40px` from the top for elements without fixed heights.
-> - **Audit Fix #4 (BUG-13 — alignMulti height fallback)**: Changed `alignMulti` height dimension fallback from `40` to `0` to prevent misaligning thin elements and lines.
-> - **Audit Fix #3 (BUG-14 — Gated AI Buttons)**: `saveAiCredentials()` now only enables the Stability and Kling buttons if those specific service credentials are actually present, matching the logic in `restoreAiCredentials()`.
-> - **Audit Fix #2 (BUG-7 — Credential Trim)**: Added `.trim()` to all secret/key fields in `getAiCredentials()` to prevent authentication failures from trailing spaces during copy-paste.
-> - **Audit Fix #1 (BUG-1 — Save failure indicator)**: Changed the `save()` catch block to call `markDirty()` instead of `markClean()`. The save button now correctly stays red/dirty on server failure, protecting data integrity.
-> - **Bug Fix #9 (removeBackground Undo + IsSystemBackground)**: Added `pushState()` before background deletion so the action is undoable with Ctrl+Z. Expanded the filter to also catch elements flagged `isSystemBackground:true` in case they lack `layerRole:'background'`. `renderLayerList()` and `renderBackground()` preserved. Cherry-picked from PR #6 (rejected the rest).
-> - **Bug Fix #8 (Background Click Intercept)**: `renderBackground()` was injecting `<img>` without `pointer-events:none`. The `#bg-layer` container has `pointer-events:none` but that doesn't cascade to dynamically injected children. The img was intercepting all canvas clicks, preventing deselect. One-word fix.
-> - **Bug Fix #7 (Video/Poll DOM Read)**: `generateAiVideo()` and `pollKlingStatus()` were reading credentials via `getAiCredentials()` (DOM-based). When the credentials accordion is collapsed after a page reload, DOM input values are empty, causing silent 400 errors from the backend. Both functions now read directly from `docV2.aiCredentials`, matching the pattern used by `generateKlingImage()`.
-> - **Bug Fix #6 (Accordion Credential Reload)**: `toggleAiAccordion()` never repopulated credential fields when opening the 'cred' panel after a page reload. Added `restoreAiCredentials(docV2)` call at the top so fields are always populated from the saved state when the panel opens.
-> - **Bug Fix #5 (Video Button Never Enabled)**: `saveAiCredentials()` was enabling `ai-img-btn` and `kling-img-btn` after a successful save but never enabled `ai-vid-btn`. Added the missing one-liner.
-> - **Bug Fix #4 (Kling Key Mismatch)**: Fixed fatal field name mismatch in `generateKlingImage()`. It was reading `creds.kling_key`/`creds.kling_secret` (snake_case) but `saveAiCredentials()` stores `creds.klingKey`/`creds.klingSecret` (camelCase). This caused credentials to always be `undefined`, blocking all Kling image generation.
-> - **Bug Fix #3 (Background Fallback)**: Removed the Cloudinary credential gate from `importBackground()`. Updated the logic to use the universal `/api/upload-image` endpoint, enabling backgrounds to be saved to local `/Images/` storage when Cloudinary is not configured.
-> - **Bug Fix #2 (Asset Duplication)**: Fixed duplication in the Assets sidebar by clearing previous static assets (IDs starting with `asset_0`) before merging the latest list from the server in `loadUserImages()`.
-> - **Bug Fix #1 (Paste Hijack)**: Updated the global `paste` listener to ignore events when a native `<input>`, `<textarea>`, or contentEditable element is focused. This prevents newly pasted text from being diverted to a new canvas element while typing in side panel secret fields.
-> - **Duplicate Manual Modal Purged**: Removed a redundant `manual-modal-overlay` block from `index.html` that lacked an `iframe` and was shadowing the correct implementation. The UI now correctly loads `manual-en.html` / `manual-es.html` via the embedded `iframe`.
-
-
-**Product Name:** Dine In Menu Editor Pro  
-**Client / Owner:** Not Your Mama's Kitchen (NYMK) — restaurant brand  
-**What it is:** A browser-based, professional-grade layered menu layout editor. Allows non-designers to update a visually complex restaurant menu safely while preserving print accuracy and layout integrity.
-
-**Core promise:**
-- Fast on mobile
-- Safe for non-technical users
-- Reliable across devices
-- Deterministic print-quality output (12in × 18in @ 300 DPI)
-- Strong brand presentation
-- Minimal accidental layout damage
-
-**This is NOT just a text editor.** It is a controlled layout engine with server-backed continuity and a professional export pipeline.
-
-**Technology Stack:**
-| Layer | Technology |
-|-------|-----------|
-| Generator | Python 3 (`build_app.py`) |
-| Frontend | HTML5, CSS3, Vanilla JavaScript, Canvas API |
-| Export engine | Canvas API + `export-utils.js` (NO html2canvas) |
-| Backend | Python 3, Flask, flask-compress |
-| Database | PostgreSQL (psycopg2, Railway managed Postgres) |
-| Persistence | PostgreSQL `sessions` DB (fallback to localStorage) |
-| Hosting | Railway (auto-deploy from GitHub push) |
-| CDN/Storage | Cloudinary (AI asset hosting, video reference images) |
-| AI Image | Stability AI API, Kling AI API |
-| AI Video | Kling AI API (requires Cloudinary for image2video) |
-| Utilities | cloudscraper (HTTP), PyJWT (Kling auth) |
-| Fonts | Local TTF files served as static assets |
-
----
-
-## 2. Architecture Overview
-
-### File Roles
-| File | Role |
-|------|------|
-| `index.html` | **Live source of truth** — directly edited since March 28, 2026 |
-| `build_app.py` | Generator — FROZEN at Phase 30. Do NOT run until reconciled |
-| `app.py` | Flask backend — serves static files, handles save/load/reset/upload APIs |
-| `export-utils.js` | Export helper — `inject300DpiAndDownload()`. Must be loaded with `defer` |
-| `requirements.txt` | Flask + flask-compress |
-| `Procfile` | `web: python app.py` |
-| `century-gothic-*.ttf` | Font assets (regular, bold, bold-italic) |
-| `bernard-mt-condensed-regular.ttf` | Font asset |
-| `menu-bg-preview.jpg` | **Lightweight preview background** — editor only (~114 KB) |
-| `menu-bg.png` | **Master background** — export only (7.2 MB) |
-| `Images/Asset1–14.png` | Tray assets for layout composition |
-| `USER_MANUAL_SOURCE.md` | Source content for bilingual in-app manual |
-| `manual-en.html` / `manual-es.html` | Compiled in-app manual (EN + ES) |
-| `manual-en-full.html` | Duplicate of manual-en.html — can be deleted |
-| `create_preview.py` | Utility: generates menu-bg-preview.jpg from menu-bg.png |
-| `fix_braces.py` | Utility: diagnostic for brace escaping issues |
-| `raw_coords.json` | Legacy coordinate source data |
-
-### Backend Routes (app.py)
-| Route | Method | Behavior |
-|-------|--------|----------|
-| `/` | GET | Serves index.html with `Cache-Control: no-cache, must-revalidate` |
-| `/<path:filename>.ttf` | GET | Serves static font assets, uses absolute paths |
-| `/export-utils.js` | GET | Serves export helper logic |
-| `/manual-en.html` | GET | Serves compiled English manual |
-| `/manual-es.html` | GET | Serves compiled Spanish manual |
-| `/menu` | GET | Serves viewer.html with no-cache headers (customer viewer) |
-| `/Images/<filename>` | GET | Serves local template images (was /user-images/ before) |
-| `/api/menu` | GET | Reads full JSON session from DB (id='main'), fallback to DEFAULT_MENU_DATA |
-| `/api/menu` | POST | UPSERTs full menu JSON into DB (`sessions` table, `canvas_json` column) |
-| `/api/upload-image` | POST | Cloudinary-first image upload; fallbacks to local `/Images/` save |
-| `/api/delete-asset/<filename>` | DELETE | Deletes local file; 404 indicates successful Cloudinary deletion |
-| `/api/list-images` | GET | Returns list of local uploaded images |
-| `/api/migrate-asset` | POST | Legacy migrator for Asset2_1 to Asset2 |
-| `/api/repair-images` | POST | Clears broken un-uploaded base64 references |
-| `/api/video-history` | GET/POST | Persists and retrieves AI generated video URLs by slot |
-| `/api/image-history` | GET | Retrieves latest 20 AI generated images |
-| `/api/ai/test-cloudinary` | POST | Cloudinary credential verification |
-| `/api/ai/test-stability` | POST | Stability AI credential verification |
-| `/api/ai/test-kling` | POST | Kling AI API credential verification (via JWT token) |
-| `/api/ai/enhance-prompt` | POST | Modifies prompts with quality modifiers |
-| `/api/ai/generate-image` | POST | Stability AI txt2img generation |
-| `/api/ai/generate-image-to-image` | POST | Stability AI img2img generation |
-| `/api/ai/generate-kling-image` | POST | Kling AI image generation |
-| `/api/ai/kling-image-status/<task_id>`| GET | Polling route for Kling image task |
-| `/api/ai/generate-video` | POST | Kling AI text2video and image2video (uploads to Cloudinary first) |
-| `/api/ai/kling-status/<task_id>` | POST | Polling route for Kling video task |
-| `/api/ai/cloudinary-upload` | POST | AI tool proxy to securely upload background/ref images |
-
-### Persistence (PostgreSQL)
-- PostgreSQL is the persistence layer. "Railway Volume" system is GONE.
-- Uses `DATABASE_URL` env var (set in Railway environment).
-- Schema: `sessions` table (id TEXT PRIMARY KEY, canvas_json JSONB, updated_at TIMESTAMP).
-- The document saves to the record where `id='main'`.
-- Fully uses UPSERT (`ON CONFLICT (id) DO UPDATE ...`) pattern. No atomic files, no backups.
-- Includes `video_history` table for persisting AI video reference URLs by slot.
-- No `IS_PERSISTENT` flag. Frontend relies on HTTP status from `/api/menu`.
-- Frontend has `localStorage` fallback and retry queue when DB is unreachable.
-
-### Cache-Control Strategy (required for PageSpeed 100)
-```
-index.html           → Cache-Control: no-cache, must-revalidate
-All static assets    → Cache-Control: max-age=604800, public (7 days)
-User-uploaded images → Cache-Control: max-age=604800, public (7 days)
-```
-
----
-
-## 3. Current Production State (as of March 28, 2026)
-
-### PageSpeed Scores (Mobile) — PERFECT
-- Performance: **100** ✅
-- Accessibility: **100** ✅
-- Best Practices: **100** ✅
-- SEO: **100** ✅
-
-### All Features Implemented
-
-| Phase | Feature | SHA |
-|-------|---------|-----|
-| 2A | V2 schema migration + asset registry | `6c030a5` |
-| 2B | Asset-linked image placement (`assetId`) | `2fed811` |
-| 2C | User upload persisted to asset registry | `bcaa8fa` |
-| 2D | Asset registry round-trip save/restore | `75358d0` |
-| 3 | Multi-select shift+click, group move/delete/dup | `c64e8f0` |
-| 4 | Keyboard shortcuts (Delete, Ctrl+D/A/Z, Arrow nudge) | `c7a235a` |
-| 5 | Font size control + text block width wrapping | `6bc7af5` |
-| 6 | Alignment & distribution tools (8 buttons) | `eb37fab` |
-| 7 | Lasso drag-box multi-select (mouse + touch) | `d3e0136` |
-| 8 | Export PNG text rendering fix | `65ca724` |
-| 9 | Undo history integrity (group drag, memory cap) | `fe2d5ce` |
-| 10 | Mobile lasso & touch multi-select | `4b0cb1d` |
-| 11 | Save/Load hardening (dirty state, auto-save, error UI) | `c378d90` |
-| Bug Batch 1 | Asset merge fix, sync() guard, header dup noRender | `600009a` |
-| Bug Batch 2 | Arrow nudge else-if, textContent→innerText, export image guard | `da85954` |
-| Bug Batch 3 | deleteEl order, resetToOriginal, lasso scale ratio | `9664b41` |
-| Bug Batch 4 | addFromTray pushState, onload fallback, bgLayer fix, toolbar anim | `d4f71fb` |
-| Bug Batch 5 | innerText consistency, fitCanvasToScreen, openDrawer retry | `e210f58` |
-| Bug Batch 6 | Ctrl+Z text guard, export stroke path, addRect viewport pos | `939a940` |
-| Bug Batch 7 | deleteEl noRender param, addFromTray skipPush, fitCanvas zoom | `6bc7fe4` |
-| Phase 27–30 | contentEditable fix, 300 DPI export, PageSpeed 100 | `d3fc068` |
-
----
-
-## Bug Audit Rounds A–D (April 2026)
-Five independent audit rounds were conducted on `app.py`. All fixes applied to `app.py` only. No other files touched.
-| Round | SHA | Commit Message |
-|-------|-----|----------------|
-| A1 | dccae72 | fix: use string converter instead of path in serve_root_image route |
-| A2 | 42d3fbc | fix: auto-suffix duplicate filenames instead of silently overwriting |
-| A3 | 94380ab | fix: move MAGIC_BYTES constant to module level |
-| A4 | 29a3e6a | fix: separate None body from invalid schema error in save_menu |
-| A5 | 11cf223 | fix: return JSON 404 from static_proxy on missing file |
-| D1 | 65a0158 | fix: move werkzeug NotFound import to module level |
-| D2 | 145aadc | fix: set COMPRESS_MIN_SIZE to 500 to avoid compressing tiny responses |
-| D3 | f7833a2 | fix: AI asset persistence (version: 2 in save()) & Kling video image_url fix (Cloudinary upload for reference image) |
-| D3b | 3fd470 | fix: cap duplicate filename counter at 999 to prevent unbounded loop |
-| D4 | 0dc7488 | fix: log prune_backups exceptions instead of silently discarding |
-| D5 | 0d9b547 | fix: remove blank line with trailing whitespace in delete_asset |
-| Task 12 | e82ad968 | feat: Task 12 — persistent assets pipeline — importImg now registers uploaded images into docV2.assets and persists full docV2 to DB; deleteAssetFromServer now treats HTTP 404 as successful deletion to prevent ghost assets |
-
----
-
-## Manual System Architecture & Maintenance Rules
-
-### Manual Files
 | File | Purpose |
 |------|---------|
-| `USER_MANUAL_SOURCE.md` | Feature specification source — describes what every feature does. The single source of truth for manual content. |
-| `manual-en.html` | Published English manual — full HTML with styles, UI mockups, and page layout. Customer-facing. |
-| `manual-es.html` | Published Spanish manual — mirrors manual-en.html in Spanish. |
+| `app.py` | Flask backend — all API routes, database operations, AI integrations |
+| `index.html` | Complete frontend — canvas editor, sidebar panels, AI Studio, all JavaScript |
+| `viewer.html` | Public-facing menu viewer — reads from same PostgreSQL data |
+| `export-utils.js` | PNG export with CRC32 checksum — used by exportPng() |
+| `build_app.py` | Build script — concatenates components into index.html |
+| `create_preview.py` | Thumbnail generator utility |
+| `fix_braces.py` | JSON brace fixing utility |
+| `fix_coords.py` | Coordinate normalization utility |
+| `read_example.py` | Example data reader |
+| `raw_coords.json` | Sample coordinate data |
+| `requirements.txt` | Python dependencies |
+| `Procfile` | Railway deployment config |
+| `manual-en.html` | English user manual |
+| `manual-es.html` | Spanish user manual |
+| `USER_MANUAL_SOURCE.md` | User manual source for agents |
+| `bernard-mt-condensed-regular.ttf` | Font file |
+| `century-gothic-bold-italic.ttf` | Font file |
+| `century-gothic-bold.ttf` | Font file |
+| `century-gothic-regular.ttf` | Font file |
+| `menu-bg.png` | Default background image |
+| `menu-bg-preview.jpg` | Preview thumbnail |
+| `Images/` | Static image directory (deprecated — use Cloudinary) |
+| `MANUAL/` | Generated manual files |
+| `.agents/` | Agent rules and workflows |
 
-### HTML Structure
-Every page in the HTML manual is a self-contained block:
-```html
-<section class="page page-break">
-  <h2>N. Section Title</h2>
-  ...content...
-  <div class="footer"><span>Label</span><span>Page N</span></div>
-</section>
+---
+
+## Section 3 — Database Schema
+
+### Table: sessions
+```sql
+CREATE TABLE sessions (
+    id TEXT PRIMARY KEY,       -- 'main' for live, 'backup' for auto-backup
+    canvas_json JSONB,        -- Full docV2 document
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
 ```
-CSS classes used: `.callout`, `.callout.tip`, `.callout.warning`, `.callout.danger`, `.ui-mock`, `.ui-btn`, `.step-row`, `.step-num`, `.spec-grid`, `.spec-card`, `.badge`, `.kbd`
 
-### The Surgical Injection Rule (NON-NEGOTIABLE)
-**Never rewrite or replace `manual-en.html` or `manual-es.html` in full.** These files are large (100KB+). A full rewrite guarantees truncation.
-The only permitted update method:
-1. Read the current file completely first
-2. Identify exactly where new content must be inserted or what existing text must be changed
-3. Insert new `<section>` blocks or patch specific lines using targeted edits
-4. Update the Table of Contents and cover page metadata if needed
-5. Repeat for the Spanish edition
+**Records:**
+- `id='main'` — Primary document, loaded on page start
+- `id='backup'` — Rolling auto-backup, overwritten every 5 minutes if dirty
 
-### When to Update the Manual
-A manual update is required whenever:
-- A new user-facing feature is shipped (same sprint or the next sprint — never deferred longer)
-- An existing feature's behavior changes
-- A new workflow is added (e.g. video hosting, AI video creation)
-- UI labels or button names change
+### Table: video_history
+```sql
+CREATE TABLE video_history (
+    id SERIAL PRIMARY KEY,
+    slot TEXT NOT NULL,       -- 'hero', 'left', or 'right'
+    url TEXT NOT NULL,        -- Cloudinary URL
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+```
 
-### Cover Page Metadata Fields
-When updating, always refresh:
-- `Version` line — increment minor version or add new phase/batch name
-- `Last Updated` — set to the date of the update
-- TOC — add any new section numbers and titles
+### Table: image_history
+```sql
+CREATE TABLE image_history (
+    id SERIAL PRIMARY KEY,
+    name TEXT,
+    url TEXT NOT NULL,        -- Cloudinary URL
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+```
 
-### Spanish Edition Parity
-Every update to `manual-en.html` must be mirrored to `manual-es.html` in the same commit or the immediately following commit. The two files must never be more than one sprint out of sync.
-
----
-
-## Background Replacement Rebuild (April 2026)
-The editor was rebuilt from scratch to correctly implement the full background replacement pipeline end-to-end. The original implementation had the background hardcoded into the layout. A "Replace Background" button existed but the full code path was never correctly wired through the entire stack. Attempting to implement the pipeline broke multiple dependent systems. A clean-slate rebuild was performed over a weekend, resulting in a correctly integrated background replacement feature that is now stable and production-ready.
-
----
-
-## 4. What Was Built Successfully (Full History)
-
-### AI Studio Integration
-- **Three Providers:** Stability AI (image), Kling AI (image, video), Cloudinary (hosting/CDN).
-- **Credentials:** Securely stored in `docV2.aiCredentials` and persisted via the standard `save()` pattern.
-- **Image Generation:** Supports txt2img, img2img, and Kling multi-mode.
-- **Video Generation:** Uses Kling AI. `image2video` relies on automatic background uploading to Cloudinary for Kling to fetch.
-- **Cloudinary:** Used as the fallback asset host for custom backgrounds, user uploaded images, and AI reference images.
-- **UI Accordions:** Credentials, Generate Image, Generate Video sections inside the AI panel.
-
-### Generator-first architecture
-`build_app.py` emits all CSS, HTML, and JS into `index.html`. Python f-string braces are escaped with `{{` and `}}` to avoid collision with emitted JavaScript/CSS braces. **Currently frozen** — index.html is live source.
-
-### Split-asset load strategy
-- `menu-bg-preview.jpg` (~114 KB) — loaded with `fetchpriority="high"` for fast LCP
-- `menu-bg.png` (7.2 MB) — loaded only during Export Pro PNG
-- This is what achieved PageSpeed 100 on mobile. **Never swap these.**
-
-### Deterministic export pipeline
-- Export renders at 3600 × 5400px (12in × 18in @ 300 DPI)
-- Elements rendered in ascending zIndex order using Canvas API
-- PNG pHYs metadata chunk manually injected for true 300 DPI (11811 pixels/meter)
-- Uses `inject300DpiAndDownload()` from `export-utils.js`
-- **NEVER uses html2canvas** — html2canvas has been fully removed
-
-### Railway-backed persistence
-- Atomic writes with backup rotation
-- Frontend retry + localStorage fallback
-- Cross-device continuity via Save Session / Load Session
-
-### V2 Layered document model
-- `docV2` object with version, elements[], settings, editorState, assets[]
-- Elements have: id, type, x, y, width, height, zIndex, opacity, rotation, visible, locked, layerRole, style
-
-### Professional UI systems
-- Branded modal for all confirmations (no native alert/confirm)
-- Toast notifications (success/error/warning/info)
-- Smart tooltips (data-help attribute, shown once per session)
-- Bilingual in-app manual (EN + ES), loaded from `/manual-en.html` and `/manual-es.html`
-
-### Mobile-safe interaction model
-- Layout Locked by default on every load
-- Multi-touch drag suppression (second finger cancels drag)
-- Moveable toolbar (drag handle with pointer capture)
-- Floating zoom +/- buttons (visible only when unlocked)
-- Touch lasso multi-select
-
-### Undo system
-- 30-state history stack
-- Undo via toolbar button or Ctrl+Z / ⌘+Z
-- Text blur commit tracked separately
-- Group drag guard prevents duplicate snapshots
-
-### Font loading
+### docV2 JSON Structure
 ```javascript
-await Promise.race([
-  Promise.all([
-    document.fonts.load('1em century-gothic-regular'),
-    document.fonts.load('1em century-gothic-bold'),
-    document.fonts.load('1em century-gothic-bold-italic'),
-    document.fonts.load('1em bernard-mt-condensed-regular'),
-  ]),
-  new Promise(resolve => setTimeout(resolve, 800))
-]);
-initApp();
-```
-
----
-
-## 5. What Went Wrong Historically (Read This Before Suggesting Anything)
-
-This section exists so no future agent repeats the same mistakes.
-
-### Scope expanded faster than the architecture matured
-The project repeatedly tried to add new layers before the base editor was hardened. That caused regressions, broken persistence, and mobile interaction failures. **The solution: narrow focus, stabilize first, expand second.**
-
-### Too many systems changed at the same time
-Mixing UI improvements + persistence + export behavior + mobile gestures + new features in one pass made regression analysis nearly impossible.
-
-### Browser-editor realities were underestimated
-Early failures came from underestimating: CORS and tainted canvas rules, browser image downscaling, PNG metadata limitations, multi-touch gesture ambiguity, large-asset LCP impact, state desync across devices.
-
-### Mobile interaction was too risky without lock-first
-Without Layout Locked by default, mobile users accidentally moved objects while scrolling/pinching. **The lock-first model is intentional and must not be softened.**
-
-### Reset and Undo were not separated
-Users need both: stepwise undo for immediate mistakes, and full restore for deliberate template reset. They must remain separate forever.
-
-### Specific technical failures and their recoveries
-| Failure | Root Cause | Fix |
-|---------|-----------|-----|
-| Export blocked by tainted canvas | Cross-origin image CORS | Serve all assets from same origin |
-| Blurry exported background | CSS background degraded by browser | Use DOM `<img>` not CSS background in export |
-| PNG reported 72 DPI | Browser ignores DPI on canvas export | Manually rewrite pHYs chunk in PNG binary |
-| Slow mobile load | 7.2MB background loaded on app init | Split-asset: preview.jpg for edit, .png for export |
-| Save/load lost on cache clear | localStorage not durable | Railway Volume server persistence |
-| Python/JS brace collisions | f-string vs JS braces | Doubled-brace escaping `{{` `}}` throughout |
-| Mobile pinch/drag conflicts | Single vs multi-touch shared same layer | Layout lock + second-finger cancels drag |
-| Add Text appeared off-screen | Not anchored to viewport center | Compute insertion in world coords from viewport |
-| Native prompts looked unprofessional | Default alert()/confirm() | Branded custom modal + toast system |
-
----
-
-## 6. Non-Negotiables — DO NOT BREAK THESE
-
-| System | Rule |
-|--------|------|
-| Save Session / Load Session | Must persist to server AND localStorage fallback |
-| Export Pro PNG | Must be 12in × 18in @ 300 DPI, Canvas API, NO html2canvas |
-| export-utils.js | Must be loaded with `defer`. Must define `inject300DpiAndDownload` |
-| Branded modal/toast UI | Never replace with native alert() or confirm() |
-| In-app manual | Bilingual EN/ES, loaded from /manual-en.html and /manual-es.html |
-| Draggable toolbar | Desktop: drag handle with pointer capture |
-| Layout Locked default | `layoutLocked = true` on every load |
-| Undo Last Change | 30-state stack, Ctrl+Z and button |
-| Reset to Original | Separate from Undo. POSTs to /api/menu/reset |
-| Floating zoom controls | Visible only when layout is unlocked |
-| Split-asset strategy | preview.jpg for editor, .png for export — NEVER swap |
-| index.html as current source | Do NOT run build_app.py until reconciled |
-| Same-origin image serving | Cross-origin images cannot be drawn to Canvas (CORS) |
-| Multi-touch suppression | Second finger during drag cancels drag |
-| Cache-Control: no-cache on index.html | Users must always get fresh app |
-
----
-
-## 6B. ⛔ CRITICAL SAFETY RULES FOR ALL AGENTS — READ BEFORE TOUCHING ANY ELEMENT, IMAGE, OR ASSET
-
-These two rules exist because past agent mistakes caused permanent data loss and broken sessions. Both rules are NON-NEGOTIABLE.
-
----
-
-### RULE A — NEVER RENAME, REPLACE, OR RE-ASSIGN `assetId` OR `id` WITHOUT A FULL IMPACT AUDIT
-
-**Why this exists:**
-Every element in `docV2.elements[]` has two identity fields:
-- `id` — the unique runtime identity of that element (e.g. `"el_1710645000000_abc"`). The undo stack, selection state, layer panel, and all editor functions reference elements exclusively by this id. Renaming it mid-session destroys undo history, breaks selection, and causes ghost elements.
-- `assetId` — the registry key linking an element to its source asset (e.g. `"asset_007"`). The asset panel, export pipeline, and save/load round-trip all use this key to resolve image `src`. If you change `assetId` without updating the corresponding entry in `docV2.assets[]`, the image becomes a broken reference permanently — even after Save/Load.
-
-**The rule:**
-> ⛔ NEVER change an element's `id` or `assetId` unless you are explicitly performing a migration task AND you have audited every reference to that id/assetId in the full codebase first.
-
-**What you must check before renaming:**
-1. Search `index.html` for ALL uses of that `id` string — undo stack snapshots, selectedId, multi-select arrays, layer panel renders
-2. Search `docV2.assets[]` for the matching `assetId` entry — the `src`, `filename`, and `cloudUrl` fields must stay in sync
-3. If the session is currently live (Railway), a rename that doesn't match the server-saved JSON will silently break Load Session on next page load
-
-**Safe pattern:**
-- Add new fields, don't rename existing ones
-- If you must rename, write a one-time migration function that updates ALL references atomically in a single `pushState()` → mutate → `render()` pass
-
----
-
-### RULE B — BACKGROUND LAYER IDENTITY: TWO TYPES EXIST, THEY BEHAVE DIFFERENTLY
-
-**Why this exists:**
-The background system has two distinct element types that share `layerRole: 'background'` but have completely different behavior contracts. Confusing them caused a full editor lockout bug (April 2026) where user-promoted background images became permanently unselectable and uneditable.
-
-**The two background types:**
-
-| Property | System Background | User Background Layer |
-|---|---|---|
-| Created by | **Replace Background** button | **🖼️ BG** button (setSelectedAsBackground) |
-| `isSystemBackground` | `true` | absent / `false` |
-| `locked` | `true` | `false` |
-| Selectable in editor | ❌ No | ✅ Yes |
-| Routes through `#menu-bg` img tag | ✅ Yes | ❌ No — renders as normal element |
-| Moveable / resizable | ❌ No | ✅ Yes |
-| Deleteable by user | ❌ Only via Replace BG | ✅ Yes |
-
-**The rule:**
-> ⛔ NEVER use `layerRole === 'background'` as the sole guard for locking, hiding, or blocking interaction. You MUST check `isSystemBackground === true` instead. Elements with `layerRole: 'background'` but WITHOUT `isSystemBackground: true` are regular moveable elements that happen to sit at the bottom of the z-stack.
-
-**Guard pattern all agents must use:**
-```javascript
-// ✅ CORRECT — only blocks the true system background
-if (item.isSystemBackground === true) return;
-
-// ❌ WRONG — blocks ALL background-role elements including user-moveable ones
-if (docV2.settings.backgroundLayerLocked && item.layerRole === 'background') return;
-```
-
-**Where this pattern is enforced (April 2026 patch):**
-- `undo()` re-selection guard
-- `render()` bg src routing (only `isSystemBackground` elements route through `#menu-bg`)
-- `renderLayerList()` click guard
-- `onCanvasMousedown()` selection guard
-- Resize handle drag guard
-- Lasso selection filter
-- Select-All filter
-- `setAsBackground()` — always sets `isSystemBackground: true`
-- `setSelectedAsBackground()` — never sets `isSystemBackground`
-
----
-
-## 7. UI Vocabulary — Standard Terms (Never Substitute Synonyms)
-
-| Official Term | Meaning |
-|--------------|---------|
-| Edit Mode / Layout Unlocked | When user can move/edit elements |
-| Layout Locked | Default safe state |
-| Save Session | Saves to server + localStorage |
-| Load Session | Loads from server, falls back to localStorage |
-| Undo Last Change | Pops one history snapshot |
-| Reset to Original | Wipes server save, reloads from embedded state |
-| Export Pro PNG | Renders 300 DPI PNG for print |
-| Add Text | Creates new text element at viewport center |
-| Add Rect | Creates new rectangle shape |
-| Upload Img | Uploads image to server library |
-| Replace Background | Replaces menu-bg layer |
-| Toggle Original BG | Shows/hides menu-bg-preview.jpg |
-
----
-
-## 8. Known Anti-Patterns — Never Repeat These
-
-1. **Running `python build_app.py`** before reconciling all patches into the generator — will wipe all live code
-2. **Using html2canvas** for export — banned, Canvas API only
-3. **Mixing feature additions with bug fixes** in the same commit
-4. **Expanding scope before stabilizing** the current base
-5. **Assuming local file changes = deployed** — always verify GitHub commit
-6. **Reopening persistence/export architecture** without a proven defect
-7. **Replacing standard terminology** with synonyms in UI or code
-8. **Making drag "smart but ambiguous"** on mobile — lock-first is intentional
-9. **Loading menu-bg.png on initial page load** — preview only on load
-10. **Marking a task done before verifying on GitHub** — use direct file read, not code search
-11. **Patching index.html and not updating this doc** — documentation drift caused a week of wasted work
-12. **Making mobile gestures "smart but ambiguous"** — the conservative lock model is a strength
-13. **Using `layerRole === 'background'` as a lock/block guard** — always use `isSystemBackground === true` instead. The background role alone no longer implies locking.
-14. **Renaming element `id` or `assetId` without a full reference audit** — the undo stack, asset registry, selection state, and server-saved JSON all reference these by exact string match. A rename without auditing all usages silently breaks sessions.
-
----
-
-## 9. V2 Data Model Contract (Official Schema)
-
-### 9.1 Top-Level Document Shape
-```json
 {
-  "version": "2.0",
-  "savedAt": "2026-03-28T00:00:00Z",
-  "elements": [],
-  "zoom": 1.0,
-  "scroll": {"x": 0, "y": 0},
-  "imageLibrary": []
+    version: 2,
+    elements: [ ... ],       // Canvas elements (text, image, rect, circle, star, line)
+    assets: [ ... ],         // Registered image assets
+    aiCredentials: {         // Stored in DB, loaded on page start
+        cloudName: "",
+        cloudKey: "",
+        cloudSecret: "",
+        klingKey: "",
+        klingSecret: "",
+        stabilityKey: ""
+    },
+    settings: {
+        layoutLocked: false,
+        viewer: {
+            heroVideoUrl: "",
+            sidePanelLeft: {},
+            sidePanelRight: {}
+        }
+    },
+    editorState: { ... },
+    heroVideoUrl: ""
 }
 ```
 
-### 9.2 Base Element Properties (all types)
-```json
-{
-  "id": "el_1710645000000_abc",
-  "type": "text|image|shape",
-  "name": "human-readable-label",
-  "x": 245.5, "y": 180.0,
-  "width": 420, "height": 60,
-  "visible": true,
-  "locked": false,
-  "opacity": 100,
-  "zIndex": 10,
-  "role": "background|content|overlay"
-}
-```
-
-### 9.3 Text Element (extends base)
-```json
-{
-  "content": "APPETIZERS",
-  "fontFamily": "Century Gothic",
-  "fontSize": 28,
-  "fontWeight": "bold",
-  "fontStyle": "normal",
-  "color": "#ffffff",
-  "textAlign": "center",
-  "letterSpacing": 0.08,
-  "lineHeight": 1.4
-}
-```
-
-### 9.4 Image Element (extends base)
-```json
-{
-  "src": "/user-images/logo.png",
-  "assetId": "asset_007",
-  "originalWidth": 800,
-  "originalHeight": 600,
-  "layerRole": "background",
-  "isSystemBackground": true
-}
-```
-- `src` is the export source of truth — always same-origin
-- `assetId` references the asset registry entry — **never rename without full impact audit (see Rule A in Section 6B)**
-- `layerRole: "background"` marks the element as a background layer for z-ordering
-- `isSystemBackground: true` — ONLY present on elements created by the **Replace Background** button. This flag is what ALL editor guards check to decide whether to lock/hide the element. Elements with `layerRole: 'background'` but WITHOUT this flag are fully moveable user-promoted background images. See Section 6B Rule B.
-
-### 9.5 Shape/Rectangle Element (extends base)
-```json
-{
-  "fillColor": "#95201d",
-  "borderColor": "#c8a96a",
-  "borderWidth": 2,
-  "borderRadius": 8
-}
-```
-
-### 9.6 Schema Validation Rules (enforced server-side)
-- Must have `elements` field as an array
-- Server returns `400` on validation failure
-- `layoutLocked` resets to `true` on every page load (never persisted)
-- Undo stack is cleared on Load Session
+**init_db() Behavior:** Fatal on failure — app crashes loudly if PostgreSQL unavailable. No silent fallback.
 
 ---
 
-## 10. Export Pipeline — 300 DPI PNG
+## Section 4 — Backend Routes (app.py)
 
-```
-User clicks Export Pro PNG
-  → pushState() for undo safety
-  → showToast("Preparing export…") — persistent
-  → autoSave()
-  → Load menu-bg.png (full resolution master)
-  → Create off-screen Canvas at 3600 × 5400px
-  → Draw menu-bg.png as background
-  → For each element in ascending zIndex order:
-      text:  set font, fillStyle, draw multi-line text
-      image: draw at scaled coordinates
-      shape: fillRect/strokeRect with corner radius
-  → canvas.toBlob("image/png")
-  → inject300DpiAndDownload(blob, "notyourmamaskitchen-menu.png")
-      → parse PNG binary
-      → inject pHYs chunk (11811 × 11811 pixels/meter = 300 DPI)
-      → reassemble + trigger browser download
-  → showToast("Export complete!", "success")
-```
-
-**Export dimensions:** 3600 × 5400 px = 12 × 18 inches @ 300 DPI  
-**Scale factor:** 3600 / 908.44 ≈ 3.963×  
-**`export-utils.js` must be loaded with `defer`** — required for PageSpeed 100
-
----
-
-## 11. Key Technical Facts (Quick Reference)
-
-| Fact | Value |
-|------|-------|
-| Export canvas size | 3600 × 5400 px (12 × 18 in @ 300 DPI) |
-| Editor canvas size | 908.44 × 1336.02 px (BASE_W / BASE_H) |
-| Scale factor at export | ≈ 3.963× |
-| Background at edit | `menu-bg-preview.jpg` with `fetchpriority="high"` |
-| Background at export | `menu-bg.png` loaded on demand |
-| Font loading timeout | 800ms fallback before initApp() |
-| History stack max | 30 states |
-| Server save path | PostgreSQL `sessions` DB (`id='main'`) |
-| User images path | Cloudinary (primary), local `/Images/` (fallback) |
-| Database env var | `DATABASE_URL` (Railway managed) |
-| Deployment trigger | Push to `main` branch on GitHub |
-| Compression | flask-compress, gzip all text/html/css/js/json/fonts |
-| contentEditable attribute | Must use string `"true"` not boolean `true` |
-| Text content read/write | Use `innerText` NOT `innerHTML` (XSS prevention) |
-| pHYs DPI value | 11811 pixels/meter = 300 DPI |
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/` | Serves index.html |
+| GET | `/viewer` | Serves viewer.html |
+| GET | `/manual-en` | Serves manual-en.html |
+| GET | `/manual-es` | Serves manual-es.html |
+| GET | `/api/menu` | Loads canvas_json where id='main' |
+| POST | `/api/menu` | Saves full docV2 to canvas_json where id='main', validates schema |
+| GET | `/api/backup` | Loads canvas_json where id='backup' |
+| POST | `/api/backup` | Saves rolling backup to canvas_json where id='backup', validates schema |
+| POST | `/api/upload-image` | Uploads base64 image to Cloudinary, returns secure_url |
+| POST | `/api/ai/cloudinary-upload` | Uploads AI-generated base64 to Cloudinary |
+| POST | `/api/ai/generate-image` | Generates image via Stability AI or Google Imagen |
+| POST | `/api/ai/generate-kling-image` | Generates image via Kling AI |
+| POST | `/api/ai/generate-video` | Generates video via Kling AI |
+| GET | `/api/ai/poll-kling-video/<task_id>` | Polls Kling for video completion |
+| POST | `/api/ai/enhance-prompt` | Appends food photography modifiers to prompt |
+| POST | `/api/ai/test-cloudinary` | Validates Cloudinary credentials |
+| GET | `/api/video-history` | Returns all video_history records |
+| POST | `/api/video-history` | Saves video URL to history (deduped) |
+| GET | `/api/image-history` | Returns all image_history records |
+| DELETE | `/api/image-history/<id>` | Deletes image from history |
+| POST | `/api/save-video-history` | Legacy alias for video-history POST |
+| GET | `/api/list-images` | Lists /Images/ directory files (deprecated) |
 
 ---
 
-## 12. Font System
+## Section 5 — Frontend Architecture (index.html)
 
-| File | Font Name | Status |
-|------|-----------|--------|
-| `century-gothic-regular.ttf` | Century Gothic Regular | ✅ Active |
-| `century-gothic-bold.ttf` | Century Gothic Bold | ✅ Active |
-| `century-gothic-bold-italic.ttf` | Century Gothic Bold Italic | ✅ Active |
-| `bernard-mt-condensed-regular.ttf` | Bernard MT Condensed Regular | ✅ Active |
-| `centurygothic.ttf` | Duplicate alias | ❌ DELETED March 27, 2026 |
+### State Management
+- **docV2** — Single source of truth for all canvas state. Loaded from PostgreSQL on page start, saved on user action or auto-backup.
+- **save()** — POSTs entire docV2 to /api/menu. Validates payload < 5MB. Shows toast on success/failure. Blocks save if base64 present in background elements.
+- **load()** — GETs from /api/menu, parses JSON, merges into docV2 via _mergeLoadedDoc(), calls render() and renderAssetPanel().
 
-All fonts use `@font-face` with `font-display: swap`. Do not re-add `centurygothic.ttf`.
+### Undo System
+- **pushState()** — Pushes JSON.stringify(docV2.elements) to historyStack. Limit: 50 entries (slice(-49) + 1 new).
+- **undo()** — Pops from historyStack, restores to docV2.elements, calls render().
+- **redoStack** — Cleared on any new pushState().
 
----
+### Dirty State
+- **markDirty()** — Sets btn.dataset.dirty='true', changes button to red with "💾 Save*" text. Called after any element change.
+- **markClean()** — Removes dirty flag, resets button to "Save". Called after successful save().
 
-## 13. Deployment — Railway
+### Auto-Backup
+- **startAutoBackup()** — setInterval every 5 minutes (300,000ms). Only fires if btn.dataset.dirty exists. POSTs to /api/backup. Shows 🔄 toast on success, silent fail on error.
+- **restoreFromBackup()** — showConfirmModal -> GET /api/backup -> restores elements and assets -> render().
 
-| Variable | Purpose | Default |
-|----------|---------|---------|
-| `PORT` | Server bind port | `5000` |
-| `STORAGE_DIR` | Override storage path | `/app/data` |
-| `RAILWAY_VOLUME_MOUNTED` | Set by Railway when volume active | `"true"` |
-
-**Procfile:** `web: python app.py`  
-**Auto-deploy:** any push to `main` triggers Railway pull + redeploy  
-**Backup recovery:**
-```bash
-cp /app/data/backups/menu_data_YYYYMMDD_HHMMSS.json /app/data/menu_data.json
-```
+### Rendering Pipeline
+- **render()** — Clears canvas, iterates docV2.elements, draws each by type (text/image/rect/circle/star/line), applies z-index order.
+- **renderBackground()** — Renders background element if present. Injects img with pointer-events:none.
+- **fitCanvasToScreen()** — Calculates zoom to fit canvas in viewport. Called on load and resize.
+- **renderAssetPanel()** — Builds asset grid from docV2.assets, shows in ASSETS tab.
+- **renderLayersPanel()** — Lists all elements by z-index in LAYERS tab.
 
 ---
 
-## 14. Interaction Model — Layout Lock & Touch
+## Section 6 — Left Sidebar Tabs
 
-| State | Drag | Text Edit | Canvas Scroll | Zoom Buttons |
-|-------|------|-----------|---------------|-------------|
-| 🔒 Locked | Blocked | ✅ double-click | ✅ drag background | Hidden |
-| 🔓 Unlocked | ✅ | ✅ double-click | Disabled | Visible |
+### ADD Tab
+| Button | Action |
+|--------|--------|
+| Add Text | addText() → pushes text element to elements[] |
+| Add Rect | addRect() → pushes rect element |
+| Add Circle | addCircle() → pushes circle element |
+| Add Star | addStar() → pushes star element |
+| Add Line | addLine() → pushes line element |
+| Upload Img | triggers file picker for in-img-assets (multi-file) |
+| Replace Background | promptReplaceBackground() → showConfirmModal() → user confirms → clicks in-bg → importBackground() |
+| Export Pro PNG | exportPng() → calls export-utils.js |
+| Load Session | load() → reloads from /api/menu |
+| Restore Backup | restoreFromBackup() → loads from /api/backup |
 
-- Layout Locked is **default on every load** — never persisted to session JSON
-- Multi-touch suppression: second finger during drag cancels drag immediately
-- Individually locked elements are never draggable regardless of global lock state
+### ASSETS Tab
+- Displays uploaded image assets from docV2.assets[]
+- "Upload Images" button triggers file picker with `multiple` attribute
+- importMultipleImgs() loops through files, uploads to Cloudinary, adds to assets[], calls save()
+- Each asset has delete button calling deleteAssetFromServer()
 
----
+### LAYERS Tab
+- Lists all elements by z-index
+- Each item shows: visibility toggle, lock toggle, element type icon, element name
+- Click to select, drag to reorder (z-index)
 
-## 15. Undo System
-
-**Covered by undo:** text edits, moves, style changes, add/delete/duplicate, visibility toggle, lock toggle, shape changes, rotation, layer reorder  
-**NOT covered:** Reset to Original, Load Session, Export, zoom changes  
-**Stack max:** 30 states  
-**Keyboard:** Ctrl+Z (Win/Linux) / ⌘+Z (Mac)
-
----
-
-## 16. Phase Roadmap
-
-### ✅ ALL PHASES COMPLETE (as of March 28, 2026)
-See Section 3 for full commit table.
-
-### 🔜 NEXT PRIORITIES
-
-1. **Text Formatting Pack (index.html)** — Next feature sprint. Adds Bold/Italic/Underline toggles, line-height slider, letter-spacing slider, ALL CAPS toggle, and text shadow toggle to the selection panel. All 6 features use existing V2 schema fields — no schema changes required. One commit per feature.
-2. **Reconcile `build_app.py` with `index.html`** — Still deferred. Migrate all Phases 2A–11 + Bug Batches 1–8 + Bug Audit Rounds A–D back into the generator. Until done, index.html remains the live source.
-3. **Behavior verification matrix** — Full manual test pass: edit mode, lock states, undo ordering, save/load cross-device, style persistence. Goal: confirm every feature works end-to-end, not just that the code exists.
-
-### Philosophy: Harden Before Expanding
-The project failed every time it tried to expand before the base was stable. The correct pattern is: identify a narrow class of problems → solve only that class → verify → lock → move on. Never mix concerns.
+### AI GALLERY Tab (4th tab)
+- **Generated Images Section:** Reads from docV2.assets filtering for asset_ai_ prefixed IDs or AI in name. Shows delete button (✕) on each. Click adds to canvas via addFromAsset().
+- **Generated Videos Section:** Reads from video_history table. Shows video preview, "🎬 Hero" button to apply to hero slot, "📋 Copy" button to copy URL.
+- **⚠️ KNOWN TODO:** Left and Right video apply buttons NOT yet implemented — Hero only works.
 
 ---
 
-## 17. Commit Format Rules
+## Section 7 — Right Panel
 
-```
-type: short description
+### Viewer Settings Tab
+| Slot | Field | Purpose |
+|------|-------|---------|
+| Hero Video | hero-video-url-input | URL for main video display |
+| Left Panel | side-panel-left-url | URL for left sidebar video |
+| Right Panel | side-panel-right-url | URL for right sidebar video |
 
-Examples:
-fix: correct lasso scale ratio on mobile
-feat: add text alignment buttons to selection bar
-docs: update MASTER_HANDOFF with Phase 12
-perf: defer export-utils.js loading
-```
+Each slot has a "Set as Hero" / "Set as Left" / "Set as Right" button when video is generated in AI Studio.
 
-After every task:
-```bash
-git add <files>
-git commit -m "type: description"
-git push origin main
-# Verify SHA is visible on GitHub before declaring done
-```
+### AI Studio Tab
+- **Image Generation:** Stability AI, Google Imagen, Kling AI options
+- **Video Generation:** Kling video with quality/aspect controls
+- **Enhance Prompt:** Appends food photography modifiers
+- **Save to Assets:** Saves generated image to docV2.assets[] and persists to DB
+- **Upload to Cloudinary:** For videos, makes URL permanent in video_history
 
----
-
-## 18. Documentation File Map (Current)
-
-| File | Purpose | Status |
-|------|---------|--------|
-| `MASTER_HANDOFF.md` | This file — single source of truth for all agents | ✅ Active |
-| `USER_MANUAL_SOURCE.md` | End-user manual source content (EN + ES) | ✅ Active |
-| `legacy_docs/` | All older handoff/spec files archived here | 📦 Archive |
-
-**All other MD files** (`HANDOFF_V3.md`, `DINE_IN_MENU_EDITOR_PRO_COMPREHENSIVE_MASTER_HANDOFF.md`, `MASTER_TECHNICAL_SPEC.md`, `CONTINUITY_HANDOFF_CURRENT.md`, `dine_in_menu_editor_v2_data_model_contract.md`) are superseded by this file and should be moved to `legacy_docs/`.
+### Credentials Accordion
+- Cloudinary: cloudName, cloudKey, cloudSecret
+- Kling: klingKey, klingSecret
+- Stability: stabilityKey
+- All stored in docV2.aiCredentials, persisted to PostgreSQL
 
 ---
 
-## Manual System Architecture (Confirmed April 2026)
+## Section 8 — AI Credentials System
 
-### Active Files (DO NOT DELETE)
+**Storage Location:** docV2.aiCredentials (JSON object in database)
 
-**manual-en.html** — English manual, served by Flask route `/manual-en`. Opens as pop-out window from editor.
+**On Page Load:**
+- restoreAiCredentials(doc) reads from docV2 and populates input fields
+- Conditionally enables/disables AI generate buttons based on which credentials exist
 
-**manual-es.html** — Spanish manual, served by Flask route `/manual-es`. Opens as pop-out window from editor.
+**On Save:**
+- saveAiCredentials() reads input fields, applies .trim(), writes to docV2.aiCredentials, calls save()
+- Enables buttons: ai-img-btn (if stabilityKey), kling-img-btn + ai-vid-btn (if klingKey AND klingSecret)
 
-**USER_MANUAL_SOURCE.md** — Markdown source of truth. Edit this file, then regenerate the HTML files.
+**Credential Field Names (exact, camelCase):**
+- cloudName
+- cloudKey
+- cloudSecret
+- klingKey
+- klingSecret
+- stabilityKey
 
-### Dead Files (SAFE TO DELETE — orphaned from old split-page system)
-
-- `MANUAL/manual_en_part1.html`
-- `MANUAL/manual_en_part2.html`
-- `MANUAL/manual_en_part3.html`
-
-These three files are NOT referenced from index.html, not served by Flask, and not linked anywhere. They predate the consolidated single-file manual and were never removed.
-
-### How the Manual Opens
-
-The editor (index.html) has a button that calls `window.open('/manual-en')` or `window.open('/manual-es')` depending on language selection. Flask serves manual-en.html / manual-es.html from the root of the repo. The manual appears as a browser pop-out, NOT as a panel inside the editor.
-
-### Workflow for Updating the Manual
-
-1. Edit `USER_MANUAL_SOURCE.md` (the source of truth)
-2. Regenerate `manual-en.html` and `manual-es.html` from it
-3. Do NOT touch anything in the `MANUAL/` subfolder — it is dead code
-
-*This file consolidates: HANDOFF_V3.md (Mar 28, 2026) + DINE_IN_MENU_EDITOR_PRO_COMPREHENSIVE_MASTER_HANDOFF.md + MASTER_TECHNICAL_SPEC.md*  
-*Begin all new threads by pasting this file as the first message to any AI assistant.*
+**Reading in Generators:**
+- generateAiVideo() reads from docV2.aiCredentials directly
+- pollKlingStatus() reads from docV2.aiCredentials directly
+- Does NOT read from DOM — ensures credentials persist across accordion close/open
 
 ---
 
-## Bug Autopsy: Lessons Learned
+## Section 9 — Image & Asset Pipeline
 
-### 🪲 The Lasso Selection Ghost-Clear Bug (April 2026)
-**Feature:** Multi-element lasso selection on the canvas.
-**Time to fix:** 2 days across multiple developers and AI agents.
-**Fix:** 1 line of code — `if (_lassoJustFired) return;`
+### Standard Upload Flow
+1. User selects file from file picker
+2. FileReader reads as base64
+3. POST to /api/upload-image with base64 and credentials
+4. Cloudinary returns secure_url
+5. URL stored in docV2.assets[] with originalUrl
+6. save() called to persist to PostgreSQL
+7. renderAssetPanel() called to update UI
 
-#### What Happened
-The lasso drag-select feature was implemented and appeared to work correctly internally: the hit-test logic was correct, `selectedIds` was being populated, and the CSS `multi-selected` class was being applied to elements. However, every time the user released the mouse **inside the canvas**, the selection would immediately disappear. Releasing the mouse **outside the canvas boundary** (onto the dark editor background) worked correctly.
+### AI Image Flow
+1. AI generates image (Stability/Kling/Imagen)
+2. POST to /api/ai/cloudinary-upload with base64
+3. Cloudinary returns secure_url
+4. URL added to docV2.assets[] AND image_history table
+5. save() called
+6. Shows in AI Gallery via loadAiGallery()
 
-#### Root Cause
-The browser fires events in this exact sequence on a click-and-drag-release:
-1. `mousedown` — starts the lasso
-2. `mousemove` — draws the lasso box
-3. `mouseup` — fires `onUp`, calculates hit-test, applies selection ✅
-4. `click` — fires automatically 1–5ms later on the element where the mouse was released
+### Asset Deduplication
+- loadUserImages() builds Map by asset ID
+- Filters duplicates before adding to docV2.assets
+- Prevents runaway accumulation on page reload
 
-Step 4 is the killer. When the user released the mouse inside the canvas, the `click` event fired on the canvas background (`onCanvasClick`) or the viewport wrapper (`onViewportClick`). These handlers interpreted the click as "user clicked on empty space → clear all selections." The selection set in step 3 was immediately destroyed in step 4, making it look like lasso never worked.
+### addFromTray()
+- Places asset on canvas using stored URL (not base64)
+- Sets assetId to link element to asset registry
 
-When the mouse was released **outside** the canvas, no canvas `click` handler fired, so the selection survived.
+### placeAiImageOnCanvas()
+- Links canvas element to asset registry via assetId
 
-#### Why It Was Hard to Find
-- The lasso logic was **completely correct** — wrong area was debugged for too long.
-- The elements **were** being selected (visible in screenshots with blue outlines and "Delete All (4)" in the bottom bar) — but cleared so fast it looked like they weren't.
-- Two incorrect theories were chased first: coordinate origin mismatch (`lastX/lastY` fix) and `stopPropagation` blocking `window mouseup`.
-- The silver bullet clue came from the user accidentally dragging the lasso past the canvas edge — and selection working. That asymmetry (outside = works, inside = fails) pointed directly at a post-mouseup `click` event firing only within the canvas.
-
-#### The Fix
-A `_lassoJustFired` flag already existed in the codebase. It was set to `true` in `onUp` after a lasso selection and cleared after 200ms via `setTimeout`. It was already guarding `onViewportClick`. The only missing piece was the same guard in `onCanvasClick`:
-```javascript
-function onCanvasClick(e) {
-    if (_lassoJustFired) return;   // ← this one line fixed 2 days of debugging
-    if (layoutLocked) return;
-    // ...
-}
-```
-**Commit SHA:** `05e1bd6` — `+1 / -0` lines.
-
-#### Rule for Future Developers
-> **Any time you implement a drag-select, lasso, rubber-band, or marquee selection feature:**
-> After the drag ends (`mouseup`), the browser will fire a `click` event. If any `click` handler clears selection state, the selection will appear to vanish instantly. Always set a short-lived flag (e.g., `_lassoJustFired = true; setTimeout(() => _lassoJustFired = false, 200)`) after the drag completes, and guard every canvas/background `click` handler with `if (flag) return;`.
->
-> **The symptom:** Drag-select works when mouse is released outside the interactive area but not inside it.
-> **The cause:** A `click` event fires after `mouseup` and a handler is clearing the selection.
-> **The fix:** A short-lived suppression flag on all click handlers that clear state.
-
-### 🪲 The dataset.id Two-Place Rule Bug (April 2026)
-**Feature:** Single-element click selection on the canvas.
-**Symptom:** Text elements (and any element type) immediately deselected when clicked.
-**Fix:** 1 line per element type — `el.dataset.id = d.id;` added to all three creation blocks in `render()`.
-**Commit:** `1ef7db8` — `fix: add dataset.id to all element types in render to fix selection failure`
-
-#### What Happened
-Clicking any text element (and potentially images or shapes) caused the element to immediately deselect. The selection visually flashed on and off so fast it appeared the click was simply not registering. The element was selectable via lasso but not via direct click.
-
-#### Root Cause
-`onCanvasClick` identifies which element the user clicked by reading `e.target.dataset.id` from the DOM node under the cursor. If that property is missing or empty, the handler cannot match the click to any element in `docV2.elements[]` and falls through to its default behavior: `deselect()`.
-
-The `render()` function builds DOM nodes for every element and appends them to the canvas container. It was setting many properties on the node (position, size, CSS classes, z-index) but was NOT setting `el.dataset.id = d.id` on all element types. It had been set for some types during an earlier patch but the coverage was incomplete — text, images, and lines were inconsistently covered.
-
-#### Why It Was Hard to Find
-- The lasso worked correctly because lasso selection uses a bounding-box hit test against `docV2.elements[]` coordinates — it never reads from DOM `dataset`.
-- Direct click selection uses a completely different path through the DOM event system, so a missing `dataset.id` only broke click-to-select, not lasso-to-select. This inconsistency made the bug look like a click-event routing problem rather than a missing data attribute.
-- The fix location (`render()`) and the failure location (`onCanvasClick`) were far apart in the code, making the connection non-obvious.
-
-#### The Fix
-Add `el.dataset.id = d.id;` inside every element creation block in `render()`. There are three blocks: Images, Lines, and Text/Shapes. All three must have it:
-
-```javascript
-// Inside render(), for EVERY element type created:
-const el = document.createElement('div');
-el.dataset.id = d.id;   // ← REQUIRED on every element type, every time
-el.style.left = ...;
-// ...
-```
-
-#### The Two-Place Rule — Mandatory Pattern Going Forward
-
-> ⛔ **THE TWO-PLACE RULE:** Any property that is read by an event handler for element identification MUST be written in every code path that creates or recreates that element.
->
-> In this codebase, `dataset.id` is read by:
-> - `onCanvasClick` — click-to-select
-> - `onCanvasMousedown` — drag-to-move
-> - Any future hit-test or interaction handler
->
-> `dataset.id` is written in `render()`. If you add a new element type to `render()`, you MUST add `el.dataset.id = d.id;` to that block. No exceptions.
->
-> **The test:** After adding any new element type, click it directly. If it deselects immediately, `dataset.id` is missing from its creation block in `render()`.
-
-#### Generalized Rule for Future Developers
-
-> **Any time you add a new element type to a canvas-based editor:**
-> Trace every event handler that identifies elements by DOM attribute (e.g., `dataset.id`, `dataset.type`, `data-el-id`). For each one, verify that attribute is set in every branch of the render/create function that produces DOM nodes for that element type. A missing attribute in even one branch will create an inconsistent selection experience that only manifests for that specific element type.
->
-> **The symptom:** One element type is click-selectable, another is not — even though the click handler looks correct.
-> **The cause:** The non-selectable type's DOM node is missing the identifying attribute the handler reads.
-> **The fix:** Add the attribute to that element type's creation block in `render()`.
-
-### 🪲 Text Elements Invisible / Not Selectable (April 2026)
-
-**Feature:** All text elements on the canvas.
-**Symptom:** Text elements rendered invisible. Clicking canvas had no effect. Double-click to edit was broken.
-**Fix:** 15 lines — a V1→V2 field migration shim added at page load.
-**Commit SHA:** `29965b0`
-
-#### Root Cause
-
-The V2 render schema expects `el.content` for text and top-level `el.fontFamily` etc. for styles. But all saved session data on the server was written in V1 format: `el.text` for content and `el.style.fontFamily` etc. for styles. `render()` read `el.content` and found `undefined` → the element had no text → zero height → invisible → unclickable.
-
-#### The Fix
-
-A shim runs once at page load and copies V1 fields into V2 field names for every text element before `render()` is called. `render()` itself was not changed.
-
-#### Rule for Future Developers
-
-> **Never change the expected field names in `render()` without also migrating all existing saved session data on the server.** A schema change in code that doesn't match the stored data will silently break all existing elements. Always add a load-time migration shim when introducing schema changes, and keep it until all server data is confirmed migrated.
 ---
 
-## 19. Historical Architecture Notes (Legacy / Obsolete)
+## Section 10 — Background System
 
-These references describe old systems that have been completely removed and replaced. They are documented here solely so agents understand what code used to exist and why it is no longer present.
+**Background Element:** Regular element in docV2.elements[] with:
+- type: 'image'
+- layerRole: 'background'
+- zIndex: 0
+- locked: true
+- isSystemBackground: true
 
-- **Railway Volume (`/app/data/`)**: Persistence is now PostgreSQL. 
-- **User Uploads (`/app/data/user_images/`)**: Replaced by Cloudinary + local `Images/` fallback.
-- **File System Saves (`/app/data/menu_data.json`)**: Replaced by PostgreSQL `sessions` table (`id='main'`).
-- **File System Backups (`/app/data/backups/`)**: No longer utilized; PostgreSQL UPSERT is now the absolute backup paradigm.
-- **Env Vars `STORAGE_DIR` & `RAILWAY_VOLUME_MOUNTED`**: Superseded by `DATABASE_URL`.
-- **`IS_PERSISTENT` Flag**: Removed. The system trusts connection success/failure for DB.
-- **Atomic `.tmp` + `os.replace` write pattern**: Fully abandoned for SQL `INSERT ... ON CONFLICT DO UPDATE`.
+**Rendering:**
+- #bg-layer container has pointer-events:none in CSS
+- renderBackground() injects img with pointer-events:none (ensures clicks pass through to canvas)
 
+**Replacement Flow:**
+1. User clicks "Replace Background" in ADD tab
+2. promptReplaceBackground() shows confirmation modal
+3. User confirms → in-bg.click() triggers file picker
+4. importBackground(input) reads file, uploads to Cloudinary
+5. setAsBackground(url) updates element src and properties
+
+**Remove Background:**
+- removeBackground(e) calls pushState() first (undoable)
+- Filters elements where layerRole !== 'background' AND !isSystemBackground
+- Clears #bg-layer.innerHTML, calls render() and save()
+
+---
+
+## Section 11 — Video System
+
+### Three Slots
+- Hero, Left, Right — stored in docV2.settings.viewer
+
+### applyVideoToSlot(slot, url)
+- Takes explicit URL parameter (not global state)
+- Updates appropriate field: hero-video-url-input, side-panel-left-url, or side-panel-right-url
+- Calls saveVideoHistory(slot, url) → POST to /api/video-history
+- Shows toast confirming which slot was updated
+
+### generateAiVideo()
+- Calls Kling API with credentials from docV2.aiCredentials
+- Polls via /api/poll-kling-video/<task_id> with interval
+- On completion: saves to video_history table, shows in AI Gallery
+
+### pollKlingStatus()
+- Reads credentials from docV2.aiCredentials directly
+- Intervals cleared on beforeunload to prevent memory leaks
+
+### Video History Dedup
+- save_video_history() checks only most recent record per slot
+- Prevents duplicate consecutive saves of same URL
+
+### enhance_prompt()
+- Checks if "professional food photography" (image) or "cinematic food video" (video) already in prompt
+- Only appends modifiers if not already present (no double-append)
+
+---
+
+## Section 12 — UI Theme
+
+**Premium Glossy Black** — CSS block appended at end of <style> tag in index.html (line ~7000).
+
+**Visual Elements:**
+- Deep black gradients (#111 to #080808) on header and sidebars
+- Gold accent borders (#c8a96a) on active tabs, buttons, inputs
+- Gold resize handle dots (radial gradient #f0d090 to #c8a96a)
+- Gold-tinted scrollbars (gradient #3a3020 to #2a2215)
+- Frosted glass toast notifications with gold left border
+- Modal overlays with backdrop-filter: blur(8px)
+
+**Scope:** Purely visual. Does not modify layout, z-index, or JavaScript behavior.
+
+---
+
+## Section 13 — Known TODOs / Open Items
+
+| Item | Status |
+|------|--------|
+| AI Gallery Left video apply | ⚠️ NOT IMPLEMENTED — Hero only works |
+| AI Gallery Right video apply | ⚠️ NOT IMPLEMENTED — Hero only works |
+| build_app.py sync | ⚠️ May need verification after index.html changes |
+
+---
+
+## Section 14 — Agent Rules
+
+> **⚠️ CRITICAL: All agents must read this section before every task.**
+
+### Before Writing Any Code
+1. Read MASTER_HANDOFF.md (this file) — direct file read, not code search
+2. Read the live target file from GitHub — direct file read, not code search
+3. Compare what live code does vs what MASTER_HANDOFF requires
+4. If task contradicts MASTER_HANDOFF — STOP and write conflict clearly
+
+### What You May NOT Do
+- NEVER use localStorage for persistence — PostgreSQL only
+- NEVER save base64 to database assets array — use Cloudinary URLs
+- NEVER guess function names or variable names — always verify in source
+- NEVER skip validate_schema() on /api/menu or /api/backup POST routes
+
+### What You MUST Do
+- Run build_app.py after any structural index.html change (if applicable)
+- Close DB connections in finally blocks (connection leak prevention)
+- Check if build_app.py needs same change when editing index.html
+
+### After Any Rule Change
+- Update .agents/rules/rules.md to match this section
+- Keep both files in sync
+
+---
+
+**END OF MASTER HANDOFF**
