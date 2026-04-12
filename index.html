@@ -3180,7 +3180,7 @@ function alignToCanvas(edge) {
   if (edge === 'left') el.x = 0;
   else if (edge === 'right') el.x = cw - (el.width || 100);
   else if (edge === 'top') el.y = 0;
-  else if (edge === 'bottom') el.y = ch - (el.height || 40);
+  else if (edge === 'bottom') { const domEl = document.getElementById(el.id); el.y = ch - (el.height || domEl?.offsetHeight || 0); }
   render();
   showToast('Aligned to ' + edge);
 }
