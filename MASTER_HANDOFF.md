@@ -3,8 +3,7 @@
 **Last Updated: April 12, 2026**
 
 ## Changelog — Audit Patch April 12, 2026
-Updated based on confirmed three-agent source code audit. 14 fixes applied. See each section for details.
-
+Updated based on confirmed three-agent source code audit. 14 fixes applied. See each section for details. Includes PR #9 features (Clear Credentials, AI Gallery 3-slot apply).
 
 ---
 
@@ -191,7 +190,6 @@ At line 4454, the editor implements logic to distinguish between a two-finger pi
 ### Auto-Backup Fallback
 On backup restore, the editor first attempts to read menuBackup from localStorage (line 4873) as a fallback before fetching from /api/backup. This provides an additional recovery layer if the server backup is unavailable.
 
-
 ---
 
 ## Section 6 — Left Sidebar Tabs
@@ -233,8 +231,7 @@ A floating Text Format Bar (text-format-bar) appears above the canvas whenever a
 
 ### AI GALLERY Tab (4th tab)
 - **Generated Images Section:** Reads from docV2.assets filtering for asset_ai_ prefixed IDs or AI in name. Shows delete button (✕) on each. Click adds to canvas via addFromAsset().
-- **Generated Videos Section:** Reads from video_history table. Shows video preview, "🎬 Hero" button to apply to hero slot, "📋 Copy" button to copy URL.
-- **⚠️ KNOWN TODO:** Left and Right video apply buttons NOT yet implemented — Hero only works.
+- **Generated Videos Section:** Reads from video_history table. Shows video preview, "🎬 Hero", "⬅️ Left", and "➡️ Right" buttons to apply to respective slots.
 
 ---
 
@@ -292,6 +289,10 @@ Each slot has a "Set as Hero" / "Set as Left" / "Set as Right" button when video
 - generateAiVideo() reads from docV2.aiCredentials directly
 - pollKlingStatus() reads from docV2.aiCredentials directly
 - Does NOT read from DOM — ensures credentials persist across accordion close/open
+
+**Auto-validation & Clearing:**
+- Auto-validate on load: After restoreAiCredentials(), if Cloudinary creds are present, silently tests via /api/ai/test-cloudinary. Shows green toast on success, warning toast on failure.
+- clearAiCredentials(): Wipes docV2.aiCredentials to empty strings, clears all input fields, calls save(), disables AI buttons. Requires confirmation modal before executing.
 
 ---
 
@@ -354,7 +355,6 @@ Each slot has a "Set as Hero" / "Set as Left" / "Set as Right" button when video
 - removeBackground(e) — Confirmed separate function from Replace Background. Deletes all elements where layerRole === 'background' or isSystemBackground === true. Does not import a new background — it fully clears the background layer. Triggers save() and shows a toast confirmation. UI button is located in the Layers panel context.
 - Clears #bg-layer.innerHTML, calls render() and save()
 
-
 ---
 
 ## Section 11 — Video System
@@ -381,16 +381,15 @@ Each slot has a "Set as Hero" / "Set as Left" / "Set as Right" button when video
 - save_video_history() checks only most recent record per slot
 - Prevents duplicate consecutive saves of same URL
 
-### enhance_prompt()
-- Checks if "professional food photography" (image) or "cinematic food video" (video) already in prompt
-- Only appends modifiers if not already present (no double-append)
-
 ### Video Slot History System
 Each slot (Hero, Left, Right) maintains a history of applied videos via saveVideoHistory(slot, url), which POSTs to /api/video-history. History is displayed in dedicated DOM containers: ai-vid-history-hero, ai-vid-history-left, ai-vid-history-right. Users can re-apply previously generated videos from these history panels without regenerating.
 
 ### Kling Generation Costs
 Kling AI generation costs are variable by model. Newer models (Kling v2.5 Turbo, v2.6, v3, v3-Omni, Video-O1) carry different point costs than legacy models (v1, v1.5, v1.6). Cost estimate is displayed to the user in the kling-cost-estimate div before generation. Do not document a flat point value — it changes per model selection.
 
+### enhance_prompt()
+- Checks if "professional food photography" (image) or "cinematic food video" (video) already in prompt
+- Only appends modifiers if not already present (no double-append)
 
 ---
 
@@ -417,12 +416,9 @@ Kling AI generation costs are variable by model. Newer models (Kling v2.5 Turbo,
 | **Kling Video Slots** | applyVideoToSlot('left', url) and applyVideoToSlot('right', url) are fully functional. They write the Cloudinary URL directly to side-panel-left-url and side-panel-right-url inputs and call saveVideoHistory(slot, url) and saveGlobalSettings(). All three slots (Hero, Left, Right) are operational. |
 | build_app.py sync | ⚠️ May need verification after index.html changes |
 
-
 ---
 
 ## Section 14 — Agent Rules
-
-> **⚠️ CRITICAL: All agents must read this section before every task.**
 
 ### Before Writing Any Code
 1. Read MASTER_HANDOFF.md (this file) — direct file read, not code search
@@ -447,12 +443,10 @@ Kling AI generation costs are variable by model. Newer models (Kling v2.5 Turbo,
 
 ---
 
----
-
 ## Section 15 — Keyboard Shortcuts
 
 - **Arrow keys** — Nudge selected element 2px in any direction.
 - **Shift + Arrow keys** — Nudge selected element 10px in any direction (confirmed at line 4936). Both nudge modes call nudge(dx, dy) and push undo state.
 - **Ctrl+Y** — Redo. Calls redo(). Pops the top state from redoStack, pushes current state back to historyStack, re-renders canvas, and shows "Action Redone" toast. Note: There is no visible redo button in the UI — redo is keyboard-only via Ctrl+Y.
 
-**END OF MASTER HANDOFF**
+**END OF MASTER HANDOFF**

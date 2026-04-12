@@ -1381,6 +1381,8 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
           💡 Sign up at <strong style="color:#888;">klingai.com</strong> → Account → API. Free tier available.
         </div>
       </div>
+
+      <button onclick="clearAiCredentials()" class="btn-ui" style="width:100%;margin-top:12px;background:#8b0000;color:#fff;border:none;font-weight:bold;">🗑️ Clear All Credentials</button>
     </div>
 
     <!-- GENERATE IMAGE -->
@@ -5328,6 +5330,33 @@ function getAiCredentials() {
   };
 }
 
+function clearAiCredentials() {
+    showConfirmModal(
+        '🗑️ Clear All Credentials?',
+        'This will permanently remove all saved API keys. AI features will stop working until new credentials are entered. Are you sure?',
+        'Yes, Clear Everything',
+        'Cancel',
+        () => {
+            docV2.aiCredentials = { cloudName:'', cloudKey:'', cloudSecret:'', klingKey:'', klingSecret:'', stabilityKey:'' };
+            document.getElementById('ai-cloud-name').value = '';
+            document.getElementById('ai-cloud-key').value = '';
+            document.getElementById('ai-cloud-secret').value = '';
+            document.getElementById('ai-stability-key').value = '';
+            document.getElementById('ai-kling-key').value = '';
+            document.getElementById('ai-kling-secret').value = '';
+            save();
+            const imgBtn = document.getElementById('ai-img-btn');
+            if (imgBtn) imgBtn.disabled = true;
+            const klingImgBtn = document.getElementById('kling-img-btn');
+            if (klingImgBtn) klingImgBtn.disabled = true;
+            const klingVidBtn = document.getElementById('ai-vid-btn');
+            if (klingVidBtn) klingVidBtn.disabled = true;
+            document.querySelectorAll('.asset-upload-btn, .import-btn').forEach(btn => btn.disabled = true);
+            showToast('🗑️ All credentials cleared');
+        }
+    );
+}
+
 async function saveAiCredentials() {
   if (!docV2) { showToast('⚠️ App not ready — try again in a moment'); return; }
   docV2.aiCredentials = {
@@ -5380,6 +5409,32 @@ function restoreAiCredentials(doc) {
     const klingVidBtn = document.getElementById('ai-vid-btn');
     if (klingImgBtn) klingImgBtn.removeAttribute('disabled');
     if (klingVidBtn) klingVidBtn.removeAttribute('disabled');
+  }
+
+  if (c.cloudName && c.cloudKey && c.cloudSecret) {
+    (async () => {
+      try {
+        const res = await fetch('/api/ai/test-cloudinary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cloud_name: c.cloudName,
+            api_key: c.cloudKey,
+            api_secret: c.cloudSecret
+          })
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+          showToast('☁️ Cloudinary connected');
+        } else {
+          showToast('⚠️ Cloudinary credentials invalid — please re-save in Settings');
+          document.querySelectorAll('.asset-upload-btn, .import-btn').forEach(btn => btn.disabled = true);
+        }
+      } catch(e) {
+        showToast('⚠️ Cloudinary credentials invalid — please re-save in Settings');
+        document.querySelectorAll('.asset-upload-btn, .import-btn').forEach(btn => btn.disabled = true);
+      }
+    })();
   }
 }
 
@@ -6118,29 +6173,65 @@ function addToAiImageGallery(url, name) {
 }
 
 async function loadAiGallery() {
-    const grid = document.getElementById('ai-gallery-images');
-    grid.innerHTML = '';
-    const aiAssets = (docV2.assets || []).filter(a =>
-        a.id && (a.id.startsWith('asset_ai') || (a.name || '').toUpperCase().includes('AI'))
-    );
-    if (aiAssets.length === 0) {
-        grid.innerHTML = '<div data-placeholder="true" style="color:#555;font-size:10px;grid-column:1/-1;text-align:center;padding:12px;">Generated images appear here.<br>Use "Save to Assets" in AI Studio.</div>';
-        return;
+  // ── VIDEOS ──
+  const videoContainer = document.getElementById('ai-gallery-videos');
+  if (videoContainer) {
+    videoContainer.innerHTML = '<div style="color:#555;font-size:10px;text-align:center;padding:8px;">Loading...</div>';
+    try {
+      const vRes = await fetch('/api/video-history');
+      const vData = await vRes.json();
+      const allVideos = [
+        ...(vData.hero || []).map(url => ({ slot: 'hero', url })),
+        ...(vData.left || []).map(url =>  ({ slot: 'left',  url })),
+        ...(vData.right || []).map(url => ({ slot: 'right', url }))
+      ];
+      if (allVideos.length === 0) {
+        videoContainer.innerHTML = '<div style="color:#555;font-size:10px;text-align:center;padding:12px;">No videos yet.</div>';
+      } else {
+        videoContainer.innerHTML = '';
+        allVideos.forEach(({ slot, url }) => {
+          const card = document.createElement('div');
+          card.style.cssText = 'background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:6px;';
+          card.innerHTML = `
+            <video src="${url}" style="width:100%;border-radius:4px;" muted playsinline preload="metadata"></video>
+            <div style="font-size:9px;color:#888;margin:4px 0 4px;text-transform:uppercase;font-weight:700;">📌 ${slot} slot</div>
+            <div style="display:flex;gap:4px;">
+              <button onclick="applyVideoToSlot('hero','${url}')" class="btn-ui accent" style="flex:1;font-size:9px;padding:4px;">🎬 Hero</button>
+              <button onclick="applyVideoToSlot('left','${url}')" class="btn-ui" style="flex:1;font-size:9px;padding:4px;">⬅️ Left</button>
+              <button onclick="applyVideoToSlot('right','${url}')" class="btn-ui" style="flex:1;font-size:9px;padding:4px;">➡️ Right</button>
+            </div>`;
+          videoContainer.appendChild(card);
+        });
+      }
+    } catch(e) {
+      videoContainer.innerHTML = `<div style="color:#e74c3c;font-size:10px;text-align:center;padding:8px;">Error: ${e.message}</div>`;
     }
-    aiAssets.forEach(asset => {
-        const url = (asset.storage || {}).originalUrl || (asset.storage || {}).previewUrl || '';
-        const wrap = document.createElement('div');
-        wrap.className = 'asset-container';
-        wrap.style.position = 'relative';
-        wrap.innerHTML = `
-            <img src="${url}" class="ls-asset-item"
-                onclick="addFromAsset('${asset.id}', '${url}')"
-                title="${asset.name || 'AI Image'}"
-                onerror="this.closest('.asset-container').style.opacity='0.3'">
-            <button class="asset-del-btn" onclick="deleteAiGalleryItem('${asset.id}', event)">✕</button>
-        `;
-        grid.appendChild(wrap);
-    });
+  }
+
+  // ── IMAGES ──
+  const imgContainer = document.getElementById('ai-gallery-images');
+  if (imgContainer) {
+    const placeholder = imgContainer.querySelector('[data-placeholder]');
+    if (placeholder) placeholder.remove();
+    try {
+      const iRes = await fetch('/api/image-history');
+      const iData = await iRes.json();
+      if (!iData.images || iData.images.length === 0) {
+        imgContainer.innerHTML = '<div data-placeholder="true" style="color:#555;font-size:10px;grid-column:1/-1;text-align:center;padding:12px;">No AI images yet.</div>';
+      } else {
+        imgContainer.innerHTML = '';
+        iData.images.forEach(img => {
+          const wrap = document.createElement('div');
+          wrap.className = 'asset-container';
+          wrap.innerHTML = `
+            <img src="${img.url}" class="ls-asset-item" title="${img.name}"
+                 onclick="addFromAsset('${img.id}', '${img.url}')">
+            <button class="asset-del-btn" onclick="deleteAiGalleryImage('${img.id}')">✕</button>`;
+          imgContainer.appendChild(wrap);
+        });
+      }
+    } catch(e) { /* silent fail for images */ }
+  }
 }
 
 function deleteAiGalleryItem(assetId, e) {
@@ -6151,6 +6242,21 @@ function deleteAiGalleryItem(assetId, e) {
     save();
     loadAiGallery();
     showToast('🗑 AI image removed');
+}
+
+async function deleteAiGalleryImage(assetId) {
+  try {
+    const res = await fetch('/api/delete-asset/' + assetId, { method: 'DELETE' });
+    if (res.ok || res.status === 404) {
+      loadAiGallery();
+      showToast('🗑 AI image removed');
+    } else {
+      const data = await res.json();
+      showToast('❌ Delete failed: ' + (data.error || 'Unknown error'));
+    }
+  } catch(e) {
+    showToast('❌ Delete failed: ' + e.message);
+  }
 }
 
 function copyAiUrl(inputId) {
