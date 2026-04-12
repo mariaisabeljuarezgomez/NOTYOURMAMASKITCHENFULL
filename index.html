@@ -1238,8 +1238,8 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     <button class="ls-action-btn" onclick="addCircle()"><span class="ls-btn-icon">⭕</span><span class="ls-btn-label">Add Circle</span></button>
     <button class="ls-action-btn" onclick="addStar()"><span class="ls-btn-icon">⭐</span><span class="ls-btn-label">Add Star</span></button>
     <button class="ls-action-btn" onclick="addLine()"><span class="ls-btn-icon">╱</span><span class="ls-btn-label">Add Line</span></button>
-    <button class="ls-action-btn" onclick="document.getElementById('in-img').click()"><span class="ls-btn-icon">📷</span><span class="ls-btn-label">Upload Img</span></button>
-    <button class="ls-action-btn" onclick="document.getElementById('in-bg').click()"><span class="ls-btn-icon">🖼️</span><span class="ls-btn-label">Replace Background</span></button>
+    <button class="ls-action-btn" onclick="document.getElementById('in-img-assets').click()"><span class="ls-btn-icon">📷</span><span class="ls-btn-label">Upload Img</span></button>
+    <button class="ls-action-btn" onclick="promptReplaceBackground()"><span class="ls-btn-icon">🖼️</span><span class="ls-btn-label">Replace Background</span></button>
 
     <div class="ls-section-title" style="margin-top:16px;">File</div>
     <button class="ls-action-btn accent" onclick="exportPng()"><span class="ls-btn-icon">⬇️</span><span class="ls-btn-label">Export Pro PNG</span></button>
@@ -4110,17 +4110,17 @@ function removeBackground(e) {
   showToast('Background removed');
 }
 
-function importBackground(input) {
+function promptReplaceBackground() {
     showConfirmModal(
         '⚠️ Replace Background?',
         'This will permanently replace your current background.<br>Make sure you have saved a backup first.<br><br>Are you sure?',
         'Yes, Replace It',
         'Cancel',
-        () => { _doImportBackground(input); }
+        () => { document.getElementById('in-bg').click(); }
     );
 }
 
-async function _doImportBackground(input) {
+async function importBackground(input) {
   let f = input.files[0];
   if (!f) return;
   let r = new FileReader();
