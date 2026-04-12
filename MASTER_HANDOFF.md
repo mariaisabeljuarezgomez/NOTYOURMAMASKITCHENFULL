@@ -206,8 +206,7 @@ CREATE TABLE image_history (
 
 ### AI GALLERY Tab (4th tab)
 - **Generated Images Section:** Reads from docV2.assets filtering for asset_ai_ prefixed IDs or AI in name. Shows delete button (✕) on each. Click adds to canvas via addFromAsset().
-- **Generated Videos Section:** Reads from video_history table. Shows video preview, "🎬 Hero" button to apply to hero slot, "📋 Copy" button to copy URL.
-- **⚠️ KNOWN TODO:** Left and Right video apply buttons NOT yet implemented — Hero only works.
+- **Generated Videos Section:** Reads from video_history table. Shows video preview, "🎬 Hero", "⬅️ Left", and "➡️ Right" buttons to apply to respective slots.
 
 ---
 
@@ -261,6 +260,10 @@ Each slot has a "Set as Hero" / "Set as Left" / "Set as Right" button when video
 - generateAiVideo() reads from docV2.aiCredentials directly
 - pollKlingStatus() reads from docV2.aiCredentials directly
 - Does NOT read from DOM — ensures credentials persist across accordion close/open
+
+**Auto-validation & Clearing:**
+- Auto-validate on load: After restoreAiCredentials(), if Cloudinary creds are present, silently tests via /api/ai/test-cloudinary. Shows green toast on success, warning toast on failure.
+- clearAiCredentials(): Wipes docV2.aiCredentials to empty strings, clears all input fields, calls save(), disables AI buttons. Requires confirmation modal before executing.
 
 ---
 
@@ -374,8 +377,6 @@ Each slot has a "Set as Hero" / "Set as Left" / "Set as Right" button when video
 
 | Item | Status |
 |------|--------|
-| AI Gallery Left video apply | ⚠️ NOT IMPLEMENTED — Hero only works |
-| AI Gallery Right video apply | ⚠️ NOT IMPLEMENTED — Hero only works |
 | build_app.py sync | ⚠️ May need verification after index.html changes |
 
 ---
