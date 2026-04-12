@@ -4160,17 +4160,6 @@ function loadGlobalSettings() {
 
 
 
-function crc32(data) {
-  let crc = 0xFFFFFFFF;
-  const table = new Uint32Array(256);
-  for (let i = 0; i < 256; i++) {
-    let c = i;
-    for (let j = 0; j < 8; j++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
-    table[i] = c;
-  }
-  for (let i = 0; i < data.length; i++) crc = table[(crc ^ data[i]) & 0xFF] ^ (crc >>> 8);
-  return (crc ^ 0xFFFFFFFF) >>> 0;
-}
 
 function drawTextWithSpacing(ctx, text, x, y, letterSpacing) {
     if (!letterSpacing || letterSpacing === 0 || 'letterSpacing' in ctx) {
