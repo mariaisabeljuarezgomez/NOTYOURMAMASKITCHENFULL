@@ -4800,14 +4800,14 @@ function getAiCredentials() {
     cloudinary: {
       cloud_name: document.getElementById('ai-cloud-name').value.trim(),
       api_key: document.getElementById('ai-cloud-key').value.trim(),
-      api_secret: document.getElementById('ai-cloud-secret').value
+      api_secret: document.getElementById('ai-cloud-secret').value.trim()
     },
     stability: {
-      api_key: document.getElementById('ai-stability-key').value
+      api_key: document.getElementById('ai-stability-key').value.trim()
     },
     kling: {
       api_key: document.getElementById('ai-kling-key').value.trim(),
-      api_secret: document.getElementById('ai-kling-secret').value
+      api_secret: document.getElementById('ai-kling-secret').value.trim()
     }
   };
 }
