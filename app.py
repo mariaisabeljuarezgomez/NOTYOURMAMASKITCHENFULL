@@ -798,6 +798,8 @@ def upload_image():
         file_b64 = data.get("data", "")
         filename = data.get("filename", "")
         creds = data.get("credentials", {})
+        # NOTE: This endpoint uses camelCase keys (cloudName, cloudKey, cloudSecret)
+        # matching the primary docV2.aiCredentials schema used in index.html:saveAiCredentials().
         cloud_name = creds.get("cloudName", "")
         api_key = creds.get("cloudKey", "")
         api_secret = creds.get("cloudSecret", "")
@@ -855,6 +857,9 @@ def cloudinary_upload():
         file_url = data.get("file_url", "")
         file_type = data.get("file_type", "image")
         creds = data.get("credentials", {})
+        # NOTE: This endpoint uses snake_case keys (cloud_name, api_key, api_secret) 
+        # matching the specialized AI upload handlers in index.html. 
+        # Cross-reference with /api/upload-image which uses camelCase.
         cloud_name = creds.get("cloud_name", "")
         api_key = creds.get("api_key", "")
         api_secret = creds.get("api_secret", "")
