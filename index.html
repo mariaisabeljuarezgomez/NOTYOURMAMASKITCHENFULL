@@ -1201,7 +1201,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     <canvas id="ruler-h" style="position:sticky;top:0;left:0;width:100%;height:20px;display:block;z-index:100;cursor:default;pointer-events:auto;background:rgba(18,18,18,0.98);border-bottom:1px solid rgba(0,255,230,0.15);flex-shrink:0;align-self:flex-start;"></canvas>
     <div id="centering-wrapper">
         <div id="scaler-wrapper" style="width:908px; height:1336px;">
-            <div id="menu-container" onclick="onCanvasClick(event)" onmousedown="onCanvasMousedown(event)" ontouchstart="onCanvasMousedown(event)">
+            <div id="menu-container" onclick="onCanvasClick(event)" onmousedown="onCanvasMousedown(event)">
 
                 <div id="bg-layer" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; overflow:hidden;"></div>
                 <div id="elements-layer" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div>
@@ -3176,14 +3176,7 @@ function onCanvasClick(e) {
 }
 function onCanvasMousedown(e) {
   if (e.button !== 0 && e.type !== 'touchstart') return;
-  // layoutLocked does NOT block lasso — selection is always allowed; movement is blocked elsewhere
-  // Allow lasso to start even when clicking on elements — UNLESS the target is a non-background editable element (user intended to select it individually)
-  const _lassoTarget = e.target.closest('.editable-element');
-  if (_lassoTarget) {
-    const _lassoTargetId = _lassoTarget.dataset.id;
-    const _lassoTargetData = _lassoTargetId && docV2.elements.find(el => el.id === _lassoTargetId);
-    if (!_lassoTargetData || (_lassoTargetData.layerRole !== 'background' && _lassoTargetData.isSystemBackground !== true)) return;
-  }
+  if (e.target.closest('.editable-element')) return; // lasso only starts on empty canvas space
   const lassoBox = document.getElementById('lasso-box');
   const scalerEl = document.getElementById('scaler-wrapper');
   if (!lassoBox || !scalerEl) return;

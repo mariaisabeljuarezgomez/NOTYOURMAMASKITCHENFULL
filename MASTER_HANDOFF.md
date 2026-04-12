@@ -6,6 +6,7 @@
 Updated based on confirmed three-agent source code audit. 14 fixes applied. Includes PR #9 features (Clear Credentials, AI Gallery 3-slot apply).
 **Manual Hardening — Apply 16 surgical fixes to manual-en.html to reconcile docs with live code.**
 **Lasso Tool Enhancement — Replaced anonymous touch listeners with named functions for proper event cleanup and memory leak prevention.**
+**Lasso Tool Fix — Simplified 7-line background-check condition to 1-line guard. Removed ontouchstart from menu-container inline handler (touch handled by JS named listeners). Function is now clean and correctly limits lasso initiation to empty canvas space only.**
 
 ---
 
