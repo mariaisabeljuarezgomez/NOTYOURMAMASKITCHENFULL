@@ -1201,7 +1201,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
     <canvas id="ruler-h" style="position:sticky;top:0;left:0;width:100%;height:20px;display:block;z-index:100;cursor:default;pointer-events:auto;background:rgba(18,18,18,0.98);border-bottom:1px solid rgba(0,255,230,0.15);flex-shrink:0;align-self:flex-start;"></canvas>
     <div id="centering-wrapper">
         <div id="scaler-wrapper" style="width:908px; height:1336px;">
-            <div id="menu-container" onclick="onCanvasClick(event)" onmousedown="onCanvasMousedown(event)">
+            <div id="menu-container" onclick="onCanvasClick(event)">
 
                 <div id="bg-layer" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; overflow:hidden;"></div>
                 <div id="elements-layer" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div>
@@ -4928,6 +4928,10 @@ window.onload = async () => {
     maybeShowHelpPopout();
 
     setInterval(() => { try { sync(); } catch(e) {} }, 30000);
+
+    // fix(lasso): register in capture phase so stopPropagation() in attach() can no longer block lasso start
+    const _mc = document.getElementById('menu-container');
+    if (_mc) _mc.addEventListener('mousedown', onCanvasMousedown, true);
 };
 
 viewport.onwheel = (e) => { if(e.ctrlKey) { e.preventDefault(); applyZoom(e.deltaY > 0 ? 0.9 : 1.1); } };
