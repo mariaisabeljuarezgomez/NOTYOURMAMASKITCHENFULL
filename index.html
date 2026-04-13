@@ -3172,9 +3172,31 @@ function deselect() {
 }
 
 function onCanvasClick(e) {
-    if (e.target !== e.currentTarget) return;
     if (_lassoJustFired) return;
-    deselect();
+
+    // Direct hit on the canvas container itself — always deselect
+    if (e.target === e.currentTarget) {
+        deselect();
+        return;
+    }
+
+    // Walk up from click target — check if it hit a canvas layer (not an element)
+    const clickedEl = e.target.closest('.editable-element');
+
+    // No editable element found — click landed on #elements-layer, #bg-layer, guides, etc.
+    if (!clickedEl) {
+        deselect();
+        return;
+    }
+
+    // Found an editable element — if it's locked or not in data, treat as empty canvas
+    const elData = docV2.elements.find(el => el.id === (clickedEl.id || clickedEl.dataset.id));
+    if (!elData || elData.locked) {
+        deselect();
+        return;
+    }
+
+    // Unlocked element — attach() already handled selection on mousedown, do nothing here
 }
 function onCanvasMousedown(e) {
   if (e.button !== 0 && e.type !== 'touchstart') return;
@@ -3261,10 +3283,19 @@ function onCanvasMousedown(e) {
   window.addEventListener('touchmove', onTouchMove, { passive: true });
   window.addEventListener('touchend', onTouchEnd);
 }
-function onViewportClick(e) { 
-    if (e.target !== e.currentTarget) return;
-    if(isLassoing || _lassoJustFired) return; 
-    deselect(); 
+function onViewportClick(e) {
+    if (isLassoing || _lassoJustFired) return;
+
+    // Direct click on the viewport shell itself
+    if (e.target === e.currentTarget) {
+        deselect();
+        return;
+    }
+
+    // Click on any viewport child that is NOT an editable element — deselect
+    if (!e.target.closest('.editable-element')) {
+        deselect();
+    }
 }
 
 function toggleItemLock() {
