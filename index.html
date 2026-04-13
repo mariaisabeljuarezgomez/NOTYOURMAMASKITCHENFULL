@@ -3172,17 +3172,8 @@ function deselect() {
 }
 
 function onCanvasClick(e) {
+    if (e.target !== e.currentTarget) return;
     if (_lassoJustFired) return;
-
-    if (e.target !== e.currentTarget) {
-        const clickedEl = e.target.closest('.editable-element');
-        if (!clickedEl) return;
-        const clickedId = clickedEl.dataset.id;
-        const clickedData = clickedId && docV2.elements.find(el => el.id === clickedId);
-        if (!clickedData || !clickedData.locked) return;
-        // Locked element click = functionally equivalent to empty canvas click → deselect
-    }
-
     deselect();
 }
 function onCanvasMousedown(e) {
