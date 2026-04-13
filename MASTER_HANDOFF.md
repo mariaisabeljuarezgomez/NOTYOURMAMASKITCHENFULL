@@ -406,6 +406,7 @@ Kling AI generation costs are variable by model. Newer models (Kling v2.5 Turbo,
 - Deep black gradients (#111 to #080808) on header and sidebars
 - Vanta.js 3D Interactive Network Background under the main workspace (fixed z-index:-10, uses Three.js)
 - Gold accent borders (#c8a96a) on active tabs, buttons, inputs
+- Gold Rulers (Top & Left) with matching gold tick marks and labels
 - Gold resize handle dots (radial gradient #f0d090 to #c8a96a)
 - Gold-tinted scrollbars (gradient #3a3020 to #2a2215)
 - Frosted glass toast notifications with gold left border
@@ -460,26 +461,36 @@ Kling AI generation costs are variable by model. Newer models (Kling v2.5 Turbo,
 ## Section 16 — Lasso Tool Architecture & Debugging History
 
 ### The Lasso Collision Problem
-When the user initiated a lasso drag, the `onCanvasMousedown` guard originally blocked the lasso if `e.target` belonged to any `.editable-element`. This was done to prevent the lasso from stealing the `mousemove` events when a user wanted to drag an existing element.
+The lasso tool is initiated inside `onCanvasMousedown`, which runs in the **capture phase** (registered via `addEventListener('mousedown', onCanvasMousedown, true)`). The guard at the top of that function checks if `e.target` is an `.editable-element`. If it is and it's unlocked, lasso bails out — correctly — so dragging an unlocked element triggers a normal element drag instead.
 
-**The Bug:** When a user uploaded an image and sent it to the back to act as a background (but kept it as an `.editable-element` rather than a decoupled system background), or locked a large shape to cover the canvas, clicking on this locked layer would correctly not select it (because `attach()` ignores locked items), but the lasso guard would still see it as an `.editable-element` and instantly abort. This made the lasso entirely unusable over any locked content playing the role of a background.
+**The Bug:** The canvas had a full-size image element acting as a background layer. It was an `.editable-element` with `locked: true`. When the user tried to lasso anywhere that element covered (which was most of the canvas), `e.target` resolved to that element. The guard saw an `.editable-element`, didn't check lock state, and aborted lasso immediately. This made lasso unusable across the entire canvas except the small corners where no element was present.
+
+**Proof of bug:** Console showed lasso never reaching drag logic — `onCanvasMousedown` was returning before any lasso state was set. Lasso worked only in a small bottom-right corner that had no element coverage.
 
 ### The Solution: Locked-Aware Guard Condition
-The fix applies a guard at the capture phase that securely bypasses `locked` elements, allowing lasso to flawlessly pass through:
+The guard was updated to read the element's `locked` state from `docV2.elements` before deciding whether to bail. Locked elements pass through and allow lasso to initialize:
+
 ```javascript
 const _lassoTarget = e.target.closest('.editable-element');
 if (_lassoTarget) {
   const _id = _lassoTarget.id || _lassoTarget.dataset.id;
   const _d = _id && docV2.elements.find(el => el.id === _id);
-  // Bail out ONLY if the target is an unlocked content element
-  if (!_d || (!_d.locked && _d.layerRole !== 'background' && _d.isSystemBackground !== true)) return;
+  if (!_d || !_d.locked) return; // Only bail if unlocked (user likely wants to drag it)
 }
 ```
 
+Locked elements cannot be dragged by design — `attach()` immediately returns when it sees `locked: true`. So allowing lasso to proceed over them is safe and correct.
+
 ### Event Capture Synergy
-Because `onCanvasMousedown` runs in the **capture phase** (before `attach()`'s inner bubble phase `onmousedown`), both functions process the canvas click elegantly:
-1. `onCanvasMousedown` sees the locked element, permits the lasso setup in memory, and wires the window's `mousemove` tracking.
-2. `attach()` sees the element, sees it is `locked = true`, and immediately `return`s—preventing its `document.onmousemove` default drag handler from stealing the drag and leaving mouse control entirely to the lasso tool. 
-This provides a flawless user experience where locked elements behave strictly like background canvas, allowing lasso drag initiation over them unimpeded.
+The capture-phase placement of `onCanvasMousedown` is critical. Event flow for a mousedown on a locked `.editable-element`:
+
+1. **Capture phase** — `onCanvasMousedown` fires first. Sees locked element, passes through, wires `window.mousemove` for lasso tracking.
+2. **Bubble phase** — `attach()`'s `onmousedown` fires. Sees `locked: true`, immediately `return`s. Its drag handler (`document.onmousemove`) is never set.
+3. Result: lasso owns `mousemove` exclusively. No event conflict.
+
+This is why the fix works without any `stopPropagation()` or `preventDefault()` calls — the two handlers are in different phases and the locked check in `attach()` naturally yields to the lasso.
+
+### Key Design Rule
+**Never promote user-managed image elements to replace the system background.** Use `promptReplaceBackground()` → `importBackground()` → `setAsBackground()` to set a proper system background (`layerRole: 'background'`, `isSystemBackground: true`, `locked: true`, rendered in `#bg-layer` with `pointer-events: none`). System backgrounds are fully decoupled from the lasso guard. User-managed elements set to locked are a valid workaround but depend on this guard logic being maintained correctly.
 
 **END OF MASTER HANDOFF**
