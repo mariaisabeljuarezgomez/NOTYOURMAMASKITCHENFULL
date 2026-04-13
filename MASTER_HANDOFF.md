@@ -490,6 +490,9 @@ The capture-phase placement of `onCanvasMousedown` is critical. Event flow for a
 
 This is why the fix works without any `stopPropagation()` or `preventDefault()` calls — the two handlers are in different phases and the locked check in `attach()` naturally yields to the lasso.
 
+### Deselection Reconciliation
+Because a locked element now acts as the "glass floor" covering the canvas, a standard click target is now the locked element rather than the `#menu-container`. The `onCanvasClick` handler was updated to treat clicks on locked elements as functionally equivalent to clicking an empty canvas, ensuring that the selection is correctly cleared.
+
 ### Key Design Rule
 **Never promote user-managed image elements to replace the system background.** Use `promptReplaceBackground()` → `importBackground()` → `setAsBackground()` to set a proper system background (`layerRole: 'background'`, `isSystemBackground: true`, `locked: true`, rendered in `#bg-layer` with `pointer-events: none`). System backgrounds are fully decoupled from the lasso guard. User-managed elements set to locked are a valid workaround but depend on this guard logic being maintained correctly.
 
