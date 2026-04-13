@@ -77,7 +77,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 #centering-wrapper { 
     padding: 100px; 
     display: flex; 
-    justify-content: center; 
+    justify-content: flex-start; 
     width: auto;
 }#scaler-wrapper { 
     position:relative; 
@@ -4539,6 +4539,15 @@ function applyZoom(f, isAbsolute = false) {
     if(centeringWrapper) {
         centeringWrapper.style.width = (BASE_W * zoomScale) + (PAD * 2) + 'px';
         centeringWrapper.style.height = (BASE_H * zoomScale) + (PAD * 2) + 'px';
+
+        // Re-center scroll so canvas stays visible after zoom change
+        const vp = document.getElementById('editor-viewport');
+        if (vp && centeringWrapper) {
+          const vpW = vp.clientWidth;
+          const totalW = (BASE_W * zoomScale) + (PAD * 2);
+          const targetScrollLeft = Math.max(0, (totalW - vpW) / 2);
+          vp.scrollLeft = targetScrollLeft;
+        }
     }
 }
 
