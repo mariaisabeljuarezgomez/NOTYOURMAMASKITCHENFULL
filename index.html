@@ -1199,7 +1199,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 
 <main id="editor-viewport" onclick="onViewportClick(event)">
   <canvas id="ruler-v" style="position:sticky;left:0;top:0;width:20px;height:100%;z-index:100;pointer-events:auto;float:left;background:rgba(18,18,18,0.98);border-right:1px solid rgba(200,169,106,0.25);flex-shrink:0;"></canvas>
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;min-width:0;">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:flex-start;min-width:0;">
     <canvas id="ruler-h" style="position:sticky;top:0;left:0;width:100%;height:20px;display:block;z-index:100;cursor:default;pointer-events:auto;background:rgba(18,18,18,0.98);border-bottom:1px solid rgba(200,169,106,0.25);flex-shrink:0;align-self:flex-start;"></canvas>
     <div id="centering-wrapper">
         <div id="scaler-wrapper" style="width:908px; height:1336px;">
@@ -4539,10 +4539,6 @@ function applyZoom(f, isAbsolute = false) {
     if(centeringWrapper) {
         centeringWrapper.style.width = (BASE_W * zoomScale) + (PAD * 2) + 'px';
         centeringWrapper.style.height = (BASE_H * zoomScale) + (PAD * 2) + 'px';
-        requestAnimationFrame(() => {
-            const vp = document.getElementById('editor-viewport');
-            if (vp) vp.scrollLeft = 0;
-        });
     }
 }
 
