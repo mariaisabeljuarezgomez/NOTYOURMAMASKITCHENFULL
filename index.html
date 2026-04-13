@@ -1014,7 +1014,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 
 /* ── Canvas workspace: refined monochromatic grid ── */
 #editor-viewport {
-  background-color: #060606 !important;
+  background-color: transparent !important;
   background-image:
     radial-gradient(circle, rgba(200,169,106,0.12) 1px, transparent 1px),
     linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
@@ -1107,6 +1107,8 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 <script src="export-utils.js" defer></script>
 </head>
 <body>
+<!-- Vanta 3D Background Container -->
+<div id="vanta-bg" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-10;"></div>
 <div id="toast-container"></div>
 <div id="smart-tooltip"></div>
 <div id="top-header">
@@ -7074,6 +7076,25 @@ function syncTextFormatBar() {
     ></iframe>
   </div>
 </div>
+<!-- Vanta.js Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+    VANTA.NET({
+        el: "#vanta-bg",
+        mouseControls: true,
+        touchControls: true,
+        gyroControls: false,
+        minHeight: 200.00,
+        minWidth: 200.00,
+        scale: 1.00,
+        scaleMobile: 1.00,
+        color: 0x3fff8e,
+        backgroundColor: 0x060606
+    });
+});
+</script>
 </body>
 </html>
 

@@ -404,6 +404,7 @@ Kling AI generation costs are variable by model. Newer models (Kling v2.5 Turbo,
 
 **Visual Elements:**
 - Deep black gradients (#111 to #080808) on header and sidebars
+- Vanta.js 3D Interactive Network Background under the main workspace (fixed z-index:-10, uses Three.js)
 - Gold accent borders (#c8a96a) on active tabs, buttons, inputs
 - Gold resize handle dots (radial gradient #f0d090 to #c8a96a)
 - Gold-tinted scrollbars (gradient #3a3020 to #2a2215)
