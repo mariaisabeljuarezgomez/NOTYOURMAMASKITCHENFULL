@@ -4539,8 +4539,10 @@ function applyZoom(f, isAbsolute = false) {
     if(centeringWrapper) {
         centeringWrapper.style.width = (BASE_W * zoomScale) + (PAD * 2) + 'px';
         centeringWrapper.style.height = (BASE_H * zoomScale) + (PAD * 2) + 'px';
-        const vp = document.getElementById('editor-viewport');
-        if (vp) vp.scrollLeft = 0;
+        requestAnimationFrame(() => {
+            const vp = document.getElementById('editor-viewport');
+            if (vp) vp.scrollLeft = 0;
+        });
     }
 }
 
