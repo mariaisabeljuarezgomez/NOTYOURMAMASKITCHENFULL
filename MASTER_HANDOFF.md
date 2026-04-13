@@ -493,4 +493,132 @@ This is why the fix works without any `stopPropagation()` or `preventDefault()` 
 ### Key Design Rule
 **Never promote user-managed image elements to replace the system background.** Use `promptReplaceBackground()` → `importBackground()` → `setAsBackground()` to set a proper system background (`layerRole: 'background'`, `isSystemBackground: true`, `locked: true`, rendered in `#bg-layer` with `pointer-events: none`). System backgrounds are fully decoupled from the lasso guard. User-managed elements set to locked are a valid workaround but depend on this guard logic being maintained correctly.
 
+---
+
+## TITLE: MASTER HANDOFF — Not Your Mama's Kitchen Menu Editor
+### Section 17: Canvas Click Deselection Bug (Glass Floor) — Confirmed Fix
+
+**Status: RESOLVED — April 12, 2026**
+
+---
+
+#### The Bug
+When the user clicked on empty canvas space, the selected element would 
+not deselect. The selection outline and the floating selection-bar toolbar 
+stayed visible indefinitely. The user could not escape the selection state 
+by clicking blank canvas space.
+
+Root cause: After the lasso series of commits introduced `elements-layer` 
+as an intermediary div, the original guard `if (e.target !== e.currentTarget) 
+return` in `onCanvasClick` silently broke. `e.currentTarget` is 
+`menu-container` but `e.target` resolves to `elements-layer` or a child 
+node — never `menu-container` — so the condition always fired and returned 
+before calling `deselect()`.
+
+---
+
+#### Failed Fix History
+
+| SHA | What it tried | Why it broke |
+|-----|--------------|--------------|
+| 387e3fb | Added locked-element fallback path in `onCanvasClick` | The old `if (e.target !== e.currentTarget) return` guard was left in place. The new `.closest()` check was dead code — the function returned before reaching it. |
+| 6ce6135 | Reverted 387e3fb | Reverted by Gemini. Editor stable but bug re-introduced. |
+
+---
+
+#### Confirmed Working Fix (Commit: 3d267e88)
+
+**Pre-commit SHA (index.html):** `2d680f13c5371a31466f37af2946e98bc9995eda`
+
+**Two functions replaced:**
+
+**`onCanvasClick`** — old broken version:
+```javascript
+function onCanvasClick(e) {
+    if (e.target !== e.currentTarget) return;
+    if (_lassoJustFired) return;
+    deselect();
+}
+```
+
+**`onCanvasClick`** — new working version:
+```javascript
+function onCanvasClick(e) {
+    if (_lassoJustFired) return;
+    // Direct click on canvas container itself — always deselect
+    if (e.target === e.currentTarget) { deselect(); return; }
+    // Walk up from click target to find an editable element
+    const clickedEl = e.target.closest('.editable-element');
+    // No editable element found — click landed on elements-layer, bg-layer, guides, etc.
+    if (!clickedEl) { deselect(); return; }
+    // Found an editable element — if locked or missing from data, treat as empty canvas
+    const elData = docV2.elements.find(el => el.id === clickedEl.id);
+    if (!elData || elData.locked) { deselect(); return; }
+    // Click on an unlocked editable element — do nothing, attach already handled selection
+}
+```
+
+**`onViewportClick`** — old broken version:
+```javascript
+function onViewportClick(e) {
+    if (e.target !== e.currentTarget) return;
+    if (isLassoing || _lassoJustFired) return;
+    deselect();
+}
+```
+
+**`onViewportClick`** — new working version:
+```javascript
+function onViewportClick(e) {
+    if (isLassoing || _lassoJustFired) return;
+    // Direct click on the viewport itself — deselect
+    if (e.target === e.currentTarget) { deselect(); return; }
+    // Click on a child that is not an editable element — also deselect
+    if (!e.target.closest('.editable-element')) { deselect(); }
+}
+```
+
+---
+
+#### Why This Is Safe for the Lasso System
+
+The lasso system operates through `onCanvasMousedown` in the capture 
+phase. This fix modifies `onCanvasClick` (click event). These are 
+separate events that fire in sequence. The `lassoJustFired` guard in 
+`onCanvasClick` prevents deselection right after a lasso completes. 
+There is zero conflict between the two systems.
+
+---
+
+#### Event Flow After Fix
+
+**Click on unlocked element:**
+
+| Phase | Handler | What happens |
+|-------|---------|--------------|
+| mousedown capture | `onCanvasMousedown` | Sees unlocked element → returns, no lasso |
+| mousedown bubble | `attach` | Selects the element |
+| click | `onCanvasClick` | Sees unlocked element → does nothing, selection preserved |
+
+**Click on locked element:**
+
+| Phase | Handler | What happens |
+|-------|---------|--------------|
+| mousedown capture | `onCanvasMousedown` | Sees locked element → passes through, sets up lasso listeners |
+| mousedown bubble | `attach` | Calls deselect, returns |
+| mouseup lasso | `onUp` | `moved = false` → returns early |
+| click | `onCanvasClick` | Sees locked element → calls deselect (idempotent) |
+
+**Click on empty canvas space:**
+
+| Phase | Handler | What happens |
+|-------|---------|--------------|
+| mousedown capture | `onCanvasMousedown` | `lassoTarget = null` → proceeds, sets up lasso listeners |
+| mousedown bubble | `attach` | Never fires — no `.editable-element` clicked |
+| mouseup lasso | `onUp` | `moved = false` → returns early, no lasso activation |
+| click | `onCanvasClick` | `!clickedEl` → calls deselect ✅ |
+
+--- END OF SECTION 17 ---
+
 **END OF MASTER HANDOFF**
+
