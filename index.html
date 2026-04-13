@@ -1100,8 +1100,73 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
   box-shadow: 0 0 12px rgba(200,169,106,0.5) !important;
 }
 
-/* ============================================================
-   END PREMIUM GLOSSY BLACK UI LAYER
+/* === Vanta BG Switcher === */
+.vanta-switcher-wrap {
+    margin-top: 8px;
+    border-top: 1px solid rgba(200,169,106,0.15);
+    padding-top: 8px;
+}
+.vanta-switcher-toggle {
+    width: 100%;
+    background: rgba(200,169,106,0.08);
+    border: 1px solid rgba(200,169,106,0.25);
+    border-radius: 6px;
+    color: #c8a96a;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    padding: 7px 10px;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.2s;
+}
+.vanta-switcher-toggle:hover {
+    background: rgba(200,169,106,0.16);
+}
+.vanta-switcher-toggle .toggle-arrow {
+    transition: transform 0.2s;
+    font-style: normal;
+}
+.vanta-switcher-toggle.open .toggle-arrow {
+    transform: rotate(180deg);
+}
+.vanta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    margin-top: 6px;
+    display: none;
+}
+.vanta-grid.visible { display: grid; }
+.vanta-btn {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(200,169,106,0.2);
+    border-radius: 5px;
+    color: #888;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    padding: 7px 4px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    line-height: 1.4;
+}
+.vanta-btn:hover {
+    border-color: rgba(200,169,106,0.6);
+    color: #c8a96a;
+    background: rgba(200,169,106,0.08);
+}
+.vanta-btn-active {
+    border-color: #c8a96a !important;
+    color: #c8a96a !important;
+    background: rgba(200,169,106,0.15) !important;
+    box-shadow: 0 0 8px rgba(200,169,106,0.3);
+}
+
    ============================================================ */
 </style>
 <script src="export-utils.js" defer></script>
@@ -1250,6 +1315,38 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
       <span class="ls-btn-icon">🔄</span>
       <span class="ls-btn-label">Restore Backup</span>
     </button>
+    <div class="vanta-switcher-wrap">
+    <button class="vanta-switcher-toggle" 
+            id="vantaToggleBtn"
+            onclick="
+                this.classList.toggle('open');
+                document.getElementById('vantaGrid')
+                    .classList.toggle('visible');
+            ">
+        <span>🌐 3D WORKSPACE BG</span>
+        <i class="toggle-arrow">▾</i>
+    </button>
+    <div class="vanta-grid" id="vantaGrid">
+        <button class="vanta-btn" data-theme="net" 
+                onclick="switchVantaTheme('net')">
+                🕸<br>Neural Net</button>
+        <button class="vanta-btn" data-theme="birds" 
+                onclick="switchVantaTheme('birds')">
+                🦅<br>Golden Flock</button>
+        <button class="vanta-btn" data-theme="waves" 
+                onclick="switchVantaTheme('waves')">
+                🌊<br>Dark Waves</button>
+        <button class="vanta-btn" data-theme="fog" 
+                onclick="switchVantaTheme('fog')">
+                🌫<br>Midnight Fog</button>
+        <button class="vanta-btn" data-theme="clouds" 
+                onclick="switchVantaTheme('clouds')">
+                ⛈<br>Storm Clouds</button>
+        <button class="vanta-btn" data-theme="cells" 
+                onclick="switchVantaTheme('cells')">
+                🔬<br>Dark Cells</button>
+    </div>
+</div>
   </div>
   <!-- TAB: ASSETS -->
   <div class="ls-panel" id="ls-panel-assets" style="display:none;">
@@ -7111,19 +7208,115 @@ function syncTextFormatBar() {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
 <script>
-window.addEventListener('DOMContentLoaded', () => {
-    VANTA.NET({
-        el: "#vanta-bg",
-        mouseControls: true,
-        touchControls: true,
-        gyroControls: false,
-        minHeight: 200.00,
-        minWidth: 200.00,
-        scale: 1.00,
-        scaleMobile: 1.00,
-        color: 0xc8a96a,
-        backgroundColor: 0x060606
+let vantaEffect = null;
+
+const VANTA_THEMES = {
+    net: {
+        script: 'vanta.net.min.js',
+        fn: 'NET',
+        config: {
+            mouseControls: true, touchControls: true,
+            gyroControls: false, minHeight: 200, minWidth: 200,
+            scale: 1.00, scaleMobile: 1.00,
+            color: 0xc8a96a, backgroundColor: 0x060606
+        }
+    },
+    birds: {
+        script: 'vanta.birds.min.js',
+        fn: 'BIRDS',
+        config: {
+            mouseControls: true, touchControls: true,
+            gyroControls: false, minHeight: 200, minWidth: 200,
+            scale: 1.00, scaleMobile: 1.00,
+            backgroundColor: 0x060606,
+            color1: 0xc8a96a, color2: 0x00ffe6
+        }
+    },
+    waves: {
+        script: 'vanta.waves.min.js',
+        fn: 'WAVES',
+        config: {
+            mouseControls: true, touchControls: true,
+            gyroControls: false, minHeight: 200, minWidth: 200,
+            scale: 1.00, scaleMobile: 1.00,
+            color: 0x1a1200
+        }
+    },
+    fog: {
+        script: 'vanta.fog.min.js',
+        fn: 'FOG',
+        config: {
+            mouseControls: true, touchControls: true,
+            gyroControls: false, minHeight: 200, minWidth: 200,
+            highlightColor: 0xc8a96a, midtoneColor: 0x2a1f00,
+            lowlightColor: 0x060606, baseColor: 0x060606,
+            blurFactor: 0.60, speed: 1.00, zoom: 0.80
+        }
+    },
+    clouds: {
+        script: 'vanta.clouds.min.js',
+        fn: 'CLOUDS',
+        config: {
+            mouseControls: true, touchControls: true,
+            gyroControls: false, minHeight: 200, minWidth: 200,
+            backgroundColor: 0x060606, skyColor: 0x0d0d0d,
+            cloudColor: 0x2a1f00, cloudShadowColor: 0x060606,
+            sunColor: 0xc8a96a, sunGlareColor: 0xc8a96a,
+            sunlightColor: 0x6b5a2a, speed: 0.80
+        }
+    },
+    cells: {
+        script: 'vanta.cells.min.js',
+        fn: 'CELLS',
+        config: {
+            mouseControls: true, touchControls: true,
+            gyroControls: false, minHeight: 200, minWidth: 200,
+            scale: 1.00,
+            color1: 0x060606, color2: 0x1a1200,
+            size: 1.50, speed: 1.00
+        }
+    }
+};
+
+function loadVantaScript(effectKey, callback) {
+    const scriptId = 'vanta-script-' + effectKey;
+    if (document.getElementById(scriptId)) { callback(); return; }
+    const s = document.createElement('script');
+    s.id = scriptId;
+    s.src = 'https://cdn.jsdelivr.net/npm/vanta@latest/dist/' 
+            + VANTA_THEMES[effectKey].script;
+    s.onload = callback;
+    document.head.appendChild(s);
+}
+
+function switchVantaTheme(key) {
+    if (!VANTA_THEMES[key]) return;
+    if (vantaEffect) { vantaEffect.destroy(); vantaEffect = null; }
+    loadVantaScript(key, () => {
+        const cfg = Object.assign({}, VANTA_THEMES[key].config, 
+                                  { el: '#vanta-bg' });
+        vantaEffect = VANTA[VANTA_THEMES[key].fn](cfg);
+        localStorage.setItem('vantaTheme', key);
+        document.querySelectorAll('.vanta-btn').forEach(b => {
+            b.classList.toggle('vanta-btn-active', b.dataset.theme === key);
+        });
     });
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('vantaTheme') || 'net';
+    if (saved === 'net') {
+        // NET script already loaded above, init directly
+        const cfg = Object.assign({}, VANTA_THEMES.net.config, 
+                                  { el: '#vanta-bg' });
+        vantaEffect = VANTA.NET(cfg);
+        document.querySelectorAll('.vanta-btn').forEach(b => {
+            b.classList.toggle('vanta-btn-active', 
+                               b.dataset.theme === 'net');
+        });
+    } else {
+        switchVantaTheme(saved);
+    }
 });
 </script>
 </body>
