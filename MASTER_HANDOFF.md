@@ -454,4 +454,31 @@ Kling AI generation costs are variable by model. Newer models (Kling v2.5 Turbo,
 - **Shift + Arrow keys** — Nudge selected element 10px in any direction (confirmed at line 4936). Both nudge modes call nudge(dx, dy) and push undo state.
 - **Ctrl+Y** — Redo. Calls redo(). Pops the top state from redoStack, pushes current state back to historyStack, re-renders canvas, and shows "Action Redone" toast. Note: There is no visible redo button in the UI — redo is keyboard-only via Ctrl+Y.
 
+---
+
+## Section 16 — Lasso Tool Architecture & Debugging History
+
+### The Lasso Collision Problem
+When the user initiated a lasso drag, the `onCanvasMousedown` guard originally blocked the lasso if `e.target` belonged to any `.editable-element`. This was done to prevent the lasso from stealing the `mousemove` events when a user wanted to drag an existing element.
+
+**The Bug:** When a user uploaded an image and sent it to the back to act as a background (but kept it as an `.editable-element` rather than a decoupled system background), or locked a large shape to cover the canvas, clicking on this locked layer would correctly not select it (because `attach()` ignores locked items), but the lasso guard would still see it as an `.editable-element` and instantly abort. This made the lasso entirely unusable over any locked content playing the role of a background.
+
+### The Solution: Locked-Aware Guard Condition
+The fix applies a guard at the capture phase that securely bypasses `locked` elements, allowing lasso to flawlessly pass through:
+```javascript
+const _lassoTarget = e.target.closest('.editable-element');
+if (_lassoTarget) {
+  const _id = _lassoTarget.id || _lassoTarget.dataset.id;
+  const _d = _id && docV2.elements.find(el => el.id === _id);
+  // Bail out ONLY if the target is an unlocked content element
+  if (!_d || (!_d.locked && _d.layerRole !== 'background' && _d.isSystemBackground !== true)) return;
+}
+```
+
+### Event Capture Synergy
+Because `onCanvasMousedown` runs in the **capture phase** (before `attach()`'s inner bubble phase `onmousedown`), both functions process the canvas click elegantly:
+1. `onCanvasMousedown` sees the locked element, permits the lasso setup in memory, and wires the window's `mousemove` tracking.
+2. `attach()` sees the element, sees it is `locked = true`, and immediately `return`s—preventing its `document.onmousemove` default drag handler from stealing the drag and leaving mouse control entirely to the lasso tool. 
+This provides a flawless user experience where locked elements behave strictly like background canvas, allowing lasso drag initiation over them unimpeded.
+
 **END OF MASTER HANDOFF**
