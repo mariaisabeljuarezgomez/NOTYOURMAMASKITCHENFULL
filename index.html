@@ -3176,7 +3176,12 @@ function onCanvasClick(e) {
 }
 function onCanvasMousedown(e) {
   if (e.button !== 0 && e.type !== 'touchstart') return;
-  if (e.target.closest('.editable-element')) return; // lasso only starts on empty canvas space
+  const _lassoTarget = e.target.closest('.editable-element');
+  if (_lassoTarget) {
+    const _lassoTargetId = _lassoTarget.id || _lassoTarget.dataset.id;
+    const _lassoTargetData = _lassoTargetId && docV2.elements.find(el => el.id === _lassoTargetId);
+    if (!_lassoTargetData || (_lassoTargetData.layerRole !== 'background' && _lassoTargetData.isSystemBackground !== true)) return;
+  }
   const lassoBox = document.getElementById('lasso-box');
   const scalerEl = document.getElementById('scaler-wrapper');
   if (!lassoBox || !scalerEl) return;
