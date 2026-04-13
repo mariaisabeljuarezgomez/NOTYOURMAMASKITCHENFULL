@@ -725,3 +725,39 @@ it continues to visually center the canvas correctly.
 
 **END OF MASTER HANDOFF**
 
+## Section 20: 3D Workspace Background Switcher (Vanta.js System)
+**Status: RESOLVED — April 13, 2026**
+**Commit: 62ae41f031fc3fdfce7a4f891cc453ba6344c164**
+
+### Feature Description
+Added a customizable 3D background system to the editor. Users can now switch between 6 different Vanta.js themes directly from the "ADD" tab in the left sidebar. The system remembers the user's choice across sessions using `localStorage`.
+
+### Implementation Details
+
+#### Themes Added
+- **Neural Net** (Default): The original vanta.net effect.
+- **Golden Flock**: Vanta.birds in a gold-themed palette.
+- **Dark Waves**: Vanta.waves for a sleek, kinetic feel.
+- **Midnight Fog**: Vanta.fog for a moody, ambient background.
+- **Storm Clouds**: Vanta.clouds for a dynamic weather effect.
+- **Dark Cells**: Vanta.cells for an organic, microscopic look.
+
+#### Technical Architecture
+1. **Lazy Loading**: Only the necessary theme script is loaded when requested to keep the initial page load fast.
+2. **Persistence**: The selected theme is stored in `localStorage` under the key `vantaTheme`.
+3. **UI Widget**: A modern, collapsible accordion in the "ADD" sidebar tab containing the theme grid.
+
+#### Code Modifications
+- **CSS**: Added `.vanta-switcher-*` classes for the sidebar UI. 
+- **HTML**: Appended the switcher widget to the bottom of the `ls-panel-add` container.
+- **JS**: Wrapped Vanta initialization in a `switchVantaTheme(key)` function that handles `vantaEffect.destroy()` and new theme instantiation.
+
+### Rules for Future Updates
+- Do NOT change the `vantaTheme` localStorage key.
+- To add a new theme, simply update the `VANTA_THEMES` object and add a button to the `vanta-grid`.
+- Maintain `z-index: -10` on the `#vanta-bg` container to keep it behind all editor elements.
+
+--- END OF SECTION 20 ---
+
+**END OF MASTER HANDOFF**
+
