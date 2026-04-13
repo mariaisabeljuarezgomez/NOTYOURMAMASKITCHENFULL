@@ -1842,6 +1842,13 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
                         onclick="document.getElementById('sel-video-url').value=''; updateProp('videoUrl', '');">✕</button>
                 </div>
                 <span class="video-url-hint">Paste Cloudinary URL to show video preview on customer menu hover</span>
+                <label style="font-size:10px;color:#aaa;margin-top:8px;display:block;">🏷️ Video Label (optional)</label>
+                <div class="video-url-input-wrap">
+                    <input type="text" id="sel-video-label" placeholder="e.g. Turkey Chops, Shrimp Plate..."
+                        oninput="updateProp('videoLabel', this.value)">
+                    <button class="video-url-clear" title="Clear Label"
+                        onclick="document.getElementById('sel-video-label').value=''; updateProp('videoLabel', '');">✖</button>
+                </div>
             </div>
         </div>
 
@@ -3197,6 +3204,7 @@ function updateSelectionBar() {
     document.getElementById('ctrl-visible').classList.toggle('active', !item.visible);
     document.getElementById('sel-role').value = item.layerRole || 'content';
     document.getElementById('sel-video-url').value = item.videoUrl || '';
+    document.getElementById('sel-video-label').value = item.videoLabel || '';
     
     if(item.type==='text') {
         document.getElementById('sel-font').value = item.style.fontFamily.replace(/['"]/g, '');
