@@ -849,21 +849,16 @@ Added a call to `loadGlobalSettings()` within the `window.onload` "Waterfall" se
 
 #### **Key Changes**
 1. **Property Infrastructure**: Added `videoLabel` to the element properties schema.
-2. **UI Updates**:
-    - Inserted `sel-video-label` input field in the Properties Panel (Lines 1845-1855).
-  - [x] Apply surgical changes to `index.html`
-    - [x] Add `sel-video-label` input field in properties panel
-    - [x] Update `updateSelectionUI()` to populate the label field
-    - [x] Update modal trigger to use `videoLabel`
-- [x] Update `MASTER_HANDOFF.md` with Change 24
-- [ ] Verify changes manually (Description)
-- [/] Create Walkthrough artifactize `el.videoLabel` over the default `el.text` (Line 3647).
+2. **UI Updates (index.html)**:
+    - Inserted `sel-video-label` input field in the Properties Panel.
+    - Updated `updateSelectionUI()` to populate the label field from saved data.
+3. **Trigger Updates (viewer.html)**:
+    - Updated labeling logic in `viewer.html` (Line 771) to prioritize `el.videoLabel` over the default text.
 
 #### **Verification Status**
-- [x] UI field appears in Properties Panel.
-- [x] Field correctly populates from element data.
-- [x] Video modal title reflects the custom label.
-- [x] Fallback to raw text works as expected when label is empty.
+- [x] UI field in `index.html` correctly populates and saves to DB.
+- [x] `viewer.html` successfully reads `videoLabel` and uses it as the modal title.
+- [x] Fallback to raw text works as expected in the viewer when label is empty.
 
 --- END OF SECTION 24 ---
 

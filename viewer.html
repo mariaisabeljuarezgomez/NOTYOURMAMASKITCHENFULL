@@ -768,7 +768,7 @@
                     const ov     = document.createElement('div');
                     ov.className = 'dish-overlay';
                     ov.dataset.elementId = el.id;
-                    const label  = el.dishName || el.label || el.text || el.id;
+                    const label  = el.videoLabel || el.dishName || el.label || el.text || el.id;
                     Object.assign(ov.style, {
                         left:   (el.x * scale) + 'px',
                         top:    (el.y * scale) + 'px',
