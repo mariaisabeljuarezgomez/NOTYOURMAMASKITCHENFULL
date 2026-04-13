@@ -817,3 +817,31 @@ Any future additions to the Viewer tab must follow the `settings.viewer.[field]`
 
 **END OF MASTER HANDOFF**
 
+## Section 23: Viewer Settings Initialization (Auto-Load)
+**Status: RESOLVED — April 13, 2026**
+**Commit: 5c089dffe5983fc2a3f6aada77141c24e2ad1d5f**
+
+### The Problem
+While the persistence logic for Viewer Settings was fixed (Section 22), the input fields in the "VIEWER" tab were not automatically populating when the page first loaded. Users would see empty fields even if data existed in the database, potentially leading to accidental overwrites.
+
+### The Fix
+Added a call to `loadGlobalSettings()` within the `window.onload` "Waterfall" sequence.
+
+**Location**: `index.html` — Line 5060 (inside `window.onload`).
+
+**Surgical Change**:
+```javascript
+    await loadUserImages();
+    loadVideoHistory();
+    loadGlobalSettings(); // New: ensures UI reflects the authoritative settings.viewer on load
+```
+
+### Verification
+- Reloaded the editor with existing Cloudinary URLs in the database.
+- Confirmed that the "Hero Video URL" and Panel fields are immediately populated without user interaction.
+- Verified that "Save Session" correctly preserves these loaded values.
+
+--- END OF SECTION 23 ---
+
+**END OF MASTER HANDOFF**
+
