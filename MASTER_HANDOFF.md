@@ -761,3 +761,36 @@ Added a customizable 3D background system to the editor. Users can now switch be
 
 **END OF MASTER HANDOFF**
 
+## Section 21: Viewer Settings Sync Fix (Settings Persistence)
+**Status: RESOLVED — April 13, 2026**
+**Commit: 168bb8b2e1a032a22a399594c05c1b09b6d37333**
+
+### The Bug
+When updating the live menu via "UPDATE ALL VIEWER SETTINGS" (in the Viewer tab), the URLs were correctly sent to the server and applied. However, the local `docV2.settings.viewer` object was not updated. If the user then clicked "Save Session", the stale `docV2.settings.viewer` would overwrite the new URLs on the server, reverting the live menu to its previous state.
+
+### The Fix
+Updated the `saveGlobalSettings()` success handler to synchronize the local `docV2.settings.viewer` object immediately after a successful server update.
+
+**Location**: `index.html` — Lines 4804–4815 (approx)
+
+**Logic added**:
+```javascript
+// Sync settings.viewer to prevent Save Session reversion
+if (!docV2.settings) docV2.settings = {};
+docV2.settings.viewer = {
+    heroVideoUrl: heroUrl,
+    sidePanelLeft: { videoUrl: lUrl, label: lLabel },
+    sidePanelRight: { videoUrl: rUrl, label: rLabel }
+};
+```
+
+### Verification
+- Tested by updating the Hero Video URL.
+- Confirmed "Global Settings updated!" toast.
+- Immediately clicked "Save Session".
+- Reloaded the page and verified the new URL persisted.
+
+--- END OF SECTION 21 ---
+
+**END OF MASTER HANDOFF**
+
