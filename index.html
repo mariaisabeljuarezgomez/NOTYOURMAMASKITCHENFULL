@@ -4807,6 +4807,14 @@ function saveGlobalSettings() {
         docV2.heroVideoUrl = heroUrl;
         docV2.sidePanelLeft = { videoUrl: lUrl, label: lLabel };
         docV2.sidePanelRight = { videoUrl: rUrl, label: rLabel };
+
+        // Sync settings.viewer to prevent Save Session reversion
+        if (!docV2.settings) docV2.settings = {};
+        docV2.settings.viewer = {
+            heroVideoUrl: heroUrl,
+            sidePanelLeft: { videoUrl: lUrl, label: lLabel },
+            sidePanelRight: { videoUrl: rUrl, label: rLabel }
+        };
     })
     .catch(() => showToast('❌ Failed to save global settings'));
 }
