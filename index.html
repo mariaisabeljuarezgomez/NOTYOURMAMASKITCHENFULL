@@ -4733,15 +4733,14 @@ async function save() {
 
     // Commit 7: Normalize save payload to settings.viewer
     const payload = {
-      ...docV2,                          // spread existing root-level fields
+      ...docV2,
       version: 2,
       settings: {
-        ...(docV2.settings || {}),       // preserve any other settings keys
+        ...(docV2.settings || {}),
         viewer: {
-          heroVideoUrl:   docV2.heroVideoUrl   || '',
-          sidePanelLeft:  docV2.sidePanelLeft  || {},
-          sidePanelRight: docV2.sidePanelRight || {},
-          ...(docV2.settings?.viewer || {}),   // preserve any existing viewer keys
+          heroVideoUrl:   docV2.settings?.viewer?.heroVideoUrl   || docV2.heroVideoUrl   || '',
+          sidePanelLeft:  docV2.settings?.viewer?.sidePanelLeft  || docV2.sidePanelLeft  || {},
+          sidePanelRight: docV2.settings?.viewer?.sidePanelRight || docV2.sidePanelRight || {},
         }
       }
     };
@@ -4823,15 +4822,18 @@ function loadGlobalSettings() {
     fetch('/api/menu?t=' + Date.now())
         .then(r => r.json())
         .then(data => {
-            if (data.heroVideoUrl !== undefined) document.getElementById('hero-video-url-input').value = data.heroVideoUrl || '';
-            if (data.sidePanelLeft) {
-                document.getElementById('side-panel-left-url').value = data.sidePanelLeft.videoUrl || '';
-                document.getElementById('side-panel-left-label').value = data.sidePanelLeft.label || '';
-            }
-            if (data.sidePanelRight) {
-                document.getElementById('side-panel-right-url').value = data.sidePanelRight.videoUrl || '';
-                document.getElementById('side-panel-right-label').value = data.sidePanelRight.label || '';
-            }
+            const v = data.settings?.viewer || {};
+            const heroUrl    = v.heroVideoUrl            || data.heroVideoUrl            || '';
+            const leftUrl    = v.sidePanelLeft?.videoUrl || data.sidePanelLeft?.videoUrl || '';
+            const leftLabel  = v.sidePanelLeft?.label    || data.sidePanelLeft?.label    || '';
+            const rightUrl   = v.sidePanelRight?.videoUrl|| data.sidePanelRight?.videoUrl|| '';
+            const rightLabel = v.sidePanelRight?.label   || data.sidePanelRight?.label   || '';
+
+            document.getElementById('hero-video-url-input').value  = heroUrl;
+            document.getElementById('side-panel-left-url').value   = leftUrl;
+            document.getElementById('side-panel-left-label').value = leftLabel;
+            document.getElementById('side-panel-right-url').value  = rightUrl;
+            document.getElementById('side-panel-right-label').value= rightLabel;
         }).catch(() => {});
 }
 
