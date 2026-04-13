@@ -622,3 +622,106 @@ There is zero conflict between the two systems.
 
 **END OF MASTER HANDOFF**
 
+## Section 19: Zoom Scroll Left Bug — Confirmed Fix
+**Status: RESOLVED — April 13, 2026**
+**Commit: 55f14eaec6727d89a58c068f6ecd8228b1a50165**
+
+### The Bug
+When zoomed above ~100%, the horizontal scrollbar appeared but 
+scrolling all the way left did NOT reach the left edge of the 
+canvas. The higher the zoom, the more left canvas was permanently 
+hidden. At 200% zoom, 538px of canvas was unreachable.
+
+### Failed Attempts (do not repeat)
+
+| Attempt | What was tried | Why it failed |
+|---------|---------------|---------------|
+| Big Pickle (unapproved) | transform-origin: top left on #scaler-wrapper + dynamic padding | Immediately reverted. Breaks ALL element drag coordinates, resize handles, lasso getBoundingClientRect() math. transform-origin is PERMANENTLY OFF LIMITS. |
+| Attempt 2 | justify-content:flex-start on #centering-wrapper + vp.scrollLeft re-center in applyZoom() | Destroyed the Layer 1 compensating math. Canvas visual left edge moved to -354px at 200% zoom — completely off screen. |
+| Attempt 3 | vp.scrollLeft = 0 in applyZoom() | scrollLeft=0 fired before DOM reflow. Browser discarded it. Fix had zero effect. |
+| Attempt 4 | vp.scrollLeft = 0 wrapped in requestAnimationFrame | Still had zero effect. Root cause was not scrollLeft at all — canvas was in physically unreachable negative coordinate space. No scroll value can reach negative space. |
+
+### Root Cause (confirmed by DOM inspection)
+
+The actual DOM structure inside #editor-viewport is:
+#editor-viewport (flex, flex-direction:row, flex-start)
+├── #ruler-v (canvas, 20px wide, position:sticky)
+└── anonymous div (flex:1, flex-direction:column, align-items:CENTER ← BUG)
+├── #ruler-h (canvas, sticky top)
+└── #centering-wrapper
+
+#centering-wrapper is NOT a direct child of #editor-viewport.
+It is a child of an anonymous div using align-items:center 
+on a column flex container. align-items:center on a column 
+flex container horizontally centers its children.
+
+When #centering-wrapper overflows the anonymous div width 
+(940px = viewport 960px minus ruler-v 20px), CSS shifts 
+centering-wrapper into NEGATIVE left space to center it:
+
+| Zoom | wrapper_w | anon_div | shift left | canvas hidden |
+|------|-----------|----------|------------|---------------|
+| fit 0.93 | 1045px | 940px | -52px | 0px |
+| 150% | 1563px | 940px | -311px | 211px |
+| 200% | 2017px | 940px | -538px | 438px |
+| 300% | 2925px | 940px | -993px | 893px |
+
+No scrollLeft value can reach negative coordinates.
+This is why all scroll-based fixes had zero effect.
+
+### Why #centering-wrapper justify-content:center Must Stay
+
+#centering-wrapper uses justify-content:center to center 
+#scaler-wrapper (908px DOM element) inside the wrapper.
+transform:scale() is visual-only — DOM layout always sees 
+908px regardless of zoom. justify-content:center compensates 
+for transform-origin:top center visual bleed, locking the 
+visual left edge at exactly PAD=100px from wrapper start 
+at every zoom level. This is intentional and must not change.
+
+### The Fix — 1 Character Changed
+
+**File:** index.html line 1202
+
+**Before:**
+```html
+<div style="flex:1;display:flex;flex-direction:column;
+align-items:center;min-width:0;">
+```
+
+**After:**
+```html
+<div style="flex:1;display:flex;flex-direction:column;
+align-items:flex-start;min-width:0;">
+```
+
+This anchors #centering-wrapper to the LEFT of the anonymous 
+div at all zoom levels. The wrapper overflows rightward into 
+scrollable space instead of leftward into negative space.
+#centering-wrapper's own justify-content:center is preserved — 
+it continues to visually center the canvas correctly.
+
+### What Must NEVER Be Changed
+
+- transform-origin on #scaler-wrapper — NEVER touch, in CSS or JS
+- justify-content:center on #centering-wrapper — required, keep it
+- BASE_W, BASE_H, PAD constants — never change
+- align-items on the anonymous div — must stay flex-start
+
+### Investigation Timeline
+- Rogelio reported bug with screenshots showing ruler at 150-900 
+  (left side cut off)
+- 3 agents (Big Pickle, Antigravity, Gemini) and Perplexity all 
+  diagnosed wrong root cause
+- Correct root cause found by Perplexity via DOM structure 
+  diagnostic — discovered anonymous div layer between 
+  editor-viewport and centering-wrapper
+- GLM 5.1 correctly predicted the CENTER overflow mechanism 
+  but identified the wrong element (#editor-viewport instead 
+  of the anonymous div)
+- Fix confirmed working: full left scroll at 300%+ zoom
+
+--- END SECTION 19 ---
+
+**END OF MASTER HANDOFF**
+
