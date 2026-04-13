@@ -72,7 +72,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
   display: flex;
   flex-direction: row;  /* ruler-v on left, right column fills rest */
   align-items: flex-start;
-  justify-content: flex-start;
+  justify-content: flex-start;  /* change from center to flex-start */
 }
 #centering-wrapper { 
     padding: 100px; 
@@ -4539,10 +4539,6 @@ function applyZoom(f, isAbsolute = false) {
     if(centeringWrapper) {
         centeringWrapper.style.width = (BASE_W * zoomScale) + (PAD * 2) + 'px';
         centeringWrapper.style.height = (BASE_H * zoomScale) + (PAD * 2) + 'px';
-        const vp = document.getElementById('editor-viewport');
-        if(vp) centeringWrapper.style.marginLeft = 
-            (BASE_W * zoomScale) + (PAD * 2) < vp.clientWidth 
-            ? 'auto' : '0';
     }
 }
 
