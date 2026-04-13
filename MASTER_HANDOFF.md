@@ -794,3 +794,26 @@ docV2.settings.viewer = {
 
 **END OF MASTER HANDOFF**
 
+## Section 22: Universal Settings Persistence Fix (Deep Sync)
+**Status: RESOLVED — April 13, 2026**
+**Commit: f0f9d046b675aa94f6d491cc0d5fe76a560c6779**
+
+### The Bug
+Viewer Settings (Hero URL, etc.) were being reverted because `save()` and `loadGlobalSettings()` were inconsistent in where they looked for data. `save()` was building a root-level copy while also spreading a potentially stale `settings.viewer` object on top of it, and `loadGlobalSettings()` was only looking at root-level fields, ignoring the authoritative `settings.viewer` stored in the database.
+
+### The Fix
+Established `settings.viewer` as the single source of truth for both saving and loading.
+
+**1. save() modification**: 
+Updated the payload construction to prioritize `docV2.settings?.viewer` values and removed the trailing spread that was overwriting data.
+
+**2. loadGlobalSettings() modification**: 
+Completely Rewrote the function to read from `data.settings.viewer` first, using root-level fields only as a fallback. It now correctly populates all 5 Viewer tab inputs (including labels) using this hierarchy.
+
+### Maintenance Note
+Any future additions to the Viewer tab must follow the `settings.viewer.[field]` path to ensure compatibility with the synchronization logic implemented in Sections 21 and 22.
+
+--- END OF SECTION 22 ---
+
+**END OF MASTER HANDOFF**
+
