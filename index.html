@@ -3180,7 +3180,7 @@ function onCanvasMousedown(e) {
   if (_lassoTarget) {
     const _lassoTargetId = _lassoTarget.id || _lassoTarget.dataset.id;
     const _lassoTargetData = _lassoTargetId && docV2.elements.find(el => el.id === _lassoTargetId);
-    if (!_lassoTargetData || (_lassoTargetData.layerRole !== 'background' && _lassoTargetData.isSystemBackground !== true)) return;
+    if (!_lassoTargetData || (!_lassoTargetData.locked && _lassoTargetData.layerRole !== 'background' && _lassoTargetData.isSystemBackground !== true)) return;
   }
   const lassoBox = document.getElementById('lasso-box');
   const scalerEl = document.getElementById('scaler-wrapper');
