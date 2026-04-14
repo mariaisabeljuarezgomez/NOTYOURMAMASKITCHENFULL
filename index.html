@@ -4263,6 +4263,7 @@ async function addFromTray(src, skipPush) {
     // Immediate dimension correction via preload
     const _fixEl = docV2.elements[docV2.elements.length - 1];
     const _tmpImg = new Image();
+    _tmpImg.crossOrigin = 'anonymous';
     _tmpImg.onload = function() {
         const nat = { w: this.naturalWidth, h: this.naturalHeight };
         const cap = 400;
@@ -5039,6 +5040,7 @@ async function exportPng() {
         const bgEl = docV2.elements.find(e => e.layerRole === 'background');
         if (bgEl && bgEl.src) {
             const img = new Image();
+            img.crossOrigin = 'anonymous';
             img.src = bgEl.src;
             await new Promise(r => { img.onload = r; img.onerror = () => { showToast('⚠️ Background image not found, exporting without it.'); r(); }; });
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -5078,6 +5080,7 @@ async function exportPng() {
         }
         else if(el.type==='image') { 
             let img = new Image();
+            img.crossOrigin = 'anonymous';
             
             // --- Phase 2A: Export always uses originalUrl ---
             let exportSrc = el.src || '';
