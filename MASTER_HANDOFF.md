@@ -862,5 +862,52 @@ Added a call to `loadGlobalSettings()` within the `window.onload` "Waterfall" se
 
 --- END OF SECTION 24 ---
 
+## Section 25: Selection Bar Toolbar Visual Makeover
+**Status: COMPLETED — April 14, 2026**
+
+### Feature Description
+Appended a comprehensive CSS visual makeover to the draggable `#selection-bar` in `index.html`. This update modernizes the editor's primary toolbar with a premium "Glossy Black & Gold" aesthetic without altering any HTML or JavaScript logic.
+
+### Implementation Details
+- **Location**: `index.html` (appended to the bottom of the `<style>` block).
+- **Aesthetic**:
+    - **Background**: Deep glossy black linear gradient with a 20px blur backdrop-filter.
+    - **Accents**: Gold top border (`rgba(200,169,106,0.45)`) and subtle gold shadows.
+    - **Interactive Elements**:
+        - `.bar-tab`: Specialized gold highlight for active tabs.
+        - `.ctrl-btn`: Dark gradients with ivory text and gold hover states.
+        - **Specialty Buttons**: Color-coded gradients for "Duplicate" (Blue) and "Delete" (Red).
+        - **Inputs**: Darkened background with gold text and specialized focus rings.
+
+### Technical Notes
+- Uses `!important` flags to ensure style overrides without requiring modification of existing CSS rules or utility classes elsewhere in the file.
+- Purely CSS-driven; safe to revert by removing the designated CSS block.
+
+## Section 26: 3D Background Reset & ON/OFF Toggle
+**Status: COMPLETED — April 14, 2026**
+
+### Feature Description
+Updated the 3D workspace background (Vanta.js) with precise color configurations from original web sources and implemented a functional ON/OFF toggle for the feature.
+
+### Implementation Details
+- **Location**: `index.html` (UI and JS logic sections).
+- **Functionality**:
+    - **None / Off Button**: Added a new button to the Vanta grid that destroys the current effect and sets a "none" state.
+    - **Color Reset**: Synchronized themes with user-provided reference images:
+        - **Waves**: Updated to `0x005588` with custom wave parameters.
+        - **Fog**: Updated to high-contrast 4-color gradient (`0xffc300`, `0xff1f00`, `0x2d00ff`, `0xffebeb`).
+        - **Clouds**: Reverted to high-visibility "Storm" palette with white ground and sky blue.
+        - **Cells**: Updated to emerald/gold palette (`0x008c8c`, `0xf2e735`).
+    - **Refactored Logic**:
+        - `switchVantaTheme(key)`: Now manages initialization, destruction, and persistence (localStorage) for all states including "none".
+        - `DOMContentLoaded`: Simplified initialization flow to treat "net" and other themes uniformly while respecting the "none" state.
+
+### Technical Notes
+- `localStorage` persistence ensures the ON/OFF state and chosen theme are remembered across sessions.
+- Surgical replacement of theme configurations preserves existing "Net" and "Birds" themes.
+
+--- END OF SECTION 26 ---
+
 **END OF MASTER HANDOFF**
+
 

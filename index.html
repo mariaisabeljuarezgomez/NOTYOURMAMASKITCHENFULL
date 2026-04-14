@@ -1168,6 +1168,136 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 }
 
    ============================================================ */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TOOLBAR VISUAL MAKEOVER — CSS ONLY
+   No HTML or JS changes. Safe to revert.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* The bar itself */
+#selection-bar {
+    background: linear-gradient(180deg, rgba(14,14,14,0.97) 0%, rgba(6,6,6,0.99) 100%) !important;
+    border: 1px solid rgba(200,169,106,0.12) !important;
+    border-top: 2px solid rgba(200,169,106,0.45) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 0 1px rgba(200,169,106,0.05), inset 0 1px 0 rgba(255,255,255,0.06) !important;
+    padding: 6px 14px !important;
+    min-height: 48px !important;
+    max-height: 52px !important;
+    backdrop-filter: blur(20px) !important;
+}
+
+/* Tab buttons - LAYER / DESIGN / ARRANGE */
+#selection-bar .bar-tab {
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px solid rgba(255,255,255,0.07) !important;
+    color: #666 !important;
+    border-radius: 8px !important;
+    font-size: 9px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1.2px !important;
+    padding: 4px 10px !important;
+    transition: all 0.15s ease !important;
+    cursor: pointer !important;
+}
+
+#selection-bar .bar-tab:hover {
+    color: #999 !important;
+    border-color: rgba(200,169,106,0.2) !important;
+    background: rgba(255,255,255,0.07) !important;
+}
+
+/* Active tab — gold accent */
+#selection-bar .bar-tab.active {
+    background: linear-gradient(180deg, rgba(200,169,106,0.18) 0%, rgba(200,169,106,0.08) 100%) !important;
+    border-color: rgba(200,169,106,0.4) !important;
+    color: #c8a96a !important;
+    box-shadow: 0 0 12px rgba(200,169,106,0.15) !important;
+}
+
+/* All ctrl-btn inside the bar */
+#selection-bar .ctrl-btn {
+    background: linear-gradient(180deg, #1e1e1e 0%, #141414 100%) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 8px !important;
+    color: #aaa !important;
+    font-size: 11px !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 6px rgba(0,0,0,0.5) !important;
+    transition: all 0.12s ease !important;
+}
+
+#selection-bar .ctrl-btn:hover {
+    border-color: rgba(200,169,106,0.3) !important;
+    color: #fff !important;
+    background: linear-gradient(180deg, #252525 0%, #1a1a1a 100%) !important;
+}
+
+#selection-bar .ctrl-btn.active {
+    background: linear-gradient(180deg, rgba(200,169,106,0.2) 0%, rgba(200,169,106,0.1) 100%) !important;
+    border-color: rgba(200,169,106,0.5) !important;
+    color: #c8a96a !important;
+}
+
+/* BG button */
+#btn-set-bg {
+    background: linear-gradient(180deg, #1a1a1a 0%, #111 100%) !important;
+    border-color: rgba(200,169,106,0.2) !important;
+    color: #c8a96a !important;
+}
+
+/* Duplicate button */
+#btn-duplicate {
+    background: linear-gradient(180deg, #1e3a52 0%, #152840 100%) !important;
+    border-color: rgba(52,152,219,0.3) !important;
+    color: #5dade2 !important;
+}
+
+/* Delete button */
+#btn-delete {
+    background: linear-gradient(180deg, #4a1010 0%, #350b0b 100%) !important;
+    border-color: rgba(231,76,60,0.3) !important;
+    color: #e74c3c !important;
+}
+
+/* Number/text inputs inside toolbar */
+#selection-bar input[type="number"],
+#selection-bar input[type="text"],
+#selection-bar select {
+    background: #0e0e0e !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    color: #c8a96a !important;
+    border-radius: 6px !important;
+    font-size: 11px !important;
+    outline: none !important;
+    transition: border-color 0.15s !important;
+}
+
+#selection-bar input[type="number"]:focus,
+#selection-bar input[type="text"]:focus,
+#selection-bar select:focus {
+    border-color: rgba(200,169,106,0.5) !important;
+    box-shadow: 0 0 0 2px rgba(200,169,106,0.08) !important;
+}
+
+/* Labels inside toolbar */
+#selection-bar label {
+    color: #666 !important;
+    font-size: 9px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+/* Drag handle — make it subtle gold */
+#bar-handle {
+    color: rgba(200,169,106,0.3) !important;
+    font-size: 16px !important;
+}
+
+/* Range sliders */
+#selection-bar input[type="range"] {
+    accent-color: #c8a96a !important;
+}
+
 </style>
 <script src="export-utils.js" defer></script>
 </head>
@@ -1327,6 +1457,10 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
         <i class="toggle-arrow">▾</i>
     </button>
     <div class="vanta-grid" id="vantaGrid">
+        <!-- New Off Button -->
+        <button class="vanta-btn" data-theme="none"
+                onclick="switchVantaTheme('none')">
+                🚫<br>None / Off</button>
         <button class="vanta-btn" data-theme="net" 
                 onclick="switchVantaTheme('net')">
                 🕸<br>Neural Net</button>
@@ -7258,7 +7392,7 @@ const VANTA_THEMES = {
             mouseControls: true, touchControls: true,
             gyroControls: false, minHeight: 200, minWidth: 200,
             scale: 1.00, scaleMobile: 1.00,
-            color: 0x1a1200
+            color: 0x005588, shininess: 30, waveHeight: 15, waveSpeed: 1, zoom: 1
         }
     },
     fog: {
@@ -7267,9 +7401,9 @@ const VANTA_THEMES = {
         config: {
             mouseControls: true, touchControls: true,
             gyroControls: false, minHeight: 200, minWidth: 200,
-            highlightColor: 0xc8a96a, midtoneColor: 0x2a1f00,
-            lowlightColor: 0x060606, baseColor: 0x060606,
-            blurFactor: 0.60, speed: 1.00, zoom: 0.80
+            highlightColor: 0xffc300, midtoneColor: 0xff1f00,
+            lowlightColor: 0x2d00ff, baseColor: 0xffebeb,
+            blurFactor: 0.60, speed: 1.00, zoom: 1.00
         }
     },
     clouds: {
@@ -7278,10 +7412,10 @@ const VANTA_THEMES = {
         config: {
             mouseControls: true, touchControls: true,
             gyroControls: false, minHeight: 200, minWidth: 200,
-            backgroundColor: 0x060606, skyColor: 0x0d0d0d,
-            cloudColor: 0x2a1f00, cloudShadowColor: 0x060606,
-            sunColor: 0xc8a96a, sunGlareColor: 0xc8a96a,
-            sunlightColor: 0x6b5a2a, speed: 0.80
+            backgroundColor: 0xffffff, skyColor: 0x68b8d7,
+            cloudColor: 0xadc1de, cloudShadowColor: 0x183550,
+            sunColor: 0xff9919, sunGlareColor: 0xff6633,
+            sunlightColor: 0xff9933, speed: 1.00
         }
     },
     cells: {
@@ -7291,7 +7425,7 @@ const VANTA_THEMES = {
             mouseControls: true, touchControls: true,
             gyroControls: false, minHeight: 200, minWidth: 200,
             scale: 1.00,
-            color1: 0xc8a96a, color2: 0x2a1f00,
+            color1: 0x008c8c, color2: 0xf2e735,
             size: 1.50, speed: 1.00
         }
     }
@@ -7309,29 +7443,24 @@ function loadVantaScript(effectKey, callback) {
 }
 
 function switchVantaTheme(key) {
-    if (!VANTA_THEMES[key]) return;
     if (vantaEffect) { vantaEffect.destroy(); vantaEffect = null; }
+    localStorage.setItem('vantaTheme', key);
+    document.querySelectorAll('.vanta-btn').forEach(b => {
+        b.classList.toggle('vanta-btn-active', b.dataset.theme === key);
+    });
+    if (key === 'none') return;
+    if (!VANTA_THEMES[key]) return;
     loadVantaScript(key, () => {
-        const cfg = Object.assign({}, VANTA_THEMES[key].config, 
-                                  { el: '#vanta-bg' });
+        const cfg = Object.assign({}, VANTA_THEMES[key].config, { el: '#vanta-bg' });
         vantaEffect = VANTA[VANTA_THEMES[key].fn](cfg);
-        localStorage.setItem('vantaTheme', key);
-        document.querySelectorAll('.vanta-btn').forEach(b => {
-            b.classList.toggle('vanta-btn-active', b.dataset.theme === key);
-        });
     });
 }
 
 window.addEventListener('DOMContentLoaded', () => {
     const saved = localStorage.getItem('vantaTheme') || 'net';
-    if (saved === 'net') {
-        // NET script already loaded above, init directly
-        const cfg = Object.assign({}, VANTA_THEMES.net.config, 
-                                  { el: '#vanta-bg' });
-        vantaEffect = VANTA.NET(cfg);
+    if (saved === 'none') {
         document.querySelectorAll('.vanta-btn').forEach(b => {
-            b.classList.toggle('vanta-btn-active', 
-                               b.dataset.theme === 'net');
+            b.classList.toggle('vanta-btn-active', b.dataset.theme === 'none');
         });
     } else {
         switchVantaTheme(saved);
