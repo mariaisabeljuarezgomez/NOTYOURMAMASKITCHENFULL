@@ -6586,9 +6586,9 @@ async function saveAiImageToAssets(b64, prompt, urlOverride) {
           filename: filename,
           data: b64,
           credentials: {
-            cloudName:   localStorage.getItem('ai_cloud_name')   || '',
-            cloudKey:    localStorage.getItem('ai_cloud_key')    || '',
-            cloudSecret: localStorage.getItem('ai_cloud_secret') || ''
+            cloudName:   (docV2.aiCredentials || {}).cloudName   || '',
+            cloudKey:    (docV2.aiCredentials || {}).cloudKey    || '',
+            cloudSecret: (docV2.aiCredentials || {}).cloudSecret || ''
           }
         })
       });
