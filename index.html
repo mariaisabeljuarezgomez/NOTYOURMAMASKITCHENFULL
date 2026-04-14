@@ -5189,41 +5189,122 @@ async function exportPdf() {
             ctx.fillRect(0, 0, BASE_W, BASE_H);
         }
 
-        // Draw visible image elements
+        // Draw all visible elements in z-order
         const sorted = [...docV2.elements]
             .filter(e => e.layerRole !== 'background' && e.visible !== false)
             .sort((a, b) => (a.zIndex || 10) - (b.zIndex || 10));
 
         for (const d of sorted) {
-            if (d.type !== 'image') continue;
-            let exportSrc = d.src || '';
-            if (d.assetId) {
-                const asset = (docV2.assets || []).find(a => a.id === d.assetId);
-                if (asset) exportSrc = asset.storage.originalUrl || asset.storage.previewUrl;
+            ctx.save();
+            ctx.globalAlpha = d.opacity ?? 1;
+            const cx = d.x + (d.width || 0) / 2;
+            const cy = d.y + (d.height || 0) / 2;
+            ctx.translate(cx, cy);
+            ctx.rotate(((d.rotation || 0) * Math.PI) / 180);
+            ctx.translate(-cx, -cy);
+
+            if (d.type === 'image') {
+                let exportSrc = d.src || '';
+                if (d.assetId) {
+                    const asset = (docV2.assets || []).find(a => a.id === d.assetId);
+                    if (asset) exportSrc = asset.storage.originalUrl || asset.storage.previewUrl;
+                }
+                if (exportSrc) {
+                    await new Promise((resolve) => {
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+                        img.onload = () => {
+                            ctx.drawImage(img, d.x, d.y, d.width || 0, d.height || 0);
+                            resolve();
+                        };
+                        img.onerror = resolve;
+                        img.src = exportSrc;
+                    });
+                }
+
+            } else if (d.type === 'text') {
+                const s = d.style || {};
+                const fontSize = s.fontSize || d.fontSize || 16;
+                const fontFamily = s.fontFamily || d.fontFamily || 'Inter';
+                const fontWeight = s.fontWeight || d.fontWeight || 'normal';
+                const fontStyle  = s.fontStyle  || d.fontStyle  || 'normal';
+                const color      = s.color       || d.color      || '#000000';
+                const lineHeight = s.lineHeight  || d.lineHeight || 1.2;
+                const align      = s.textAlign   || d.textAlign  || 'left';
+                const letterSpacing = s.letterSpacing || d.letterSpacing || 0;
+                const textTransform = s.textTransform || d.textTransform || 'none';
+
+                ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px "${fontFamily}"`;
+                ctx.fillStyle = color;
+                ctx.textBaseline = 'top';
+                ctx.textAlign = align;
+                ctx.letterSpacing = letterSpacing + 'px';
+
+                let rawText = d.text || d.content || '';
+                if (textTransform === 'uppercase') rawText = rawText.toUpperCase();
+                if (textTransform === 'lowercase') rawText = rawText.toLowerCase();
+
+                const lineHeightPx = fontSize * lineHeight;
+                const maxWidth = d.width || null;
+                const startX = align === 'center' ? d.x + (d.width || 0) / 2
+                             : align === 'right'  ? d.x + (d.width || 0)
+                             : d.x;
+
+                // Word-wrap if element has a fixed width
+                const lines = [];
+                const paragraphs = rawText.split('\n');
+                for (const para of paragraphs) {
+                    if (!maxWidth) {
+                        lines.push(para);
+                    } else {
+                        const words = para.split(' ');
+                        let current = '';
+                        for (const word of words) {
+                            const test = current ? current + ' ' + word : word;
+                            if (ctx.measureText(test).width > maxWidth && current) {
+                                lines.push(current);
+                                current = word;
+                            } else {
+                                current = test;
+                            }
+                        }
+                        if (current) lines.push(current);
+                    }
+                }
+
+                lines.forEach((line, i) => {
+                    ctx.fillText(line, startX, d.y + i * lineHeightPx);
+                });
+
+            } else if (d.type === 'shape') {
+                const fill   = (d.style && d.style.fill) ? d.style.fill : 'transparent';
+                const stroke = d.strokeColor || '#000000';
+                const sw     = d.strokeWidth || 0;
+                const radius = d.cornerRadius || 0;
+                const x = d.x, y = d.y, w = d.width || 0, h = d.height || 0;
+
+                ctx.beginPath();
+                if (d.shapeType === 'circle') {
+                    ctx.ellipse(x + w/2, y + h/2, w/2, h/2, 0, 0, Math.PI * 2);
+                } else {
+                    if (radius > 0) {
+                        ctx.roundRect(x, y, w, h, radius);
+                    } else {
+                        ctx.rect(x, y, w, h);
+                    }
+                }
+                if (fill !== 'transparent') { ctx.fillStyle = fill; ctx.fill(); }
+                if (sw > 0) { ctx.strokeStyle = stroke; ctx.lineWidth = sw; ctx.stroke(); }
             }
-            if (!exportSrc) continue;
-            await new Promise((resolve) => {
-                const img = new Image();
-                img.crossOrigin = 'anonymous';
-                img.onload = () => {
-                    ctx.save();
-                    ctx.globalAlpha = d.opacity ?? 1;
-                    ctx.translate(d.x + (d.width || 0) / 2, d.y + (d.height || 0) / 2);
-                    ctx.rotate(((d.rotation || 0) * Math.PI) / 180);
-                    ctx.drawImage(img, -(d.width || 0) / 2, -(d.height || 0) / 2, d.width || 0, d.height || 0);
-                    ctx.restore();
-                    resolve();
-                };
-                img.onerror = resolve;
-                img.src = exportSrc;
-            });
+
+            ctx.restore();
         }
 
-        // Build PDF at exact print dimensions: 12 x 18 inches (300 DPI canvas spec)
+        // Build PDF at exact print dimensions: 12 × 18 inches (300 DPI)
         const imgData = offscreen.toDataURL('image/png');
         const { jsPDF } = window.jspdf;
-        const pageWmm = (docV2.canvas.width  / docV2.canvas.dpi) * 25.4; // 3600/300*25.4 = 304.8mm = 12in
-        const pageHmm = (docV2.canvas.height / docV2.canvas.dpi) * 25.4; // 5400/300*25.4 = 457.2mm = 18in
+        const pageWmm = (docV2.canvas.width  / docV2.canvas.dpi) * 25.4;
+        const pageHmm = (docV2.canvas.height / docV2.canvas.dpi) * 25.4;
         const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [pageWmm, pageHmm] });
         pdf.addImage(imgData, 'PNG', 0, 0, pageWmm, pageHmm, undefined, 'FAST');
         pdf.save('menu-print-ready.pdf');
