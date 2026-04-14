@@ -1,6 +1,6 @@
 # MASTER HANDOFF — Not Your Mama's Kitchen Menu Editor
 
-**Last Updated: April 12, 2026**
+**Last Updated: April 14, 2026 (Manual Sync + AI Gallery Deletion Merged)**
 
 ## Changelog — Audit Patch April 12, 2026
 Updated based on confirmed three-agent source code audit. 14 fixes applied. Includes PR #9 features (Clear Credentials, AI Gallery 3-slot apply).
@@ -907,6 +907,34 @@ Updated the 3D workspace background (Vanta.js) with precise color configurations
 - Surgical replacement of theme configurations preserves existing "Net" and "Birds" themes.
 
 --- END OF SECTION 26 ---
+
+## Section 23: Spanish Manual Synchronization (v3.2 Build 04.14.26)
+**Status: RESOLVED — April 14, 2026**
+
+### Goal
+Achievement of full documentation parity between the English and Spanish versions of the Menu Editor Pro V2 manual, bringing the Spanish manual up to the current production build.
+
+### Changes Applied
+1.  **Version Control:** Updated `manual-es.html` to reflect **v3.2 (Build 04.14.26)** and set the revision date to April 14, 2026.
+2.  **Surgical Sync & Renumbering:**
+    *   Renumbered body sections (21-38) to match the English body's numerical sequence exactly.
+    *   Inserted translated documentation for:
+        *   **Replace/Remove Background** (Section 17)
+        *   **Video Panel / Viewer Settings** (Section 21)
+        *   **Cloudinary & AI Video Creation** (Section 22)
+        *   **AI Studio** (Section 34, includes AI Gallery sub-section)
+        *   **Vanta Workspace Themes** (Section 36)
+        *   **Export Print PDF (300 DPI)** (Section 37)
+3.  **TOC & Anchor Links:**
+    *   Updated the Table of Contents with working anchor links and a cleaner, logically numbered list.
+    *   Added unique `id` attributes to all section headers in the body to support navigation.
+4.  **Metadata Audit:** Updated the "Document Information" table and footer page numbers to reflect the expanded document length (~32 pages equivalent).
+
+### Verification
+*   Verified section numbers 1-38 against the English source of truth.
+*   Confirmed AI Studio documentation includes Cloudinary, Google Imagen, and Kling AI instructions.
+*   Confirmed anchor link IDs match TOC `href` values.
+
 
 **END OF MASTER HANDOFF**
 

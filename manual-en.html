@@ -351,8 +351,8 @@
         Exporting your Premium Menu Designs</p>
 
       <div style="margin-top: 100px; text-align: left; padding: 40px; border: 1px solid var(--border); border-radius: 20px; width: 80%;">
-        <p><strong>Version:</strong> 3.1 (Phase 30 Final Build)</p>
-        <p><strong>Release:</strong> March 2026</p>
+        <p><strong>Version:</strong> 3.2 (Build April 14, 2026)</p>
+        <p><strong>Release:</strong> April 14, 2026</p>
         <p><strong>Platform:</strong> Web Application (Desktop &amp; Mobile)</p>
       </div>
     </div>
@@ -415,6 +415,8 @@
           <li>AI Gallery</li>
         </ul>
       </li>
+      <li>Vanta Workspace Themes</li>
+      <li>Export Print PDF (300 DPI)</li>
       <li>Document Information</li>
     </ol>
     <div class="footer"><span>Customer Edition</span><span>Page 2</span></div>
@@ -590,8 +592,10 @@
     <p><strong>Remove Background</strong> — Found in the Layers panel context. This permanently deletes all background layers from the canvas without replacing them. Use this when you want a transparent or blank canvas behind your content. This is different from Replace Background — it does not import anything new.</p>
 
     <h3>⬇️ Export Pro PNG</h3>
-    <p>Generates a print-ready PNG at full resolution. Auto-saves first, then renders every visible element and
-      downloads the file. A progress toast appears during export. Covered in full in Section 19.</p>
+    <p>Generates a high-resolution PNG image (300 DPI, 12x18 in). Auto-saves first, then renders every visible element (images, text, shapes) and downloads the file. Ideal for digital displays and quick previews.</p>
+
+    <h3>📄 Export Print PDF</h3>
+    <p>Generates a professional, print-ready PDF document using the jsPDF 2.5.1 library. This pipeline uses a 4x scaling engine (300 DPI) to ensure maximum crispness for professional physical printing. It handles complex text formatting, shapes, and high-resolution images with full CORS security support.</p>
 
     <h3>🔄 Reset to Original</h3>
     <p>Clears ALL your custom edits and restores the menu to the original template delivered by Marias Digital Designs. Use with caution — this cannot be undone.</p>
@@ -1027,11 +1031,10 @@
   <section class="page page-break">
     <div class="brand-bar"></div>
     <h2>21. Video Panel / Viewer Settings</h2>
-    <p>Menu Editor Pro V2 supports live video integration. This section explains how to configure the videos displayed
-      during public viewing.</p>
+    <p>Menu Editor Pro V2 supports live video integration. Viewer Settings allow you to configure the multimedia content shown on public display screens. <strong>Note: Your viewer settings are preserved automatically on the server and load every time you open the editor.</strong></p>
 
     <h3>Video Content Strategy</h3>
-    <p>Your menu supports three video "slots":</p>
+    <p>Your menu supports three primary video "slots" which can be configured independently:</p>
     <ul>
       <li><strong>Hero Video:</strong> The main cinematic video featured on the dashboard or top section.</li>
       <li><strong>Side Panel Left:</strong> A secondary video displayed on the left side of the screen.</li>
@@ -1047,9 +1050,8 @@
     <ol>
       <li>Open the right panel by clicking the <strong>📺 Viewer Settings</strong> tab.</li>
       <li>Find the relevant input field (Hero, Left, or Right).</li>
-      <li>Paste your video URL.</li>
-      <li>Click <strong>SET</strong> or <strong>SAVE</strong> to confirm.</li>
-      <li>(Optional) For Side Panels, choose the <strong>Resolution</strong> (1080p recommended).</li>
+      <li><strong>Direct Link Paste:</strong> You can paste a Cloudinary URL directly into the 🎬 <strong>Video URL (optional)</strong> field for each slot.</li>
+      <li>Click <strong>SET</strong> or <strong>SAVE</strong> to confirm the changes.</li>
     </ol>
 
     <div class="callout tip">
@@ -1670,7 +1672,7 @@
       <tbody>
         <tr>
           <td>Output format</td>
-          <td>PNG (lossless)</td>
+          <td>PNG (Lossless) / PDF (Print Raster)</td>
         </tr>
         <tr>
           <td>Physical output width</td>
@@ -1678,7 +1680,7 @@
         </tr>
         <tr>
           <td>DPI metadata</td>
-          <td>Manually injected <code>pHYs</code> chunk: 11811 pixels/meter (≈ 300 DPI)</td>
+          <td>Manually injected <code>pHYs</code> chunk (PNG) / Vector Container (PDF)</td>
         </tr>
         <tr>
           <td>Color mode</td>
@@ -1686,19 +1688,19 @@
         </tr>
         <tr>
           <td>Background rendering</td>
-          <td>DOM &lt;img&gt; element (not CSS background) for correct capture fidelity</td>
+          <td>DOM &lt;img&gt; element + Vanta.js dynamic layer (if active)</td>
         </tr>
         <tr>
           <td>Export filename</td>
-          <td>notyourmamaskitchen-menu.png</td>
+          <td>notyourmamaskitchen-menu.png / menu-export.pdf</td>
         </tr>
         <tr>
           <td>Font rendering</td>
           <td><code>document.fonts.load()</code> awaited before export render — prevents garbled text</td>
         </tr>
         <tr>
-          <td>Auto-save interval</td>
-          <td>Every 30 seconds (server-side)</td>
+          <td>Auto-save trigger</td>
+          <td>Runs automatically before every Export operation (PNG or PDF)</td>
         </tr>
         <tr>
           <td>Hidden elements</td>
@@ -1881,9 +1883,76 @@
     <p>Use the AI Gallery to retrieve and reuse any previously generated content without running a new generation job.</p>
     <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 29</span></div>
   </section>
+
   <section class="page page-break">
     <div class="brand-bar"></div>
-    <h2>36. Document Information</h2>
+    <h2>36. Vanta Workspace Themes</h2>
+    <p>Enhance your editing environment with professional-grade background animations. These themes provide a cinematic backdrop while you design, helping you visualize how your menu will look in a modern restaurant setting.</p>
+    
+    <h3>Available Themes</h3>
+    <div class="spec-grid">
+      <div class="spec-card">
+        <strong>None (Default)</strong>
+        <p>A clean, neutral grey workspace optimized for maximum focus and performance.</p>
+      </div>
+      <div class="spec-card">
+        <strong>Clouds / Fog</strong>
+        <p>Soft, ethereal movements in subtle tones. Perfect for elegant, airy menu designs.</p>
+      </div>
+      <div class="spec-card">
+        <strong>Waves / Net</strong>
+        <p>Geometric, fluid patterns that suggest movement and modernity.</p>
+      </div>
+      <div class="spec-card">
+        <strong>Halo / Rings</strong>
+        <p>Glow-centric animations that add a touch of luxury and depth to the workspace.</p>
+      </div>
+    </div>
+
+    <h3>How to Switch Themes</h3>
+    <ol>
+      <li>Open the <strong>🛠️ Tools Drawer</strong> via the FAB.</li>
+      <li>Click the <strong>🎨 Themes</strong> tab (grid icon).</li>
+      <li>Select any theme from the visual grid. The transition is instant.</li>
+    </ol>
+
+    <div class="callout tip">
+      <strong>Persistence:</strong> Your chosen theme is saved locally to your browser. It will automatically load every time you open the editor until you change it.
+    </div>
+
+    <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 30</span></div>
+  </section>
+
+  <section class="page page-break">
+    <div class="brand-bar"></div>
+    <h2>37. Export Print PDF (300 DPI) — Deep Dive</h2>
+    <p>While the standard PNG export is excellent for digital displays, our new <strong>Export Print PDF</strong> tool is specifically engineered for professional physical printing. It utilizes a high-resolution pipeline to ensure your menu looks as sharp on paper as it does on screen.</p>
+
+    <h3>High-Resolution Pipeline</h3>
+    <ul>
+      <li><strong>4X Scaling:</strong> The engine renders the entire canvas at 4 times the base size (equivalent to 300 DPI at 12x18 inches).</li>
+      <li><strong>Full Composite:</strong> All elements—including high-res customer images, vector-like shapes, and anti-aliased text—are composited onto a high-bandwidth offscreen canvas before PDF generation.</li>
+      <li><strong>CORS Compliance:</strong> All images are fetched via specialized proxy headers to ensure the export never hangs or fails due to security restrictions.</li>
+    </ul>
+
+    <h3>How to Export</h3>
+    <ol>
+      <li>Ensure your layout is exactly as you want it.</li>
+      <li>Click the <strong>🛠️ Tools Drawer</strong> and select <strong>⬇️ Export Print PDF</strong>.</li>
+      <li>Wait for the "Preparing print-ready PDF" toast to complete. The high-resolution rendering may take 2-5 seconds.</li>
+      <li>The <code>menu-export.pdf</code> file will download automatically.</li>
+    </ol>
+
+    <div class="callout warning">
+      <strong>Large File Size:</strong> Because these PDFs are optimized for print quality, they can be significantly larger than regular PNGs. Ensure you have a stable connection when exporting.
+    </div>
+
+    <div class="footer"><span>Menu Editor Pro V2 – Complete Manual</span><span>Page 31</span></div>
+  </section>
+
+  <section class="page page-break">
+    <div class="brand-bar"></div>
+    <h2>38. Document Information</h2>
 
     <table>
       <thead>
@@ -1899,15 +1968,15 @@
         </tr>
         <tr>
           <td><strong>Version Covered</strong></td>
-          <td>Menu Editor Pro V2, Version 3.1 (Phase 30 + Phases 2A–11 + Bug Batches 1–8 + Bug Audit Rounds A–D)</td>
+          <td>Menu Editor Pro V2, Version 3.2 (Build 04.14.26 – Vanta & PDF Fix)</td>
         </tr>
         <tr>
           <td><strong>Release Date</strong></td>
-          <td>March 2026</td>
+          <td>April 2026</td>
         </tr>
         <tr>
           <td><strong>Last Updated</strong></td>
-          <td>April 11, 2026</td>
+          <td>April 14, 2026</td>
         </tr>
         <tr>
           <td><strong>Language</strong></td>
