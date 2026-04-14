@@ -1,6 +1,6 @@
 # MASTER HANDOFF — Not Your Mama's Kitchen Menu Editor
 
-**Last Updated: April 14, 2026 (AI Asset Save Fix Applied)**
+**Last Updated: April 14, 2026 (Stability AI Base64 Fix Applied)**
 
 ## Changelog — Audit Patch April 12, 2026
 Updated based on confirmed three-agent source code audit. 14 fixes applied. Includes PR #9 features (Clear Credentials, AI Gallery 3-slot apply).
@@ -936,6 +936,25 @@ Achievement of full documentation parity between the English and Spanish version
 *   Confirmed anchor link IDs match TOC `href` values.
 
 --- END SECTION 27 ---
+
+## Section 23: Stability AI Base64 Fix & Button Hardening
+**Status: RESOLVED — April 14, 2026**
+**Commit: [current]**
+
+### The Bug
+Stability AI image generation was passing a prefixed data URL (`finalUrl`) to `saveAiImageToAssets` instead of raw base64 data, causing issues when processing assets. Additionally, the manual "Save to Assets" button in the AI Studio had no fallback for `window._lastAiImageB64`, potentially causing errors if clicked before generation.
+
+### The Fix
+1. **Stability AI Callback**: Updated to store `b64Data` globally in `window._lastAiImageB64` and pass `b64Data` directly to the automated asset save.
+2. **Hardening**: Added a null-check fallback (`|| ''`) to the "Save to Assets" button's `onclick` handler.
+3. **Audit Rule**: Preserved the original `💾` emoji per user requirement.
+
+**Confirmed Logic**:
+- `window._lastAiImageB64 = b64Data`
+- `saveAiImageToAssets(b64Data, prompt)`
+- `saveAiImageToAssets(window._lastAiImageB64 || '', ...)`
+
+--- END SECTION 23 ---
 
 ## Section 28: AI Gallery Video Deletion (Big Pickle's Changes)
 **Status: RESOLVED — April 14, 2026**
