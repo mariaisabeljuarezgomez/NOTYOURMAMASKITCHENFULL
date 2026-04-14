@@ -6744,14 +6744,11 @@ async function deleteAiGalleryVideo(slot, url) {
 
 async function deleteAiGalleryImage(assetId) {
   try {
-    const res = await fetch('/api/delete-asset/' + assetId, { method: 'DELETE' });
-    if (res.ok || res.status === 404) {
-      loadAiGallery();
-      showToast('🗑 AI image removed');
-    } else {
-      const data = await res.json();
-      showToast('❌ Delete failed: ' + (data.error || 'Unknown error'));
-    }
+    if (!docV2.assets) docV2.assets = [];
+    docV2.assets = docV2.assets.filter(a => a.id !== assetId);
+    loadAiGallery();
+    showToast('🗑 AI image removed');
+    save();
   } catch(e) {
     showToast('❌ Delete failed: ' + e.message);
   }
