@@ -1021,6 +1021,34 @@ def proxy_download():
         )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route("/api/delete-video", methods=["DELETE"])
+def delete_video():
+    conn = None
+    try:
+        data = request.json or {}
+        slot = data.get("slot", "")
+        url = data.get("url", "")
+        if slot not in ("hero", "left", "right") or not url:
+            return jsonify({"error": "Invalid slot or url"}), 400
+        if not DATABASE_URL:
+            return jsonify({"status": "no_db"}), 200
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        cur = conn.cursor()
+        cur.execute(
+            "DELETE FROM video_history WHERE slot = %s AND url = %s",
+            (slot, url)
+        )
+        conn.commit()
+        cur.close()
+        return jsonify({"status": "deleted"})
+    except Exception as e:
+        print(f"delete_video ERROR: {e}", flush=True)
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
 @app.route('/favicon.ico')
 def favicon():
     return '', 204

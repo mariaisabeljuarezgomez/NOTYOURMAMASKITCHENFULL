@@ -908,7 +908,7 @@ Updated the 3D workspace background (Vanta.js) with precise color configurations
 
 --- END OF SECTION 26 ---
 
-## Section 23: Spanish Manual Synchronization (v3.2 Build 04.14.26)
+## Section 27: Spanish Manual Synchronization (v3.2 Build 04.14.26)
 **Status: RESOLVED — April 14, 2026**
 
 ### Goal
@@ -935,7 +935,27 @@ Achievement of full documentation parity between the English and Spanish version
 *   Confirmed AI Studio documentation includes Cloudinary, Google Imagen, and Kling AI instructions.
 *   Confirmed anchor link IDs match TOC `href` values.
 
+--- END SECTION 27 ---
+
+## Section 28: AI Gallery Video Deletion (Big Pickle's Changes)
+**Status: RESOLVED — April 14, 2026**
+
+### Goal
+Implement deletion functionality for AI-generated videos in the AI Gallery to allow users to prune unwanted history from the database.
+
+### Changes Applied
+1.  **Backend (`app.py`):**
+    *   Added standard `DELETE` route at `/api/delete-video`.
+    *   Handles database cleanup in `video_history` table filtered by `slot` and `url`.
+2.  **Frontend (`index.html`):**
+    *   **UI Wrapper:** Modified `loadAiGallery` to wrap video cards in a `position:relative` container.
+    *   **Delete Button:** Added a red floating `✕` button to each video card in the gallery.
+    *   **Delete Handler:** Implemented `deleteAiGalleryVideo(slot, url)` to perform the fetch request and refresh the gallery UI upon success.
+
+### Verification
+*   Confirmed `deleteAiGalleryVideo` is defined and correctly wired to the UI.
+*   Confirmed the API route is present in `app.py` before the favicon route.
+
+--- END SECTION 28 ---
 
 **END OF MASTER HANDOFF**
-
-

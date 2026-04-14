@@ -6657,7 +6657,10 @@ async function loadAiGallery() {
           const card = document.createElement('div');
           card.style.cssText = 'background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:6px;';
           card.innerHTML = `
-            <video src="${url}" style="width:100%;border-radius:4px;" muted playsinline preload="metadata"></video>
+            <div style="position:relative;">
+              <video src="${url}" style="width:100%;border-radius:4px;" muted playsinline preload="metadata"></video>
+              <button onclick="deleteAiGalleryVideo('${slot}','${url}')" style="position:absolute;top:4px;right:4px;background:rgba(192,57,43,0.9);border:none;border-radius:4px;color:#fff;font-size:11px;padding:2px 6px;cursor:pointer;z-index:5;">✕</button>
+            </div>
             <div style="font-size:9px;color:#888;margin:4px 0 4px;text-transform:uppercase;font-weight:700;">📌 ${slot} slot</div>
             <div style="display:flex;gap:4px;">
               <button onclick="applyVideoToSlot('hero','${url}')" class="btn-ui accent" style="flex:1;font-size:9px;padding:4px;">🎬 Hero</button>
@@ -6706,6 +6709,25 @@ function deleteAiGalleryItem(assetId, e) {
     save();
     loadAiGallery();
     showToast('🗑 AI image removed');
+}
+
+async function deleteAiGalleryVideo(slot, url) {
+  try {
+    const res = await fetch('/api/delete-video', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slot, url })
+    });
+    if (res.ok || res.status === 404) {
+      loadAiGallery();
+      showToast('🗑 Video removed from gallery');
+    } else {
+      const data = await res.json();
+      showToast('❌ Delete failed: ' + (data.error || 'Unknown error'));
+    }
+  } catch(e) {
+    showToast('❌ Delete failed: ' + e.message);
+  }
 }
 
 async function deleteAiGalleryImage(assetId) {
