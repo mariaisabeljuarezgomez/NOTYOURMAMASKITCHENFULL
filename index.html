@@ -6558,6 +6558,10 @@ function placeAiImageOnCanvas() {
 }
 
 async function saveAiImageToAssets(b64, prompt, urlOverride) {
+  if (!b64 && !urlOverride) {
+    showToast('⚠️ No image data available. Generate an image first.');
+    return;
+  }
   let assetUrl = null;
   let filename = null;
   
@@ -6578,7 +6582,15 @@ async function saveAiImageToAssets(b64, prompt, urlOverride) {
       const res = await fetch('/api/upload-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename: filename, data: b64 })
+        body: JSON.stringify({
+          filename: filename,
+          data: b64,
+          credentials: {
+            cloudName:   localStorage.getItem('ai_cloud_name')   || '',
+            cloudKey:    localStorage.getItem('ai_cloud_key')    || '',
+            cloudSecret: localStorage.getItem('ai_cloud_secret') || ''
+          }
+        })
       });
       const resp = await res.json();
       if (resp.url) {

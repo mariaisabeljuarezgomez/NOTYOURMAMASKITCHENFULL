@@ -1,6 +1,6 @@
 # MASTER HANDOFF — Not Your Mama's Kitchen Menu Editor
 
-**Last Updated: April 14, 2026 (Manual Sync + AI Gallery Deletion Merged)**
+**Last Updated: April 14, 2026 (AI Asset Save Fix Applied)**
 
 ## Changelog — Audit Patch April 12, 2026
 Updated based on confirmed three-agent source code audit. 14 fixes applied. Includes PR #9 features (Clear Credentials, AI Gallery 3-slot apply).
@@ -956,6 +956,20 @@ Implement deletion functionality for AI-generated videos in the AI Gallery to al
 *   Confirmed `deleteAiGalleryVideo` is defined and correctly wired to the UI.
 *   Confirmed the API route is present in `app.py` before the favicon route.
 
---- END SECTION 28 ---
+## Section 29: AI Asset Save Logic Hardening (Credentials & Guards)
+**Status: RESOLVED — April 14, 2026**
+
+### Goal
+Resolve "Missing file data" 400 errors during AI image saving and prevent execution when no image data is available.
+
+### Changes Applied
+1.  **Null Guard:** Added a check at the start of `saveAiImageToAssets` in `index.html` to return early with a toast message if both `b64` and `urlOverride` are missing.
+2.  **Credential Injection:** Updated the `/api/upload-image` fetch body to include a `credentials` object. This pulls `cloudName`, `cloudKey`, and `cloudSecret` directly from `localStorage` to satisfy the backend requirements for Cloudinary uploads.
+
+### Verification
+*   Verified the null guard correctly intercepts empty calls.
+*   Verified the fetch body structure matches the backend's expected schema.
+
+--- END SECTION 29 ---
 
 **END OF MASTER HANDOFF**
