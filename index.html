@@ -1841,7 +1841,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
             <div id="geo-style-ctrls" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                 <div class="ctrl-group" id="ctrl-grp-fill"><label>Fill</label><input type="color" id="sel-fill-color" oninput="updateShapeFill(this.value)"></div>
                 <div class="ctrl-group" id="ctrl-grp-radius"><label>Rad</label><input type="range" id="sel-radius" min="0" max="200" style="width:40px" oninput="updateProp('cornerRadius', parseInt(this.value))"></div>
-                <div class="ctrl-group"><label>Stroke</label><input type="number" id="sel-stroke-w" min="0" max="50" style="width:40px" onchange="updateProp('strokeWidth', parseInt(this.value))"><input type="color" id="sel-stroke-c" oninput="updateStrokeColorLive(this.value)"></div>
+                <div class="ctrl-group"><label id="stroke-label">Stroke</label><input type="number" id="sel-stroke-w" min="0" max="50" style="width:40px" onchange="updateProp('strokeWidth', parseInt(this.value))"><input type="color" id="sel-stroke-c" oninput="updateStrokeColorLive(this.value)"></div>
                 <div class="ctrl-group" id="ctrl-grp-outline"><button id="btn-outline-toggle" class="ctrl-btn" style="font-size:10px; padding:4px 10px; white-space:nowrap; width:auto;" onclick="toggleOutlineOnly()">Outline Only</button></div>
                 <div id="line-width-presets" class="ctrl-group" style="display:none;">
                   <label style="font-size:9px; color:#777; font-weight:700;">Width</label>
@@ -3196,7 +3196,7 @@ function updateSelectionBar() {
         if (fillGrp) fillGrp.style.display = isLine ? 'none' : '';
         if (radGrp) radGrp.style.display = (isLine || isStar) ? 'none' : '';
         if (outlineGrp) outlineGrp.style.display = isLine ? 'none' : '';
-        if (linePresets) linePresets.style.display = isLine ? '' : 'none';
+        if (linePresets) linePresets.style.display = isLine ? 'flex' : 'none';
         if (strokeLabel) strokeLabel.textContent = isLine ? 'Color' : 'Stroke';
         if (!isLine && !isStar) {
             document.getElementById('sel-radius').value = item.cornerRadius || 0;
