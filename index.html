@@ -1299,6 +1299,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 }
 
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="export-utils.js" defer></script>
 </head>
 <body>
@@ -1440,6 +1441,7 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 
     <div class="ls-section-title" style="margin-top:16px;">File</div>
     <button class="ls-action-btn accent" onclick="exportPng()"><span class="ls-btn-icon">⬇️</span><span class="ls-btn-label">Export Pro PNG</span></button>
+    <button class="ls-action-btn" onclick="exportPdf()" style="background:linear-gradient(180deg,#1a2a4a 0%,#101828 100%); border-color:rgba(52,152,219,0.4); color:#5dade2;"><span class="ls-btn-icon">📄</span><span class="ls-btn-label">Export Print PDF</span></button>
     <button class="ls-action-btn" onclick="load()"><span class="ls-btn-icon">📂</span><span class="ls-btn-label">Load Session</span></button>
     <button class="ls-action-btn" onclick="restoreFromBackup()" style="background:#1a3a2a; border-color:#2ecc71; color:#7dcea0;">
       <span class="ls-btn-icon">🔄</span>
@@ -5157,6 +5159,78 @@ async function exportPng() {
         if(exportToastEl) exportToastEl.remove();
         showToast('❌ Export failed. Please try again.');
         console.error('Export error:', err);
+    }
+}
+
+async function exportPdf() {
+    showToast('⏳ Preparing print-ready PDF...');
+    try {
+        const SCALE = 4;
+        const cW = Math.round(BASE_W * SCALE);
+        const cH = Math.round(BASE_H * SCALE);
+        const offscreen = document.createElement('canvas');
+        offscreen.width = cW;
+        offscreen.height = cH;
+        const ctx = offscreen.getContext('2d');
+        ctx.scale(SCALE, SCALE);
+
+        // Draw background
+        const bgEl = docV2.elements.find(e => e.layerRole === 'background');
+        if (bgEl && bgEl.src) {
+            await new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => { ctx.drawImage(img, 0, 0, BASE_W, BASE_H); resolve(); };
+                img.onerror = resolve;
+                img.src = bgEl.src;
+            });
+        } else {
+            ctx.fillStyle = docV2.canvas.backgroundColor || '#ffffff';
+            ctx.fillRect(0, 0, BASE_W, BASE_H);
+        }
+
+        // Draw visible image elements
+        const sorted = [...docV2.elements]
+            .filter(e => e.layerRole !== 'background' && e.visible !== false)
+            .sort((a, b) => (a.zIndex || 10) - (b.zIndex || 10));
+
+        for (const d of sorted) {
+            if (d.type !== 'image') continue;
+            let exportSrc = d.src || '';
+            if (d.assetId) {
+                const asset = (docV2.assets || []).find(a => a.id === d.assetId);
+                if (asset) exportSrc = asset.storage.originalUrl || asset.storage.previewUrl;
+            }
+            if (!exportSrc) continue;
+            await new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    ctx.save();
+                    ctx.globalAlpha = d.opacity ?? 1;
+                    ctx.translate(d.x + (d.width || 0) / 2, d.y + (d.height || 0) / 2);
+                    ctx.rotate(((d.rotation || 0) * Math.PI) / 180);
+                    ctx.drawImage(img, -(d.width || 0) / 2, -(d.height || 0) / 2, d.width || 0, d.height || 0);
+                    ctx.restore();
+                    resolve();
+                };
+                img.onerror = resolve;
+                img.src = exportSrc;
+            });
+        }
+
+        // Build PDF at exact print dimensions: 12 x 18 inches (300 DPI canvas spec)
+        const imgData = offscreen.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const pageWmm = (docV2.canvas.width  / docV2.canvas.dpi) * 25.4; // 3600/300*25.4 = 304.8mm = 12in
+        const pageHmm = (docV2.canvas.height / docV2.canvas.dpi) * 25.4; // 5400/300*25.4 = 457.2mm = 18in
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [pageWmm, pageHmm] });
+        pdf.addImage(imgData, 'PNG', 0, 0, pageWmm, pageHmm, undefined, 'FAST');
+        pdf.save('menu-print-ready.pdf');
+        showToast('✅ Print-ready PDF exported! (12 × 18 in, 300 DPI)');
+    } catch (err) {
+        console.error('PDF export error:', err);
+        showToast('❌ PDF export failed: ' + err.message);
     }
 }
 
