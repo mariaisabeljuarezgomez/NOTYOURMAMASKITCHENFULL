@@ -1,6 +1,6 @@
 # MASTER HANDOFF — Not Your Mama's Kitchen Menu Editor
 
-**Last Updated: April 14, 2026 (Stability AI Base64 Fix Applied)**
+**Last Updated: April 14, 2026 (Kling img2img Payload Fix Applied)**
 
 ## Changelog — Audit Patch April 12, 2026
 Updated based on confirmed three-agent source code audit. 14 fixes applied. Includes PR #9 features (Clear Credentials, AI Gallery 3-slot apply).
@@ -939,7 +939,7 @@ Achievement of full documentation parity between the English and Spanish version
 
 ## Section 23: Stability AI Base64 Fix & Button Hardening
 **Status: RESOLVED — April 14, 2026**
-**Commit: [current]**
+**Commit: b809a10**
 
 ### The Bug
 Stability AI image generation was passing a prefixed data URL (`finalUrl`) to `saveAiImageToAssets` instead of raw base64 data, causing issues when processing assets. Additionally, the manual "Save to Assets" button in the AI Studio had no fallback for `window._lastAiImageB64`, potentially causing errors if clicked before generation.
@@ -990,5 +990,25 @@ Resolve "Missing file data" 400 errors during AI image saving and prevent execut
 *   Verified the fetch body structure matches the backend's expected schema.
 
 --- END SECTION 29 ---
+
+
+## Section 24: Kling img2img Payload Fix
+**Status: RESOLVED — April 14, 2026**
+**Commit: [current]**
+
+### The Bug
+Kling AI image-to-image/edit generation was failing because the frontend was sending the reference image under the wrong key (`image` instead of `reference_images`) and was not passing the generation `mode`. The backend (`app.py`) was seeing an empty reference image list and sending invalid requests to the Kling API.
+
+### The Fix
+1. **Payload Structure**: Updated `generateKlingImage` in `index.html` to send `reference_images` as an array containing the base64 data.
+2. **Mode Injection**: Included `payload.mode = mode` to ensure the backend correctly routes the request (e.g., as `img2img`, `multi`, or `edit`).
+
+**Confirmed Logic**:
+```javascript
+payload.reference_images = [_lastKlingRefB64];
+payload.mode = mode;
+```
+
+--- END SECTION 24 ---
 
 **END OF MASTER HANDOFF**
