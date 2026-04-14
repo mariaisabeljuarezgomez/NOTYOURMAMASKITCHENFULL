@@ -7,6 +7,49 @@
 <title>Menu Editor Pro V2 - UX Hardened</title>
 <meta name="description" content="Menu Editor Pro — Professional restaurant menu layout tool. Edit, save, and export print-ready menus with drag-and-drop text, images, and shapes.">
 <style>
+
+/* REDESIGN CSS ADDITIONS */
+#selection-bar {
+  background: linear-gradient(180deg, rgba(16,16,16,0.98) 0%, rgba(8,8,8,0.99) 100%) !important;
+  border: 1px solid rgba(200,169,106,0.15) !important;
+  border-top: 1px solid rgba(200,169,106,0.3) !important;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.95), 0 0 0 1px rgba(200,169,106,0.06), inset 0 1px 0 rgba(255,255,255,0.07) !important;
+  border-radius: 20px !important;
+  min-height: 56px !important;
+  padding: 0 16px !important;
+}
+.sbar-video-section {
+  padding: 4px 10px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.sbar-video-section label {
+  white-space: nowrap;
+}
+.sbar-tab-row {
+  border-right: 1px solid #444;
+  padding-right: 10px;
+}
+.sbar-actions {
+  border-left: 1px solid #444;
+  padding-left: 10px;
+}
+
+.sbar-input {
+  width: 58px;
+  background: #111;
+  border: 1px solid #444;
+  color: var(--accent);
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-size: 11px;
+  outline: none;
+}
+#sel-line-width-custom.sbar-input {
+  width: 50px;
+}
+
 @font-face { font-family: 'bernard-mt-condensed-regular'; src: url('bernard-mt-condensed-regular.ttf') format('truetype'); font-display: block; }
 @font-face { font-family: 'century-gothic-bold-italic'; src: url('century-gothic-bold-italic.ttf') format('truetype'); font-display: block; }
 @font-face { font-family: 'century-gothic-bold'; src: url('century-gothic-bold.ttf') format('truetype'); font-display: block; }
@@ -1401,6 +1444,30 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
   </div>
   <!-- TAB: VIEWER SETTINGS -->
   <div class="rp-panel" id="rp-panel-viewer">
+    <!-- NEW RIGHT PANEL ELEMENT PROPERTIES -->
+    <div class="rp-section-title">ELEMENT</div>
+    <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <button id="rp-lock" class="ctrl-btn" style="flex:1;font-size:12px;" onclick="toggleItemLock()">🔓 Lock</button>
+        <button id="rp-visible" class="ctrl-btn" style="flex:1;font-size:12px;" onclick="toggleVisibility()">👁️ Vis</button>
+    </div>
+    <label class="rp-label">Role</label>
+    <select id="rp-role" class="rp-input" style="margin-bottom:10px;" onchange="updateProp('layerRole', this.value)">
+        <option value="content">Content</option>
+        <option value="background">Background</option>
+        <option value="overlay">Overlay</option>
+    </select>
+    <div style="display:flex;gap:10px;margin-bottom:20px;">
+        <div style="flex:1;">
+            <label class="rp-label">Opacity</label>
+            <input type="number" id="rp-opacity" class="rp-input" min="0" max="100" onchange="updateProp('opacity', this.value/100)">
+        </div>
+        <div style="flex:1;">
+            <label class="rp-label">Rotation</label>
+            <input type="number" id="rp-rotate" class="rp-input" min="0" max="359" onchange="updateProp('rotation', parseInt(this.value))">
+        </div>
+    </div>
+    <div style="height:1px;background:#333;margin-bottom:20px;"></div>
+
     <div class="rp-section-title">Hero Video</div>
     <label class="rp-label">Video URL (.mp4)</label>
     <input type="text" id="hero-video-url-input" placeholder="Direct .mp4 or .webm URL" class="rp-input">
@@ -1764,27 +1831,17 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
 </script>
 
 <div id="selection-bar">
-    <div id="bar-handle" style="cursor:grab; padding:4px 8px; color:#666; font-size:18px; flex-shrink:0; touch-action:none;" title="Drag to move toolbar">⠿</div>
-    <div style="display:flex; gap:6px; margin-right:10px; flex-shrink:0;">
-        <div class="bar-tab active" id="tab-layer" onclick="setBarTab('layer')" data-help="Controls visibility, opacity, rotation, and layer role">LAYER</div>
-        <div class="bar-tab" id="tab-design" onclick="setBarTab('design')" data-help="Controls font, color, line height, letter spacing (text) or corner radius and stroke (shapes)">DESIGN</div>
+    <div class="sbar-tab-row" style="display:flex; gap:6px; margin-right:10px; flex-shrink:0;">
+        <div class="bar-tab active" id="tab-design" onclick="setBarTab('design')" data-help="Controls font, color, line height, letter spacing (text) or corner radius and stroke (shapes)">DESIGN</div>
         <div class="bar-tab" id="tab-arrange" onclick="setBarTab('arrange')" data-help="Controls position in the layer stack and center alignment">ARRANGE</div>
     </div>
-
     <div id="bar-content" style="display:flex; align-items:center; gap:10px; flex-grow:1; overflow-x:auto; scrollbar-width:none;">
-        <div id="bar-tab-layer" style="display:flex; align-items:center; gap:10px;">
-            <button class="ctrl-btn" id="ctrl-lock" onclick="toggleItemLock()" title="Lock Layer" data-help="Prevents the element from being moved or edited">🔓</button>
-            <button class="ctrl-btn" id="ctrl-visible" onclick="toggleVisibility()" title="Show/Hide" data-help="Hides or shows the element on the canvas">👁️</button>
-            <div class="ctrl-group"><label>Role</label><select id="sel-role" onchange="updateProp('layerRole', this.value)"><option value="content">Content</option><option value="background">Background</option><option value="overlay">Overlay</option></select></div>
-            <div class="ctrl-group"><label>Opac</label><input type="range" id="sel-opacity" min="0" max="100" style="width:40px" oninput="updateProp('opacity', this.value/100)"></div>
-            <div class="ctrl-group"><label>Rot</label><input type="range" id="sel-rotate" min="0" max="359" style="width:40px" oninput="updateProp('rotation', parseInt(this.value))"></div>
-        </div>
-
-        <div id="bar-tab-design" style="display:none; align-items:center; gap:10px;">
+        <div id="bar-tab-layer" style="display:none;"></div>
+        <div id="bar-tab-design" style="display:flex; align-items:center; gap:10px;">
             <div id="geo-style-ctrls" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                 <div class="ctrl-group" id="ctrl-grp-fill"><label>Fill</label><input type="color" id="sel-fill-color" oninput="updateShapeFill(this.value)"></div>
                 <div class="ctrl-group" id="ctrl-grp-radius"><label>Rad</label><input type="range" id="sel-radius" min="0" max="200" style="width:40px" oninput="updateProp('cornerRadius', parseInt(this.value))"></div>
-                <div class="ctrl-group"><label id="stroke-label">Stroke</label><input type="number" id="sel-stroke-w" min="0" max="50" style="width:40px" onchange="updateProp('strokeWidth', parseInt(this.value))"><input type="color" id="sel-stroke-c" oninput="updateStrokeColorLive(this.value)"></div>
+                <div class="ctrl-group"><label>Stroke</label><input type="number" id="sel-stroke-w" min="0" max="50" style="width:40px" onchange="updateProp('strokeWidth', parseInt(this.value))"><input type="color" id="sel-stroke-c" oninput="updateStrokeColorLive(this.value)"></div>
                 <div class="ctrl-group" id="ctrl-grp-outline"><button id="btn-outline-toggle" class="ctrl-btn" style="font-size:10px; padding:4px 10px; white-space:nowrap; width:auto;" onclick="toggleOutlineOnly()">Outline Only</button></div>
                 <div id="line-width-presets" class="ctrl-group" style="display:none;">
                   <label style="font-size:9px; color:#777; font-weight:700;">Width</label>
@@ -1792,7 +1849,6 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
                     <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(0.25)">0.25</button>
                     <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(0.5)">0.5</button>
                     <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(1)">1</button>
-                    <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(1.25)">1.25</button>
                     <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(1.5)">1.5</button>
                     <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(2)">2</button>
                     <button class="ctrl-btn" style="width:auto;padding:2px 8px;font-size:10px;" onclick="setLineWidth(3)">3</button>
@@ -1804,98 +1860,71 @@ body { margin: 0; padding:0; background: var(--bg); font-family: 'Inter', sans-s
                     <button id="btn-cap-round"  class="ctrl-btn" style="width:auto;padding:2px 10px;font-size:10px;" onclick="setLineCap('round')">Round</button>
                     <button id="btn-cap-square" class="ctrl-btn" style="width:auto;padding:2px 10px;font-size:10px;" onclick="setLineCap('square')">Square</button>
                   </div>
-                  <input type="number" id="sel-line-width-custom" min="0.1" max="50" step="0.25"
-                    style="width:50px; background:#111; border:1px solid #444; color:var(--accent); border-radius:6px; padding:4px 6px; font-size:11px; outline:none;"
-                    placeholder="px"
-                    onchange="setLineWidth(parseFloat(this.value))">
+                  <input type="number" id="sel-line-width-custom" min="0.1" max="50" step="0.25" class="sbar-input" placeholder="px" onchange="setLineWidth(parseFloat(this.value))">
                 </div>
             </div>
             <div id="text-style-ctrls" style="display:none; align-items:center; gap:10px;">
-                <select id="sel-font" style="max-width:100px" onchange="updateStyle('fontFamily', this.value)"><option value="bernard-mt-condensed-regular">Bernard Mt Condensed Regular</option>
-<option value="century-gothic-bold">Century Gothic Bold</option>
-<option value="century-gothic-bold-italic">Century Gothic Bold Italic</option>
-<option value="century-gothic-regular">Century Gothic Regular</option>
-</select>
+                <select id="sel-font" style="max-width:100px" onchange="updateStyle('fontFamily', this.value)">
+                    <option value="bernard-mt-condensed-regular">Bernard Mt</option>
+                    <option value="century-gothic-bold">CG Bold</option>
+                    <option value="century-gothic-bold-italic">CG Bold Italic</option>
+                    <option value="century-gothic-regular">CG Regular</option>
+                </select>
                 <input type="color" id="sel-color" onchange="updateStyle('color', this.value)">
-                <div class="ctrl-group">
-                  <label>Size</label>
-                  <input type="number" id="sel-font-size" min="4" max="400" step="1" style="width:52px"
-                    onchange="updateStyle('fontSize', parseFloat(this.value))">
-                </div>
-                <div class="ctrl-group">
-                  <label>Width</label>
-                  <input type="number" id="sel-text-width" min="0" max="900" step="10" style="width:52px"
-                    placeholder="auto"
-                    onchange="applyTextWidth(parseInt(this.value))">
-                </div>
+                <div class="ctrl-group"><label>Size</label><input type="number" id="sel-font-size" min="4" max="400" step="1" style="width:52px" onchange="updateStyle('fontSize', parseFloat(this.value))"></div>
+                <div class="ctrl-group"><label>Width</label><input type="number" id="sel-text-width" min="0" max="900" step="10" style="width:52px" placeholder="auto" onchange="applyTextWidth(parseInt(this.value))"></div>
                 <div class="ctrl-group"><label>L.H.</label><input type="number" id="sel-l-height" step="0.1" min="0.5" max="3" style="width:40px" onchange="updateStyle('lineHeight', parseFloat(this.value))"></div>
                 <div class="ctrl-group"><label>L.S.</label><input type="number" id="sel-l-spacing" min="-10" max="50" style="width:40px" onchange="updateStyle('letterSpacing', parseInt(this.value))"></div>
             </div>
-            
-            <!-- Video URL Field (Phase 2 Precursor) -->
-            <div class="ctrl-group video-url-group">
+            <div class="ctrl-group video-url-group sbar-video-section">
                 <label>🎬 Video URL (optional)</label>
                 <div class="video-url-input-wrap">
-                    <input type="text" id="sel-video-url" placeholder="https://res.cloudinary.com/..." 
-                        oninput="updateProp('videoUrl', this.value)">
-                    <button class="video-url-clear" title="Clear URL" 
-                        onclick="document.getElementById('sel-video-url').value=''; updateProp('videoUrl', '');">✕</button>
+                    <input type="text" id="sel-video-url" placeholder="https://res.cloudinary.com/..." oninput="updateProp('videoUrl', this.value)">
+                    <button class="video-url-clear" title="Clear URL" onclick="document.getElementById('sel-video-url').value=''; updateProp('videoUrl', '');">✕</button>
                 </div>
                 <span class="video-url-hint">Paste Cloudinary URL to show video preview on customer menu hover</span>
-                <label style="font-size:10px;color:#aaa;margin-top:8px;display:block;">🏷️ Video Label (optional)</label>
+                <label class="sbar-video-label">🏷️ Video Label (optional)</label>
                 <div class="video-url-input-wrap">
-                    <input type="text" id="sel-video-label" placeholder="e.g. Turkey Chops, Shrimp Plate..."
-                        oninput="updateProp('videoLabel', this.value)">
-                    <button class="video-url-clear" title="Clear Label"
-                        onclick="document.getElementById('sel-video-label').value=''; updateProp('videoLabel', '');">✖</button>
+                    <input type="text" id="sel-video-label" placeholder="e.g. Turkey Chops, Shrimp Plate..." oninput="updateProp('videoLabel', this.value)">
+                    <button class="video-url-clear" title="Clear Label" onclick="document.getElementById('sel-video-label').value=''; updateProp('videoLabel', '');">✖</button>
                 </div>
             </div>
         </div>
-
         <div id="bar-tab-arrange" style="display:none; align-items:center; gap:10px;">
             <div class="ctrl-group" style="flex-direction:column; gap:4px; align-items:flex-start;">
               <div style="display:flex; gap:6px; align-items:center;">
                 <label style="font-size:9px;color:#777;font-weight:700;width:12px;">X</label>
-                <input type="number" id="pos-x-input" style="width:58px; background:#111; border:1px solid #444; color:var(--accent); border-radius:6px; padding:4px 6px; font-size:11px; outline:none;"
-                  onchange="setPosFromInput('x', parseFloat(this.value))">
+                <input type="number" id="pos-x-input" class="sbar-input" onchange="setPosFromInput('x', parseFloat(this.value))">
                 <label style="font-size:9px;color:#777;font-weight:700;width:12px;">Y</label>
-                <input type="number" id="pos-y-input" style="width:58px; background:#111; border:1px solid #444; color:var(--accent); border-radius:6px; padding:4px 6px; font-size:11px; outline:none;"
-                  onchange="setPosFromInput('y', parseFloat(this.value))">
+                <input type="number" id="pos-y-input" class="sbar-input" onchange="setPosFromInput('y', parseFloat(this.value))">
               </div>
               <div style="display:flex; gap:6px; align-items:center;" id="wh-inputs">
                 <label style="font-size:9px;color:#777;font-weight:700;width:12px;">W</label>
-                <input type="number" id="pos-w-input" min="1" style="width:58px; background:#111; border:1px solid #444; color:var(--accent); border-radius:6px; padding:4px 6px; font-size:11px; outline:none;"
-                  onchange="setSizeFromInput('width', parseFloat(this.value))">
+                <input type="number" id="pos-w-input" min="1" class="sbar-input" onchange="setSizeFromInput('width', parseFloat(this.value))">
                 <label style="font-size:9px;color:#777;font-weight:700;width:12px;">H</label>
-                <input type="number" id="pos-h-input" min="1" style="width:58px; background:#111; border:1px solid #444; color:var(--accent); border-radius:6px; padding:4px 6px; font-size:11px; outline:none;"
-                  onchange="setSizeFromInput('height', parseFloat(this.value))">
+                <input type="number" id="pos-h-input" min="1" class="sbar-input" onchange="setSizeFromInput('height', parseFloat(this.value))">
               </div>
             </div>
-<!-- Center buttons moved to top Align Bar -->
             <div class="ctrl-group">
-                <button id="btn-layer-up" class="ctrl-btn" style="width:30px; height:30px" onclick="updateZ(1)" title="Layer Up" data-help="Moves the element forward in the stacking order">⬆️</button>
-                <button id="btn-layer-down" class="ctrl-btn" style="width:30px; height:30px" onclick="updateZ(-1)" title="Layer Down" data-help="Moves the element backward in the stacking order">⬇️</button>
-                <button id="btn-layer-front" class="ctrl-btn" style="width:30px; height:30px; font-size:12px;" onclick="bringToFront()" title="To Front" data-help="Sends element all the way to the very top of the layer stack">⇈</button>
-                <button id="btn-layer-back" class="ctrl-btn" style="width:30px; height:30px; font-size:12px;" onclick="sendToBack()" title="To Back" data-help="Sends element all the way to the very bottom of the layer stack">⇊</button>
+                <button id="btn-layer-up" class="ctrl-btn" style="width:30px; height:30px" onclick="updateZ(1)" title="Layer Up">⬆️</button>
+                <button id="btn-layer-down" class="ctrl-btn" style="width:30px; height:30px" onclick="updateZ(-1)" title="Layer Down">⬇️</button>
+                <button id="btn-layer-front" class="ctrl-btn" style="width:30px; height:30px; font-size:12px;" onclick="bringToFront()" title="To Front">⇈</button>
+                <button id="btn-layer-back" class="ctrl-btn" style="width:30px; height:30px; font-size:12px;" onclick="sendToBack()" title="To Back">⇊</button>
             </div>
             <div class="ctrl-group" style="gap:4px; flex-direction:column; align-items:center;">
-                <button class="ctrl-btn" style="width:32px;height:32px;font-size:14px;"
-                    onclick="nudge(0,-2)" title="Nudge Up">▲</button>
+                <button class="ctrl-btn" style="width:32px;height:32px;font-size:14px;" onclick="nudge(0,-2)" title="Nudge Up">▲</button>
                 <div style="display:flex;gap:4px;">
-                    <button class="ctrl-btn" style="width:32px;height:32px;font-size:14px;"
-                        onclick="nudge(-2,0)" title="Nudge Left">◀</button>
-                    <button class="ctrl-btn" style="width:32px;height:32px;font-size:14px;"
-                        onclick="nudge(2,0)" title="Nudge Right">▶</button>
+                    <button class="ctrl-btn" style="width:32px;height:32px;font-size:14px;" onclick="nudge(-2,0)" title="Nudge Left">◀</button>
+                    <button class="ctrl-btn" style="width:32px;height:32px;font-size:14px;" onclick="nudge(2,0)" title="Nudge Right">▶</button>
                 </div>
-                <button class="ctrl-btn" style="width:32px;height:32px;font-size:14px;"
-                    onclick="nudge(0,2)" title="Nudge Down">▼</button>
+                <button class="ctrl-btn" style="width:32px;height:32px;font-size:14px;" onclick="nudge(0,2)" title="Nudge Down">▼</button>
             </div>
         </div>
     </div>
-    <div style="display:flex; gap:10px; flex-shrink:0; margin-left:10px; border-left:1px solid #444; padding-left:10px;">
-        <button id="btn-set-bg" class="ctrl-btn set-bg" onclick="setSelectedAsBackground()" title="Promote this image to full-page locked background" data-help="Sets the selected image as the full-page menu background">🖼️ BG</button>
-        <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); showToast('Duplicated ' + ids.length + ' elements');}else{duplicateEl();}" title="Duplicate Layer" data-help="Makes an exact copy of the selected layer — text, image, or shape">📋</button>
-        <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c;" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds];ids.forEach(id=>{selectedId=id;deleteEl(true,true);});docV2.editorState.selectedElementIds=[];deselect(); updateSelectionBar(); renderLayerList();}else{deleteEl();}" title="Delete Layer" data-help="Permanently removes the selected element from the menu">🗑</button>
+    <div class="sbar-actions" style="display:flex; gap:10px; flex-shrink:0; margin-left:10px; border-left:1px solid #444; padding-left:10px;">
+        <button id="btn-set-bg" class="ctrl-btn set-bg" onclick="setSelectedAsBackground()" title="Set as Background">🖼️ BG</button>
+        <button id="btn-duplicate" class="ctrl-btn" style="background:#2980b9" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds]; ids.forEach(id=>{selectedId=id; duplicateEl(true, true);}); docV2.editorState.selectedElementIds=[]; deselect(); showToast('Duplicated ' + ids.length + ' elements');}else{duplicateEl();}" title="Duplicate Layer">📋</button>
+        <button id="btn-delete" class="ctrl-btn" style="background:#c0392b; border-color:#e74c3c;" onclick="if(docV2.editorState.selectedElementIds.length>1){pushState(); var ids=[...docV2.editorState.selectedElementIds];ids.forEach(id=>{selectedId=id;deleteEl(true,true);});docV2.editorState.selectedElementIds=[];deselect(); updateSelectionBar(); renderLayerList();}else{deleteEl();}" title="Delete Layer">🗑</button>
     </div>
 </div>
 
@@ -3206,6 +3235,17 @@ function updateSelectionBar() {
     document.getElementById('sel-video-url').value = item.videoUrl || '';
     document.getElementById('sel-video-label').value = item.videoLabel || '';
     
+    const rpOpacity = document.getElementById('rp-opacity');
+    const rpRotate = document.getElementById('rp-rotate');
+    const rpRole = document.getElementById('rp-role');
+    const rpLock = document.getElementById('rp-lock');
+    const rpVisible = document.getElementById('rp-visible');
+    if (rpOpacity) rpOpacity.value = Math.round((item.opacity ?? 1) * 100);
+    if (rpRotate) rpRotate.value = item.rotation || 0;
+    if (rpRole) rpRole.value = item.layerRole || 'content';
+    if (rpLock) { rpLock.textContent = item.locked ? '🔒 Lock' : '🔓 Unlock'; rpLock.classList.toggle('active', item.locked); }
+    if (rpVisible) { rpVisible.textContent = item.visible ? '👁️ Vis' : '🙈 Hid'; rpVisible.classList.toggle('active', !item.visible); }
+
     if(item.type==='text') {
         document.getElementById('sel-font').value = item.style.fontFamily.replace(/['"]/g, '');
         document.getElementById('sel-color').value = normalizeHex(item.style.color);
@@ -3219,7 +3259,7 @@ function updateSelectionBar() {
         if (twInput) twInput.value = item.width ? Math.round(item.width) : '';
         // Default text elements to DESIGN tab if unlocked
         if(item.type === 'text' && !_activeBarTab) _activeBarTab = 'design';
-        setBarTab(_activeBarTab || 'layer');
+        setBarTab(_activeBarTab || 'design');
     }
 
     const btnSetBg = document.getElementById('btn-set-bg');
@@ -3245,7 +3285,7 @@ function updateSelectionBar() {
 
     // Auto-open Design tab for shapes and lines
     if ((item.type === 'shape' || item.type === 'line') && !_activeBarTab) _activeBarTab = 'design';
-    setBarTab(_activeBarTab || 'layer');
+    setBarTab(_activeBarTab || 'design');
 
     renderLayerList();
     syncTextFormatBar();
@@ -3427,8 +3467,9 @@ function toggleLockById(e, id) {
 }
 
 function setBarTab(tab) {
+    if (tab === 'layer') tab = 'design';
     _activeBarTab = tab;
-    ['layer','design','arrange'].forEach(t => {
+    ['design','arrange'].forEach(t => {
         const target = document.getElementById('bar-tab-'+t);
         if(target) target.style.display = (t===tab?'flex':'none');
         const tabBtn = document.getElementById('tab-'+t);
