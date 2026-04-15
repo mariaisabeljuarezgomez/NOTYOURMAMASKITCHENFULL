@@ -690,27 +690,30 @@ def generate_video():
             if not all([c_name, c_key, c_secret]):
                 return jsonify({"error": "Cloudinary credentials required for image-to-video"}), 400
 
-            # 1. Prepare base64 for Cloudinary (ensure it has the prefix)
-            c_file_payload = reference_image_b64
-            if "," not in c_file_payload:
-                c_file_payload = f"data:image/png;base64,{c_file_payload}"
-
-            # 2. Upload to Cloudinary
+            # Ensure raw base64 only (no data URI prefix)
+            raw_b64 = reference_image_b64
+            if ',' in raw_b64:
+                raw_b64 = raw_b64.split(',', 1)[1]
+            # Decode to raw bytes for proper multipart binary upload
+            try:
+                image_bytes = base64.b64decode(raw_b64)
+            except Exception as decode_err:
+                return jsonify({'error': f'Invalid base64 for reference image: {decode_err}'}), 400
             c_ts = int(time.time())
             c_sig = cloudinary_sign({"folder": "nymk_ai_refs", "timestamp": c_ts}, c_secret)
-            c_url = f"https://api.cloudinary.com/v1_1/{c_name}/auto/upload"
-            
+            c_url = f"https://api.cloudinary.com/v1_1/{c_name}/image/upload"
+
             c_fields = {
                 "api_key": c_key,
                 "timestamp": c_ts,
                 "signature": c_sig,
                 "folder": "nymk_ai_refs"
             }
-            
-            c_files = {"file": (None, c_file_payload, "image/png")}
+
+            c_files = {"file": ("reference.png", image_bytes, "image/png")}
             for k, v in c_fields.items():
                 c_files[k] = (None, str(v))
-                
+
             c_resp = client.post(c_url, files=c_files, timeout=60)
             if c_resp.status_code not in (200, 201):
                 return jsonify({"error": f"Cloudinary upload failed for reference image: {c_resp.text}"}), 400
