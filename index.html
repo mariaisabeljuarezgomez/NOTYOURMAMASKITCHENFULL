@@ -6885,20 +6885,40 @@ function useLastAiImageAsVideoRef() {
 }
 
 function setVidRefFromUrl(src) {
-  // Use let/const or global scope correctly
-  if (src && src.includes(',')) {
-    aiState.vidRefB64 = src.split(',')[1];
-  } else if (src && (src.startsWith('http://') || src.startsWith('https://'))) {
-    // If it's a URL, do not store it as base64 data
-    aiState.vidRefB64 = null;
-  } else {
-    aiState.vidRefB64 = src;
-  }
   aiState.vidRefMimeType = 'image/png';
   const thumb = document.getElementById('ai-vid-ref-thumb');
   if (thumb) thumb.src = src;
   const zone = document.getElementById('ai-vid-ref-zone');
   if (zone) zone.style.display = 'none';
+  if (src && src.includes(',')) {
+    // Already a data URI — strip the prefix
+    aiState.vidRefB64 = src.split(',')[1];
+  } else if (src && (src.startsWith('http://') || src.startsWith('https://'))) {
+    // It's a URL — proxy-fetch it and convert to base64
+    fetch('/api/proxy-download', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: src })
+    })
+    .then(r => r.blob())
+    .then(blob => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    }))
+    .then(dataUrl => {
+      aiState.vidRefB64 = dataUrl.split(',')[1];
+      aiState.vidRefMimeType = blob.type || 'image/jpeg';
+      showToast('✅ Reference image loaded for video');
+    })
+    .catch(() => {
+      aiState.vidRefB64 = null;
+      showToast('⚠️ Could not fetch reference image as base64');
+    });
+  } else {
+    aiState.vidRefB64 = src;
+  }
   const preview = document.getElementById('ai-vid-ref-preview');
   if (preview) preview.style.display = 'block';
   updateVideoControlStates();
