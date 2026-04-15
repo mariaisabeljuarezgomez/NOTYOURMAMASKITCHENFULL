@@ -7131,7 +7131,6 @@ function pollKlingStatus() {
         document.getElementById('ai-vid-url').value = data.video_url; // FALLBACK for applyVideoToSlot
         document.getElementById('ai-vid-url-row').style.display = 'block';
         document.getElementById('ai-vid-apply-row').style.display = 'block';
-        document.getElementById('ai-vid-slot-picker').style.display = 'block';
         showToast('✅ Video ready — Uploading to Cloudinary…');
         // Auto-upload to Cloudinary
         uploadAiToCloudinary('video');
