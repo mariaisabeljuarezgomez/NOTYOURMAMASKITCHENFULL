@@ -6877,50 +6877,77 @@ function restoreVideoSlot(slot, url) {
   showToast('↩ Restored!');
 }
 
-function useLastAiImageAsVideoRef() {
+async function useLastAiImageAsVideoRef() {
   const src = window._lastAiImageUrl;
   if (!src) { showToast('❌ No AI image to use'); return; }
-  setVidRefFromUrl(src);
-  showToast('✅ AI image set as video reference!');
+  await setVidRefFromUrl(src);
+  if (aiState.vidRefB64) {
+    showToast('✅ AI image set as video reference!');
+  }
 }
 
-function setVidRefFromUrl(src) {
+async function setVidRefFromUrl(src) {
   aiState.vidRefMimeType = 'image/png';
   const thumb = document.getElementById('ai-vid-ref-thumb');
   if (thumb) thumb.src = src;
   const zone = document.getElementById('ai-vid-ref-zone');
   if (zone) zone.style.display = 'none';
-  if (src && src.includes(',')) {
-    // Already a data URI — strip the prefix
+  if (!src) {
+    aiState.vidRefB64 = null;
+  } else if (src.startsWith('data:')) {
     aiState.vidRefB64 = src.split(',')[1];
-  } else if (src && (src.startsWith('http://') || src.startsWith('https://'))) {
-    // It's a URL — proxy-fetch it and convert to base64
-    fetch('/api/proxy-download', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: src })
-    })
-    .then(r => r.blob())
-    .then(blob => new Promise((resolve, reject) => {
+    const mimeMatch = src.match(/^data:([^;]+)/);
+    if (mimeMatch) aiState.vidRefMimeType = mimeMatch[1];
+    showToast('✅ Reference image loaded for video');
+  } else if (src.startsWith('http://') || src.startsWith('https://')) {
+    try {
+      const r = await fetch('/api/proxy-download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: src })
+      });
+      const blob = await r.blob();
       const mimeType = blob.type || 'image/jpeg';
-      const reader = new FileReader();
-      reader.onload = () => {
-        aiState.vidRefMimeType = mimeType;
-        resolve(reader.result);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    }))
-    .then(dataUrl => {
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
       aiState.vidRefB64 = dataUrl.split(',')[1];
+      aiState.vidRefMimeType = mimeType;
       showToast('✅ Reference image loaded for video');
-    })
-    .catch(() => {
+    } catch (err) {
       aiState.vidRefB64 = null;
       showToast('⚠️ Could not fetch reference image as base64');
-    });
+    }
   } else {
-    aiState.vidRefB64 = src;
+    try {
+      const fetchUrl = src.startsWith('//') ? window.location.protocol + src : src;
+      const response = await fetch(fetchUrl);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const blob = await response.blob();
+      if (!blob.type.startsWith('image/')) throw new Error(`Not an image: ${blob.type}`);
+      const mimeType = blob.type || 'image/png';
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+      aiState.vidRefB64 = dataUrl.split(',')[1];
+      aiState.vidRefMimeType = mimeType;
+      showToast('✅ Reference image loaded for video');
+    } catch (err) {
+      if (/^[A-Za-z0-9+/=]+$/.test(src) && src.length > 100) {
+        aiState.vidRefB64 = src;
+        showToast('✅ Reference image loaded for video');
+      } else {
+        aiState.vidRefB64 = null;
+        console.warn('[setVidRefFromUrl] Could not convert src to base64:', src.substring(0, 80));
+        showToast('⚠️ Could not convert reference image to base64');
+      }
+    }
   }
   const preview = document.getElementById('ai-vid-ref-preview');
   if (preview) preview.style.display = 'block';
@@ -7025,11 +7052,19 @@ async function generateAiVideo() {
   try {
     let refB64 = aiState.vidRefB64;
     if (refB64 && refB64.includes(',')) refB64 = refB64.split(',')[1];
-    
-    // Hardening: Never send a Cloudinary/HTTP URL as base64
-    if (refB64 && (refB64.startsWith('http://') || refB64.startsWith('https://'))) {
+    // Hardening: Never send a URL string as base64
+    if (refB64 && (refB64.startsWith('http://') || refB64.startsWith('https://') || refB64.startsWith('blob:'))) {
       showToast('⚠️ Reference image is a URL, not base64. Use Upload or canvas source.');
       refB64 = null;
+    }
+    // Guard: pin-start checked but base64 not ready yet
+    const pinStart = document.getElementById('ai-vid-pin-start');
+    if (pinStart && pinStart.checked && !refB64) {
+      showToast('⚠️ Reference image still loading — wait a moment and try again.');
+      btn.disabled = false;
+      btn.textContent = '🎬 Generate Video';
+      document.getElementById('ai-vid-progress').style.display = 'none';
+      return;
     }
     const res = await fetch('/api/ai/generate-video', {
       method: 'POST',
