@@ -652,21 +652,27 @@ def generate_video():
         headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
         res_map = {"1920x1080": "16:9", "1080x1920": "9:16", "1080x1080": "1:1"}
         aspect = res_map.get(resolution, "16:9")
+
+        payload = {
+            "prompt": prompt,
+            "duration": str(duration),
+            "model_name": data.get("model_name", "kling-v1")
+        }
+
         if is_image2video:
-            payload = {
-                "prompt": prompt,
-                "duration": str(duration),
-                "aspect_ratio": aspect,
-                "model_name": data.get("model_name", "kling-v1")
-            }
+            # Kling image2video takes raw base64 string directly under the 'image' key, NOT 'image_url'
+            # It also DOES NOT accept an 'aspect_ratio' field (aspect ratio is inferred from the image).
+            raw_b64 = reference_image_b64
+            if ',' in raw_b64:
+                raw_b64 = raw_b64.split(',', 1)[1]
+            payload["image"] = raw_b64
         else:
-            payload = {
-                "prompt": prompt,
-                "duration": str(duration),
-                "aspect_ratio": aspect,
-                "cfg_scale": cfg_scale,
-                "model_name": data.get("model_name", "kling-v1")
-            }
+            payload["aspect_ratio"] = aspect
+            payload["cfg_scale"] = cfg_scale
+            # camera_motion is only valid for text2video
+            camera_motion = data.get("camera_motion", "none")
+            if camera_motion and camera_motion != "none":
+                payload["camera_motion"] = camera_motion
 
         if negative_prompt:
             payload["negative_prompt"] = negative_prompt
@@ -675,60 +681,11 @@ def generate_video():
         if quality_mode:
             payload["mode"] = quality_mode
 
-        # camera_motion is only valid for text2video — strip it for image2video
-        camera_motion = data.get("camera_motion", "none")
-        if task_type == "text2video" and camera_motion and camera_motion != "none":
-            payload["camera_motion"] = camera_motion
-        if reference_image_b64:
-            # Kling requires a PUBLIC URL for image_url, not base64.
-            # We must upload to Cloudinary first.
-            c_creds = data.get("cloudinary_credentials", {})
-            c_name = c_creds.get("cloud_name")
-            c_key = c_creds.get("api_key")
-            c_secret = c_creds.get("api_secret")
-
-            if not all([c_name, c_key, c_secret]):
-                return jsonify({"error": "Cloudinary credentials required for image-to-video"}), 400
-
-            # Ensure raw base64 only (no data URI prefix)
-            raw_b64 = reference_image_b64
-            if ',' in raw_b64:
-                raw_b64 = raw_b64.split(',', 1)[1]
-            # Decode to raw bytes for proper multipart binary upload
-            try:
-                image_bytes = base64.b64decode(raw_b64)
-            except Exception as decode_err:
-                return jsonify({'error': f'Invalid base64 for reference image: {decode_err}'}), 400
-            c_ts = int(time.time())
-            c_sig = cloudinary_sign({"folder": "nymk_ai_refs", "timestamp": c_ts}, c_secret)
-            c_url = f"https://api.cloudinary.com/v1_1/{c_name}/image/upload"
-
-            c_fields = {
-                "api_key": c_key,
-                "timestamp": c_ts,
-                "signature": c_sig,
-                "folder": "nymk_ai_refs"
-            }
-
-            c_files = {"file": ("reference.png", image_bytes, "image/png")}
-            for k, v in c_fields.items():
-                c_files[k] = (None, str(v))
-
-            c_resp = client.post(c_url, files=c_files, timeout=60)
-            if c_resp.status_code not in (200, 201):
-                return jsonify({"error": f"Cloudinary upload failed for reference image: {c_resp.text}"}), 400
-            
-            public_url = c_resp.json().get("secure_url")
-            if not public_url:
-                return jsonify({"error": "Failed to get public URL from Cloudinary"}), 400
-
-            # 3. Use the public URL in the Kling payload
-            payload["image_url"] = public_url
-        
-        # DEBUG: Print payload to console (visible in Railway logs)
-        print(f"DEBUG: Kling Payload: {json.dumps({k:v for k,v in payload.items() if k != 'image_url'})}")
-        if 'image_url' in payload:
-            print(f"DEBUG: Kling Image URL: {payload['image_url'][:50]}...")
+        # DEBUG: Print payload to console (excluding large base64)
+        debug_payload = {k: v for k, v in payload.items() if k != 'image'}
+        if 'image' in payload:
+            debug_payload['image'] = payload['image'][:30] + '...'
+        print(f"DEBUG: Kling Payload: {json.dumps(debug_payload)}")
 
         sub_resp = client.post(submit_url, headers=headers, json=payload, timeout=30)
         if sub_resp.status_code in (200, 201, 202):
