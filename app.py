@@ -723,12 +723,10 @@ def generate_video():
                 return jsonify({"error": "Failed to get public URL from Cloudinary"}), 400
 
             # 3. Use the public URL in the Kling payload
-            payload["image_url"] = public_url
+            payload["image"] = public_url
         
         # DEBUG: Print payload to console (visible in Railway logs)
-        print(f"DEBUG: Kling Payload: {json.dumps({k:v for k,v in payload.items() if k != 'image_url'})}")
-        if 'image_url' in payload:
-            print(f"DEBUG: Kling Image URL: {payload['image_url'][:50]}...")
+        print(f"DEBUG: Kling Payload: {json.dumps({k: (v[:50] + '...') if k == 'image' and isinstance(v, str) and len(v) > 50 else v for k, v in payload.items()})}")
 
         sub_resp = client.post(submit_url, headers=headers, json=payload, timeout=30)
         if sub_resp.status_code in (200, 201, 202):
