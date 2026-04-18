@@ -994,7 +994,7 @@ Resolve "Missing file data" 400 errors during AI image saving and prevent execut
 
 ## Section 24: Kling img2img Payload Fix
 **Status: RESOLVED — April 14, 2026**
-**Commit: [current]**
+**Commit: ed6fa87**
 
 ### The Bug
 Kling AI image-to-image/edit generation was failing because the frontend was sending the reference image under the wrong key (`image` instead of `reference_images`) and was not passing the generation `mode`. The backend (`app.py`) was seeing an empty reference image list and sending invalid requests to the Kling API.
@@ -1010,5 +1010,35 @@ payload.mode = mode;
 ```
 
 --- END SECTION 24 ---
+
+---
+
+## Section 25: Ghost null-reference line removed + index.html re-prettified
+**Status: RESOLVED — April 18, 2026**
+
+### Problem
+A VS Code save conflict revealed a sync discrepancy between the disk version of `index.html` (~7,227 lines, compact) and the VS Code editor buffer (~9,284 lines, pretty-printed). A full whitespace-ignoring diff confirmed only **one real functional difference**: a ghost line in `pollKlingStatus()`:
+
+```javascript
+document.getElementById('ai-vid-slot-picker').style.display = 'block';
+```
+
+The element `id="ai-vid-slot-picker"` **does not exist anywhere in the HTML**. Calling `.style.display` on `null` throws a silent `TypeError` that aborts the entire video generation success path — preventing the download row, apply row, and Cloudinary auto-upload from executing.
+
+### Investigation Notes
+- A second AI agent incorrectly claimed `uploadAiToCloudinary` had no video branch. **This was verified false.** The video `else` branch exists at line 6474 of the original disk file and is fully functional.
+- All other ~2,000 line differences between disk and buffer were **formatting only** (VS Code pretty-printing compact single-line CSS rules into expanded multi-line format). Zero functional differences beyond the ghost line.
+
+### Fix Applied
+1. Deleted the ghost line from `index_backup_review.html` (the editor buffer backup).
+2. Copied `index_backup_review.html` → `index.html` (overwrote disk version with the clean pretty-printed editor buffer).
+
+### Post-fix State
+- `index.html` is now the pretty-printed (expanded) version (~9,284 lines).
+- Zero references to `ai-vid-slot-picker` remain in the file.
+- `uploadAiToCloudinary('video')` continues to function (video branch confirmed intact).
+- `pollKlingStatus()` success path now runs cleanly: shows video player → shows URL row → shows apply row → auto-uploads to Cloudinary.
+
+--- END SECTION 25 ---
 
 **END OF MASTER HANDOFF**
