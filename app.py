@@ -46,6 +46,9 @@ def cloudinary_sign(params_dict, api_secret):
 
 app = Flask(__name__)
 
+# --- SITE PASSWORD (change via Railway env var SITE_PASSWORD) ---
+SITE_PASSWORD = os.environ.get("SITE_PASSWORD", "menueditorpro")
+
 # Optimize Compression for PageSpeed & Performance
 app.config["COMPRESS_MIN_SIZE"] = 500
 app.config["COMPRESS_MIMETYPES"] = [
@@ -86,6 +89,27 @@ def init_db():
                 id SERIAL PRIMARY KEY,
                 slot TEXT NOT NULL,         -- 'hero', 'left', or 'right'
                 url TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # Access control: IP whitelist
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS ip_whitelist (
+                ip TEXT PRIMARY KEY,
+                unlocked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # Access control: full access log
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS access_log (
+                id SERIAL PRIMARY KEY,
+                ip TEXT NOT NULL,
+                page TEXT NOT NULL,
+                event TEXT NOT NULL,
+                user_agent TEXT,
+                duration_seconds INTEGER,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
@@ -1061,6 +1085,207 @@ def manual_en():
 @app.route('/manual-es.html')
 def manual_es():
     return send_from_directory('.', 'manual-es.html')
+
+# ─── ACCESS CONTROL HELPERS ───────────────────────────────────────────────────
+
+def _get_client_ip():
+    """Return real client IP, accounting for Railway's reverse proxy."""
+    return request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip()
+
+def _is_whitelisted(ip):
+    """Return True if this IP is in ip_whitelist."""
+    if not DATABASE_URL:
+        return True  # No DB = open (local dev)
+    conn = None
+    try:
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        cur = conn.cursor()
+        cur.execute("SELECT 1 FROM ip_whitelist WHERE ip = %s", (ip,))
+        return cur.fetchone() is not None
+    except Exception:
+        return False
+    finally:
+        if conn:
+            conn.close()
+
+# ─── AUTH ROUTES ──────────────────────────────────────────────────────────────
+
+@app.route('/api/auth/check', methods=['POST'])
+def auth_check():
+    """Returns whether this IP is already whitelisted."""
+    ip = _get_client_ip()
+    return jsonify({'unlocked': _is_whitelisted(ip)})
+
+@app.route('/api/auth/unlock', methods=['POST'])
+def auth_unlock():
+    """Verifies password and, if correct, adds IP to whitelist."""
+    ip = _get_client_ip()
+    data = request.json or {}
+    password = data.get('password', '')
+    page = data.get('page', '/')
+    ua = request.headers.get('User-Agent', '')[:512]
+    conn = None
+    try:
+        if password == SITE_PASSWORD:
+            if DATABASE_URL:
+                conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+                cur = conn.cursor()
+                cur.execute(
+                    "INSERT INTO ip_whitelist (ip) VALUES (%s) ON CONFLICT (ip) DO NOTHING",
+                    (ip,)
+                )
+                cur.execute(
+                    "INSERT INTO access_log (ip, page, event, user_agent) VALUES (%s, %s, %s, %s)",
+                    (ip, page, 'unlock_success', ua)
+                )
+                conn.commit()
+                cur.close()
+            return jsonify({'success': True})
+        else:
+            if DATABASE_URL:
+                conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+                cur = conn.cursor()
+                cur.execute(
+                    "INSERT INTO access_log (ip, page, event, user_agent) VALUES (%s, %s, %s, %s)",
+                    (ip, page, 'unlock_fail', ua)
+                )
+                conn.commit()
+                cur.close()
+            return jsonify({'success': False, 'error': 'Incorrect password'}), 401
+    except Exception as e:
+        print(f"auth_unlock ERROR: {e}", flush=True)
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+@app.route('/api/auth/log', methods=['POST'])
+def auth_log():
+    """Logs a visit or leave event for analytics."""
+    ip = _get_client_ip()
+    data = request.json or {}
+    page = data.get('page', '/')
+    event = data.get('event', 'visit')
+    duration = data.get('duration_seconds')
+    ua = request.headers.get('User-Agent', '')[:512]
+    if event not in ('visit', 'leave'):
+        return jsonify({'error': 'Invalid event'}), 400
+    conn = None
+    try:
+        if DATABASE_URL:
+            conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+            cur = conn.cursor()
+            cur.execute(
+                "INSERT INTO access_log (ip, page, event, user_agent, duration_seconds) VALUES (%s, %s, %s, %s, %s)",
+                (ip, page, event, ua, duration)
+            )
+            conn.commit()
+            cur.close()
+        return jsonify({'status': 'logged'})
+    except Exception as e:
+        print(f"auth_log ERROR: {e}", flush=True)
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+# ─── ADMIN ROUTES ─────────────────────────────────────────────────────────────
+
+@app.route('/admin')
+def admin_page():
+    """Serves admin.html — only to whitelisted IPs."""
+    ip = _get_client_ip()
+    if not _is_whitelisted(ip):
+        # Redirect to home which will show the lock page
+        from flask import redirect
+        return redirect('/')
+    if not os.path.exists('admin.html'):
+        return 'Admin page not found.', 404
+    response = send_from_directory('.', 'admin.html')
+    response.headers['Cache-Control'] = 'no-cache, must-revalidate'
+    return response
+
+@app.route('/api/admin/stats', methods=['GET'])
+def admin_stats():
+    """Returns full analytics data — only to whitelisted IPs."""
+    ip = _get_client_ip()
+    if not _is_whitelisted(ip):
+        return jsonify({'error': 'Unauthorized'}), 403
+    conn = None
+    try:
+        if not DATABASE_URL:
+            return jsonify({'whitelist': [], 'log': [], 'summary': {}})
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        cur = conn.cursor()
+
+        # Whitelist with visit counts
+        cur.execute("""
+            SELECT w.ip, w.unlocked_at,
+                   COUNT(l.id) FILTER (WHERE l.event = 'visit') AS visit_count,
+                   MAX(l.created_at) AS last_seen
+            FROM ip_whitelist w
+            LEFT JOIN access_log l ON l.ip = w.ip
+            GROUP BY w.ip, w.unlocked_at
+            ORDER BY w.unlocked_at DESC
+        """)
+        whitelist = []
+        for row in cur.fetchall():
+            whitelist.append({
+                'ip': row[0],
+                'unlocked_at': str(row[1]),
+                'visit_count': row[2] or 0,
+                'last_seen': str(row[3]) if row[3] else None
+            })
+
+        # Full access log (last 500)
+        cur.execute("""
+            SELECT id, ip, page, event, user_agent, duration_seconds, created_at
+            FROM access_log
+            ORDER BY created_at DESC
+            LIMIT 500
+        """)
+        log = []
+        for row in cur.fetchall():
+            log.append({
+                'id': row[0],
+                'ip': row[1],
+                'page': row[2],
+                'event': row[3],
+                'user_agent': row[4],
+                'duration_seconds': row[5],
+                'created_at': str(row[6])
+            })
+
+        # Summary stats
+        cur.execute("SELECT COUNT(*) FROM ip_whitelist")
+        total_unlocked = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(DISTINCT ip) FROM access_log")
+        unique_ips = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM access_log WHERE event = 'visit'")
+        total_visits = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM access_log WHERE event = 'unlock_fail'")
+        failed_attempts = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM access_log WHERE event = 'unlock_success'")
+        successful_unlocks = cur.fetchone()[0]
+
+        cur.close()
+        return jsonify({
+            'whitelist': whitelist,
+            'log': log,
+            'summary': {
+                'total_unlocked_ips': total_unlocked,
+                'unique_ips_seen': unique_ips,
+                'total_visits': total_visits,
+                'failed_attempts': failed_attempts,
+                'successful_unlocks': successful_unlocks
+            }
+        })
+    except Exception as e:
+        print(f"admin_stats ERROR: {e}", flush=True)
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

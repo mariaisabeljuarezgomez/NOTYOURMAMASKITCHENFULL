@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Maria's Digital Designs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #c8a96a;
+            --gold-dim: rgba(200,169,106,0.3);
+            --bg: #080808;
+            --surface: #111111;
+            --surface2: #181818;
+            --border: rgba(200,169,106,0.15);
+            --text: #e8e8e8;
+            --muted: #666;
+            --green: #4caf50;
+            --red: #e57373;
+            --blue: #64b5f6;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            font-size: 14px;
+        }
+
+        /* ── HEADER ── */
+        header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(8,8,8,0.96);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .header-brand {
+            display: flex; align-items: center; gap: 14px;
+        }
+        .header-logo {
+            font-size: 18px; font-weight: 800; letter-spacing: 1px;
+            background: linear-gradient(135deg, #e8c97a, #c8a96a, #a07840);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header-badge {
+            font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+            color: var(--gold); opacity: 0.6; border: 1px solid var(--gold-dim);
+            padding: 3px 10px; border-radius: 999px;
+        }
+        .header-right {
+            display: flex; align-items: center; gap: 16px;
+        }
+        #refresh-status {
+            font-size: 11px; color: var(--muted); letter-spacing: 1px;
+        }
+        .btn-refresh {
+            background: var(--surface2); border: 1px solid var(--border);
+            color: var(--gold); padding: 8px 18px; border-radius: 8px;
+            cursor: pointer; font-size: 12px; font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .btn-refresh:hover { background: #222; border-color: var(--gold); }
+
+        /* ── LAYOUT ── */
+        main { padding: 32px; max-width: 1400px; margin: 0 auto; }
+
+        /* ── SUMMARY CARDS ── */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px; margin-bottom: 32px;
+        }
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px 20px;
+            position: relative; overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .card:hover { border-color: rgba(200,169,106,0.4); }
+        .card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            opacity: 0.5;
+        }
+        .card-label {
+            font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+            color: var(--muted); margin-bottom: 10px;
+        }
+        .card-value {
+            font-size: 36px; font-weight: 800; color: var(--gold);
+            line-height: 1;
+        }
+        .card-sub {
+            font-size: 11px; color: var(--muted); margin-top: 6px;
+        }
+        .card-icon {
+            position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+            font-size: 28px; opacity: 0.12;
+        }
+
+        /* ── SECTION ── */
+        .section { margin-bottom: 32px; }
+        .section-title {
+            font-size: 12px; font-weight: 700; letter-spacing: 3px;
+            text-transform: uppercase; color: var(--gold); margin-bottom: 16px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .section-title::after {
+            content: ''; flex: 1; height: 1px;
+            background: var(--border);
+        }
+
+        /* ── TABLE ── */
+        .table-wrap {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        thead tr {
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            padding: 12px 16px; text-align: left;
+            font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+            color: var(--muted); font-weight: 600;
+        }
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            vertical-align: middle;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(200,169,106,0.02); }
+
+        .pill {
+            display: inline-block; padding: 3px 10px;
+            border-radius: 999px; font-size: 10px; font-weight: 700;
+            letter-spacing: 1px; text-transform: uppercase;
+        }
+        .pill-green  { background: rgba(76,175,80,0.15);  color: #81c784; border: 1px solid rgba(76,175,80,0.3); }
+        .pill-red    { background: rgba(229,115,115,0.15); color: #e57373; border: 1px solid rgba(229,115,115,0.3); }
+        .pill-blue   { background: rgba(100,181,246,0.12); color: #64b5f6; border: 1px solid rgba(100,181,246,0.25); }
+        .pill-gold   { background: rgba(200,169,106,0.12); color: #c8a96a; border: 1px solid rgba(200,169,106,0.25); }
+        .pill-gray   { background: rgba(255,255,255,0.05); color: #888;    border: 1px solid rgba(255,255,255,0.1); }
+
+        .ip-chip {
+            font-family: 'Courier New', monospace; font-size: 13px;
+            color: #e8c97a; background: rgba(200,169,106,0.06);
+            padding: 3px 10px; border-radius: 6px;
+            display: inline-block;
+        }
+
+        .ua-cell {
+            max-width: 280px; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
+            font-size: 11px; color: var(--muted);
+        }
+
+        .ts-cell { font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+        /* ── EMPTY STATE ── */
+        .empty {
+            padding: 48px; text-align: center; color: var(--muted);
+        }
+        .empty-icon { font-size: 32px; margin-bottom: 12px; }
+
+        /* ── LOADING ── */
+        .loading-overlay {
+            position: fixed; inset: 0; z-index: 999;
+            background: var(--bg);
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column; gap: 16px;
+        }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 3px solid rgba(200,169,106,0.1);
+            border-top: 3px solid var(--gold);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── PULSE dot ── */
+        .live-dot {
+            display: inline-block; width: 8px; height: 8px;
+            border-radius: 50%; background: var(--green);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%,100% { opacity: 1; transform: scale(1); }
+            50%      { opacity: 0.4; transform: scale(0.7); }
+        }
+
+        @media (max-width: 768px) {
+            main { padding: 16px; }
+            header { padding: 0 16px; }
+            .header-logo { font-size: 14px; }
+            .card-value { font-size: 28px; }
+            .ua-cell { max-width: 120px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading-overlay">
+    <div class="spinner"></div>
+    <div style="font-size:12px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;">Loading Analytics…</div>
+</div>
+
+<header>
+    <div class="header-brand">
+        <div class="header-logo">MARIA'S DIGITAL DESIGNS</div>
+        <div class="header-badge">Admin</div>
+    </div>
+    <div class="header-right">
+        <span class="live-dot"></span>
+        <span id="refresh-status">Refreshing in 30s</span>
+        <button class="btn-refresh" onclick="loadStats()">⟳ Refresh Now</button>
+    </div>
+</header>
+
+<main>
+
+    <!-- SUMMARY CARDS -->
+    <div class="cards-grid" id="cards-grid">
+        <div class="card">
+            <div class="card-label">Whitelisted IPs</div>
+            <div class="card-value" id="stat-unlocked">—</div>
+            <div class="card-sub">unique addresses granted access</div>
+            <div class="card-icon">🔓</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Unique IPs Seen</div>
+            <div class="card-value" id="stat-unique">—</div>
+            <div class="card-sub">distinct visitors in log</div>
+            <div class="card-icon">👁</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Total Visits</div>
+            <div class="card-value" id="stat-visits">—</div>
+            <div class="card-sub">page load events logged</div>
+            <div class="card-icon">📈</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Successful Unlocks</div>
+            <div class="card-value" id="stat-success">—</div>
+            <div class="card-sub">correct passwords entered</div>
+            <div class="card-icon">✅</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Failed Attempts</div>
+            <div class="card-value" id="stat-failed" style="color:#e57373;">—</div>
+            <div class="card-sub">wrong passwords entered</div>
+            <div class="card-icon">🚫</div>
+        </div>
+    </div>
+
+    <!-- WHITELISTED IPs -->
+    <div class="section">
+        <div class="section-title">Whitelisted IP Addresses</div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>IP Address</th>
+                        <th>Unlocked At</th>
+                        <th>Total Visits</th>
+                        <th>Last Seen</th>
+                    </tr>
+                </thead>
+                <tbody id="whitelist-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- FULL ACCESS LOG -->
+    <div class="section">
+        <div class="section-title">Access Log (Last 500 Events)</div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>IP Address</th>
+                        <th>Page</th>
+                        <th>Event</th>
+                        <th>Duration</th>
+                        <th>User Agent</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody id="log-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+
+<script>
+    let _countdown = 30;
+    let _timer = null;
+
+    function fmtDate(ts) {
+        if (!ts || ts === 'None') return '—';
+        try {
+            const d = new Date(ts.replace(' ', 'T') + (ts.includes('Z') ? '' : 'Z'));
+            return d.toLocaleString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit',
+                hour12: true
+            });
+        } catch(e) { return ts; }
+    }
+
+    function fmtDuration(s) {
+        if (s === null || s === undefined) return '—';
+        if (s < 60) return s + 's';
+        const m = Math.floor(s / 60);
+        const r = s % 60;
+        return r > 0 ? `${m}m ${r}s` : `${m}m`;
+    }
+
+    function eventPill(event) {
+        const map = {
+            'visit':           '<span class="pill pill-blue">VISIT</span>',
+            'unlock_success':  '<span class="pill pill-green">UNLOCKED</span>',
+            'unlock_fail':     '<span class="pill pill-red">FAILED</span>',
+            'leave':           '<span class="pill pill-gray">LEAVE</span>',
+        };
+        return map[event] || `<span class="pill pill-gray">${event}</span>`;
+    }
+
+    function pagePill(page) {
+        const map = {
+            '/':      '<span class="pill pill-gold">EDITOR</span>',
+            '/menu':  '<span class="pill pill-blue">MENU</span>',
+            '/admin': '<span class="pill pill-gray">ADMIN</span>',
+        };
+        return map[page] || `<span class="pill pill-gray">${page}</span>`;
+    }
+
+    async function loadStats() {
+        try {
+            const r = await fetch('/api/admin/stats');
+            if (!r.ok) {
+                if (r.status === 403) {
+                    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Inter,sans-serif;color:#e57373;font-size:14px;letter-spacing:1px;">ACCESS DENIED — Please unlock from the main site first.</div>';
+                    return;
+                }
+                throw new Error('HTTP ' + r.status);
+            }
+            const data = await r.json();
+            renderStats(data);
+        } catch(e) {
+            console.error('Stats load error:', e);
+        } finally {
+            document.getElementById('loading-overlay').style.display = 'none';
+        }
+    }
+
+    function renderStats(data) {
+        const s = data.summary || {};
+        document.getElementById('stat-unlocked').textContent = s.total_unlocked_ips ?? '—';
+        document.getElementById('stat-unique').textContent   = s.unique_ips_seen ?? '—';
+        document.getElementById('stat-visits').textContent   = s.total_visits ?? '—';
+        document.getElementById('stat-success').textContent  = s.successful_unlocks ?? '—';
+        document.getElementById('stat-failed').textContent   = s.failed_attempts ?? '—';
+
+        // Whitelist table
+        const wbody = document.getElementById('whitelist-tbody');
+        if (!data.whitelist || data.whitelist.length === 0) {
+            wbody.innerHTML = '<tr><td colspan="4"><div class="empty"><div class="empty-icon">🔒</div>No whitelisted IPs yet.</div></td></tr>';
+        } else {
+            wbody.innerHTML = data.whitelist.map(w => `
+                <tr>
+                    <td><span class="ip-chip">${w.ip}</span></td>
+                    <td class="ts-cell">${fmtDate(w.unlocked_at)}</td>
+                    <td><strong style="color:var(--gold);">${w.visit_count}</strong></td>
+                    <td class="ts-cell">${fmtDate(w.last_seen)}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Access log table
+        const lbody = document.getElementById('log-tbody');
+        if (!data.log || data.log.length === 0) {
+            lbody.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-icon">📋</div>No log entries yet.</div></td></tr>';
+        } else {
+            lbody.innerHTML = data.log.map(entry => `
+                <tr>
+                    <td style="color:var(--muted);font-size:11px;">${entry.id}</td>
+                    <td><span class="ip-chip">${entry.ip}</span></td>
+                    <td>${pagePill(entry.page)}</td>
+                    <td>${eventPill(entry.event)}</td>
+                    <td style="font-size:12px;color:var(--muted);">${fmtDuration(entry.duration_seconds)}</td>
+                    <td class="ua-cell" title="${entry.user_agent || ''}">${entry.user_agent || '—'}</td>
+                    <td class="ts-cell">${fmtDate(entry.created_at)}</td>
+                </tr>
+            `).join('');
+        }
+    }
+
+    // Auto-refresh countdown
+    function startCountdown() {
+        clearInterval(_timer);
+        _countdown = 30;
+        _timer = setInterval(() => {
+            _countdown--;
+            const el = document.getElementById('refresh-status');
+            if (el) el.textContent = `Refreshing in ${_countdown}s`;
+            if (_countdown <= 0) {
+                loadStats();
+                _countdown = 30;
+                if (el) el.textContent = `Refreshing in ${_countdown}s`;
+            }
+        }, 1000);
+    }
+
+    loadStats().then(startCountdown);
+</script>
+</body>
+</html>

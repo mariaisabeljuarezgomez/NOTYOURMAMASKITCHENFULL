@@ -1042,3 +1042,78 @@ The element `id="ai-vid-slot-picker"` **does not exist anywhere in the HTML**. C
 --- END SECTION 25 ---
 
 **END OF MASTER HANDOFF**
+
+## Section 26: IP Access Lock & Admin Analytics System
+**Status: IMPLEMENTED — April 20, 2026**
+
+### Feature Overview
+A full-site password lock page gates both the editor (`/`) and the viewer (`/menu`).
+Once an IP enters the correct password, it is permanently whitelisted — no re-entry needed on any future visit.
+An admin dashboard at `/admin` shows all analytics data.
+
+### Password
+- Default: `menueditorpro`
+- Override via Railway env var: `SITE_PASSWORD`
+- Password is server-side only — never sent to browser, never stored in DB
+
+### New DB Tables (approved April 20, 2026)
+
+```sql
+CREATE TABLE IF NOT EXISTS ip_whitelist (
+    ip TEXT PRIMARY KEY,
+    unlocked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS access_log (
+    id SERIAL PRIMARY KEY,
+    ip TEXT NOT NULL,
+    page TEXT NOT NULL,
+    event TEXT NOT NULL,           -- 'visit', 'unlock_success', 'unlock_fail', 'leave'
+    user_agent TEXT,
+    duration_seconds INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### New API Routes (app.py)
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| POST | `/api/auth/check` | Returns `{"unlocked": true/false}` for the requesting IP |
+| POST | `/api/auth/unlock` | Verifies password; on success adds IP to whitelist and logs event |
+| POST | `/api/auth/log` | Logs `visit` or `leave` events with duration |
+| GET | `/admin` | Serves `admin.html` — whitelisted IPs only; redirects others to `/` |
+| GET | `/api/admin/stats` | Returns whitelist + full log + summary stats (whitelisted IPs only) |
+
+### IP Detection
+Uses `X-Forwarded-For` header for correct behavior behind Railway's reverse proxy:
+```python
+ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip()
+```
+
+### Lock Overlay (index.html + viewer.html)
+- Injected as the first child of `<body>` in both files
+- `z-index: 99999` — covers all page content until dismissed
+- On page load: calls `POST /api/auth/check` silently
+  - If unlocked: fades overlay out (0.5s), logs `visit` event
+  - If not unlocked: shows the lock card for password entry
+- On correct password: whitelist updated server-side, overlay fades out
+- On wrong password: card shakes (`lockShake` keyframe animation), error message shown
+- On page close: `navigator.sendBeacon` sends `leave` event with `duration_seconds`
+- Animated gold particle network canvas background on the lock page
+- Eye-toggle button shows/hides password text
+
+### New File
+- `admin.html` — standalone admin dashboard (served only to whitelisted IPs)
+  - Summary cards: Total unlocked IPs, unique IPs seen, total visits, successful unlocks, failed attempts
+  - Whitelist table: IP, unlock timestamp, visit count, last seen
+  - Access log table: all columns, last 500 events
+  - Auto-refreshes every 30 seconds with countdown timer
+  - Redirect to home if IP not whitelisted
+
+### Sessions Table: NOT TOUCHED
+The `sessions` table and its `id='main'` record are completely unmodified.
+
+--- END SECTION 26 ---
+
+**END OF MASTER HANDOFF**

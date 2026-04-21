@@ -2585,6 +2585,267 @@
 </head>
 
 <body>
+
+    <!-- ===== MARIAS DIGITAL DESIGNS LOCK OVERLAY ===== -->
+    <div id="site-lock-overlay" style="
+        position:fixed;top:0;left:0;width:100%;height:100%;
+        z-index:99999;display:flex;align-items:center;justify-content:center;
+        background:linear-gradient(135deg,#050505 0%,#0d0d0d 40%,#130800 100%);
+        font-family:'Inter',Arial,sans-serif;
+    ">
+        <!-- Animated particles background -->
+        <canvas id="lock-particles" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.4;"></canvas>
+
+        <!-- Gold ring glow -->
+        <div style="position:absolute;width:500px;height:500px;border-radius:50%;
+            background:radial-gradient(circle,rgba(200,169,106,0.07) 0%,transparent 70%);
+            pointer-events:none;"></div>
+
+        <!-- Card -->
+        <div id="lock-card" style="
+            position:relative;z-index:2;
+            background:linear-gradient(160deg,rgba(18,12,4,0.97) 0%,rgba(10,8,4,0.99) 100%);
+            border:1px solid rgba(200,169,106,0.35);
+            border-radius:24px;
+            padding:52px 48px 44px;
+            width:90%;max-width:440px;
+            box-shadow:
+                0 0 0 1px rgba(200,169,106,0.08),
+                0 30px 80px rgba(0,0,0,0.9),
+                0 0 60px rgba(200,169,106,0.06) inset;
+            text-align:center;
+            animation:lockCardIn 0.6s cubic-bezier(0.22,1,0.36,1) both;
+        ">
+            <!-- Top accent line -->
+            <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);
+                width:60px;height:2px;
+                background:linear-gradient(90deg,transparent,#c8a96a,transparent);
+                border-radius:2px;"></div>
+
+            <!-- Lock icon -->
+            <div style="font-size:40px;margin-bottom:10px;">&#128274;</div>
+
+            <!-- Brand name -->
+            <div style="
+                font-size:11px;letter-spacing:5px;text-transform:uppercase;
+                color:rgba(200,169,106,0.6);margin-bottom:6px;font-weight:600;
+            ">Powered by</div>
+            <div style="
+                font-size:22px;font-weight:700;letter-spacing:2px;
+                background:linear-gradient(135deg,#e8c97a,#c8a96a,#a07840);
+                -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+                background-clip:text;margin-bottom:4px;
+            ">MARIA'S DIGITAL DESIGNS</div>
+
+            <!-- Divider -->
+            <div style="width:40px;height:1px;background:rgba(200,169,106,0.3);margin:18px auto;"></div>
+
+            <!-- Message -->
+            <p style="color:rgba(255,255,255,0.65);font-size:13px;line-height:1.7;margin:0 0 28px;">
+                This site is private.<br>
+                Enter your access password to continue.
+            </p>
+
+            <!-- Password input -->
+            <div style="position:relative;margin-bottom:16px;">
+                <input id="lock-pw-input" type="password" placeholder="Enter access password"
+                    autocomplete="current-password"
+                    style="
+                        width:100%;box-sizing:border-box;
+                        background:rgba(255,255,255,0.04);
+                        border:1px solid rgba(200,169,106,0.25);
+                        border-radius:12px;
+                        padding:14px 48px 14px 18px;
+                        color:#fff;font-size:15px;
+                        font-family:'Inter',Arial,sans-serif;
+                        outline:none;
+                        transition:border-color 0.2s,box-shadow 0.2s;
+                    "
+                    onfocus="this.style.borderColor='rgba(200,169,106,0.7)';this.style.boxShadow='0 0 0 3px rgba(200,169,106,0.1)';"
+                    onblur="this.style.borderColor='rgba(200,169,106,0.25)';this.style.boxShadow='none';"
+                    onkeyup="if(event.key==='Enter')lockSubmit();"
+                >
+                <!-- Eye toggle -->
+                <button onclick="var i=document.getElementById('lock-pw-input');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'&#128065;&#65039;':'&#128064;';"
+                    style="position:absolute;right:14px;top:50%;transform:translateY(-50%);
+                        background:none;border:none;cursor:pointer;font-size:16px;padding:0;line-height:1;"
+                >&#128065;&#65039;</button>
+            </div>
+
+            <!-- Error message -->
+            <div id="lock-error" style="
+                color:#e57373;font-size:12px;min-height:18px;
+                margin-bottom:14px;letter-spacing:0.5px;
+                opacity:0;transition:opacity 0.2s;
+            "></div>
+
+            <!-- Submit button -->
+            <button id="lock-submit-btn" onclick="lockSubmit()" style="
+                width:100%;padding:14px;
+                background:linear-gradient(135deg,#c8a96a,#a07840);
+                color:#000;font-weight:700;font-size:14px;
+                letter-spacing:2px;text-transform:uppercase;
+                border:none;border-radius:12px;cursor:pointer;
+                transition:opacity 0.2s,transform 0.1s;
+                font-family:'Inter',Arial,sans-serif;
+                box-shadow:0 4px 20px rgba(200,169,106,0.3);
+            "
+                onmouseover="this.style.opacity='0.9';"
+                onmouseout="this.style.opacity='1';"
+                onmousedown="this.style.transform='scale(0.98)';"
+                onmouseup="this.style.transform='scale(1)';"
+            >UNLOCK ACCESS</button>
+
+            <!-- Footer brand -->
+            <div style="margin-top:28px;font-size:10px;letter-spacing:3px;
+                text-transform:uppercase;color:rgba(200,169,106,0.25);">&#9670; PRIVATE ACCESS ONLY &#9670;</div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes lockCardIn {
+            from { opacity:0; transform:translateY(30px) scale(0.95); }
+            to   { opacity:1; transform:translateY(0)    scale(1); }
+        }
+        @keyframes lockShake {
+            0%,100% { transform:translateX(0); }
+            20%     { transform:translateX(-10px); }
+            40%     { transform:translateX(10px); }
+            60%     { transform:translateX(-8px); }
+            80%     { transform:translateX(8px); }
+        }
+        .lock-shake { animation:lockShake 0.4s ease !important; }
+    </style>
+
+    <script>
+        // ── LOCK PARTICLE BACKGROUND ──────────────────────────────────────────
+        (function(){
+            const c = document.getElementById('lock-particles');
+            if (!c) return;
+            const ctx = c.getContext('2d');
+            let W, H, pts = [];
+            function resize() {
+                W = c.width  = c.offsetWidth;
+                H = c.height = c.offsetHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+            for (let i = 0; i < 60; i++) {
+                pts.push({ x:Math.random()*1920, y:Math.random()*1080,
+                    vx:(Math.random()-0.5)*0.3, vy:(Math.random()-0.5)*0.3,
+                    r:Math.random()*1.5+0.5 });
+            }
+            function frame() {
+                ctx.clearRect(0,0,W,H);
+                pts.forEach(p => {
+                    p.x += p.vx; p.y += p.vy;
+                    if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+                    if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+                    ctx.fillStyle = 'rgba(200,169,106,0.7)';
+                    ctx.fill();
+                });
+                for (let i = 0; i < pts.length; i++) {
+                    for (let j = i+1; j < pts.length; j++) {
+                        const dx = pts[i].x - pts[j].x;
+                        const dy = pts[i].y - pts[j].y;
+                        const d  = Math.sqrt(dx*dx+dy*dy);
+                        if (d < 140) {
+                            ctx.beginPath();
+                            ctx.moveTo(pts[i].x, pts[i].y);
+                            ctx.lineTo(pts[j].x, pts[j].y);
+                            ctx.strokeStyle = `rgba(200,169,106,${0.15*(1-d/140)})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(frame);
+            }
+            frame();
+        })();
+
+        // ── AUTH CHECK & UNLOCK LOGIC ─────────────────────────────────────────
+        var _lockVisitStart = Date.now();
+        var _lockPage = window.location.pathname;
+
+        async function _lockCheck() {
+            try {
+                const r = await fetch('/api/auth/check', {method:'POST'});
+                const d = await r.json();
+                if (d.unlocked) {
+                    _lockDismiss();
+                    fetch('/api/auth/log', {
+                        method:'POST',
+                        headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({page: _lockPage, event:'visit'})
+                    }).catch(()=>{});
+                }
+            } catch(e) { /* leave overlay visible on network error */ }
+        }
+
+        function _lockDismiss() {
+            const overlay = document.getElementById('site-lock-overlay');
+            if (!overlay) return;
+            overlay.style.transition = 'opacity 0.5s ease';
+            overlay.style.opacity = '0';
+            overlay.style.pointerEvents = 'none';
+            setTimeout(() => { overlay.style.display = 'none'; }, 500);
+        }
+
+        async function lockSubmit() {
+            const pw = document.getElementById('lock-pw-input').value;
+            const btn = document.getElementById('lock-submit-btn');
+            const err = document.getElementById('lock-error');
+            btn.disabled = true;
+            btn.textContent = 'Checking...';
+            err.style.opacity = '0';
+            try {
+                const r = await fetch('/api/auth/unlock', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({password: pw, page: _lockPage})
+                });
+                const d = await r.json();
+                if (d.success) {
+                    btn.textContent = '\u2713 Access Granted';
+                    btn.style.background = 'linear-gradient(135deg,#4caf50,#388e3c)';
+                    fetch('/api/auth/log', {
+                        method:'POST',
+                        headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({page: _lockPage, event:'visit'})
+                    }).catch(()=>{});
+                    setTimeout(_lockDismiss, 700);
+                } else {
+                    err.textContent = '\u2717 Incorrect password. Please try again.';
+                    err.style.opacity = '1';
+                    const card = document.getElementById('lock-card');
+                    card.classList.remove('lock-shake');
+                    void card.offsetWidth;
+                    card.classList.add('lock-shake');
+                    btn.disabled = false;
+                    btn.textContent = 'UNLOCK ACCESS';
+                    btn.style.background = 'linear-gradient(135deg,#c8a96a,#a07840)';
+                }
+            } catch(e) {
+                err.textContent = '\u2717 Connection error. Please try again.';
+                err.style.opacity = '1';
+                btn.disabled = false;
+                btn.textContent = 'UNLOCK ACCESS';
+            }
+        }
+
+        window.addEventListener('beforeunload', function() {
+            const duration = Math.round((Date.now() - _lockVisitStart) / 1000);
+            navigator.sendBeacon('/api/auth/log',
+                JSON.stringify({page: _lockPage, event:'leave', duration_seconds: duration}));
+        });
+
+        _lockCheck();
+    </script>
+    <!-- ===== END LOCK OVERLAY ===== -->
+
     <!-- Vanta 3D Background Container -->
     <div id="vanta-bg" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-10;"></div>
     <div id="toast-container"></div>
