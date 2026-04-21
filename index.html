@@ -2840,13 +2840,20 @@
             }
         }
 
-        // Fix: use Blob so Flask can parse Content-Type: application/json via sendBeacon
-        window.addEventListener('beforeunload', function() {
+        let _leaveLogged = false;
+        function _logLeave() {
+            if (_leaveLogged) return;
+            _leaveLogged = true;
             const duration = Math.round((Date.now() - _lockVisitStart) / 1000);
             navigator.sendBeacon('/api/auth/log',
                 new Blob([JSON.stringify({page: _lockPage, event:'leave', duration_seconds: duration})],
                     {type:'application/json'}));
+        }
+        window.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden') _logLeave();
         });
+        window.addEventListener('pagehide', _logLeave);
+        window.addEventListener('beforeunload', _logLeave);
 
         // Log page_view immediately — captures even silent visitors who never type anything
         fetch('/api/auth/page-view', {

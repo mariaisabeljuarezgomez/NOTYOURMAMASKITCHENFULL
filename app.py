@@ -1130,7 +1130,7 @@ def auth_check():
     """Returns whether this IP is already whitelisted.
     If viewer_public=true and page is /menu, always returns unlocked."""
     ip = _get_client_ip()
-    data = request.json or {}
+    data = request.get_json(force=True, silent=True) or {}
     page = data.get('page', '/')
 
     # Check viewer_public setting for /menu page
@@ -1155,7 +1155,7 @@ def auth_check():
 def auth_unlock():
     """Verifies password and, if correct, adds IP to whitelist."""
     ip = _get_client_ip()
-    data = request.json or {}
+    data = request.get_json(force=True, silent=True) or {}
     password = data.get('password', '')
     page = data.get('page', '/')
     ua = request.headers.get('User-Agent', '')[:512]
@@ -1198,7 +1198,7 @@ def auth_unlock():
 def auth_log():
     """Logs a visit or leave event for analytics."""
     ip = _get_client_ip()
-    data = request.json or {}
+    data = request.get_json(force=True, silent=True) or {}
     page = data.get('page', '/')
     event = data.get('event', 'visit')
     duration = data.get('duration_seconds')
@@ -1362,7 +1362,7 @@ def auth_page_view():
         return jsonify({'status': 'ignored'}), 200
 
     ip = _get_client_ip()
-    data = request.json or {}
+    data = request.get_json(force=True, silent=True) or {}
     page = data.get('page', '/')
     ua_raw = request.headers.get('User-Agent', '')[:512]
     conn = None
