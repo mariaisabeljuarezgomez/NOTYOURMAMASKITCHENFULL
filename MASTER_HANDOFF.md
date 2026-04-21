@@ -1117,3 +1117,71 @@ The `sessions` table and its `id='main'` record are completely unmodified.
 --- END SECTION 26 ---
 
 **END OF MASTER HANDOFF**
+
+## Section 27: Admin Enhancements — Silent Visitor Tracking, Clear Log, Viewer Public Mode
+**Status: IMPLEMENTED — April 20, 2026**
+
+### New DB Table (approved April 20, 2026)
+
+```sql
+CREATE TABLE IF NOT EXISTS site_settings (
+    key   TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+-- Seeded on startup:
+INSERT INTO site_settings (key, value) VALUES ('viewer_public', 'false') ON CONFLICT (key) DO NOTHING;
+```
+
+### New / Modified API Routes
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| POST | `/api/auth/page-view` | Logs `page_view` for ANY visitor on page load — no auth needed. Captures silent visitors. |
+| POST | `/api/auth/check` (MODIFIED) | Now accepts `page` in body. If `viewer_public=true` and page is `/menu`, returns `unlocked:true` without checking whitelist. |
+| POST | `/api/admin/clear-log` | Deletes all rows from `access_log`. Whitelisted IPs only. |
+| GET | `/api/admin/settings` | Returns all site_settings key-value pairs. Whitelisted IPs only. |
+| POST | `/api/admin/settings` | Updates a setting (only `viewer_public` allowed). Whitelisted IPs only. |
+
+### Silent Visitor Fix (index.html + viewer.html)
+
+**Problem:** `navigator.sendBeacon` was sending `text/plain` content-type, causing Flask's `request.json` to return `None` — leave events were not being parsed.
+
+**Fix:**
+```javascript
+// Before (broken):
+navigator.sendBeacon('/api/auth/log', JSON.stringify({...}));
+
+// After (fixed):
+navigator.sendBeacon('/api/auth/log',
+    new Blob([JSON.stringify({...})], {type:'application/json'}));
+```
+
+**New:** `fetch('/api/auth/page-view', ...)` fires immediately on ALL page loads, before `_lockCheck()`. This means even visitors who never type anything and close the tab WILL be logged with `page_view` event.
+
+**`_lockCheck` also updated** to send `{page: _lockPage}` in the POST body so the server can evaluate viewer_public for the correct page.
+
+### Admin Dashboard (admin.html) Changes
+
+- **Controls Panel** (above stats cards):
+  - **Viewer Menu — Public Access toggle**: ON = anyone can view `/menu` without password. OFF = password required. Editor always locked. Persisted in DB. Live toast notification on change.
+  - **Clear History button**: Opens confirmation modal. On confirm, calls `/api/admin/clear-log`. Shows count of deleted rows in toast.
+- **New stat card**: Total Page Views (all `page_view` events, including silent visitors)
+- **New event pill**: `PAGE VIEW` (purple) in access log table
+- **Confirmation modal**: Prevents accidental log deletion
+
+### Event Types in access_log
+
+| Event | When Logged |
+|-------|------------|
+| `page_view` | Immediately on any page load — always, no auth required |
+| `visit` | After a whitelisted IP successfully loads the page |
+| `unlock_success` | Correct password entered |
+| `unlock_fail` | Wrong password entered |
+| `leave` | When tab is closed (with duration_seconds) |
+
+### Sessions Table: NOT TOUCHED
+
+--- END SECTION 27 ---
+
+**END OF MASTER HANDOFF**

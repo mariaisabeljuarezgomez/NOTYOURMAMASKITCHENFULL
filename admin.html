@@ -19,6 +19,7 @@
             --green: #4caf50;
             --red: #e57373;
             --blue: #64b5f6;
+            --purple: #ce93d8;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -41,9 +42,7 @@
             height: 64px;
             display: flex; align-items: center; justify-content: space-between;
         }
-        .header-brand {
-            display: flex; align-items: center; gap: 14px;
-        }
+        .header-brand { display: flex; align-items: center; gap: 14px; }
         .header-logo {
             font-size: 18px; font-weight: 800; letter-spacing: 1px;
             background: linear-gradient(135deg, #e8c97a, #c8a96a, #a07840);
@@ -55,12 +54,8 @@
             color: var(--gold); opacity: 0.6; border: 1px solid var(--gold-dim);
             padding: 3px 10px; border-radius: 999px;
         }
-        .header-right {
-            display: flex; align-items: center; gap: 16px;
-        }
-        #refresh-status {
-            font-size: 11px; color: var(--muted); letter-spacing: 1px;
-        }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        #refresh-status { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
         .btn-refresh {
             background: var(--surface2); border: 1px solid var(--border);
             color: var(--gold); padding: 8px 18px; border-radius: 8px;
@@ -72,6 +67,90 @@
 
         /* ── LAYOUT ── */
         main { padding: 32px; max-width: 1400px; margin: 0 auto; }
+
+        /* ── CONTROLS PANEL ── */
+        .controls-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .control-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            transition: border-color 0.2s;
+        }
+        .control-card:hover { border-color: rgba(200,169,106,0.35); }
+        .control-info { flex: 1; }
+        .control-title {
+            font-size: 14px; font-weight: 700;
+            color: var(--text); margin-bottom: 4px;
+        }
+        .control-desc {
+            font-size: 11px; color: var(--muted); line-height: 1.5;
+        }
+
+        /* Toggle Switch */
+        .toggle-wrap { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+        .toggle-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+        .toggle-label.on  { color: var(--green); }
+        .toggle-label.off { color: var(--muted); }
+        .toggle {
+            position: relative;
+            width: 56px; height: 28px;
+            cursor: pointer;
+        }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute; inset: 0;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 999px;
+            transition: background 0.3s, border-color 0.3s;
+        }
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 20px; height: 20px;
+            left: 3px; top: 3px;
+            background: #666;
+            border-radius: 50%;
+            transition: transform 0.3s, background 0.3s;
+        }
+        .toggle input:checked + .toggle-slider {
+            background: rgba(76,175,80,0.2);
+            border-color: rgba(76,175,80,0.5);
+        }
+        .toggle input:checked + .toggle-slider::before {
+            transform: translateX(28px);
+            background: var(--green);
+            box-shadow: 0 0 8px rgba(76,175,80,0.6);
+        }
+
+        /* Clear Log Button */
+        .btn-clear {
+            padding: 10px 24px;
+            background: rgba(229,115,115,0.08);
+            border: 1px solid rgba(229,115,115,0.3);
+            color: var(--red);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 12px; font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 1px; text-transform: uppercase;
+            transition: background 0.2s, border-color 0.2s;
+            flex-shrink: 0;
+        }
+        .btn-clear:hover {
+            background: rgba(229,115,115,0.18);
+            border-color: rgba(229,115,115,0.6);
+        }
 
         /* ── SUMMARY CARDS ── */
         .cards-grid {
@@ -94,21 +173,10 @@
             background: linear-gradient(90deg, transparent, var(--gold), transparent);
             opacity: 0.5;
         }
-        .card-label {
-            font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
-            color: var(--muted); margin-bottom: 10px;
-        }
-        .card-value {
-            font-size: 36px; font-weight: 800; color: var(--gold);
-            line-height: 1;
-        }
-        .card-sub {
-            font-size: 11px; color: var(--muted); margin-top: 6px;
-        }
-        .card-icon {
-            position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
-            font-size: 28px; opacity: 0.12;
-        }
+        .card-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+        .card-value { font-size: 36px; font-weight: 800; color: var(--gold); line-height: 1; }
+        .card-sub   { font-size: 11px; color: var(--muted); margin-top: 6px; }
+        .card-icon  { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 28px; opacity: 0.12; }
 
         /* ── SECTION ── */
         .section { margin-bottom: 32px; }
@@ -117,66 +185,34 @@
             text-transform: uppercase; color: var(--gold); margin-bottom: 16px;
             display: flex; align-items: center; gap: 10px;
         }
-        .section-title::after {
-            content: ''; flex: 1; height: 1px;
-            background: var(--border);
-        }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
         /* ── TABLE ── */
         .table-wrap {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            overflow: hidden;
+            border-radius: 16px; overflow: hidden;
         }
         table { width: 100%; border-collapse: collapse; }
-        thead tr {
-            background: var(--surface2);
-            border-bottom: 1px solid var(--border);
-        }
-        th {
-            padding: 12px 16px; text-align: left;
-            font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
-            color: var(--muted); font-weight: 600;
-        }
-        td {
-            padding: 12px 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.03);
-            vertical-align: middle;
-        }
+        thead tr { background: var(--surface2); border-bottom: 1px solid var(--border); }
+        th { padding: 12px 16px; text-align: left; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+        td { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.03); vertical-align: middle; }
         tr:last-child td { border-bottom: none; }
         tr:hover td { background: rgba(200,169,106,0.02); }
 
-        .pill {
-            display: inline-block; padding: 3px 10px;
-            border-radius: 999px; font-size: 10px; font-weight: 700;
-            letter-spacing: 1px; text-transform: uppercase;
-        }
-        .pill-green  { background: rgba(76,175,80,0.15);  color: #81c784; border: 1px solid rgba(76,175,80,0.3); }
-        .pill-red    { background: rgba(229,115,115,0.15); color: #e57373; border: 1px solid rgba(229,115,115,0.3); }
-        .pill-blue   { background: rgba(100,181,246,0.12); color: #64b5f6; border: 1px solid rgba(100,181,246,0.25); }
-        .pill-gold   { background: rgba(200,169,106,0.12); color: #c8a96a; border: 1px solid rgba(200,169,106,0.25); }
-        .pill-gray   { background: rgba(255,255,255,0.05); color: #888;    border: 1px solid rgba(255,255,255,0.1); }
+        .pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+        .pill-green  { background: rgba(76,175,80,0.15);   color: #81c784; border: 1px solid rgba(76,175,80,0.3); }
+        .pill-red    { background: rgba(229,115,115,0.15);  color: #e57373; border: 1px solid rgba(229,115,115,0.3); }
+        .pill-blue   { background: rgba(100,181,246,0.12);  color: #64b5f6; border: 1px solid rgba(100,181,246,0.25); }
+        .pill-gold   { background: rgba(200,169,106,0.12);  color: #c8a96a; border: 1px solid rgba(200,169,106,0.25); }
+        .pill-gray   { background: rgba(255,255,255,0.05);  color: #888;    border: 1px solid rgba(255,255,255,0.1); }
+        .pill-purple { background: rgba(206,147,216,0.12);  color: #ce93d8; border: 1px solid rgba(206,147,216,0.25); }
 
-        .ip-chip {
-            font-family: 'Courier New', monospace; font-size: 13px;
-            color: #e8c97a; background: rgba(200,169,106,0.06);
-            padding: 3px 10px; border-radius: 6px;
-            display: inline-block;
-        }
-
-        .ua-cell {
-            max-width: 280px; white-space: nowrap;
-            overflow: hidden; text-overflow: ellipsis;
-            font-size: 11px; color: var(--muted);
-        }
-
+        .ip-chip { font-family: 'Courier New', monospace; font-size: 13px; color: #e8c97a; background: rgba(200,169,106,0.06); padding: 3px 10px; border-radius: 6px; display: inline-block; }
+        .ua-cell { max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11px; color: var(--muted); }
         .ts-cell { font-size: 11px; color: var(--muted); white-space: nowrap; }
 
-        /* ── EMPTY STATE ── */
-        .empty {
-            padding: 48px; text-align: center; color: var(--muted);
-        }
+        .empty { padding: 48px; text-align: center; color: var(--muted); }
         .empty-icon { font-size: 32px; margin-bottom: 12px; }
 
         /* ── LOADING ── */
@@ -195,22 +231,65 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ── PULSE dot ── */
         .live-dot {
             display: inline-block; width: 8px; height: 8px;
             border-radius: 50%; background: var(--green);
             animation: pulse 2s ease-in-out infinite;
         }
-        @keyframes pulse {
-            0%,100% { opacity: 1; transform: scale(1); }
-            50%      { opacity: 0.4; transform: scale(0.7); }
+        @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.7); } }
+
+        /* ── CONFIRM MODAL ── */
+        .modal-backdrop {
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(0,0,0,0.85);
+            display: none; align-items: center; justify-content: center;
+            backdrop-filter: blur(4px);
         }
+        .modal-backdrop.visible { display: flex; }
+        .modal-box {
+            background: #111;
+            border: 1px solid rgba(229,115,115,0.4);
+            border-radius: 20px;
+            padding: 40px 36px;
+            max-width: 380px; width: 90%;
+            text-align: center;
+        }
+        .modal-icon { font-size: 36px; margin-bottom: 16px; }
+        .modal-title { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+        .modal-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 28px; }
+        .modal-actions { display: flex; gap: 12px; justify-content: center; }
+        .btn-cancel {
+            padding: 10px 24px; background: var(--surface2);
+            border: 1px solid var(--border); color: var(--muted);
+            border-radius: 10px; cursor: pointer;
+            font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+        }
+        .btn-confirm-del {
+            padding: 10px 24px;
+            background: rgba(229,115,115,0.15);
+            border: 1px solid rgba(229,115,115,0.5);
+            color: var(--red); border-radius: 10px; cursor: pointer;
+            font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700;
+            transition: background 0.2s;
+        }
+        .btn-confirm-del:hover { background: rgba(229,115,115,0.3); }
+
+        /* Toast */
+        #admin-toast {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            background: rgba(18,12,4,0.96); border: 1px solid var(--gold-dim);
+            color: var(--gold); padding: 10px 24px; border-radius: 999px;
+            font-size: 13px; font-weight: 600; letter-spacing: 1px;
+            z-index: 9998; opacity: 0; transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        #admin-toast.show { opacity: 1; }
 
         @media (max-width: 768px) {
             main { padding: 16px; }
             header { padding: 0 16px; }
+            .controls-panel { grid-template-columns: 1fr; }
             .header-logo { font-size: 14px; }
-            .card-value { font-size: 28px; }
             .ua-cell { max-width: 120px; }
         }
     </style>
@@ -219,8 +298,23 @@
 
 <div class="loading-overlay" id="loading-overlay">
     <div class="spinner"></div>
-    <div style="font-size:12px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;">Loading Analytics…</div>
+    <div style="font-size:12px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;">Loading Dashboard…</div>
 </div>
+
+<!-- Confirm Delete Modal -->
+<div class="modal-backdrop" id="confirm-modal">
+    <div class="modal-box">
+        <div class="modal-icon">🗑️</div>
+        <div class="modal-title">Clear All Log History?</div>
+        <div class="modal-desc">This will permanently delete all records from the access log. Whitelisted IPs will remain active. This action cannot be undone.</div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+            <button class="btn-confirm-del" onclick="confirmClearLog()">Yes, Delete All</button>
+        </div>
+    </div>
+</div>
+
+<div id="admin-toast"></div>
 
 <header>
     <div class="header-brand">
@@ -236,12 +330,49 @@
 
 <main>
 
+    <!-- CONTROL PANEL -->
+    <div class="controls-panel">
+
+        <!-- Viewer Public Mode Toggle -->
+        <div class="control-card">
+            <div class="control-info">
+                <div class="control-title">🌐 Viewer Menu — Public Access</div>
+                <div class="control-desc">
+                    When <strong style="color:var(--green);">ON</strong>: anyone can view <code style="color:var(--gold);background:rgba(200,169,106,0.08);padding:1px 6px;border-radius:4px;">/menu</code> without a password.<br>
+                    When <strong style="color:var(--red);">OFF</strong>: menu requires password (default).
+                    The editor always stays locked.
+                </div>
+            </div>
+            <div class="toggle-wrap">
+                <span class="toggle-label off" id="toggle-off-label">OFF</span>
+                <label class="toggle">
+                    <input type="checkbox" id="viewer-public-toggle" onchange="setViewerPublic(this.checked)">
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label on" id="toggle-on-label" style="opacity:0.3;">ON</span>
+            </div>
+        </div>
+
+        <!-- Clear Log -->
+        <div class="control-card">
+            <div class="control-info">
+                <div class="control-title">🗑️ Clear Access Log History</div>
+                <div class="control-desc">
+                    Permanently deletes all visitor log entries.<br>
+                    Whitelisted IPs are <strong style="color:var(--gold);">not affected</strong> — they keep access. Only the history is cleared.
+                </div>
+            </div>
+            <button class="btn-clear" onclick="openModal()">Clear History</button>
+        </div>
+
+    </div>
+
     <!-- SUMMARY CARDS -->
-    <div class="cards-grid" id="cards-grid">
+    <div class="cards-grid">
         <div class="card">
             <div class="card-label">Whitelisted IPs</div>
             <div class="card-value" id="stat-unlocked">—</div>
-            <div class="card-sub">unique addresses granted access</div>
+            <div class="card-sub">addresses granted access</div>
             <div class="card-icon">🔓</div>
         </div>
         <div class="card">
@@ -251,9 +382,15 @@
             <div class="card-icon">👁</div>
         </div>
         <div class="card">
-            <div class="card-label">Total Visits</div>
+            <div class="card-label">Total Page Views</div>
+            <div class="card-value" id="stat-pageviews">—</div>
+            <div class="card-sub">all visits including silent</div>
+            <div class="card-icon">📊</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Confirmed Visits</div>
             <div class="card-value" id="stat-visits">—</div>
-            <div class="card-sub">page load events logged</div>
+            <div class="card-sub">unlocked page loads</div>
             <div class="card-icon">📈</div>
         </div>
         <div class="card">
@@ -321,8 +458,7 @@
             const d = new Date(ts.replace(' ', 'T') + (ts.includes('Z') ? '' : 'Z'));
             return d.toLocaleString('en-US', {
                 month: 'short', day: 'numeric', year: 'numeric',
-                hour: '2-digit', minute: '2-digit', second: '2-digit',
-                hour12: true
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
             });
         } catch(e) { return ts; }
     }
@@ -331,16 +467,16 @@
         if (s === null || s === undefined) return '—';
         if (s < 60) return s + 's';
         const m = Math.floor(s / 60);
-        const r = s % 60;
-        return r > 0 ? `${m}m ${r}s` : `${m}m`;
+        return (s % 60) > 0 ? `${m}m ${s % 60}s` : `${m}m`;
     }
 
     function eventPill(event) {
         const map = {
-            'visit':           '<span class="pill pill-blue">VISIT</span>',
-            'unlock_success':  '<span class="pill pill-green">UNLOCKED</span>',
-            'unlock_fail':     '<span class="pill pill-red">FAILED</span>',
-            'leave':           '<span class="pill pill-gray">LEAVE</span>',
+            'page_view':      '<span class="pill pill-purple">PAGE VIEW</span>',
+            'visit':          '<span class="pill pill-blue">VISIT</span>',
+            'unlock_success': '<span class="pill pill-green">UNLOCKED</span>',
+            'unlock_fail':    '<span class="pill pill-red">FAILED</span>',
+            'leave':          '<span class="pill pill-gray">LEAVE</span>',
         };
         return map[event] || `<span class="pill pill-gray">${event}</span>`;
     }
@@ -354,6 +490,69 @@
         return map[page] || `<span class="pill pill-gray">${page}</span>`;
     }
 
+    function showToast(msg) {
+        const t = document.getElementById('admin-toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    /* ── VIEWER PUBLIC TOGGLE ──────────────────────────────── */
+    async function loadSettings() {
+        try {
+            const r = await fetch('/api/admin/settings');
+            if (!r.ok) return;
+            const s = await r.json();
+            const isPublic = s.viewer_public === 'true';
+            document.getElementById('viewer-public-toggle').checked = isPublic;
+            updateToggleLabels(isPublic);
+        } catch(e) {}
+    }
+
+    function updateToggleLabels(isOn) {
+        document.getElementById('toggle-on-label').style.opacity  = isOn ? '1' : '0.3';
+        document.getElementById('toggle-off-label').style.opacity = isOn ? '0.3' : '1';
+    }
+
+    async function setViewerPublic(checked) {
+        updateToggleLabels(checked);
+        try {
+            const r = await fetch('/api/admin/settings', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({viewer_public: checked ? 'true' : 'false'})
+            });
+            if (r.ok) {
+                showToast(checked
+                    ? '🌐 Viewer menu is now PUBLIC — no password needed'
+                    : '🔒 Viewer menu is now LOCKED — password required');
+            }
+        } catch(e) {
+            showToast('⚠️ Failed to update setting');
+        }
+    }
+
+    /* ── CLEAR LOG MODAL ───────────────────────────────────── */
+    function openModal()  { document.getElementById('confirm-modal').classList.add('visible'); }
+    function closeModal() { document.getElementById('confirm-modal').classList.remove('visible'); }
+
+    async function confirmClearLog() {
+        closeModal();
+        try {
+            const r = await fetch('/api/admin/clear-log', {method: 'POST'});
+            const d = await r.json();
+            if (r.ok) {
+                showToast(`🗑️ Deleted ${d.deleted} log entries`);
+                loadStats();
+            } else {
+                showToast('⚠️ Clear failed: ' + (d.error || 'unknown error'));
+            }
+        } catch(e) {
+            showToast('⚠️ Connection error');
+        }
+    }
+
+    /* ── STATS LOADING ─────────────────────────────────────── */
     async function loadStats() {
         try {
             const r = await fetch('/api/admin/stats');
@@ -375,11 +574,12 @@
 
     function renderStats(data) {
         const s = data.summary || {};
-        document.getElementById('stat-unlocked').textContent = s.total_unlocked_ips ?? '—';
-        document.getElementById('stat-unique').textContent   = s.unique_ips_seen ?? '—';
-        document.getElementById('stat-visits').textContent   = s.total_visits ?? '—';
-        document.getElementById('stat-success').textContent  = s.successful_unlocks ?? '—';
-        document.getElementById('stat-failed').textContent   = s.failed_attempts ?? '—';
+        document.getElementById('stat-unlocked').textContent  = s.total_unlocked_ips ?? '—';
+        document.getElementById('stat-unique').textContent    = s.unique_ips_seen ?? '—';
+        document.getElementById('stat-pageviews').textContent = s.total_page_views ?? '—';
+        document.getElementById('stat-visits').textContent    = s.total_visits ?? '—';
+        document.getElementById('stat-success').textContent   = s.successful_unlocks ?? '—';
+        document.getElementById('stat-failed').textContent    = s.failed_attempts ?? '—';
 
         // Whitelist table
         const wbody = document.getElementById('whitelist-tbody');
@@ -431,7 +631,8 @@
         }, 1000);
     }
 
-    loadStats().then(startCountdown);
+    // Init
+    Promise.all([loadStats(), loadSettings()]).then(startCountdown);
 </script>
 </body>
 </html>

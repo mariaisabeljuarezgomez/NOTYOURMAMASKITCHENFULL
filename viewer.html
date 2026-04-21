@@ -430,7 +430,11 @@
 
         async function _lockCheck() {
             try {
-                const r = await fetch('/api/auth/check', {method:'POST'});
+                const r = await fetch('/api/auth/check', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({page: _lockPage})
+                });
                 const d = await r.json();
                 if (d.unlocked) {
                     _lockDismiss();
@@ -499,12 +503,20 @@
             }
         }
 
-        // Track time on page — log 'leave' event with duration
+        // Fix: use Blob so Flask parses Content-Type: application/json via sendBeacon
         window.addEventListener('beforeunload', function() {
             const duration = Math.round((Date.now() - _lockVisitStart) / 1000);
             navigator.sendBeacon('/api/auth/log',
-                JSON.stringify({page: _lockPage, event:'leave', duration_seconds: duration}));
+                new Blob([JSON.stringify({page: _lockPage, event:'leave', duration_seconds: duration})],
+                    {type:'application/json'}));
         });
+
+        // Log page_view immediately — captures even silent visitors who never type anything
+        fetch('/api/auth/page-view', {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({page: _lockPage})
+        }).catch(()=>{});
 
         // Run check immediately
         _lockCheck();

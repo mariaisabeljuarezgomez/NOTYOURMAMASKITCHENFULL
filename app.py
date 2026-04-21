@@ -113,6 +113,21 @@ def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
+
+        # Site-wide settings (key-value store)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS site_settings (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        # Seed default: viewer is locked (DO NOTHING if already exists)
+        cur.execute("""
+            INSERT INTO site_settings (key, value)
+            VALUES ('viewer_public', 'false')
+            ON CONFLICT (key) DO NOTHING
+        """)
         
         # Migration: If id is integer, convert to TEXT
         cur.execute("SELECT data_type FROM information_schema.columns WHERE table_name = 'sessions' AND column_name = 'id'")
@@ -1112,8 +1127,28 @@ def _is_whitelisted(ip):
 
 @app.route('/api/auth/check', methods=['POST'])
 def auth_check():
-    """Returns whether this IP is already whitelisted."""
+    """Returns whether this IP is already whitelisted.
+    If viewer_public=true and page is /menu, always returns unlocked."""
     ip = _get_client_ip()
+    data = request.json or {}
+    page = data.get('page', '/')
+
+    # Check viewer_public setting for /menu page
+    if page == '/menu' and DATABASE_URL:
+        conn = None
+        try:
+            conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+            cur = conn.cursor()
+            cur.execute("SELECT value FROM site_settings WHERE key = 'viewer_public'")
+            row = cur.fetchone()
+            if row and row[0] == 'true':
+                return jsonify({'unlocked': True, 'public': True})
+        except Exception:
+            pass
+        finally:
+            if conn:
+                conn.close()
+
     return jsonify({'unlocked': _is_whitelisted(ip)})
 
 @app.route('/api/auth/unlock', methods=['POST'])
@@ -1261,6 +1296,8 @@ def admin_stats():
         total_unlocked = cur.fetchone()[0]
         cur.execute("SELECT COUNT(DISTINCT ip) FROM access_log")
         unique_ips = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM access_log WHERE event = 'page_view'")
+        total_page_views = cur.fetchone()[0]
         cur.execute("SELECT COUNT(*) FROM access_log WHERE event = 'visit'")
         total_visits = cur.fetchone()[0]
         cur.execute("SELECT COUNT(*) FROM access_log WHERE event = 'unlock_fail'")
@@ -1275,6 +1312,7 @@ def admin_stats():
             'summary': {
                 'total_unlocked_ips': total_unlocked,
                 'unique_ips_seen': unique_ips,
+                'total_page_views': total_page_views,
                 'total_visits': total_visits,
                 'failed_attempts': failed_attempts,
                 'successful_unlocks': successful_unlocks
@@ -1282,6 +1320,119 @@ def admin_stats():
         })
     except Exception as e:
         print(f"admin_stats ERROR: {e}", flush=True)
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+@app.route('/api/auth/page-view', methods=['POST'])
+def auth_page_view():
+    """Logs a page_view event for ANY visitor — including silent ones
+    who never attempt to unlock. Called immediately on page load."""
+    ip = _get_client_ip()
+    data = request.json or {}
+    page = data.get('page', '/')
+    ua = request.headers.get('User-Agent', '')[:512]
+    conn = None
+    try:
+        if DATABASE_URL:
+            conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+            cur = conn.cursor()
+            cur.execute(
+                "INSERT INTO access_log (ip, page, event, user_agent) VALUES (%s, %s, %s, %s)",
+                (ip, page, 'page_view', ua)
+            )
+            conn.commit()
+            cur.close()
+        return jsonify({'status': 'logged'})
+    except Exception as e:
+        print(f"auth_page_view ERROR: {e}", flush=True)
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+# ─── ADMIN SETTINGS ROUTES ──────────────────────────────────────────────────
+
+@app.route('/api/admin/clear-log', methods=['POST'])
+def admin_clear_log():
+    """Deletes all rows from access_log. Whitelisted IPs only."""
+    ip = _get_client_ip()
+    if not _is_whitelisted(ip):
+        return jsonify({'error': 'Unauthorized'}), 403
+    conn = None
+    try:
+        if not DATABASE_URL:
+            return jsonify({'deleted': 0})
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        cur = conn.cursor()
+        cur.execute("DELETE FROM access_log")
+        deleted = cur.rowcount
+        conn.commit()
+        cur.close()
+        return jsonify({'status': 'cleared', 'deleted': deleted})
+    except Exception as e:
+        print(f"admin_clear_log ERROR: {e}", flush=True)
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+@app.route('/api/admin/settings', methods=['GET'])
+def admin_settings_get():
+    """Returns all site settings. Whitelisted IPs only."""
+    ip = _get_client_ip()
+    if not _is_whitelisted(ip):
+        return jsonify({'error': 'Unauthorized'}), 403
+    conn = None
+    try:
+        if not DATABASE_URL:
+            return jsonify({'viewer_public': 'false'})
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        cur = conn.cursor()
+        cur.execute("SELECT key, value FROM site_settings")
+        settings = {row[0]: row[1] for row in cur.fetchall()}
+        cur.close()
+        return jsonify(settings)
+    except Exception as e:
+        print(f"admin_settings_get ERROR: {e}", flush=True)
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+@app.route('/api/admin/settings', methods=['POST'])
+def admin_settings_post():
+    """Updates a site setting. Whitelisted IPs only."""
+    ip = _get_client_ip()
+    if not _is_whitelisted(ip):
+        return jsonify({'error': 'Unauthorized'}), 403
+    data = request.json or {}
+    # Only allow known settings keys
+    allowed_keys = {'viewer_public'}
+    conn = None
+    try:
+        if not DATABASE_URL:
+            return jsonify({'status': 'ok (no-db)'})
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        cur = conn.cursor()
+        for key, value in data.items():
+            if key not in allowed_keys:
+                continue
+            # Sanitize: only 'true' or 'false' for boolean settings
+            safe_value = 'true' if str(value).lower() in ('true', '1', 'yes') else 'false'
+            cur.execute(
+                """INSERT INTO site_settings (key, value, updated_at)
+                   VALUES (%s, %s, CURRENT_TIMESTAMP)
+                   ON CONFLICT (key) DO UPDATE
+                   SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP""",
+                (key, safe_value)
+            )
+        conn.commit()
+        cur.close()
+        return jsonify({'status': 'updated'})
+    except Exception as e:
+        print(f"admin_settings_post ERROR: {e}", flush=True)
         return jsonify({'error': str(e)}), 500
     finally:
         if conn:
