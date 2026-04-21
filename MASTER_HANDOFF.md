@@ -1185,3 +1185,32 @@ navigator.sendBeacon('/api/auth/log',
 --- END SECTION 27 ---
 
 **END OF MASTER HANDOFF**
+
+## Section 28: Bot Filter — User-Agent Filtering in page-view Endpoint
+**Status: IMPLEMENTED — April 20, 2026**
+
+### Change
+Added bot detection to `/api/auth/page-view` in `app.py`.
+
+### How It Works
+- User-Agent is lowercased and checked against `BOT_SIGNATURES` list (substring match)
+- Empty User-Agent also treated as bot signal
+- On bot match: returns `{"status": "ignored"}` with HTTP 200 — no DB write, no error
+- On real human browser: proceeds with normal `page_view` logging
+
+### Filters cover
+- Search engines: Googlebot, Bingbot, DuckDuckBot, Baidu, Yandex, etc.
+- Social previewers: Facebook, Twitter/X, LinkedIn, WhatsApp, Slack, Discord, Telegram
+- SEO tools: SEMrush, Ahrefs, Moz, Screaming Frog, etc.
+- Security scanners: curl, wget, python-requests, Nikto, Nmap, SQLmap, etc.
+- Headless browsers: HeadlessChrome, PhantomJS, Selenium
+- Generic keywords: bot, crawler, spider, scraper, scanner, fetcher, monitor, validator
+
+### Only `page-view` is filtered
+`unlock_fail` and `unlock_success` are NOT filtered — if a bot ever actually submits a password attempt, that IS logged intentionally (it's a security event worth knowing about).
+
+### Sessions Table: NOT TOUCHED
+
+--- END SECTION 28 ---
+
+**END OF MASTER HANDOFF**

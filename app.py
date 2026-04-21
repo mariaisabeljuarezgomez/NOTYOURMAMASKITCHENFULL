@@ -1327,12 +1327,44 @@ def admin_stats():
 
 @app.route('/api/auth/page-view', methods=['POST'])
 def auth_page_view():
-    """Logs a page_view event for ANY visitor — including silent ones
-    who never attempt to unlock. Called immediately on page load."""
+    """Logs a page_view event for ANY real visitor — including silent ones
+    who never attempt to unlock. Called immediately on page load.
+    Bots are detected via User-Agent and silently ignored."""
+
+    # Known bot / crawler signatures — case-insensitive substring match
+    BOT_SIGNATURES = [
+        # Search engines
+        'googlebot', 'bingbot', 'slurp', 'duckduckbot', 'baiduspider',
+        'yandexbot', 'sogou', 'exabot', 'facebot', 'ia_archiver',
+        'applebot', 'msnbot', 'teoma', 'ask jeeves',
+        # Social media previewers
+        'facebookexternalhit', 'twitterbot', 'linkedinbot', 'whatsapp',
+        'slackbot', 'discordbot', 'telegrambot', 'pinterest',
+        'vkshare', 'xing-contenttabreceiver',
+        # SEO / analytics tools
+        'semrushbot', 'ahrefsbot', 'mj12bot', 'dotbot', 'rogerbot',
+        'screaming frog', 'sitebulb', 'seokicks', 'serpstatbot',
+        # Security / uptime scanners
+        'zgrab', 'masscan', 'nmap', 'nikto', 'sqlmap', 'curl/', 'wget/',
+        'python-requests', 'python-urllib', 'go-http-client',
+        'java/', 'ruby/', 'perl/', 'libwww-perl',
+        # Headless / automation (non-user)
+        'headlesschrome', 'phantomjs', 'selenium',
+        # Generic bot markers
+        'bot', 'crawler', 'spider', 'scraper', 'scan', 'fetch',
+        'archiver', 'checker', 'monitor', 'validator', 'preview',
+    ]
+
+    ua = request.headers.get('User-Agent', '').lower()
+
+    # Empty UA is also a strong bot signal
+    if not ua or any(sig in ua for sig in BOT_SIGNATURES):
+        return jsonify({'status': 'ignored'}), 200
+
     ip = _get_client_ip()
     data = request.json or {}
     page = data.get('page', '/')
-    ua = request.headers.get('User-Agent', '')[:512]
+    ua_raw = request.headers.get('User-Agent', '')[:512]
     conn = None
     try:
         if DATABASE_URL:
@@ -1340,7 +1372,7 @@ def auth_page_view():
             cur = conn.cursor()
             cur.execute(
                 "INSERT INTO access_log (ip, page, event, user_agent) VALUES (%s, %s, %s, %s)",
-                (ip, page, 'page_view', ua)
+                (ip, page, 'page_view', ua_raw)
             )
             conn.commit()
             cur.close()
@@ -1351,6 +1383,7 @@ def auth_page_view():
     finally:
         if conn:
             conn.close()
+
 
 # ─── ADMIN SETTINGS ROUTES ──────────────────────────────────────────────────
 
