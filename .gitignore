@@ -34,3 +34,22 @@ price.md
 
 AI_STUDIO_SPEC.md
 venv/
+
+# Untracked review/temp HTML files (never deploy these)
+index_ground_truth.html
+index_ground_truth_utf8.html
+index_live_github.html
+indexold.html
+temp_orig.html
+temp_original.html
+index_backup_review.html
+
+# Scratch and legacy docs
+scratch/
+legacy_docs/
+reconstruct_handoff.py
+
+# Extra audit/planning docs (keep locally, don't track)
+AI_SNIPPETS_FETCH.md
+BUG_AUDIT.md
+MASTER_HANDOFF_github.md

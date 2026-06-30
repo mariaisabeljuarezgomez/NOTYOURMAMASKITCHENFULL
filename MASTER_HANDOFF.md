@@ -22,7 +22,7 @@ Updated based on confirmed three-agent source code audit. 14 fixes applied. Incl
 - Frontend: index.html (single-page canvas editor), viewer.html, export-utils.js
 - Build: build_app.py (regenerates index.html from components)
 
-**Deployment:** Railway — https://web-production-3e17d.up.railway.app/
+**Deployment:** Railway — https://notyourmamaskitchen.up.railway.app/
 
 **Persistence Model:** PostgreSQL only — never localStorage, never local filesystem. All document state stored in `sessions` table as JSONB.
 
@@ -1212,5 +1212,63 @@ Added bot detection to `/api/auth/page-view` in `app.py`.
 ### Sessions Table: NOT TOUCHED
 
 --- END SECTION 28 ---
+
+**END OF MASTER HANDOFF**
+
+## Section 29: Server-Side Security Gate + Credential Isolation
+**Status: IMPLEMENTED — June 30, 2026**
+
+### The Problem (Critical)
+The site password lock (Section 26) was a **frontend overlay only**. Every data endpoint under `/api/` was reachable by anyone on the internet with no authentication. Confirmed live against production:
+- `GET /api/menu` returned Gwen's full Cloudinary, Kling, and Stability API keys in plaintext to any caller.
+- `POST /api/menu` could **overwrite or wipe the entire live menu** with one unauthenticated request (proven during audit — immediately restored from the 5-minute backup).
+- `/api/admin/stats`, `/api/video-history`, uploads, and all writes were open.
+
+The deeper problem: because the public customer viewer (`/menu`) also reads `GET /api/menu`, the keys were flowing to every customer's phone regardless of any password gate.
+
+### The Fix — Three Parts (deployed atomically)
+
+**Part 1 — Server-side auth gate (`@app.before_request` in app.py)**
+A single `before_request` hook classifies every request:
+- **Always public:** auth endpoints (`/api/auth/*`), static assets (`.ttf`, `export-utils.js`, `/Images/`, `/user-images/`, favicon, manuals), and page HTML (`/`, `/menu`, `/admin` — so the lock overlay can render).
+- **Whitelisted IP (entered password):** full access to everything.
+- **Stranger + viewer locked:** `GET/POST /api/menu`, `/api/backup`, all writes, `/api/credentials`, `/api/admin/*`, `/api/video-history`, uploads → **403**.
+- **Stranger + viewer_public=true (Gwen's QR customers):** may read `GET /api/menu` (scrubbed) and `GET /api/backup` (scrubbed); everything else still 403.
+
+**Part 2 — Credential isolation (no more keys in the menu document)**
+- New helpers `get_ai_credentials()` / `save_ai_credentials()` store credentials in the existing `site_settings` table under key `ai_credentials` (JSON string). **No schema migration** — reuses the key/value table from Section 27.
+- `_strip_credentials()` zeros out the `aiCredentials` object in every `/api/menu` and `/api/backup` GET response before serving, so keys can never reach the public viewer.
+- **One-time migration** in `init_db()`: on first boot after this change, copies any existing `aiCredentials` from the `main` menu document into the new `site_settings` store (only if the store is empty), so Gwen's existing keys survive the cutover.
+
+**Part 3 — New `/api/credentials` endpoint (whitelisted IPs only)**
+- `GET /api/credentials` → returns the real credential values. The auth gate blocks non-whitelisted IPs.
+- `POST /api/credentials` → saves credentials to `site_settings`.
+
+### Frontend Changes (index.html)
+- `saveAiCredentials()` now POSTs to `/api/credentials` instead of bundling keys into the menu save.
+- `clearAiCredentials()` now POSTs empty creds to `/api/credentials`.
+- New `loadAiCredentialsFromServer()` fetches creds into in-memory `docV2.aiCredentials` and is called **after unlock** (both `_lockCheck` and `lockSubmit` success paths). Keys are never fetched by a locked visitor.
+- `restoreAiCredentials` call removed from `_mergeLoadedDoc` (creds no longer come from the menu doc).
+- The viewer (`viewer.html`) was **NOT touched** — it never reads `aiCredentials`.
+
+### Other Fixes Bundled
+- **`init_db()` `UnboundLocalError`:** `conn = None` moved before the `try:` block so a connection failure produces the intended fatal message instead of crashing the handler.
+- **`validate_schema()` anti-wipe guard:** rejects payloads with zero elements AND zero assets (blocks the empty-wipe attack), while still accepting any genuine menu document.
+
+### Verification (live, read-only curl after deploy)
+| Check | Expected |
+|-------|----------|
+| Stranger `GET /api/menu` (viewer locked) | 403 |
+| Stranger `POST /api/menu` empty wipe | 403 |
+| Stranger `GET /api/credentials` | 403 |
+| Customer `GET /api/menu` (viewer public) | 200, no keys in body |
+| Whitelisted `GET /api/credentials` | 200 with real keys |
+| Editor save after login | ✅ toast |
+| Viewer `/menu` renders | menu loads |
+
+### Sessions Table: NOT TOUCHED
+The `sessions` table, its schema, and the `id='main'` / `id='backup'` records are completely unmodified. Credentials moved to the **separate** `site_settings` table (which already existed from Section 27).
+
+--- END SECTION 29 ---
 
 **END OF MASTER HANDOFF**

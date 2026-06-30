@@ -2780,6 +2780,10 @@
                 const d = await r.json();
                 if (d.unlocked) {
                     _lockDismiss();
+                    // Now whitelisted — safe to load credentials into the editor.
+                    if (typeof loadAiCredentialsFromServer === 'function') {
+                        loadAiCredentialsFromServer();
+                    }
                     fetch('/api/auth/log', {
                         method:'POST',
                         headers:{'Content-Type':'application/json'},
@@ -2820,6 +2824,10 @@
                         headers:{'Content-Type':'application/json'},
                         body: JSON.stringify({page: _lockPage, event:'visit'})
                     }).catch(()=>{});
+                    // Now whitelisted — load credentials before/with dismissing.
+                    if (typeof loadAiCredentialsFromServer === 'function') {
+                        loadAiCredentialsFromServer();
+                    }
                     setTimeout(_lockDismiss, 700);
                 } else {
                     err.textContent = '\u2717 Incorrect password. Please try again.';
@@ -6691,7 +6699,9 @@
             syncZoomControlsVisibility();
             selectedId = null;
             docV2.editorState.selectedElementIds = [];
-            restoreAiCredentials(docV2);
+            // NOTE: aiCredentials are NOT read from the menu document anymore —
+            // the public /api/menu response no longer carries them. They are
+            // loaded separately via loadAiCredentialsFromServer() after unlock.
 
         }
 
@@ -7642,7 +7652,13 @@
                     document.getElementById('ai-stability-key').value = '';
                     document.getElementById('ai-kling-key').value = '';
                     document.getElementById('ai-kling-secret').value = '';
-                    save();
+                    // SECURITY: persist the cleared credentials via the dedicated
+                    // credentials endpoint (not the menu save — creds live separately now).
+                    fetch('/api/credentials', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(docV2.aiCredentials)
+                    }).catch(() => {});
                     const imgBtn = document.getElementById('ai-img-btn');
                     if (imgBtn) imgBtn.disabled = true;
                     const klingImgBtn = document.getElementById('kling-img-btn');
@@ -7657,6 +7673,10 @@
 
         async function saveAiCredentials() {
             if (!docV2) { showToast('⚠️ App not ready — try again in a moment'); return; }
+            // SECURITY: credentials are stored in a SEPARATE server location
+            // (/api/credentials), never inside the menu document. They live only
+            // in memory (docV2.aiCredentials) during the editing session and are
+            // stripped from the menu save payload by stripCredentialsFromPayload().
             docV2.aiCredentials = {
                 cloudName: (document.getElementById('ai-cloud-name').value || '').trim(),
                 cloudKey: (document.getElementById('ai-cloud-key').value || '').trim(),
@@ -7666,10 +7686,10 @@
                 klingSecret: (document.getElementById('ai-kling-secret').value || '').trim()
             };
             try {
-                const res = await fetch('/api/menu', {
+                const res = await fetch('/api/credentials', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(docV2)
+                    body: JSON.stringify(docV2.aiCredentials)
                 });
                 if (res.ok) {
                     showToast('✅ Credentials saved permanently!');
@@ -7686,6 +7706,30 @@
                 }
             } catch (e) {
                 showToast('⚠️ Network error saving credentials');
+            }
+        }
+
+        // Fetch credentials from the authenticated endpoint into in-memory
+        // docV2.aiCredentials, then populate the UI. Called AFTER unlock so the
+        // keys are never fetched by a locked visitor.
+        async function loadAiCredentialsFromServer() {
+            try {
+                const res = await fetch('/api/credentials');
+                if (!res.ok) return;
+                const c = await res.json();
+                if (c && typeof c === 'object') {
+                    docV2.aiCredentials = {
+                        cloudName: c.cloudName || '',
+                        cloudKey: c.cloudKey || '',
+                        cloudSecret: c.cloudSecret || '',
+                        stabilityKey: c.stabilityKey || '',
+                        klingKey: c.klingKey || '',
+                        klingSecret: c.klingSecret || ''
+                    };
+                    restoreAiCredentials(docV2);
+                }
+            } catch (e) {
+                console.warn('loadAiCredentialsFromServer failed:', e);
             }
         }
 

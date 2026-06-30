@@ -10,7 +10,7 @@
 
 **Type:** Browser-based professional restaurant menu layout editor
 
-**Live URL:** https://web-production-3e17d.up.railway.app/
+**Live URL:** https://notyourmamaskitchen.up.railway.app/
 
 **Deployment Platform:** Railway (Python/Flask backend, PostgreSQL database)
 

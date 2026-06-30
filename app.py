@@ -70,6 +70,7 @@ DEFAULT_MENU_DATA = {"version": 2, "elements": []}
 def init_db():
     if not DATABASE_URL:
         return
+    conn = None
     try:
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cur = conn.cursor()
@@ -128,7 +129,35 @@ def init_db():
             VALUES ('viewer_public', 'false')
             ON CONFLICT (key) DO NOTHING
         """)
-        
+
+        # MIGRATION (one-time): Credentials used to live inside the menu document
+        # (canvas_json.aiCredentials). They now live separately in site_settings
+        # under 'ai_credentials'. On first boot after this change, copy any
+        # existing credentials from the 'main' menu document into the new store
+        # (only if the new store is empty), then strip them from the document so
+        # they can never leak via the public /api/menu endpoint again.
+        cur.execute("SELECT value FROM site_settings WHERE key = 'ai_credentials'")
+        if not cur.fetchone():
+            cur.execute("SELECT canvas_json FROM sessions WHERE id = 'main'")
+            main_row = cur.fetchone()
+            migrated = None
+            if main_row and main_row[0]:
+                try:
+                    main_doc = main_row[0] if isinstance(main_row[0], dict) else json.loads(main_row[0])
+                    old_creds = main_doc.get('aiCredentials') if isinstance(main_doc, dict) else None
+                    if isinstance(old_creds, dict) and any(str(v).strip() for v in old_creds.values()):
+                        migrated = {f: str(old_creds.get(f, '') or '').strip() for f in CRED_FIELDS}
+                except Exception:
+                    migrated = None
+            if migrated:
+                cur.execute(
+                    """INSERT INTO site_settings (key, value, updated_at)
+                       VALUES ('ai_credentials', %s, CURRENT_TIMESTAMP)
+                       ON CONFLICT (key) DO NOTHING""",
+                    (json.dumps(migrated),)
+                )
+                print("DB: Migrated aiCredentials from menu document to site_settings")
+
         # Migration: If id is integer, convert to TEXT
         cur.execute("SELECT data_type FROM information_schema.columns WHERE table_name = 'sessions' AND column_name = 'id'")
         row = cur.fetchone()
@@ -183,7 +212,101 @@ def validate_schema(data):
     if not isinstance(data.get("elements"), list): return False
     if not all(isinstance(e, dict) and 'id' in e and 'type' in e for e in data.get('elements', [])): return False
     if "assets" in data and not isinstance(data["assets"], list): return False
+    # Anti-wipe guard: reject a payload with no elements AND no assets. This
+    # blocks the empty-wipe attack (POST {elements:[]}) while still accepting
+    # any genuine menu document, which always has at least one element.
+    if len(data.get('elements', [])) == 0 and len(data.get('assets', [])) == 0:
+        return False
     return True
+
+# ─── SERVER-SIDE AUTH GATE ────────────────────────────────────────────────────
+# The frontend password overlay is cosmetic only. This gate enforces access
+# control at the server so that:
+#   • The lock page + unlock endpoint are reachable by anyone.
+#   • Static assets (fonts, JS, images, manuals) are reachable by anyone.
+#   • The public customer viewer (/menu + its /api/menu polling read) is reachable
+#     only when the owner has set viewer_public=true via the admin dashboard.
+#   • EVERYTHING else under /api/ (writes, credentials, admin, history, uploads)
+#     requires the requesting IP to be whitelisted (i.e. entered the password).
+#
+# Safe paths that NEVER require auth:
+PUBLIC_PATHS = {
+    '/api/auth/check', '/api/auth/unlock', '/api/auth/log', '/api/auth/page-view'
+}
+
+# Paths that require auth even when viewer_public is on:
+PROTECTED_API_PATHS = {
+    '/api/credentials', '/api/admin/stats', '/api/admin/clear-log',
+    '/api/admin/settings', '/api/video-history', '/api/list-images',
+    '/api/upload-image', '/api/delete-asset', '/api/delete-video',
+    '/api/migrate-asset', '/api/repair-images', '/api/proxy-download',
+}
+
+def _viewer_public_enabled():
+    """Return True if the owner has toggled the customer menu to public."""
+    if not DATABASE_URL:
+        return True  # local dev: treat as public
+    conn = None
+    try:
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        cur = conn.cursor()
+        cur.execute("SELECT value FROM site_settings WHERE key = 'viewer_public'")
+        row = cur.fetchone()
+        cur.close()
+        return bool(row and row[0] == 'true')
+    except Exception:
+        return False
+    finally:
+        if conn:
+            conn.close()
+
+@app.before_request
+def _auth_gate():
+    """Enforce server-side access control on every request."""
+    path = request.path
+
+    # 1) Auth endpoints + OPTIONS preflight are always open
+    if path in PUBLIC_PATHS or request.method == 'OPTIONS':
+        return None
+
+    # 2) Static assets and page HTML are always open (the lock overlay sits on top)
+    #    .ttf, export-utils.js, favicon, /Images/, /user-images/, manuals
+    if (path.endswith('.ttf') or path == '/export-utils.js' or
+            path == '/favicon.ico' or path.startswith('/Images/') or
+            path.startswith('/user-images/') or
+            path in ('/manual-en.html', '/manual-es.html')):
+        return None
+
+    # 3) From here on, only /api/* and the two page routes need examination.
+    is_api = path.startswith('/api/')
+
+    # 4) Whitelisted IP => full access to everything
+    if _is_whitelisted(_get_client_ip()):
+        return None
+
+    # 5) NOT whitelisted. Decide what (if anything) they may see.
+    #    Hard-protected API paths are never public:
+    if path in PROTECTED_API_PATHS:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    #    The menu READ endpoints (/api/menu GET, /api/backup GET) are public
+    #    ONLY when the owner has enabled viewer_public. Note: credentials have
+    #    already been scrubbed from these responses by _strip_credentials().
+    if path in ('/api/menu', '/api/backup'):
+        if request.method == 'GET' and _viewer_public_enabled():
+            return None
+        # Viewer locked, or a write attempt by a stranger — block.
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    #    AI generation/test endpoints (POST /api/ai/*) — require auth.
+    #    All other /api/* not explicitly listed above — require auth.
+    if is_api:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    # 6) Non-API page routes (/, /menu, /admin) — always serve the HTML so the
+    #    lock overlay can render. The admin page route additionally redirects
+    #    non-whitelisted IPs itself.
+    return None
 
 @app.route("/")
 def index():
@@ -215,7 +338,9 @@ def get_menu():
             cur.close()
             conn.close()
             if row:
-                return jsonify(row[0])
+                # SECURITY: never expose aiCredentials via the menu endpoint —
+                # the public viewer reads /api/menu too. Scrub them here.
+                return jsonify(_strip_credentials(row[0]))
         return jsonify(DEFAULT_MENU_DATA)
     except Exception as e:
         print(f"get_menu ERROR: {e}", flush=True)
@@ -268,7 +393,7 @@ def get_backup():
                     data = json.loads(data)
                 except:
                     pass
-            return jsonify({"data": data, "updated_at": str(row[1])}), 200
+            return jsonify({"data": _strip_credentials(data), "updated_at": str(row[1])}), 200
         return jsonify({"data": None}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -1123,6 +1248,84 @@ def _is_whitelisted(ip):
         if conn:
             conn.close()
 
+# ─── AI CREDENTIALS STORAGE (separate from menu document) ─────────────────────
+# Credentials live in site_settings under key='ai_credentials' as a JSON string.
+# They are NEVER stored inside the menu document (canvas_json), so they are never
+# served to the public viewer and never overwritten by a menu save().
+
+CRED_FIELDS = ('cloudName', 'cloudKey', 'cloudSecret',
+               'klingKey', 'klingSecret', 'stabilityKey')
+
+_EMPTY_CREDS = {f: '' for f in CRED_FIELDS}
+
+def get_ai_credentials():
+    """Return the stored AI credentials dict (empty strings if none/unavailable)."""
+    if not DATABASE_URL:
+        return dict(_EMPTY_CREDS)
+    conn = None
+    try:
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        cur = conn.cursor()
+        cur.execute("SELECT value FROM site_settings WHERE key = 'ai_credentials'")
+        row = cur.fetchone()
+        cur.close()
+        if not row:
+            return dict(_EMPTY_CREDS)
+        try:
+            stored = json.loads(row[0]) if row[0] else {}
+        except Exception:
+            stored = {}
+        # Merge against known fields so callers always get the full schema
+        merged = dict(_EMPTY_CREDS)
+        for f in CRED_FIELDS:
+            merged[f] = (stored.get(f) or '').strip()
+        return merged
+    except Exception:
+        return dict(_EMPTY_CREDS)
+    finally:
+        if conn:
+            conn.close()
+
+def save_ai_credentials(creds):
+    """Persist AI credentials dict to site_settings. Returns True on success."""
+    if not DATABASE_URL:
+        return True
+    conn = None
+    try:
+        # Sanitize: keep only known fields, trim, reject non-strings
+        clean = {}
+        for f in CRED_FIELDS:
+            v = creds.get(f, '')
+            clean[f] = str(v).strip() if v is not None else ''
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        cur = conn.cursor()
+        cur.execute(
+            """INSERT INTO site_settings (key, value, updated_at)
+               VALUES ('ai_credentials', %s, CURRENT_TIMESTAMP)
+               ON CONFLICT (key) DO UPDATE
+               SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP""",
+            (json.dumps(clean),)
+        )
+        conn.commit()
+        cur.close()
+        return True
+    except Exception as e:
+        print(f"save_ai_credentials ERROR: {e}", flush=True)
+        return False
+    finally:
+        if conn:
+            conn.close()
+
+def _strip_credentials(doc):
+    """Recursively remove aiCredentials from a menu document (or any dict).
+    Mutates a copy and returns it. Used before serving /api/menu and /api/backup."""
+    if isinstance(doc, dict):
+        d = dict(doc)
+        if 'aiCredentials' in d:
+            d['aiCredentials'] = dict(_EMPTY_CREDS)
+        return d
+    return doc
+
 # ─── AUTH ROUTES ──────────────────────────────────────────────────────────────
 
 @app.route('/api/auth/check', methods=['POST'])
@@ -1470,6 +1673,24 @@ def admin_settings_post():
     finally:
         if conn:
             conn.close()
+
+# ─── AI CREDENTIALS ENDPOINTS (whitelisted IPs only) ──────────────────────────
+# These are the ONLY endpoints that serve real credential values to the browser.
+# The auth gate (before_request) blocks non-whitelisted IPs from reaching them.
+
+@app.route('/api/credentials', methods=['GET'])
+def get_credentials():
+    """Return AI credentials — whitelisted IPs only (enforced by auth gate)."""
+    return jsonify(get_ai_credentials())
+
+@app.route('/api/credentials', methods=['POST'])
+def post_credentials():
+    """Save AI credentials — whitelisted IPs only (enforced by auth gate)."""
+    data = request.json or {}
+    ok = save_ai_credentials(data)
+    if ok:
+        return jsonify({'status': 'success'})
+    return jsonify({'error': 'Failed to save credentials'}), 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
