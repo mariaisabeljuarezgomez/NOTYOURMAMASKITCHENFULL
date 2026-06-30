@@ -6734,6 +6734,11 @@
                 }
             };
             delete payload.status; // BUG-F1 fix: strip server-injected status field before POST
+            // SECURITY: credentials live in a separate server store, never in
+            // the menu document. Strip them from the save payload so they are
+            // never written back into canvas_json. (The backend strips again
+            // as defense in depth.)
+            delete payload.aiCredentials;
 
             try {
                 const r = await fetch('/api/menu', {
@@ -7675,8 +7680,9 @@
             if (!docV2) { showToast('⚠️ App not ready — try again in a moment'); return; }
             // SECURITY: credentials are stored in a SEPARATE server location
             // (/api/credentials), never inside the menu document. They live only
-            // in memory (docV2.aiCredentials) during the editing session and are
-            // stripped from the menu save payload by stripCredentialsFromPayload().
+            // in memory (docV2.aiCredentials) during the editing session. The
+            // save() function strips aiCredentials from menu payloads, and the
+            // backend strips again as defense in depth (see save_menu in app.py).
             docV2.aiCredentials = {
                 cloudName: (document.getElementById('ai-cloud-name').value || '').trim(),
                 cloudKey: (document.getElementById('ai-cloud-key').value || '').trim(),

@@ -1237,8 +1237,11 @@ A single `before_request` hook classifies every request:
 
 **Part 2 — Credential isolation (no more keys in the menu document)**
 - New helpers `get_ai_credentials()` / `save_ai_credentials()` store credentials in the existing `site_settings` table under key `ai_credentials` (JSON string). **No schema migration** — reuses the key/value table from Section 27.
-- `_strip_credentials()` zeros out the `aiCredentials` object in every `/api/menu` and `/api/backup` GET response before serving, so keys can never reach the public viewer.
-- **One-time migration** in `init_db()`: on first boot after this change, copies any existing `aiCredentials` from the `main` menu document into the new `site_settings` store (only if the store is empty), so Gwen's existing keys survive the cutover.
+- `_strip_credentials()` zeros out the `aiCredentials` object in **every** read AND write of the menu document:
+  - **Read:** every `/api/menu` and `/api/backup` GET response is scrubbed before serving, so keys can never reach the public viewer.
+  - **Write:** `save_menu()` and `save_backup()` call `_strip_credentials(data)` before writing to `canvas_json`, so even if the editor sends keys in a save payload, they are never persisted in the document. This is the authoritative defense.
+- The editor's `save()` also `delete`s `payload.aiCredentials` before POSTing (defense in depth — payload stays lean and a future editor change cannot reintroduce the leak).
+- **One-time migration** in `init_db()`: on first boot after this change, copies any existing `aiCredentials` from the `main` menu document into the new `site_settings` store (only if the store is empty), so Gwen's existing keys survive the cutover. Subsequent saves never write keys back into the document, so the migration stays clean.
 
 **Part 3 — New `/api/credentials` endpoint (whitelisted IPs only)**
 - `GET /api/credentials` → returns the real credential values. The auth gate blocks non-whitelisted IPs.

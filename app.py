@@ -353,6 +353,8 @@ def save_backup():
     data = request.json
     if not data or not validate_schema(data):
         return jsonify({"error": "Invalid payload"}), 400
+    # SECURITY: never persist credentials in the backup document either.
+    data = _strip_credentials(data)
     conn = None
     cur = None
     try:
@@ -411,17 +413,20 @@ def save_menu():
     data = request.json
     if not data or not validate_schema(data):
         return jsonify({"error": "Invalid schema"}), 400
-    
+    # SECURITY: credentials live in site_settings, never in the menu document.
+    # Strip any aiCredentials the editor may have included so keys can never be
+    # written back into canvas_json (defense in depth — see _strip_credentials).
+    data = _strip_credentials(data)
     try:
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cur = conn.cursor()
         # UPSERT logic using 'canvas_json' and id='main'
         cur.execute("""
-            INSERT INTO sessions (id, canvas_json, updated_at) 
+            INSERT INTO sessions (id, canvas_json, updated_at)
             VALUES ('main', %s, CURRENT_TIMESTAMP)
-            ON CONFLICT (id) DO UPDATE SET 
-                canvas_json = EXCLUDED.canvas_json,
-                updated_at = CURRENT_TIMESTAMP
+            ON CONFLICT (id) DO UPDATE SET
+            canvas_json = EXCLUDED.canvas_json,
+            updated_at = CURRENT_TIMESTAMP
         """, (json.dumps(data),))
         conn.commit()
         cur.close()
