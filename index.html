@@ -9701,6 +9701,7 @@
             } else {
                 switchVantaTheme(saved);
             }
+        });  // end DOMContentLoaded — vanta theme restore
 
         // ═══════════════════════════════════════════════════════════════════
         // GOOGLE FONTS PICKER ENGINE
@@ -10011,12 +10012,6 @@
             if (!_gfpActive) return;
             const wrapper = document.getElementById(_gfpActive);
             if (wrapper && !wrapper.contains(e.target)) gfpClose(_gfpActive);
-        });
-
-        // Preload the font of the currently selected element when the page loads
-        // (so the canvas renders correctly immediately)
-        document.addEventListener('DOMContentLoaded', () => {
-            // nothing needed — fonts load on-demand when elements are selected
         });
 
         // ═══════════════════════════════════════════════════════════════════
