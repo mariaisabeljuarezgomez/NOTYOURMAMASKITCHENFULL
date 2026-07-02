@@ -39,15 +39,11 @@ Updated based on confirmed three-agent source code audit. 14 fixes applied. Incl
 | `viewer.html` | Public-facing menu viewer — reads from same PostgreSQL data |
 | `export-utils.js` | PNG export with CRC32 checksum — used by exportPng() |
 | `build_app.py` | Build script — concatenates components into index.html |
-| `create_preview.py` | Thumbnail generator utility |
-| `fix_braces.py` | JSON brace fixing utility |
-| `fix_coords.py` | Coordinate normalization utility |
-| `read_example.py` | Example data reader |
-| `raw_coords.json` | Sample coordinate data |
+| `admin.html` | Admin analytics dashboard — served at /admin (whitelisted IPs only) |
 | `requirements.txt` | Python dependencies |
 | `Procfile` | Railway deployment config |
-| `manual-en.html` | English user manual |
-| `manual-es.html` | Spanish user manual |
+| `manual-en.html` | English user manual — served at /manual-en.html |
+| `manual-es.html` | Spanish user manual — served at /manual-es.html |
 | `USER_MANUAL_SOURCE.md` | User manual source for agents |
 | `bernard-mt-condensed-regular.ttf` | Font file |
 | `century-gothic-bold-italic.ttf` | Font file |
@@ -55,9 +51,11 @@ Updated based on confirmed three-agent source code audit. 14 fixes applied. Incl
 | `century-gothic-regular.ttf` | Font file |
 | `menu-bg.png` | Default background image |
 | `menu-bg-preview.jpg` | Preview thumbnail |
-| `Images/` | Static image directory (deprecated — use Cloudinary) |
-| `MANUAL/` | Generated manual files |
+| `Images/` | Static protected assets (Asset1–14.png) — served at /Images/ |
 | `.agents/` | Agent rules and workflows |
+
+*Removed July 1, 2026 (no production use): create_preview.py, fix_braces.py, fix_coords.py,
+read_example.py, raw_coords.json, MANUAL/ (manual_en_part1–3.html)*
 
 ---
 
