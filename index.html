@@ -10020,6 +10020,16 @@
         });
 
         // ═══════════════════════════════════════════════════════════════════
+        // Expose GFP functions on window so onclick="" handlers can reach them.
+        // All GFP functions are defined inside window.onload scope and are
+        // NOT accessible to inline HTML event attributes without this.
+        // ═══════════════════════════════════════════════════════════════════
+        window.gfpOpen     = gfpOpen;
+        window.gfpClose    = gfpClose;
+        window.gfpSelect   = gfpSelect;
+        window.gfpSetValue = gfpSetValue;
+        window.gfpFilter   = gfpFilter;
+        // ═══════════════════════════════════════════════════════════════════
         // END GOOGLE FONTS PICKER ENGINE
         // ═══════════════════════════════════════════════════════════════════
     </script>
