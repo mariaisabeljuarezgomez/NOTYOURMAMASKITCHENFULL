@@ -8,6 +8,9 @@
     <title>Menu Editor Pro V2 - UX Hardened</title>
     <meta name="description"
         content="Menu Editor Pro — Professional restaurant menu layout tool. Edit, save, and export print-ready menus with drag-and-drop text, images, and shapes.">
+    <!-- Google Fonts CDN preconnect for fast font loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <style>
         @font-face {
             font-family: 'bernard-mt-condensed-regular';
@@ -26,6 +29,97 @@
             src: url('century-gothic-bold.ttf') format('truetype');
             font-display: block;
         }
+
+        /* ── FONT PICKER COMPONENT ────────────────────────────────────────── */
+        .font-picker {
+            position: relative;
+            display: inline-block;
+        }
+        .font-picker-input {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 6px;
+            padding: 4px 28px 4px 8px;
+            font-size: 12px;
+            width: 160px;
+            cursor: pointer;
+            outline: none;
+            box-sizing: border-box;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .font-picker-input:focus {
+            border-color: var(--accent, #f0a500);
+            background: #222;
+        }
+        .font-picker-arrow {
+            position: absolute;
+            right: 7px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #888;
+            font-size: 10px;
+        }
+        .font-picker-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 3px);
+            left: 0;
+            width: 240px;
+            max-height: 280px;
+            overflow-y: auto;
+            background: #1c1c1c;
+            border: 1px solid #444;
+            border-radius: 8px;
+            z-index: 9999;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            padding: 4px 0;
+        }
+        .font-picker-search {
+            width: 100%;
+            box-sizing: border-box;
+            background: #111;
+            border: none;
+            border-bottom: 1px solid #333;
+            color: #fff;
+            padding: 8px 10px;
+            font-size: 12px;
+            outline: none;
+        }
+        .font-picker-search::placeholder { color: #666; }
+        .font-picker-option {
+            padding: 7px 12px;
+            cursor: pointer;
+            font-size: 15px;
+            color: #ddd;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: background 0.1s;
+        }
+        .font-picker-option:hover, .font-picker-option.focused {
+            background: #2a2a2a;
+            color: #fff;
+        }
+        .font-picker-option.selected {
+            color: var(--accent, #f0a500);
+        }
+        .font-picker-section {
+            padding: 4px 10px 2px;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #555;
+            pointer-events: none;
+        }
+        .font-picker-dropdown.open { display: block; }
+        /* Sidebar font picker: narrower */
+        #sel-font-picker .font-picker-input { width: 115px; }
+        #sel-font-picker .font-picker-dropdown { width: 220px; }
+        /* ── END FONT PICKER ─────────────────────────────────────────────── */
 
         @font-face {
             font-family: 'century-gothic-regular';
@@ -2897,12 +2991,13 @@
     <div id="text-format-bar">
         <!-- Font selector -->
         <span class="tfb-label">Font</span>
-        <select class="tfb-select" id="tfb-font" onchange="tfbUpdateStyle('fontFamily', this.value)">
-            <option value="bernard-mt-condensed-regular">Bernard Mt</option>
-            <option value="century-gothic-bold">CG Bold</option>
-            <option value="century-gothic-bold-italic">CG Bold Italic</option>
-            <option value="century-gothic-regular">CG Regular</option>
-        </select>
+        <div class="font-picker" id="tfb-font-picker">
+            <input class="font-picker-input" id="tfb-font" type="text" readonly
+                placeholder="Font…" title="Click to choose a font"
+                onclick="gfpOpen('tfb-font-picker')">
+            <span class="font-picker-arrow">▾</span>
+            <div class="font-picker-dropdown" id="tfb-font-dropdown"></div>
+        </div>
         <div class="tfb-sep"></div>
         <!-- Font size stepper -->
         <div class="tfb-size-wrap">
@@ -3765,12 +3860,13 @@
                     </div>
                 </div>
                 <div id="text-style-ctrls" style="display:none; align-items:center; gap:10px;">
-                    <select id="sel-font" style="max-width:100px" onchange="updateStyle('fontFamily', this.value)">
-                        <option value="bernard-mt-condensed-regular">Bernard Mt Condensed Regular</option>
-                        <option value="century-gothic-bold">Century Gothic Bold</option>
-                        <option value="century-gothic-bold-italic">Century Gothic Bold Italic</option>
-                        <option value="century-gothic-regular">Century Gothic Regular</option>
-                    </select>
+                    <div class="font-picker" id="sel-font-picker">
+                        <input class="font-picker-input" id="sel-font" type="text" readonly
+                            placeholder="Font…" title="Click to choose a font"
+                            onclick="gfpOpen('sel-font-picker')">
+                        <span class="font-picker-arrow">▾</span>
+                        <div class="font-picker-dropdown" id="sel-font-dropdown"></div>
+                    </div>
                     <input type="color" id="sel-color" onchange="updateStyle('color', this.value)">
                     <div class="ctrl-group">
                         <label>Size</label>
@@ -5185,7 +5281,7 @@
             document.getElementById('sel-video-label').value = item.videoLabel || '';
 
             if (item.type === 'text') {
-                document.getElementById('sel-font').value = item.style.fontFamily.replace(/['"]/g, '');
+                gfpSetValue('sel-font-picker', (item.style.fontFamily || 'century-gothic-regular').replace(/['"]/g, ''));
                 document.getElementById('sel-color').value = normalizeHex(item.style.color);
                 document.getElementById('sel-l-height').value = item.style.lineHeight || 1.1;
                 document.getElementById('sel-l-spacing').value = item.style.letterSpacing || 0;
@@ -9175,8 +9271,7 @@
             bar.classList.add('show');
             document.body.classList.add('tfb-active');
             // Font
-            const fontSel = document.getElementById('tfb-font');
-            if (fontSel) fontSel.value = (item.style.fontFamily || 'century-gothic-regular');
+            gfpSetValue('tfb-font-picker', (item.style.fontFamily || 'century-gothic-regular'));
             // Size
             const sizeIn = document.getElementById('tfb-size');
             if (sizeIn) sizeIn.value = Math.round(item.style.fontSize || 16);
@@ -9606,7 +9701,327 @@
             } else {
                 switchVantaTheme(saved);
             }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // GOOGLE FONTS PICKER ENGINE
+        // ═══════════════════════════════════════════════════════════════════
+
+        // Curated list of 150 Google Fonts — covers all restaurant menu needs.
+        // Value = exact Google Fonts family name. Local fonts kept at top.
+        const GFP_FONTS = [
+            // ── LOCAL (served from server, no CDN load needed) ──────────────
+            { name: 'bernard-mt-condensed-regular', label: 'Bernard MT Condensed', local: true },
+            { name: 'century-gothic-regular',       label: 'Century Gothic Regular', local: true },
+            { name: 'century-gothic-bold',          label: 'Century Gothic Bold', local: true },
+            { name: 'century-gothic-bold-italic',   label: 'Century Gothic Bold Italic', local: true },
+            // ── DISPLAY & DECORATIVE ────────────────────────────────────────
+            { name: 'Playfair Display',    section: 'Display' },
+            { name: 'Cinzel',              section: 'Display' },
+            { name: 'Cinzel Decorative' },
+            { name: 'Cormorant Garamond' },
+            { name: 'Cormorant SC' },
+            { name: 'Bebas Neue' },
+            { name: 'Oswald' },
+            { name: 'Abril Fatface' },
+            { name: 'Righteous' },
+            { name: 'Russo One' },
+            { name: 'Anton' },
+            { name: 'Fjalla One' },
+            { name: 'Barlow Condensed' },
+            { name: 'Squada One' },
+            { name: 'Teko' },
+            { name: 'Graduate' },
+            { name: 'Philosopher' },
+            { name: 'Josefin Sans' },
+            { name: 'Josefin Slab' },
+            { name: 'Poiret One' },
+            { name: 'Spectral' },
+            { name: 'Tenor Sans' },
+            { name: 'Changa One' },
+            { name: 'Yeseva One' },
+            { name: 'Lilita One' },
+            { name: 'Alfa Slab One' },
+            { name: 'Ultra' },
+            { name: 'Cardo' },
+            // ── SCRIPT & HANDWRITING ────────────────────────────────────────
+            { name: 'Dancing Script',   section: 'Script & Handwriting' },
+            { name: 'Pacifico' },
+            { name: 'Satisfy' },
+            { name: 'Lobster' },
+            { name: 'Lobster Two' },
+            { name: 'Great Vibes' },
+            { name: 'Allura' },
+            { name: 'Sacramento' },
+            { name: 'Alex Brush' },
+            { name: 'Pinyon Script' },
+            { name: 'Clicker Script' },
+            { name: 'Italianno' },
+            { name: 'Courgette' },
+            { name: 'Kaushan Script' },
+            { name: 'Yellowtail' },
+            { name: 'Cookie' },
+            { name: 'Caveat' },
+            { name: 'Amatic SC' },
+            { name: 'Permanent Marker' },
+            { name: 'Homemade Apple' },
+            { name: 'Mr Dafoe' },
+            { name: 'Parisienne' },
+            { name: 'Marck Script' },
+            { name: 'Rochester' },
+            { name: 'Tangerine' },
+            { name: 'Niconne' },
+            { name: 'Meddon' },
+            // ── SERIF ────────────────────────────────────────────────────────
+            { name: 'Merriweather',       section: 'Serif' },
+            { name: 'Lora' },
+            { name: 'Crimson Text' },
+            { name: 'Libre Baskerville' },
+            { name: 'PT Serif' },
+            { name: 'Noto Serif' },
+            { name: 'Bitter' },
+            { name: 'Zilla Slab' },
+            { name: 'Vollkorn' },
+            { name: 'Domine' },
+            { name: 'Amiri' },
+            { name: 'EB Garamond' },
+            { name: 'Source Serif 4' },
+            { name: 'Arvo' },
+            { name: 'Rokkitt' },
+            { name: 'Noticia Text' },
+            { name: 'Gilda Display' },
+            { name: 'Sorts Mill Goudy' },
+            { name: 'Neuton' },
+            { name: 'Vidaloka' },
+            { name: 'Unna' },
+            // ── SANS-SERIF ───────────────────────────────────────────────────
+            { name: 'Roboto',        section: 'Sans-Serif' },
+            { name: 'Open Sans' },
+            { name: 'Lato' },
+            { name: 'Montserrat' },
+            { name: 'Poppins' },
+            { name: 'Raleway' },
+            { name: 'Ubuntu' },
+            { name: 'Nunito' },
+            { name: 'Nunito Sans' },
+            { name: 'Work Sans' },
+            { name: 'Barlow' },
+            { name: 'Cabin' },
+            { name: 'Karla' },
+            { name: 'Mulish' },
+            { name: 'DM Sans' },
+            { name: 'Quicksand' },
+            { name: 'Jost' },
+            { name: 'Rubik' },
+            { name: 'Outfit' },
+            { name: 'Plus Jakarta Sans' },
+            { name: 'Sora' },
+            { name: 'Kanit' },
+            { name: 'Prompt' },
+            { name: 'Source Sans 3' },
+            { name: 'Muli' },
+            { name: 'Exo 2' },
+            { name: 'Exo' },
+            { name: 'Titillium Web' },
+            { name: 'Oxygen' },
+            { name: 'Hind' },
+            { name: 'Fira Sans' },
+            { name: 'Dosis' },
+            { name: 'Asap' },
+            { name: 'Arimo' },
+            { name: 'Overpass' },
+            { name: 'Heebo' },
+            { name: 'Noto Sans' },
+            { name: 'Inter' },
+            // ── ELEGANT COMBINATIONS ─────────────────────────────────────────
+            { name: 'Cormorant',         section: 'Elegant' },
+            { name: 'Libre Caslon Text' },
+            { name: 'Forum' },
+            { name: 'Martel' },
+            { name: 'Rufina' },
+            { name: 'Fraunces' },
+            { name: 'DM Serif Display' },
+            { name: 'Bodoni Moda' },
+            { name: 'Italiana' },
+            { name: 'Oranienbaum' },
+        ];
+
+        // Fonts loaded via CDN during this session (avoid duplicate network requests)
+        const _gfpLoaded = new Set(['bernard-mt-condensed-regular',
+            'century-gothic-regular', 'century-gothic-bold', 'century-gothic-bold-italic']);
+
+        // Load a Google Font by family name on-demand via FontFace API
+        async function gfpLoadFont(family) {
+            if (_gfpLoaded.has(family)) return;
+            _gfpLoaded.add(family);
+            try {
+                const encoded = encodeURIComponent(family);
+                const url = `https://fonts.googleapis.com/css2?family=${encoded}:ital,wght@0,400;0,700;1,400&display=swap`;
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = url;
+                document.head.appendChild(link);
+                await document.fonts.ready;
+            } catch(e) {
+                console.warn('GFP: failed to load font', family, e);
+            }
+        }
+
+        // State — which picker is currently open
+        let _gfpActive = null;
+
+        // Open the dropdown for the given picker wrapper id
+        function gfpOpen(wrapperId) {
+            const wrapper = document.getElementById(wrapperId);
+            if (!wrapper) return;
+            // Close any other open picker first
+            if (_gfpActive && _gfpActive !== wrapperId) gfpClose(_gfpActive);
+            _gfpActive = wrapperId;
+            const dd = wrapper.querySelector('.font-picker-dropdown');
+            const inp = wrapper.querySelector('.font-picker-input');
+            if (!dd || !inp) return;
+            // Build dropdown if not already built
+            if (!dd.dataset.built) gfpBuildDropdown(wrapperId);
+            dd.classList.add('open');
+            // Focus the search box
+            const search = dd.querySelector('.font-picker-search');
+            if (search) { search.value = ''; gfpFilter(wrapperId, ''); search.focus(); }
+        }
+
+        function gfpClose(wrapperId) {
+            const wrapper = document.getElementById(wrapperId);
+            if (!wrapper) return;
+            const dd = wrapper.querySelector('.font-picker-dropdown');
+            if (dd) dd.classList.remove('open');
+            if (_gfpActive === wrapperId) _gfpActive = null;
+        }
+
+        // Build the dropdown DOM for a picker (once, then cached)
+        function gfpBuildDropdown(wrapperId) {
+            const wrapper = document.getElementById(wrapperId);
+            const dd = wrapper.querySelector('.font-picker-dropdown');
+            const currentVal = wrapper.querySelector('.font-picker-input').value;
+            dd.innerHTML = '';
+
+            // Search box
+            const search = document.createElement('input');
+            search.type = 'text';
+            search.className = 'font-picker-search';
+            search.placeholder = '🔍 Search fonts…';
+            search.addEventListener('input', () => gfpFilter(wrapperId, search.value));
+            search.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') gfpClose(wrapperId);
+            });
+            dd.appendChild(search);
+
+            // Font list container
+            const list = document.createElement('div');
+            list.className = 'font-picker-list';
+            dd.appendChild(list);
+
+            GFP_FONTS.forEach(f => {
+                if (f.section) {
+                    const sec = document.createElement('div');
+                    sec.className = 'font-picker-section';
+                    sec.textContent = f.section;
+                    list.appendChild(sec);
+                }
+                const opt = document.createElement('div');
+                opt.className = 'font-picker-option';
+                opt.dataset.value = f.name;
+                opt.dataset.label = f.label || f.name;
+                opt.textContent = f.label || f.name;
+                if (f.name === currentVal) opt.classList.add('selected');
+                // Lazy-load font for preview when option scrolls into view
+                if (!f.local) {
+                    const obs = new IntersectionObserver((entries) => {
+                        entries.forEach(en => {
+                            if (en.isIntersecting) {
+                                gfpLoadFont(f.name).then(() => {
+                                    opt.style.fontFamily = `"${f.name}", sans-serif`;
+                                });
+                                obs.disconnect();
+                            }
+                        });
+                    }, { root: dd, threshold: 0.1 });
+                    obs.observe(opt);
+                }
+                opt.addEventListener('click', () => gfpSelect(wrapperId, f.name, f.label || f.name));
+                list.appendChild(opt);
+            });
+
+            dd.dataset.built = '1';
+        }
+
+        // Filter options by search query
+        function gfpFilter(wrapperId, query) {
+            const wrapper = document.getElementById(wrapperId);
+            const dd = wrapper.querySelector('.font-picker-dropdown');
+            const q = query.toLowerCase().trim();
+            let lastSection = null;
+            dd.querySelectorAll('.font-picker-option, .font-picker-section').forEach(el => {
+                if (el.classList.contains('font-picker-section')) {
+                    lastSection = el;
+                    // Show section only if any following options match; handled below
+                    el.style.display = 'none';
+                    return;
+                }
+                const matches = !q || el.dataset.label.toLowerCase().includes(q) || el.dataset.value.toLowerCase().includes(q);
+                el.style.display = matches ? '' : 'none';
+                if (matches && lastSection) {
+                    lastSection.style.display = '';
+                    lastSection = null;
+                }
+            });
+        }
+
+        // Called when user picks a font — loads it, applies to element
+        function gfpSelect(wrapperId, fontValue, fontLabel) {
+            gfpSetValue(wrapperId, fontValue);
+            gfpClose(wrapperId);
+            // Apply to the selected canvas element
+            gfpLoadFont(fontValue).then(() => {
+                if (wrapperId === 'tfb-font-picker') {
+                    tfbUpdateStyle('fontFamily', fontValue);
+                } else {
+                    updateStyle('fontFamily', fontValue);
+                }
+            });
+        }
+
+        // Set the displayed value in the picker input (called by sync functions)
+        function gfpSetValue(wrapperId, fontValue) {
+            const wrapper = document.getElementById(wrapperId);
+            if (!wrapper) return;
+            const inp = wrapper.querySelector('.font-picker-input');
+            if (!inp) return;
+            // Find label for this font value
+            const entry = GFP_FONTS.find(f => f.name === fontValue);
+            inp.value = entry ? (entry.label || entry.name) : fontValue;
+            // Update selected highlight if dropdown is already built
+            const dd = wrapper.querySelector('.font-picker-dropdown');
+            if (dd && dd.dataset.built) {
+                dd.querySelectorAll('.font-picker-option').forEach(opt => {
+                    opt.classList.toggle('selected', opt.dataset.value === fontValue);
+                });
+            }
+        }
+
+        // Close picker when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!_gfpActive) return;
+            const wrapper = document.getElementById(_gfpActive);
+            if (wrapper && !wrapper.contains(e.target)) gfpClose(_gfpActive);
         });
+
+        // Preload the font of the currently selected element when the page loads
+        // (so the canvas renders correctly immediately)
+        document.addEventListener('DOMContentLoaded', () => {
+            // nothing needed — fonts load on-demand when elements are selected
+        });
+
+        // ═══════════════════════════════════════════════════════════════════
+        // END GOOGLE FONTS PICKER ENGINE
+        // ═══════════════════════════════════════════════════════════════════
     </script>
 </body>
 

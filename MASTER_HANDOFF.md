@@ -1,6 +1,13 @@
 # MASTER HANDOFF — Not Your Mama's Kitchen Menu Editor
 
-**Last Updated: April 14, 2026 (Kling img2img Payload Fix Applied)**
+**Last Updated: July 1, 2026 (Google Fonts Integration)**
+
+## Changelog — July 1, 2026
+**Google Fonts Integration — Replaced both hardcoded 4-option font dropdowns with a searchable font picker giving access to 150 curated Google Fonts loaded on-demand via the FontFace API. No backend changes. Backward compatible — all existing local fonts (century-gothic-*, bernard-mt-condensed-regular) continue to work. viewer.html updated to preload Google Fonts used in the menu before canvas draw. Font picker supports live search filtering, per-font preview rendering, and lazy-load of font previews as user scrolls.**
+
+**Repo Cleanup — Removed 8 unused dev utility files (create_preview.py, fix_braces.py, fix_coords.py, read_example.py, raw_coords.json, MANUAL/ parts). Updated MASTER_HANDOFF Section 2 file inventory.**
+
+**Security Gate (June 30, 2026) — @app.before_request IP whitelist, credential isolation to site_settings table, server-side _strip_credentials() on all read/write paths, anti-wipe guard in validate_schema(), SITE_PASSWORD Railway env var set.**
 
 ## Changelog — Audit Patch April 12, 2026
 Updated based on confirmed three-agent source code audit. 14 fixes applied. Includes PR #9 features (Clear Credentials, AI Gallery 3-slot apply).

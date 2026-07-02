@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Menu Viewer | Not Your Mama's Kitchen</title>
+    <!-- Google Fonts CDN preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <style>
         @font-face {
             font-family: 'Century Gothic';
@@ -971,6 +974,36 @@
             ctx.textAlign = originalAlign;
         }
 
+        // Fonts served locally from the server — do NOT try to load from CDN
+        const LOCAL_FONTS = new Set([
+            'bernard-mt-condensed-regular',
+            'century-gothic-regular',
+            'century-gothic-bold',
+            'century-gothic-bold-italic',
+            'Century Gothic',
+        ]);
+
+        // Preload all Google Fonts used in the menu document before drawing.
+        // Only loads fonts NOT in LOCAL_FONTS. Returns a promise.
+        async function preloadDocumentFonts(elements) {
+            const families = [...new Set(
+                elements
+                    .filter(e => e.type === 'text')
+                    .map(e => e.fontFamily || (e.style && e.style.fontFamily) || '')
+                    .map(f => f.replace(/['"/]/g, '').trim())
+                    .filter(f => f && !LOCAL_FONTS.has(f))
+            )];
+            if (families.length === 0) return;
+            const params = families
+                .map(f => `family=${encodeURIComponent(f)}:ital,wght@0,400;0,700;1,400`)
+                .join('&');
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = `https://fonts.googleapis.com/css2?${params}&display=swap`;
+            document.head.appendChild(link);
+            await document.fonts.ready;
+        }
+
         const FONT_MAP = {
             'serif': 'Georgia, serif',
             'sans-serif': 'Arial, sans-serif',
@@ -1138,6 +1171,9 @@
                 })
                 .sort((a, b) => (a.zIndex || 10) - (b.zIndex || 10))
                 .map(normalizeEl);
+
+            // Load any Google Fonts used in this menu before drawing
+            await preloadDocumentFonts(elements);
 
             overlayContainer.innerHTML = '';
 
