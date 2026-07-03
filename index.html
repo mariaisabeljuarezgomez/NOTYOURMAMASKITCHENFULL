@@ -1721,7 +1721,6 @@
             gap: 2px;
             padding: 0 16px;
             z-index: 990;
-            overflow: hidden;
             opacity: 0.35;
             pointer-events: none;
             transition: opacity 0.15s;
@@ -5378,6 +5377,7 @@
             // Unlocked element — attach() already handled selection on mousedown, do nothing here
         }
         function onCanvasMousedown(e) {
+            if (window._drawMode) return;
             if (e.button !== 0 && e.type !== 'touchstart') return;
             const _lassoTarget = e.target.closest('.editable-element');
             if (_lassoTarget) {
@@ -5882,17 +5882,34 @@
         }
 
         function addText() {
-            pushState();
-            let id = 'txt_' + Date.now();
-            const vpRect = viewport.getBoundingClientRect();
-            const scalerRect = scaler.getBoundingClientRect();
-            const cx = (vpRect.left + vpRect.width / 2 - scalerRect.left) / zoomScale;
-            const cy = (vpRect.top + vpRect.height / 2 - scalerRect.top) / zoomScale;
-            const x = Math.max(50, Math.min(BASE_W - 200, cx));
-            const y = Math.max(50, Math.min(BASE_H - 100, cy));
-            docV2.elements.push({ id, type: 'text', text: 'New Text', x, y, width: 200, zIndex: Math.max(1, docV2.elements.filter(e => e.layerRole !== 'background').length + 1), opacity: 1, rotation: 0, visible: true, locked: false, layerRole: 'content', style: { fontFamily: 'century-gothic-bold', fontSize: 24, color: '#000000', lineHeight: 1.1, letterSpacing: 0 } });
-            render();
-            selectById(id);
+            window._drawMode = 'text';
+            const mc = document.getElementById('menu-container');
+            if (mc) mc.style.cursor = 'text';
+            showToast('Click anywhere on the menu to place text');
+
+            function _textPointerDown(e) {
+                if (window._drawMode !== 'text') {
+                    mc.removeEventListener('pointerdown', _textPointerDown);
+                    return;
+                }
+                e.stopPropagation();
+                e.preventDefault();
+                const scalerRect = scaler.getBoundingClientRect();
+                const currentScale = scalerRect.width / BASE_W;
+                const x = (e.clientX - scalerRect.left) / currentScale;
+                const y = (e.clientY - scalerRect.top) / currentScale;
+
+                window._drawMode = null;
+                mc.style.cursor = '';
+                mc.removeEventListener('pointerdown', _textPointerDown);
+
+                pushState();
+                let id = 'txt_' + Date.now();
+                docV2.elements.push({ id, type: 'text', text: 'New Text', x, y, width: 200, zIndex: Math.max(1, docV2.elements.filter(el => el.layerRole !== 'background').length + 1), opacity: 1, rotation: 0, visible: true, locked: false, layerRole: 'content', style: { fontFamily: 'century-gothic-bold', fontSize: 24, color: '#000000', lineHeight: 1.1, letterSpacing: 0 } });
+                render();
+                selectById(id);
+            }
+            mc.addEventListener('pointerdown', _textPointerDown);
         }
         function addRect() {
             window._drawMode = 'rect';

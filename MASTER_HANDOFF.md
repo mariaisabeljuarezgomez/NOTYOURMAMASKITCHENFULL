@@ -1,9 +1,11 @@
 # MASTER HANDOFF — Not Your Mama's Kitchen Menu Editor
 
-**Last Updated: July 2, 2026 (User Manual Redesign)**
+**Last Updated: July 2, 2026 (UI/UX Bug Fixes)**
 
 ## Changelog — July 2, 2026
-**User Manual Redesign — Massive restructuring of `manual-en.html` and `manual-es.html`. Replaced the previous layout with a modern sidebar navigation format. Introduced a Table of Contents (TOC), intersection observer for active link highlighting, search filtering functionality, and a responsive mobile layout to match the premium Menu Editor Pro V2 aesthetic.**
+**Font Picker UI & Text Tool Fixes** — Removed `overflow: hidden` from `#text-format-bar` to fix font dropdown clipping. Refactored `addText()` from an instant-drop function to an interactive Text Placement tool, mimicking `addRect()`. Clicking 'Add Text' now sets `_drawMode = 'text'` and allows placing text anywhere via a canvas click. Added a guard to `onCanvasMousedown` to prevent the lasso tool from interfering with active draw modes.
+
+**User Manual Redesign** — Massive restructuring of `manual-en.html` and `manual-es.html`. Replaced the previous layout with a modern sidebar navigation format. Introduced a Table of Contents (TOC), intersection observer for active link highlighting, search filtering functionality, and a responsive mobile layout to match the premium Menu Editor Pro V2 aesthetic.
 
 ## Changelog — July 1, 2026
 **Google Fonts Integration — Replaced both hardcoded 4-option font dropdowns with a searchable font picker giving access to 150 curated Google Fonts loaded on-demand via the FontFace API. No backend changes. Backward compatible — all existing local fonts (century-gothic-*, bernard-mt-condensed-regular) continue to work. viewer.html updated to preload Google Fonts used in the menu before canvas draw. Font picker supports live search filtering, per-font preview rendering, and lazy-load of font previews as user scrolls.**
