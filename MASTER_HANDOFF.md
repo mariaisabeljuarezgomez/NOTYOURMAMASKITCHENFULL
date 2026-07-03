@@ -1285,3 +1285,54 @@ The `sessions` table, its schema, and the `id='main'` / `id='backup'` records ar
 --- END SECTION 29 ---
 
 **END OF MASTER HANDOFF**
+
+## Section 30: Bottom Bar (selection-bar) Declutter + Font Dropdown Portal Fix
+**Status: COMPLETED — July 2, 2026**
+**File:** index.html only (no backend, no DB, no viewer.html, no build_app.py run)
+
+### The Problem (three issues in the bottom #selection-bar)
+1. **Font dropdown clipped.** The bottom Design-tab font picker (`sel-font-picker`) opened a dropdown that was immediately cut off — only the search box was visible. Root cause: `#selection-bar` has `overflow-x: auto` (line ~633), and per CSS Overflow Module Level 3 spec, when one axis is `auto` the other computes from `visible` to `auto` too → the absolutely-positioned dropdown was clipped. Compounding it, the bar uses `transform: translateX(-50%)` (line ~620) to center itself, which makes the bar a containing block — so even `position: fixed` on a child dropdown would be relative to the bar, not the viewport.
+2. **Video URL/Label clutter.** `#video-url-group` was always visible for every element type (2 labels + 2 inputs + a hint, ~220px+ wide, stacking tall) — the single largest clutter source in the bar.
+3. **Line-width presets crowded.** The 8 width preset buttons + 3 cap buttons crammed inline when a line element was selected.
+
+### The Fix — Portaling (Part A)
+The dropdown is **ported to `<body>`** with `position: fixed` while open. This is the only safe fix because **neither `overflow` nor `transform` may be removed** from `#selection-bar` (overflow enables needed horizontal scroll; transform centers the bar — see Section 19's rules about not touching bar layout math).
+
+**GFP module changes (`gfpOpen` / `gfpClose` / `gfpSetValue` / `gfpFilter` / outside-click handler):**
+- New helper `_gfpDropdown(wrapperId)` resolves the dropdown whether it's in its wrapper (closed) or portaled to `<body>` (open), by falling back to `getElementById` on its stable id (`tfb-font-dropdown` / `sel-font-dropdown`).
+- New helper `_gfpPosition(wrapperId)` computes `top`/`left` from the input's `getBoundingClientRect()`. Opens downward when there's ≥~292px below the input; otherwise flips upward via an `open-up` class (`flex-direction: column-reverse` so the search bar stays at the bottom edge near the input). Clamps `left` so it never overflows the viewport right edge.
+- `gfpOpen`: after building, appends `dd` to `document.body`, sets it open, calls `_gfpPosition`.
+- `gfpClose`: removes `open` class and **returns the dropdown to its wrapper** (so `dataset.built` cache and `wrapper.querySelector` lookups keep working while closed).
+- Outside-click handler now treats the portaled dropdown as "inside" (`wrapper.contains(e.target) || dd.contains(e.target)`) — without this, clicking the open list would close it instantly.
+- `gfpSetValue` and `gfpFilter` use `_gfpDropdown()` instead of `wrapper.querySelector()` so they find the portaled dropdown.
+- Scroll/resize listener (`_gfpOnScrollResize`, capture-phase scroll + resize) repositions the open dropdown, or closes it if its input scrolled out of view (prevents orphaned dropdowns).
+
+**CSS:** `.font-picker-dropdown.open { position: fixed; z-index: 100000; }` plus `.open-up` rules for the upward-flip layout. The dropdown's `position: absolute` default (in its closed/in-wrapper state) is unchanged.
+
+### The Fix — Video Toggle (Part B)
+Replaced the always-visible `#video-url-group` with a compact "🎬 Video" toggle button (`#btn-video-toggle`) in the bar. Clicking it opens a portaled `#video-panel` (position: fixed on `<body>`, same clipping-escape reason as the font dropdown) containing the **same** `#sel-video-url` and `#sel-video-label` inputs with **unchanged** `updateProp` handlers.
+
+**Why this is safe:** the inputs keep their exact ids, so `updateSelectionBar` (which does `document.getElementById('sel-video-url').value = item.videoUrl || ''`) still finds and populates them whether the panel is open or collapsed. Default state: collapsed. Shown for all element types (matching prior behavior — videoUrl works on any element).
+
+`toggleVideoPanel()`, `_videoPositionPanel()`, `_videoCloseOutside()`, `_videoOnScrollResize()` mirror the GFP portaling pattern. Exposed on window as `toggleVideoPanel`.
+
+### The Fix — Preset Tightening (Part C, CSS only)
+Scoped CSS rules for `#line-width-presets .ctrl-btn` compact the 8 width buttons and 3 cap buttons (smaller padding/font, tighter gap, rounded corners). A subtle gold divider separates the "Ends" (cap) row from the width buttons. Active preset/cap buttons get a gold gradient for clear feedback. **No id, handler, or JS change** — purely visual.
+
+### What Was NOT Touched (safety confirmation)
+Verified via `git diff` — every deleted line falls into exactly two intended buckets: (1) the old `#video-url-group` HTML block, (2) the old GFP function bodies. Confirmed unchanged:
+- `onCanvasMousedown`, the `_drawMode` lasso guard, `attach()` — untouched
+- `transform-origin` on `#scaler-wrapper`, `align-items:flex-start` on the anonymous div, `justify-content` on `#centering-wrapper` — untouched (Section 19 rules respected)
+- `save()`, `load()`, `pushState()`, `sync()`, the 30s/5min timers — untouched
+- `addText()` placement tool, the top `#text-format-bar` font picker — untouched (the portal is transparent to them; the top bar opens downward as before)
+- DB schema, credentials, Cloudinary, viewer.html — untouched
+
+### Critical Rule for Future Agents
+**DO NOT remove `overflow` or `transform` on `#selection-bar` to "fix" font/video dropdown clipping.** The overflow enables horizontal scroll; the transform centers the bar (tied to Section 19 layout math). The correct fix is portaling the dropdown/panel to `<body>` with `position: fixed` — already implemented. If a future dropdown/popover inside `#selection-bar` is clipped, portal it the same way.
+
+### Syntax Verification
+All 6 non-empty `<script>` blocks in index.html parse cleanly via `new Function()` (Node). The main editor block (216KB) is valid — no syntax breaks introduced.
+
+--- END SECTION 30 ---
+
+**END OF MASTER HANDOFF**

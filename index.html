@@ -119,6 +119,37 @@
         /* Sidebar font picker: narrower */
         #sel-font-picker .font-picker-input { width: 115px; }
         #sel-font-picker .font-picker-dropdown { width: 220px; }
+
+        /*
+         * PORTALED DROPDOWN
+         * While open, the dropdown is reparented to <body> and rendered with
+         * position:fixed so it escapes ancestor clipping. #selection-bar has
+         * overflow-x:auto (which forces overflow-y to auto per CSS spec) AND a
+         * transform:translateX(-50%) (which makes it a containing block), so an
+         * absolutely-positioned child cannot escape it. Neither overflow nor
+         * transform may be removed (overflow enables needed horizontal scroll;
+         * transform centers the bar). Portaling is the only safe fix.
+         * DO NOT remove overflow or transform on #selection-bar.
+         */
+        .font-picker-dropdown.open {
+            position: fixed;
+            z-index: 100000;
+        }
+        /* When opening upward, anchor the search bar to the bottom edge of the
+           dropdown so the list visually grows toward the input above it. */
+        .font-picker-dropdown.open-up {
+            display: flex;
+            flex-direction: column-reverse;
+        }
+        .font-picker-dropdown.open-up .font-picker-list {
+            flex: 0 1 auto;
+            overflow-y: auto;
+            max-height: 248px;
+        }
+        .font-picker-dropdown.open-up .font-picker-search {
+            border-bottom: none;
+            border-top: 1px solid #333;
+        }
         /* ── END FONT PICKER ─────────────────────────────────────────────── */
 
         @font-face {
@@ -1181,6 +1212,118 @@
                 font-size: 13px;
                 padding: 10px;
             }
+        }
+
+        /* ═─ VIDEO PANEL (collapsible, portaled to <body>) ─═ */
+        #video-panel {
+            display: none;
+            position: fixed;
+            z-index: 100000;
+            width: 300px;
+            background: #1c1c1c;
+            border: 1px solid rgba(200, 169, 106, 0.25);
+            border-radius: 12px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
+            padding: 14px;
+            flex-direction: column;
+            gap: 4px;
+        }
+        #video-panel.open { display: flex; }
+        #video-panel .vp-row { display: flex; flex-direction: column; gap: 4px; }
+        #video-panel .vp-row label {
+            font-size: 9px;
+            color: #aaa;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        #video-panel .vp-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            width: 100%;
+        }
+        #video-panel .vp-input-wrap input {
+            flex-grow: 1;
+            background: #111;
+            border: 1px solid #444;
+            color: var(--accent);
+            padding: 7px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: inherit;
+            outline: none;
+            min-width: 0;
+        }
+        #video-panel .vp-input-wrap input:focus {
+            border-color: var(--accent);
+            background: #000;
+        }
+        #video-panel .vp-clear {
+            width: 30px;
+            height: 30px;
+            background: #333;
+            border: 1px solid #444;
+            color: #888;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            flex-shrink: 0;
+            transition: 0.2s;
+        }
+        #video-panel .vp-clear:hover {
+            background: #c0392b;
+            color: #fff;
+            border-color: transparent;
+        }
+        #video-panel .vp-hint {
+            font-size: 9px;
+            color: #666;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+        #btn-video-toggle.active {
+            background: linear-gradient(135deg, #c8a96a, #a8893f) !important;
+            color: #1a1a1a !important;
+            border-color: var(--accent) !important;
+        }
+
+        /* ═─ LINE-WIDTH PRESETS — tighten spacing when a line is selected.
+             The 8 width buttons + 3 cap buttons are crowded inline; these
+             scoped rules compact them without touching any handler/id. ═ */
+        #line-width-presets {
+            gap: 6px !important;
+            padding-left: 10px !important;
+        }
+        /* Compact the width preset buttons (override their inline padding) */
+        #line-width-presets > div:first-of-type {
+            gap: 3px !important;
+        }
+        #line-width-presets > div:first-of-type .ctrl-btn {
+            padding: 3px 7px !important;
+            font-size: 10px !important;
+            border-radius: 5px !important;
+            min-width: 0 !important;
+        }
+        /* Visually separate the "Ends" (cap) row from the width buttons */
+        #line-width-presets > div:nth-of-type(2) {
+            margin-top: 4px !important;
+            padding-top: 4px !important;
+            border-top: 1px solid rgba(200, 169, 106, 0.18) !important;
+        }
+        #line-width-presets > div:nth-of-type(2) .ctrl-btn {
+            padding: 3px 9px !important;
+            font-size: 10px !important;
+            border-radius: 5px !important;
+        }
+        /* Active preset/cap button gets the gold treatment for clear feedback */
+        #line-width-presets .ctrl-btn.active {
+            background: linear-gradient(135deg, #c8a96a, #a8893f) !important;
+            color: #1a1a1a !important;
+            border-color: var(--accent) !important;
         }
 
         /* Distribution Bar */
@@ -3885,25 +4028,13 @@
                     </div>
                 </div>
 
-                <!-- Video URL Field (Phase 2 Precursor) -->
-                <div class="ctrl-group video-url-group">
-                    <label>🎬 Video URL (optional)</label>
-                    <div class="video-url-input-wrap">
-                        <input type="text" id="sel-video-url" placeholder="https://res.cloudinary.com/..."
-                            oninput="updateProp('videoUrl', this.value)">
-                        <button class="video-url-clear" title="Clear URL"
-                            onclick="document.getElementById('sel-video-url').value=''; updateProp('videoUrl', '');">✕</button>
-                    </div>
-                    <span class="video-url-hint">Paste Cloudinary URL to show video preview on customer menu
-                        hover</span>
-                    <label style="font-size:10px;color:#aaa;margin-top:8px;display:block;">🏷️ Video Label
-                        (optional)</label>
-                    <div class="video-url-input-wrap">
-                        <input type="text" id="sel-video-label" placeholder="e.g. Turkey Chops, Shrimp Plate..."
-                            oninput="updateProp('videoLabel', this.value)">
-                        <button class="video-url-clear" title="Clear Label"
-                            onclick="document.getElementById('sel-video-label').value=''; updateProp('videoLabel', '');">✖</button>
-                    </div>
+                <!-- Video URL/Label — collapsed behind a toggle to reduce bar clutter.
+                     Inputs keep their ids (sel-video-url / sel-video-label) so
+                     updateSelectionBar still populates them; updateProp calls unchanged. -->
+                <div class="ctrl-group" id="video-toggle-grp" style="border-left:1px solid #333;padding-left:12px;">
+                    <button id="btn-video-toggle" class="ctrl-btn" title="Video URL & Label"
+                        style="font-size:11px; padding:4px 10px; width:auto; white-space:nowrap;"
+                        onclick="toggleVideoPanel()">🎬 Video</button>
                 </div>
             </div>
 
@@ -9887,7 +10018,51 @@
         // State — which picker is currently open
         let _gfpActive = null;
 
-        // Open the dropdown for the given picker wrapper id
+        // Resolve a picker's dropdown element whether it is in its wrapper (closed)
+        // or portaled to <body> (open). Both pickers have stable dropdown ids
+        // (tfb-font-dropdown / sel-font-dropdown) so a getElementById lookup is
+        // reliable regardless of where the node currently lives.
+        function _gfpDropdown(wrapperId) {
+            const wrapper = document.getElementById(wrapperId);
+            if (!wrapper) return null;
+            // Preferred: the dropdown is still a child of its wrapper
+            let dd = wrapper.querySelector('.font-picker-dropdown');
+            if (dd) return dd;
+            // Fallback: it has been portaled to <body> while open
+            const id = wrapper.id; // 'tfb-font-picker' | 'sel-font-picker'
+            const ddId = id ? id.replace('-picker', '-dropdown') : null;
+            return ddId ? document.getElementById(ddId) : null;
+        }
+
+        // Position the (portaled, fixed) dropdown relative to its input.
+        // Opens downward when there is room; otherwise flips upward so it never
+        // runs off the bottom of the viewport. Used by gfpOpen and the
+        // scroll/resize reposition listener.
+        function _gfpPosition(wrapperId) {
+            const wrapper = document.getElementById(wrapperId);
+            const dd = _gfpDropdown(wrapperId);
+            const inp = wrapper && wrapper.querySelector('.font-picker-input');
+            if (!wrapper || !dd || !inp) return;
+            const r = inp.getBoundingClientRect();
+            const dropdownH = 280; // matches .font-picker-dropdown max-height
+            const spaceBelow = window.innerHeight - r.bottom;
+            const openUp = spaceBelow < (dropdownH + 12);
+            let top = openUp ? (r.top - dropdownH - 3) : (r.bottom + 3);
+            if (top < 8) top = 8;
+            let left = r.left;
+            const ddWidth = dd.offsetWidth || 220;
+            if (left + ddWidth > window.innerWidth - 8) left = window.innerWidth - ddWidth - 8;
+            if (left < 8) left = 8;
+            dd.style.top = top + 'px';
+            dd.style.left = left + 'px';
+            dd.classList.toggle('open-up', openUp);
+        }
+
+        // Open the dropdown for the given picker wrapper id.
+        // The dropdown is portaled to <body> with position:fixed so it escapes
+        // any ancestor that has overflow clipping (the bottom #selection-bar has
+        // overflow-x:auto which forces overflow-y to auto too) or that establishes
+        // a containing block via transform (#selection-bar uses translateX(-50%)).
         function gfpOpen(wrapperId) {
             const wrapper = document.getElementById(wrapperId);
             if (!wrapper) return;
@@ -9899,7 +10074,10 @@
             if (!dd || !inp) return;
             // Build dropdown if not already built
             if (!dd.dataset.built) gfpBuildDropdown(wrapperId);
+            // Portal to <body> and render fixed so it is never clipped by the bar
+            if (dd.parentNode !== document.body) document.body.appendChild(dd);
             dd.classList.add('open');
+            _gfpPosition(wrapperId);
             // Focus the search box
             const search = dd.querySelector('.font-picker-search');
             if (search) { search.value = ''; gfpFilter(wrapperId, ''); search.focus(); }
@@ -9907,9 +10085,13 @@
 
         function gfpClose(wrapperId) {
             const wrapper = document.getElementById(wrapperId);
-            if (!wrapper) return;
-            const dd = wrapper.querySelector('.font-picker-dropdown');
-            if (dd) dd.classList.remove('open');
+            const dd = _gfpDropdown(wrapperId);
+            if (dd) {
+                dd.classList.remove('open');
+                // Return the dropdown to its wrapper so gfpBuildDropdown's cache
+                // and wrapper.querySelector lookups keep working while closed.
+                if (wrapper && dd.parentNode !== wrapper) wrapper.appendChild(dd);
+            }
             if (_gfpActive === wrapperId) _gfpActive = null;
         }
 
@@ -9972,8 +10154,8 @@
 
         // Filter options by search query
         function gfpFilter(wrapperId, query) {
-            const wrapper = document.getElementById(wrapperId);
-            const dd = wrapper.querySelector('.font-picker-dropdown');
+            const dd = _gfpDropdown(wrapperId);
+            if (!dd) return;
             const q = query.toLowerCase().trim();
             let lastSection = null;
             dd.querySelectorAll('.font-picker-option, .font-picker-section').forEach(el => {
@@ -10015,8 +10197,9 @@
             // Find label for this font value
             const entry = GFP_FONTS.find(f => f.name === fontValue);
             inp.value = entry ? (entry.label || entry.name) : fontValue;
-            // Update selected highlight if dropdown is already built
-            const dd = wrapper.querySelector('.font-picker-dropdown');
+            // Update selected highlight if dropdown is already built. Use _gfpDropdown
+            // (not wrapper.querySelector) because the dropdown may be portaled to <body>.
+            const dd = _gfpDropdown(wrapperId);
             if (dd && dd.dataset.built) {
                 dd.querySelectorAll('.font-picker-option').forEach(opt => {
                     opt.classList.toggle('selected', opt.dataset.value === fontValue);
@@ -10024,12 +10207,35 @@
             }
         }
 
-        // Close picker when clicking outside
+        // Close picker when clicking outside. The dropdown is portaled to <body>
+        // while open, so it is NOT a descendant of the wrapper — must check it
+        // explicitly or any click on the open list would register as "outside".
         document.addEventListener('click', (e) => {
             if (!_gfpActive) return;
             const wrapper = document.getElementById(_gfpActive);
-            if (wrapper && !wrapper.contains(e.target)) gfpClose(_gfpActive);
+            if (!wrapper) return;
+            const dd = _gfpDropdown(_gfpActive);
+            const clickedInside = wrapper.contains(e.target) || (dd && dd.contains(e.target));
+            if (!clickedInside) gfpClose(_gfpActive);
         });
+
+        // Keep the portaled dropdown anchored to its input on scroll/resize, or
+        // close it if the input scrolled out of view (prevents a floating orphan).
+        function _gfpOnScrollResize() {
+            if (!_gfpActive) return;
+            const wrapper = document.getElementById(_gfpActive);
+            const inp = wrapper && wrapper.querySelector('.font-picker-input');
+            if (!inp) { gfpClose(_gfpActive); return; }
+            // If the input is no longer visible, close rather than misplace the dropdown
+            const r = inp.getBoundingClientRect();
+            if (r.bottom < 0 || r.top > window.innerHeight || r.right < 0 || r.left > window.innerWidth) {
+                gfpClose(_gfpActive);
+                return;
+            }
+            _gfpPosition(_gfpActive);
+        }
+        window.addEventListener('scroll', _gfpOnScrollResize, true);
+        window.addEventListener('resize', _gfpOnScrollResize);
 
         // ═══════════════════════════════════════════════════════════════════
         // Expose GFP functions on window so onclick="" handlers can reach them.
@@ -10044,7 +10250,105 @@
         // ═══════════════════════════════════════════════════════════════════
         // END GOOGLE FONTS PICKER ENGINE
         // ═══════════════════════════════════════════════════════════════════
+
+        // ═══════════════════════════════════════════════════════════════════
+        // VIDEO PANEL — collapsible panel for the Video URL & Label fields.
+        // Replaces the always-visible #video-url-group that cluttered the bar.
+        // The inputs (sel-video-url / sel-video-label) live in this portaled
+        // panel; updateSelectionBar still populates them by id. The panel is
+        // position:fixed on <body> for the same clipping-escape reason as the
+        // font dropdown (see PORTALED DROPDOWN comment in CSS).
+        // ═══════════════════════════════════════════════════════════════════
+        let _videoPanelOpen = false;
+        function _videoPositionPanel() {
+            const btn = document.getElementById('btn-video-toggle');
+            const panel = document.getElementById('video-panel');
+            if (!btn || !panel) return;
+            const r = btn.getBoundingClientRect();
+            const panelH = 150; // approx open height
+            const spaceBelow = window.innerHeight - r.bottom;
+            const openUp = spaceBelow < (panelH + 12);
+            let top = openUp ? (r.top - panelH - 3) : (r.bottom + 3);
+            if (top < 8) top = 8;
+            let left = r.left;
+            const pw = panel.offsetWidth || 280;
+            if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
+            if (left < 8) left = 8;
+            panel.style.top = top + 'px';
+            panel.style.left = left + 'px';
+        }
+        function toggleVideoPanel() {
+            const panel = document.getElementById('video-panel');
+            const btn = document.getElementById('btn-video-toggle');
+            if (!panel || !btn) return;
+            _videoPanelOpen = !_videoPanelOpen;
+            if (_videoPanelOpen) {
+                panel.classList.add('open');
+                btn.classList.add('active');
+                _videoPositionPanel();
+            } else {
+                panel.classList.remove('open');
+                btn.classList.remove('active');
+            }
+        }
+        function _videoCloseOutside(e) {
+            if (!_videoPanelOpen) return;
+            const panel = document.getElementById('video-panel');
+            const btn = document.getElementById('btn-video-toggle');
+            const grp = document.getElementById('video-toggle-grp');
+            const inside = (panel && panel.contains(e.target)) || (btn && btn.contains(e.target)) || (grp && grp.contains(e.target));
+            if (!inside) {
+                _videoPanelOpen = false;
+                if (panel) panel.classList.remove('open');
+                if (btn) btn.classList.remove('active');
+            }
+        }
+        function _videoOnScrollResize() {
+            if (!_videoPanelOpen) return;
+            const btn = document.getElementById('btn-video-toggle');
+            if (!btn) { _videoPanelOpen = false; return; }
+            const r = btn.getBoundingClientRect();
+            if (r.bottom < 0 || r.top > window.innerHeight || r.right < 0 || r.left > window.innerWidth) {
+                _videoPanelOpen = false;
+                const panel = document.getElementById('video-panel');
+                const b = document.getElementById('btn-video-toggle');
+                if (panel) panel.classList.remove('open');
+                if (b) b.classList.remove('active');
+                return;
+            }
+            _videoPositionPanel();
+        }
+        document.addEventListener('click', _videoCloseOutside);
+        window.addEventListener('scroll', _videoOnScrollResize, true);
+        window.addEventListener('resize', _videoOnScrollResize);
+        window.toggleVideoPanel = toggleVideoPanel;
+        // ═══════════════════════════════════════════════════════════════════
+        // END VIDEO PANEL
+        // ═══════════════════════════════════════════════════════════════════
     </script>
+
+    <!-- Video panel (portaled/fixed; shown when 🎬 Video toggle is clicked) -->
+    <div id="video-panel">
+        <div class="vp-row">
+            <label>🎬 Video URL</label>
+            <div class="vp-input-wrap">
+                <input type="text" id="sel-video-url" placeholder="https://res.cloudinary.com/..."
+                    oninput="updateProp('videoUrl', this.value)">
+                <button class="vp-clear" title="Clear URL"
+                    onclick="document.getElementById('sel-video-url').value=''; updateProp('videoUrl', '');">✕</button>
+            </div>
+        </div>
+        <span class="vp-hint">Paste Cloudinary URL to show video preview on customer menu hover</span>
+        <div class="vp-row" style="margin-top:8px;">
+            <label>🏷️ Video Label</label>
+            <div class="vp-input-wrap">
+                <input type="text" id="sel-video-label" placeholder="e.g. Turkey Chops, Shrimp Plate..."
+                    oninput="updateProp('videoLabel', this.value)">
+                <button class="vp-clear" title="Clear Label"
+                    onclick="document.getElementById('sel-video-label').value=''; updateProp('videoLabel', '');">✖</button>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
