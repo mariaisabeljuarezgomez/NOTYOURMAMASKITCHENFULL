@@ -1,6 +1,9 @@
 # MASTER HANDOFF — Not Your Mama's Kitchen Menu Editor
 
-**Last Updated: July 1, 2026 (Google Fonts Integration)**
+**Last Updated: July 2, 2026 (User Manual Redesign)**
+
+## Changelog — July 2, 2026
+**User Manual Redesign — Massive restructuring of `manual-en.html` and `manual-es.html`. Replaced the previous layout with a modern sidebar navigation format. Introduced a Table of Contents (TOC), intersection observer for active link highlighting, search filtering functionality, and a responsive mobile layout to match the premium Menu Editor Pro V2 aesthetic.**
 
 ## Changelog — July 1, 2026
 **Google Fonts Integration — Replaced both hardcoded 4-option font dropdowns with a searchable font picker giving access to 150 curated Google Fonts loaded on-demand via the FontFace API. No backend changes. Backward compatible — all existing local fonts (century-gothic-*, bernard-mt-condensed-regular) continue to work. viewer.html updated to preload Google Fonts used in the menu before canvas draw. Font picker supports live search filtering, per-font preview rendering, and lazy-load of font previews as user scrolls.**

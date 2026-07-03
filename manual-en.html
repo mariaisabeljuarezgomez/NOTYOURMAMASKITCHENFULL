@@ -626,6 +626,312 @@ details.qa .qa-body{ padding:0 20px 18px; font-size:14.5px; line-height:1.65; co
 .end-card p{ color:var(--obs-text-dim); font-size:14.5px; max-width:460px; margin:0 auto; line-height:1.65; }
 
 /* ============================================================
+   HERO APP MOCKUP — the editor, illustrated in CSS
+   ============================================================ */
+.hero-wrap{
+  display:grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap:56px;
+  align-items:center;
+  padding:88px 0 76px;
+  border-bottom:1px solid var(--hairline);
+  margin-bottom:8px;
+}
+.hero-copy h1{
+  font-family:var(--font-display); font-weight:600;
+  font-size:clamp(40px,4.6vw,64px); line-height:1.02; letter-spacing:-0.01em;
+  margin:22px 0 0; color:var(--ink);
+}
+.hero-copy h1 em{ font-style:italic; font-weight:450; color:var(--gold-ink); }
+.hero-copy .lede{ font-size:18px; line-height:1.65; color:var(--ink-soft); max-width:480px; margin:20px 0 30px; }
+.hero-stats{ display:flex; gap:30px; flex-wrap:wrap; }
+.hero-stats .item .v{ font-family:var(--font-display); font-size:26px; font-weight:600; color:var(--ink); line-height:1; }
+.hero-stats .item .k{ font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--ink-faint); margin-top:6px; }
+
+.mockup{
+  position:relative;
+  border-radius:18px;
+  background:linear-gradient(165deg,#1c1914,#080705);
+  box-shadow:0 40px 90px -30px rgba(20,15,5,0.45), 0 0 0 1px rgba(200,169,106,0.12);
+  overflow:hidden;
+  transform:rotate(1.2deg);
+}
+.mockup .m-chrome{
+  display:flex; align-items:center; gap:7px;
+  padding:12px 16px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.mockup .m-dot{ width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,0.14); }
+.mockup .m-title{ margin-left:8px; font-family:var(--font-mono); font-size:10.5px; color:rgba(233,226,210,0.4); letter-spacing:.04em; }
+.mockup .m-body{ display:flex; height:280px; }
+.mockup .m-side{ width:52px; border-right:1px solid rgba(255,255,255,0.06); padding:12px 0; display:flex; flex-direction:column; align-items:center; gap:14px; }
+.mockup .m-icon{ width:26px; height:26px; border-radius:7px; background:rgba(255,255,255,0.05); }
+.mockup .m-icon.on{ background:rgba(200,169,106,0.28); }
+.mockup .m-canvas{ flex:1; position:relative; background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 22px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 22px);
+  padding:22px; }
+.mockup .m-card{ background:#f3efe4; border-radius:8px; padding:14px 16px 40px; height:100%; box-shadow:0 20px 40px rgba(0,0,0,0.35); position:relative; }
+.mockup .m-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:9px; }
+.mockup .m-row .l{ height:8px; border-radius:3px; background:#cabf9d; }
+.mockup .m-row .p{ height:8px; width:34px; border-radius:3px; background:#a9812f; opacity:.55; }
+.mockup .m-heading{ height:11px; width:46%; border-radius:3px; background:#95201d; opacity:.8; margin:4px 0 14px; }
+.mockup .m-select{ position:absolute; border:1.5px solid #c8a96a; border-radius:5px; box-shadow:0 0 0 3px rgba(200,169,106,0.18); }
+.mockup .m-bar{
+  position:absolute; left:50%; bottom:14px; transform:translateX(-50%);
+  display:flex; gap:6px; background:rgba(8,7,5,0.92); border:1px solid rgba(200,169,106,0.25);
+  border-radius:20px; padding:6px 10px;
+}
+.mockup .m-bar span{ width:16px; height:16px; border-radius:5px; background:rgba(233,226,210,0.12); }
+.mockup .m-bar span.active{ background:rgba(200,169,106,0.55); }
+.mockup-caption{
+  margin-top:18px; display:flex; align-items:center; gap:10px;
+  font-size:12px; color:var(--ink-faint);
+}
+.mockup-caption .swatch{ width:8px; height:8px; border-radius:50%; background:var(--gold); }
+
+/* ============================================================
+   ANNOTATED FIGURE — numbered pins over a mockup + legend
+   ============================================================ */
+.figure{ margin:32px 0 12px; }
+.figure-frame{
+  position:relative;
+  border-radius:var(--radius-l);
+  background:linear-gradient(165deg,#1c1914,#080705);
+  padding:34px 30px 30px;
+  box-shadow:0 30px 70px -30px rgba(20,15,5,0.4);
+}
+.figure-eyebrow{
+  font-family:var(--font-mono); font-size:10.5px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--gold-soft); margin-bottom:16px;
+}
+.pin{
+  position:absolute;
+  width:24px; height:24px; border-radius:50%;
+  background:var(--gold-bright);
+  color:#241b09;
+  font-family:var(--font-mono); font-weight:700; font-size:12px;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 0 0 5px rgba(200,169,106,0.18), 0 4px 12px rgba(0,0,0,0.4);
+  transform:translate(-50%,-50%);
+  z-index:3;
+}
+.figure-legend{
+  margin-top:22px;
+  display:grid; grid-template-columns:repeat(2,1fr); gap:10px 20px;
+}
+.figure-legend .leg{ display:flex; gap:11px; align-items:flex-start; }
+.figure-legend .leg .n{
+  flex-shrink:0; width:22px; height:22px; border-radius:50%;
+  background:rgba(169,129,47,0.12); color:var(--gold-ink);
+  font-family:var(--font-mono); font-weight:700; font-size:11.5px;
+  display:flex; align-items:center; justify-content:center; margin-top:1px;
+}
+.figure-legend .leg .t{ font-size:14px; color:var(--ink); }
+.figure-legend .leg .t strong{ display:block; font-size:14px; margin-bottom:2px; }
+.figure-legend .leg .t span{ font-size:13px; color:var(--ink-soft); line-height:1.5; }
+
+/* Header-bar mockup */
+.hb-mockup{
+  display:flex; align-items:center; justify-content:space-between;
+  background:linear-gradient(180deg,#151310,#0a0908);
+  border:1px solid rgba(200,169,106,0.14);
+  border-radius:12px; padding:12px 18px;
+  position:relative;
+}
+.hb-mockup .hb-brand{ font-family:var(--font-display); font-style:italic; font-size:14px; color:var(--gold-bright); }
+.hb-mockup .hb-btns{ display:flex; gap:8px; }
+.hb-mockup .hb-btn{
+  font-size:11px; font-weight:600; color:var(--obs-text);
+  background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);
+  padding:7px 13px; border-radius:8px; white-space:nowrap;
+}
+.hb-mockup .hb-btn.locked{ background:rgba(200,169,106,0.14); border-color:rgba(200,169,106,0.35); color:var(--gold-bright); }
+.hb-mockup .hb-btn.save{ background:rgba(47,125,79,0.18); border-color:rgba(47,125,79,0.4); color:#8fd6a8; }
+
+/* Selection bar tabs mockup */
+.tabs-mockup{
+  display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+  background:linear-gradient(180deg,#151310,#0a0908);
+  border:1px solid rgba(200,169,106,0.14);
+  border-radius:999px; padding:9px 16px;
+}
+.tabs-mockup .tab{
+  font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--obs-text-dim); padding:6px 14px; border-radius:20px;
+}
+.tabs-mockup .tab.active{ background:rgba(149,32,29,0.5); color:#fff; border:1px solid rgba(200,169,106,0.4); }
+.tabs-mockup .sep{ width:1px; height:16px; background:rgba(255,255,255,0.1); }
+.tabs-mockup .dial{ width:20px; height:20px; border-radius:6px; background:rgba(255,255,255,0.06); }
+
+/* ============================================================
+   WORKFLOW / DIAGRAM FLOW
+   ============================================================ */
+.flow{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:0;
+  margin:30px 0 8px;
+}
+.flow .fnode{
+  position:relative;
+  padding:0 14px 0 0;
+}
+.flow .fnode:not(:last-child)::after{
+  content:"";
+  position:absolute; top:22px; left:calc(100% - 8px); width:calc(28px);
+  border-top:1.5px dashed var(--hairline-strong);
+  z-index:0;
+}
+.flow .fnum{
+  width:44px; height:44px; border-radius:12px;
+  background:linear-gradient(155deg,#1c1914,#080705);
+  color:var(--gold-bright);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-style:italic; font-weight:600; font-size:17px;
+  margin-bottom:14px;
+  box-shadow:0 8px 18px -8px rgba(20,15,5,0.5);
+}
+.flow .ft{ font-weight:700; font-size:13.5px; color:var(--ink); margin-bottom:5px; line-height:1.3; }
+.flow .fd{ font-size:12.5px; color:var(--ink-soft); line-height:1.55; }
+
+.pipeline{
+  display:flex; flex-wrap:wrap; gap:0; align-items:stretch;
+  margin:30px 0 8px;
+}
+.pipeline .pnode{
+  flex:1 1 0; min-width:180px;
+  background:var(--card); border:1px solid var(--hairline); border-radius:var(--radius-m);
+  padding:20px 20px 18px; position:relative;
+}
+.pipeline .pnode + .pnode{ margin-left:22px; }
+.pipeline .pnode:not(:last-child)::after{
+  content:"→"; position:absolute; right:-24px; top:50%; transform:translateY(-50%);
+  color:var(--gold); font-size:18px; font-family:var(--font-display);
+}
+.pipeline .pnode .pk{ font-family:var(--font-mono); font-size:10.5px; color:var(--gold-ink); letter-spacing:.06em; text-transform:uppercase; margin-bottom:8px; }
+.pipeline .pnode .pt{ font-weight:700; font-size:14.5px; color:var(--ink); margin-bottom:6px; }
+.pipeline .pnode .pd{ font-size:13px; color:var(--ink-soft); line-height:1.55; }
+
+/* ============================================================
+   PULL QUOTE
+   ============================================================ */
+.pull-quote{
+  margin:52px 0;
+  padding:6px 0 6px 34px;
+  border-left:2px solid var(--gold);
+  position:relative;
+}
+.pull-quote p{
+  font-family:var(--font-display); font-style:italic; font-weight:450;
+  font-size:clamp(22px,2.6vw,30px); line-height:1.35; color:var(--ink);
+  margin:0;
+}
+.pull-quote cite{ display:block; margin-top:14px; font-style:normal; font-size:12.5px; color:var(--ink-faint); font-family:var(--font-body); letter-spacing:.02em; }
+
+/* ============================================================
+   SPOTLIGHT (asymmetric feature panel)
+   ============================================================ */
+.spotlight{
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:40px; align-items:center;
+  background:linear-gradient(150deg,#1c1914,#080705);
+  border-radius:var(--radius-l);
+  padding:38px 40px;
+  margin:28px 0;
+  color:var(--obs-text);
+}
+.spotlight .sp-index{ font-family:var(--font-display); font-style:italic; font-size:64px; color:rgba(200,169,106,0.4); line-height:1; margin-bottom:10px; }
+.spotlight h4{ font-family:var(--font-display); font-weight:600; font-size:23px; color:#fff; margin:0 0 10px; }
+.spotlight p{ color:var(--obs-text-dim); font-size:14.5px; line-height:1.65; margin:0; }
+.spotlight .sp-side{
+  background:rgba(255,255,255,0.03); border:1px solid rgba(200,169,106,0.16);
+  border-radius:14px; padding:22px 24px;
+}
+.spotlight .sp-side .sp-stat{ font-family:var(--font-display); font-size:34px; color:var(--gold-bright); line-height:1; margin-bottom:6px; }
+.spotlight .sp-side .sp-label{ font-size:12px; color:var(--obs-text-dim); text-transform:uppercase; letter-spacing:.07em; }
+.spotlight .sp-side ul{ margin:16px 0 0; padding:0; list-style:none; }
+.spotlight .sp-side li{ font-size:13px; color:var(--obs-text-dim); padding:6px 0; border-top:1px solid rgba(255,255,255,0.06); }
+.spotlight .sp-side li:first-child{ border-top:none; }
+.spotlight .sp-side li strong{ color:var(--obs-text); }
+
+/* ============================================================
+   PHONE MOCKUP
+   ============================================================ */
+.phone-scene{ display:grid; grid-template-columns:220px 1fr; gap:36px; align-items:center; margin:30px 0; }
+.phone{
+  width:220px; height:320px; border-radius:28px;
+  background:linear-gradient(160deg,#1c1914,#080705);
+  padding:10px; box-shadow:0 30px 60px -20px rgba(20,15,5,0.45);
+  position:relative; transform:rotate(-2deg);
+}
+.phone .p-screen{ width:100%; height:100%; border-radius:20px; background:#f3efe4; overflow:hidden; position:relative; }
+.phone .p-notch{ position:absolute; top:10px; left:50%; transform:translateX(-50%); width:56px; height:6px; border-radius:6px; background:#080705; z-index:2; }
+.phone .p-bar{ height:22px; background:#0d0c0a; display:flex; align-items:center; padding:0 10px; gap:5px; }
+.phone .p-bar span{ width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.2); }
+.phone .p-body{ padding:14px 12px; }
+.phone .p-row{ height:7px; border-radius:3px; background:#cabf9d; margin-bottom:8px; }
+.phone .p-row.w60{ width:60%; } .phone .p-row.w80{ width:80%; } .phone .p-row.w40{ width:40%; }
+.phone .p-price{ height:7px; width:26px; border-radius:3px; background:#a9812f; float:right; opacity:.6; }
+.phone .p-tap{
+  position:absolute; width:34px; height:34px; border-radius:50%;
+  border:2px solid rgba(200,169,106,0.7);
+  animation:tapPulse 1.8s ease-out infinite;
+}
+@keyframes tapPulse{ 0%{ transform:scale(0.5); opacity:1;} 100%{ transform:scale(1.6); opacity:0;} }
+.gesture-list{ display:flex; flex-direction:column; gap:14px; }
+.gesture-list .g{ display:flex; gap:14px; align-items:flex-start; }
+.gesture-list .g .gi{
+  flex-shrink:0; width:34px; height:34px; border-radius:10px;
+  background:rgba(169,129,47,0.1); color:var(--gold-ink);
+  display:flex; align-items:center; justify-content:center; font-size:15px;
+}
+.gesture-list .g .gt strong{ display:block; font-size:14px; color:var(--ink); }
+.gesture-list .g .gt span{ font-size:13px; color:var(--ink-soft); }
+
+/* ============================================================
+   KEYBOARD MAP
+   ============================================================ */
+.kmap{
+  background:linear-gradient(165deg,#1c1914,#080705);
+  border-radius:var(--radius-l); padding:28px 30px; margin:30px 0 8px;
+}
+.kmap-row{ display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+.kkey{
+  font-family:var(--font-mono); font-size:12px; font-weight:600;
+  color:var(--obs-text);
+  background:linear-gradient(180deg,#242019,#151310);
+  border:1px solid rgba(255,255,255,0.08);
+  border-bottom:2px solid rgba(0,0,0,0.4);
+  border-radius:7px; padding:9px 13px;
+  min-width:38px; text-align:center;
+}
+.kkey.gold{ background:linear-gradient(180deg,#e8c97a,#a9812f); color:#221a0a; border-color:transparent; }
+.kmap-caption{ margin-top:16px; font-size:12.5px; color:var(--obs-text-dim); }
+
+/* ============================================================
+   RECAP STRIP
+   ============================================================ */
+.recap{
+  margin-top:34px; padding-top:22px; border-top:1px dashed var(--hairline-strong);
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+}
+.recap .recap-label{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--gold-ink); margin-right:4px; }
+.recap .rchip{ font-size:12.5px; color:var(--ink-soft); background:var(--paper-dim); border:1px solid var(--hairline); padding:5px 12px; border-radius:999px; }
+
+/* ============================================================
+   PART DIVIDER VARIANTS — ghost numeral + per-part motif
+   ============================================================ */
+.part-divider{ position:relative; }
+.part-divider .ghost{
+  position:absolute; right:18px; top:-6px;
+  font-family:var(--font-display); font-weight:700; font-size:150px; line-height:1;
+  color:rgba(255,255,255,0.035);
+  pointer-events:none; user-select:none;
+}
+.part-divider .motif{ position:absolute; right:36px; bottom:28px; opacity:.5; }
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (max-width: 980px){
@@ -661,6 +967,17 @@ details.qa .qa-body{ padding:0 20px 18px; font-size:14.5px; line-height:1.65; co
   .quick-ref .row{ grid-template-columns:1fr; gap:4px; }
   .frame-grid{ grid-template-columns:1fr; }
   .toc-list{ columns:1; }
+  .hero-wrap{ grid-template-columns:1fr; padding:44px 0 40px; gap:38px; }
+  .mockup{ transform:none; }
+  .flow{ grid-template-columns:1fr; gap:22px; }
+  .flow .fnode:not(:last-child)::after{ display:none; }
+  .pipeline{ flex-direction:column; }
+  .pipeline .pnode + .pnode{ margin-left:0; margin-top:26px; }
+  .pipeline .pnode:not(:last-child)::after{ content:"↓"; right:auto; left:20px; top:auto; bottom:-24px; transform:none; }
+  .spotlight{ grid-template-columns:1fr; padding:28px 24px; }
+  .phone-scene{ grid-template-columns:1fr; justify-items:center; }
+  .figure-legend{ grid-template-columns:1fr; }
+  .part-divider .ghost{ font-size:90px; }
 }
 
 /* ============================================================
@@ -721,16 +1038,39 @@ details.qa .qa-body{ padding:0 20px 18px; font-size:14.5px; line-height:1.65; co
   <main class="main">
     <div class="content" id="content">
 
-      <!-- ============================== COVER ============================== -->
-      <section class="cover">
-        <div class="cover-eyebrow">Customer Edition · Version 3.2</div>
-        <h1>Menu Editor <em>Pro</em> V2</h1>
-        <p class="lede">The complete guide to editing, managing, and exporting your restaurant's menu — from your first save to your first print run.</p>
-        <div class="cover-meta">
-          <div class="item"><div class="k">Prepared by</div><div class="v">Maria's Digital Designs</div></div>
-          <div class="item"><div class="k">Platform</div><div class="v">Web — desktop &amp; mobile</div></div>
-          <div class="item"><div class="k">Release</div><div class="v">April 14, 2026</div></div>
-          <div class="item"><div class="k">Audience</div><div class="v">Restaurant owners &amp; staff</div></div>
+      <!-- ============================== HERO ============================== -->
+      <section class="hero-wrap">
+        <div class="hero-copy">
+          <div class="cover-eyebrow">Customer Edition · Version 3.2</div>
+          <h1>Menu Editor <em>Pro</em> V2</h1>
+          <p class="lede">The complete guide to editing, managing, and exporting your restaurant's menu — from your first save to your first print run.</p>
+          <div class="hero-stats">
+            <div class="item"><div class="v">38</div><div class="k">Chapters</div></div>
+            <div class="item"><div class="v">6</div><div class="k">Parts</div></div>
+            <div class="item"><div class="v">5 min</div><div class="k">To first edit</div></div>
+            <div class="item"><div class="v">300 DPI</div><div class="k">Print export</div></div>
+          </div>
+        </div>
+        <div class="hero-art">
+          <div class="mockup">
+            <div class="m-chrome"><span class="m-dot"></span><span class="m-dot"></span><span class="m-dot"></span><span class="m-title">notyourmamaskitchen.up.railway.app</span></div>
+            <div class="m-body">
+              <div class="m-side">
+                <div class="m-icon on"></div><div class="m-icon"></div><div class="m-icon"></div><div class="m-icon"></div>
+              </div>
+              <div class="m-canvas">
+                <div class="m-card">
+                  <div class="m-heading"></div>
+                  <div class="m-row"><div class="l" style="width:38%"></div><div class="p"></div></div>
+                  <div class="m-row"><div class="l" style="width:52%"></div><div class="p"></div></div>
+                  <div class="m-row"><div class="l" style="width:30%"></div><div class="p"></div></div>
+                  <div class="m-select" style="left:16px; top:70px; width:150px; height:24px;"></div>
+                </div>
+                <div class="m-bar"><span class="active"></span><span></span><span></span><span></span></div>
+              </div>
+            </div>
+          </div>
+          <div class="mockup-caption"><span class="swatch"></span>The actual editor canvas — every screen in this manual reflects the real interface.</div>
         </div>
       </section>
 
@@ -746,9 +1086,12 @@ details.qa .qa-body{ padding:0 20px 18px; font-size:14.5px; line-height:1.65; co
            PART I — GETTING STARTED
       ============================================================ -->
       <div class="part-divider" data-part="Part I">
+        <span class="ghost">I</span>
+        <svg class="motif" width="46" height="46" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9.5" stroke="#c8a96a" stroke-width="1.1"/><path d="M15 9L10.5 13.5L9 15L13.5 10.5L15 9Z" fill="#c8a96a"/></svg>
         <div class="roman">Part I</div>
         <h2>Getting Started</h2>
         <p>What Menu Editor Pro V2 is, what's new in this version, and everything you need before your first edit.</p>
+        <div class="chapters-in-part"><span class="chip">Ch. 1–8</span><span class="chip">Anatomy &amp; Quick Start</span><span class="chip">Header Bar &amp; Drawer</span></div>
       </div>
 
       <section class="chapter" id="s1" data-part="Part I" data-title="Welcome &amp; Introduction">
@@ -762,9 +1105,26 @@ details.qa .qa-body{ padding:0 20px 18px; font-size:14.5px; line-height:1.65; co
         <div class="chapter-eyebrow"><span class="line"></span>PART I · CHAPTER 2</div>
         <h2><span class="chapter-num">02</span>What's New in V2</h2>
         <p class="lead">Version 2 introduces architectural changes and high-end features designed for professional restaurant environments.</p>
+
+        <div class="spotlight">
+          <div>
+            <div class="sp-index">01</div>
+            <h4>Server-Side Persistence</h4>
+            <p>Your progress now saves to a secure PostgreSQL database instead of just your browser. Changes persist across reloads, browser cache clears, and — most importantly — across different devices. This single change is what makes Chapter 29's cross-device workflow possible at all.</p>
+          </div>
+          <div class="sp-side">
+            <div class="sp-stat">PostgreSQL</div>
+            <div class="sp-label">Database engine · Railway hosted</div>
+            <ul>
+              <li><strong>Save</strong> writes the full project state</li>
+              <li><strong>Load</strong> restores it on any device</li>
+              <li><strong>Backup</strong> lives locally as a safety net</li>
+            </ul>
+          </div>
+        </div>
+
         <div class="card-grid">
           <div class="card"><div class="card-title"><span class="dot"></span>Native Canvas Rendering</div><p>Every element renders through the browser's native Canvas API for pixel-perfect fidelity and smooth performance.</p></div>
-          <div class="card"><div class="card-title"><span class="dot"></span>Server-Side Persistence</div><p>Your progress saves to a secure PostgreSQL database. Changes persist across reloads and different devices.</p></div>
           <div class="card"><div class="card-title"><span class="dot"></span>Advanced Undo</div><p>A robust, multi-step undo system protects your work against accidental mistakes.</p></div>
           <div class="card"><div class="card-title"><span class="dot"></span>Mobile UX Hardening</div><p>Every button, slider, and gesture is optimized for touch, with multi-touch suppression and mobile-friendly toolbars.</p></div>
           <div class="card"><div class="card-title"><span class="dot"></span>Cloud Asset Tray</div><p>Uploaded images are served via the Cloudinary global CDN, so your menu loads instantly anywhere in the world.</p></div>
@@ -785,33 +1145,89 @@ details.qa .qa-body{ padding:0 20px 18px; font-size:14.5px; line-height:1.65; co
         <div class="chapter-eyebrow"><span class="line"></span>PART I · CHAPTER 4</div>
         <h2><span class="chapter-num">04</span>Editor Layout Anatomy</h2>
         <p class="lead">The editor is divided into four functional areas. Learning these will help you navigate quickly.</p>
-        <div class="card-grid">
-          <div class="card"><div class="card-title"><span class="dot"></span>1 · The Canvas (center)</div><p>Your menu board — exactly as it will appear once exported. Click any element to edit it.</p></div>
-          <div class="card"><div class="card-title"><span class="dot"></span>2 · Header Bar (top)</div><p>Global controls: 💾 Save, ↺ Undo, 🏠 Home, and the current layout state (Locked / Unlocked).</p></div>
-          <div class="card"><div class="card-title"><span class="dot"></span>3 · Tools Drawer (left)</div><p>Opened by the 🛠️ floating action button. Holds the ADD tab for new elements and the ASSETS tab for your images.</p></div>
-          <div class="card"><div class="card-title"><span class="dot"></span>4 · Selection Bar (floating)</div><p>Appears only when something is selected. Three tabs — 🏷️ LAYER, 🎨 DESIGN, 📐 ARRANGE — fine-tune the selected object.</p></div>
-        </div>
+
+        <figure class="figure">
+          <div class="figure-frame">
+            <div class="figure-eyebrow">Figure 4.1 — The editor, annotated</div>
+            <div style="position:relative;">
+              <div class="mockup" style="transform:none;">
+                <div class="m-chrome"><span class="m-dot"></span><span class="m-dot"></span><span class="m-dot"></span><span class="m-title">MENU EDITOR PRO V2</span></div>
+                <div class="m-body" style="height:250px;">
+                  <div class="m-side">
+                    <div class="m-icon on"></div><div class="m-icon"></div><div class="m-icon"></div><div class="m-icon"></div>
+                  </div>
+                  <div class="m-canvas">
+                    <div class="m-card">
+                      <div class="m-heading"></div>
+                      <div class="m-row"><div class="l" style="width:38%"></div><div class="p"></div></div>
+                      <div class="m-row"><div class="l" style="width:52%"></div><div class="p"></div></div>
+                      <div class="m-select" style="left:16px; top:64px; width:130px; height:20px;"></div>
+                    </div>
+                    <div class="m-bar"><span class="active"></span><span></span><span></span><span></span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="pin" style="left:50%; top:-2px;">2</div>
+              <div class="pin" style="left:24px; top:50%;">3</div>
+              <div class="pin" style="left:56%; top:44%;">1</div>
+              <div class="pin" style="left:50%; bottom:22px;">4</div>
+            </div>
+            <div class="figure-legend">
+              <div class="leg"><div class="n">1</div><div class="t"><strong>The Canvas</strong><span>Your menu board, center-stage — exactly as it will appear once exported. Click any element to edit it.</span></div></div>
+              <div class="leg"><div class="n">2</div><div class="t"><strong>Header Bar</strong><span>Global controls: 💾 Save, ↺ Undo, 🏠 Home, and the current layout state (Locked / Unlocked).</span></div></div>
+              <div class="leg"><div class="n">3</div><div class="t"><strong>Tools Drawer</strong><span>Opened by the 🛠️ floating action button. Holds ADD for new elements and ASSETS for your images.</span></div></div>
+              <div class="leg"><div class="n">4</div><div class="t"><strong>Selection Bar</strong><span>Appears only when something is selected — 🏷️ LAYER, 🎨 DESIGN, 📐 ARRANGE tabs fine-tune it.</span></div></div>
+            </div>
+          </div>
+        </figure>
       </section>
 
       <section class="chapter" id="s5" data-part="Part I" data-title="The 5-Minute Quick Start">
         <div class="chapter-eyebrow"><span class="line"></span>PART I · CHAPTER 5</div>
         <h2><span class="chapter-num">05</span>The 5-Minute Quick Start</h2>
         <p class="lead">Follow these steps to make your first update in under five minutes.</p>
-        <ol class="connected">
-          <li><strong>Unlock.</strong> Click 🔒 <strong>Layout Locked</strong> in the top bar to switch to 🔓 <strong>Unlocked</strong> mode — this lets you click and select elements.</li>
-          <li><strong>Edit text.</strong> Double-click any price or item name on the canvas. A cursor appears — type your new values, then click the background to finish.</li>
-          <li><strong>Move elements.</strong> Single-click any element, then drag it to a new position. Use the ARRANGE tab for centering.</li>
-          <li><strong>Upload a logo.</strong> Click the 🛠️ FAB (bottom left) → <strong>Upload Img</strong>. Select your file — it appears on the canvas automatically.</li>
-          <li><strong>Save.</strong> Click 💾 <strong>Save</strong> in the top bar. Your changes are now permanent and stored on the server.</li>
-          <li><strong>Export.</strong> Click 🛠️ FAB → ⬇️ <strong>Export Pro PNG</strong>. Your print-ready menu downloads immediately.</li>
-        </ol>
+
+        <div class="flow">
+          <div class="fnode"><div class="fnum">1</div><div class="ft">Unlock</div><div class="fd">Click 🔒 <strong>Layout Locked</strong> in the top bar to switch to 🔓 <strong>Unlocked</strong> — this lets you click and select elements.</div></div>
+          <div class="fnode"><div class="fnum">2</div><div class="ft">Edit text</div><div class="fd">Double-click any price or item name. Type your new values, then click the background to finish.</div></div>
+          <div class="fnode"><div class="fnum">3</div><div class="ft">Move elements</div><div class="fd">Single-click any element, then drag it into position. Use ARRANGE for centering.</div></div>
+          <div class="fnode"><div class="fnum">4</div><div class="ft">Upload a logo</div><div class="fd">🛠️ FAB → <strong>Upload Img</strong>. Select your file — it appears on the canvas automatically.</div></div>
+          <div class="fnode"><div class="fnum">5</div><div class="ft">Save</div><div class="fd">Click 💾 <strong>Save</strong> in the top bar. Your changes are now permanent, stored on the server.</div></div>
+          <div class="fnode"><div class="fnum">6</div><div class="ft">Export</div><div class="fd">🛠️ FAB → ⬇️ <strong>Export Pro PNG</strong>. Your print-ready menu downloads immediately.</div></div>
+        </div>
+
         <div class="callout warning"><div class="ic">⚠️</div><div class="body"><strong class="title">Pro tip</strong><p>Keep the layout <strong>Locked</strong> unless you're specifically moving elements. In Locked mode you can still edit text by double-clicking — but you won't accidentally drag elements out of place.</p></div></div>
+
+        <div class="recap"><span class="recap-label">At a glance</span><span class="rchip">🔓 Unlock</span><span class="rchip">✏️ Edit text</span><span class="rchip">↔️ Move</span><span class="rchip">🖼️ Upload logo</span><span class="rchip">💾 Save</span><span class="rchip">⬇️ Export</span></div>
       </section>
 
       <section class="chapter" id="s6" data-part="Part I" data-title="The Top Header Bar">
         <div class="chapter-eyebrow"><span class="line"></span>PART I · CHAPTER 6</div>
         <h2><span class="chapter-num">06</span>The Top Header Bar</h2>
         <p class="lead">Always visible at the top of your screen, the header bar provides the core safety and management controls for your session.</p>
+
+        <figure class="figure">
+          <div class="figure-frame" style="padding:26px 26px 22px;">
+            <div class="figure-eyebrow">Figure 6.1 — Header bar, left to right</div>
+            <div class="hb-mockup">
+              <div class="hb-brand">MENU EDITOR PRO V2</div>
+              <div class="hb-btns">
+                <div class="hb-btn save">💾 Save</div>
+                <div class="hb-btn">↺ Undo</div>
+                <div class="hb-btn locked">🔒 Locked</div>
+                <div class="hb-btn">🏠 Home</div>
+                <div class="hb-btn">↺ Reload</div>
+              </div>
+            </div>
+            <div class="figure-legend" style="margin-top:20px;">
+              <div class="leg"><div class="n">A</div><div class="t"><strong>💾 Save</strong><span>Pushes your session to the server. Turns red when changes are pending.</span></div></div>
+              <div class="leg"><div class="n">B</div><div class="t"><strong>↺ Undo</strong><span>Steps back through up to 50 recent actions.</span></div></div>
+              <div class="leg"><div class="n">C</div><div class="t"><strong>🔒 / 🔓 Lock</strong><span>Toggles Safe Mode — the single most important control in the editor.</span></div></div>
+              <div class="leg"><div class="n">D</div><div class="t"><strong>🏠 Home · ↺ Reload</strong><span>Return to the dashboard, or refresh a slow or unresponsive session.</span></div></div>
+            </div>
+          </div>
+        </figure>
+
         <h3>🔒 Layout Lock / 🔓 Layout Unlocked</h3>
         <p>This is the most important control in the editor. By default, the layout is <strong>Locked</strong> — in this state you cannot drag elements or accidentally click small objects. Think of it as Safe Mode. Switch to <strong>Unlocked</strong> only when you need to reposition things or use the selection tabs.</p>
         <h3>💾 Save</h3>
@@ -824,6 +1240,11 @@ details.qa .qa-body{ padding:0 20px 18px; font-size:14.5px; line-height:1.65; co
         <p>Returns you to the application home dashboard. Always save before clicking Home.</p>
         <h3>↺ RELOAD</h3>
         <p>Refreshes the current application. Use this if the editor feels slow or an action becomes unresponsive — it's more reliable than the browser's own refresh button because it maintains the current editor context.</p>
+
+        <div class="pull-quote">
+          <p>Think of the Lock toggle as Safe Mode — the entire editor is built around letting you browse and edit text without ever fearing an accidental drag.</p>
+          <cite>— Chapter 6, on the single most important control in the editor</cite>
+        </div>
       </section>
 
       <section class="chapter" id="s7" data-part="Part I" data-title="The FAB &amp; Drawer">
@@ -862,9 +1283,12 @@ details.qa .qa-body{ padding:0 20px 18px; font-size:14.5px; line-height:1.65; co
            PART II — BUILDING YOUR MENU
       ============================================================ -->
       <div class="part-divider" data-part="Part II">
+        <span class="ghost">II</span>
+        <svg class="motif" width="46" height="46" viewBox="0 0 24 24" fill="none"><path d="M12 4L21 8.5L12 13L3 8.5L12 4Z" stroke="#c8a96a" stroke-width="1.1"/><path d="M3 13L12 17.5L21 13" stroke="#c8a96a" stroke-width="1.1"/><path d="M3 17.3L12 21.8L21 17.3" stroke="#c8a96a" stroke-width="1.1"/></svg>
         <div class="roman">Part II</div>
         <h2>Building Your Menu</h2>
         <p>Assets, text, images, shapes, selection, and the tools that shape and arrange them.</p>
+        <div class="chapters-in-part"><span class="chip">Ch. 9–18</span><span class="chip">Elements &amp; Layers</span><span class="chip">Arrange &amp; Design</span></div>
       </div>
 
       <section class="chapter" id="s9" data-part="Part II" data-title="The ASSETS Tab">
@@ -979,6 +1403,22 @@ details.qa .qa-body{ padding:0 20px 18px; font-size:14.5px; line-height:1.65; co
         <div class="chapter-eyebrow"><span class="line"></span>PART II · CHAPTER 14</div>
         <h2><span class="chapter-num">14</span>The Selection Bar — Complete Reference</h2>
         <p class="lead">A floating toolbar that appears only when elements are selected, with three tabs for different types of control.</p>
+
+        <figure class="figure">
+          <div class="figure-frame" style="padding:26px 26px 22px;">
+            <div class="figure-eyebrow">Figure 14.1 — The floating Selection Bar</div>
+            <div class="tabs-mockup">
+              <span class="tab active">🏷️ Layer</span>
+              <span class="tab">🎨 Design</span>
+              <span class="tab">📐 Arrange</span>
+              <div class="sep"></div>
+              <div class="dial"></div><div class="dial"></div>
+              <div class="sep"></div>
+              <span class="tab" style="color:#e88;">🗑 Delete</span>
+            </div>
+          </div>
+        </figure>
+
         <div class="card-grid">
           <div class="card">
             <div class="card-title"><span class="dot"></span>🏷️ Tab 1 — LAYER</div>
@@ -1093,9 +1533,12 @@ details.qa .qa-body{ padding:0 20px 18px; font-size:14.5px; line-height:1.65; co
            PART III — EXPORT & OUTPUT
       ============================================================ -->
       <div class="part-divider" data-part="Part III">
+        <span class="ghost">III</span>
+        <svg class="motif" width="46" height="46" viewBox="0 0 24 24" fill="none"><rect x="5" y="8.5" width="14" height="7" rx="1" stroke="#c8a96a" stroke-width="1.1"/><path d="M7 8.5V4.5H17V8.5" stroke="#c8a96a" stroke-width="1.1"/><path d="M7 15.5V19.5H17V15.5" stroke="#c8a96a" stroke-width="1.1"/></svg>
         <div class="roman">Part III</div>
         <h2>Export &amp; Output</h2>
         <p>Turning your finished layout into a print-ready, professional file.</p>
+        <div class="chapters-in-part"><span class="chip">Ch. 19–24</span><span class="chip">Video &amp; AI Content</span><span class="chip">Export Pipeline</span></div>
       </div>
 
       <section class="chapter" id="s19" data-part="Part III" data-title="Export Pro PNG — Overview">
@@ -1194,6 +1637,11 @@ details.qa .qa-body{ padding:0 20px 18px; font-size:14.5px; line-height:1.65; co
         <h3>Validation and security</h3>
         <p>Every save runs a full validation check first, ensuring no invalid elements are added and the file size stays within the 5MB performance limit. If a save fails, the editor highlights the invalid areas and explains how to fix them.</p>
         <div class="callout warning"><div class="ic">⚠️</div><div class="body"><strong class="title">Pro tip</strong><p>After a session, always click 💾 Save and wait for the "Project Saved Locally" toast <strong>before</strong> closing the tab. Never rely purely on auto-save when switching to another device.</p></div></div>
+
+        <div class="pull-quote">
+          <p>Server-side save is the bridge between your phone and your computer — nothing crosses that bridge until you click Save.</p>
+          <cite>— Chapter 22, on why manual saves still matter in an auto-saving world</cite>
+        </div>
       </section>
 
       <section class="chapter" id="s23" data-part="Part III" data-title="Undo History">
@@ -1227,11 +1675,11 @@ details.qa .qa-body{ padding:0 20px 18px; font-size:14.5px; line-height:1.65; co
         <h2><span class="chapter-num">24</span>Export Pro PNG — Complete Reference</h2>
         <p class="lead">Generating the final menu image is a three-step process, handled automatically by the editor's internal rendering engine.</p>
         <h3>The export pipeline</h3>
-        <ol class="connected">
-          <li><strong>State capture</strong> — the editor saves your current project first, so the output matches your last edit.</li>
-          <li><strong>High-fidelity render</strong> — a hidden, high-resolution canvas loads the master background (3600px wide) and draws every element at 300% zoom for maximum crispness.</li>
-          <li><strong>CRC32 checksumming</strong> — the PNG is assembled with specific metadata chunks so it's recognized as a 300 DPI professional file by printers and digital signs.</li>
-        </ol>
+        <div class="pipeline">
+          <div class="pnode"><div class="pk">Step 1</div><div class="pt">State capture</div><div class="pd">The editor saves your current project first, so the output matches your last edit.</div></div>
+          <div class="pnode"><div class="pk">Step 2</div><div class="pt">High-fidelity render</div><div class="pd">A hidden, high-resolution canvas loads the master background (3600px wide) and draws every element at 300% zoom.</div></div>
+          <div class="pnode"><div class="pk">Step 3</div><div class="pt">CRC32 checksumming</div><div class="pd">The PNG is assembled with metadata chunks so it's recognized as a 300 DPI professional file by printers and signs.</div></div>
+        </div>
         <div class="quick-ref">
           <div class="row"><div class="task">Output file format</div><div class="where">PNG (lossless)</div></div>
           <div class="row"><div class="task">Color mode</div><div class="where">sRGB, 8-bit color</div></div>
@@ -1249,15 +1697,36 @@ details.qa .qa-body{ padding:0 20px 18px; font-size:14.5px; line-height:1.65; co
            PART IV — WORKING EFFICIENTLY
       ============================================================ -->
       <div class="part-divider" data-part="Part IV">
+        <span class="ghost">IV</span>
+        <svg class="motif" width="46" height="46" viewBox="0 0 24 24" fill="none"><path d="M13 3L5 13.5H11.5L11 21L19 10.5H12.5L13 3Z" stroke="#c8a96a" stroke-width="1.1" stroke-linejoin="round"/></svg>
         <div class="roman">Part IV</div>
         <h2>Working Efficiently</h2>
         <p>Shortcuts, navigation, tooltips, and how to reset when you need a clean start.</p>
+        <div class="chapters-in-part"><span class="chip">Ch. 25–30</span><span class="chip">Keyboard &amp; Zoom</span><span class="chip">Mobile Gestures</span></div>
       </div>
 
       <section class="chapter" id="s25" data-part="Part IV" data-title="Keyboard Shortcuts">
         <div class="chapter-eyebrow"><span class="line"></span>PART IV · CHAPTER 25</div>
         <h2><span class="chapter-num">25</span>Keyboard Shortcuts</h2>
         <p class="lead">For power users on desktop, these shortcuts dramatically speed up editing.</p>
+
+        <div class="kmap">
+          <div class="figure-eyebrow" style="margin-bottom:18px;">The five keys you'll actually use</div>
+          <div class="kmap-row">
+            <span class="kkey gold">Ctrl</span><span class="kkey gold">⌘</span><span class="kkey">+</span><span class="kkey">Z</span>
+            <span style="width:14px;"></span>
+            <span class="kkey">+</span><span class="kkey">D</span>
+            <span style="width:14px;"></span>
+            <span class="kkey">+</span><span class="kkey">E</span>
+            <span style="width:14px;"></span>
+            <span class="kkey">+</span><span class="kkey">A</span>
+          </div>
+          <div class="kmap-row">
+            <span class="kkey">Shift</span><span class="kkey">+</span><span class="kkey">↑</span><span class="kkey">↓</span><span class="kkey">←</span><span class="kkey">→</span>
+          </div>
+          <div class="kmap-caption">Undo · Duplicate · Export · Select All — and a 10px nudge with Shift held. Everything else in the table below is situational.</div>
+        </div>
+
         <div class="table-wrap">
           <table>
             <thead><tr><th>Shortcut</th><th>Action</th><th>Context</th></tr></thead>
@@ -1365,6 +1834,29 @@ details.qa .qa-body{ padding:0 20px 18px; font-size:14.5px; line-height:1.65; co
           <li>Use <strong>landscape orientation</strong> for more screen width, an easier toolbar, and more canvas space.</li>
         </ol>
         <h3>Mobile touch gestures</h3>
+
+        <div class="phone-scene">
+          <div class="phone">
+            <div class="p-notch"></div>
+            <div class="p-screen">
+              <div class="p-bar"><span></span><span></span><span></span></div>
+              <div class="p-body">
+                <div class="p-row w40"></div>
+                <div class="p-row w80"></div><div class="p-price"></div>
+                <div class="p-row w60"></div><div class="p-price"></div>
+                <div class="p-row w80"></div><div class="p-price"></div>
+              </div>
+              <div class="p-tap" style="left:66px; top:96px;"></div>
+            </div>
+          </div>
+          <div class="gesture-list">
+            <div class="g"><div class="gi">☝️</div><div class="gt"><strong>Single tap</strong><span>Selects the element and shows the Selection Bar (layout must be Unlocked).</span></div></div>
+            <div class="g"><div class="gi">✌️</div><div class="gt"><strong>Double-tap</strong><span>Enters text editing mode on any text element — keyboard appears.</span></div></div>
+            <div class="g"><div class="gi">🤏</div><div class="gt"><strong>Pinch</strong><span>Zooms the canvas in or out — only while Unlocked.</span></div></div>
+            <div class="g"><div class="gi">👆</div><div class="gt"><strong>Drag on empty area</strong><span>Pans the canvas when Locked, or lasso-selects when Unlocked.</span></div></div>
+          </div>
+        </div>
+
         <div class="table-wrap">
           <table>
             <thead><tr><th>Gesture</th><th>What it does</th><th>Requires</th></tr></thead>
@@ -1403,9 +1895,12 @@ details.qa .qa-body{ padding:0 20px 18px; font-size:14.5px; line-height:1.65; co
            PART V — SUPPORT & REFERENCE
       ============================================================ -->
       <div class="part-divider" data-part="Part V">
+        <span class="ghost">V</span>
+        <svg class="motif" width="46" height="46" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="#c8a96a" stroke-width="1.1"/><circle cx="12" cy="12" r="4" stroke="#c8a96a" stroke-width="1.1"/><path d="M6 6L9.5 9.5M18 6L14.5 9.5M6 18L9.5 14.5M18 18L14.5 14.5" stroke="#c8a96a" stroke-width="1.1"/></svg>
         <div class="roman">Part V</div>
         <h2>Support &amp; Reference</h2>
         <p>When something doesn't behave as expected, and the habits that keep your work safe.</p>
+        <div class="chapters-in-part"><span class="chip">Ch. 31–32</span><span class="chip">Troubleshooting</span><span class="chip">Best Practices</span></div>
       </div>
 
       <section class="chapter" id="s31" data-part="Part V" data-title="Troubleshooting">
@@ -1468,6 +1963,11 @@ details.qa .qa-body{ padding:0 20px 18px; font-size:14.5px; line-height:1.65; co
           <li>On mobile especially, Locked mode prevents dozens of potential accidental repositioning errors.</li>
           <li>Text editing (double-click to type) works in <strong>both</strong> Locked and Unlocked mode — you never need to unlock just to edit text.</li>
         </ul>
+
+        <div class="pull-quote">
+          <p>Locked isn't a limitation — it's the default state the entire interface is designed around.</p>
+        </div>
+
         <h3>Typography best practices</h3>
         <ul>
           <li>Keep section headers larger (28–36px) and item names smaller (16–22px) for clear visual hierarchy.</li>
@@ -1503,9 +2003,12 @@ details.qa .qa-body{ padding:0 20px 18px; font-size:14.5px; line-height:1.65; co
            PART VI — TECHNICAL & AI TOOLS
       ============================================================ -->
       <div class="part-divider" data-part="Part VI">
+        <span class="ghost">VI</span>
+        <svg class="motif" width="46" height="46" viewBox="0 0 24 24" fill="none"><path d="M12 3L14 9H20L15 12.5L17 19L12 15L7 19L9 12.5L4 9H10L12 3Z" stroke="#c8a96a" stroke-width="1.1" stroke-linejoin="round"/></svg>
         <div class="roman">Part VI</div>
         <h2>Technical &amp; AI Tools</h2>
         <p>Under-the-hood specifications, the AI Studio, workspace themes, and print export.</p>
+        <div class="chapters-in-part"><span class="chip">Ch. 33–38</span><span class="chip">AI Studio</span><span class="chip">Specifications</span></div>
       </div>
 
       <section class="chapter" id="s33" data-part="Part VI" data-title="Technical Specifications">
